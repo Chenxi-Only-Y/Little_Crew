@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  # 后端 API（FastAPI 异步任务 + HITL + 持久化）
+  api:
+    build: .
+    env_file: .env
+    environment:
+      - DB_PATH=/data/little_crew.db
+      - OUTPUT_DIR=/data/outputs
+    volumes:
+      - crew-data:/data
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # 前端（Streamlit）
+  frontend:
+    build: .
+    depends_on:
+      - api
+    environment:
+      - FRONTEND_API=http://api:8000
+    ports:
+      - "8501:8501"
+    command: >
+      streamlit run frontend/streamlit_app.py
+      --server.port 8501 --server.headless true --browser.gatherUsageStats false
+
+volumes:
+  crew-data:

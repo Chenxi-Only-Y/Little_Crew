@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  # 安全扫描：不装重依赖(torch)，快速跑静态分析 + 依赖漏洞审计
+  security:
+    name: Security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install security tools (light)
+        run: pip install --quiet bandit pip-audit
+      - name: Static analysis (bandit)
+        run: bandit -r app -ll
+      - name: Dependency vulnerability audit (pip-audit)
+        run: pip-audit -r requirements.txt
+
+  # 测试：安装全量依赖(mock 模式零密钥)后跑端到端
+  test:
+    name: End-to-end test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install --quiet -r requirements.txt pytest
+      - name: Run e2e test (mock / zero-cost)
+        run: pytest tests/ -q
+
+  # 密钥防泄漏：防止有人把 .env / 密钥文件误提交
+  secrets:
+    name: Secret leak guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block committed secrets
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$/'; then echo "ERROR: .env committed"; exit 1; fi
+          if git ls-files | grep -E '(^|/)data/.*\.key$'; then echo "ERROR: key file committed"; exit 1; fi
+          if git ls-files | grep -El 'sk-[A-Za-z0-9]{10,}|AIza[A-Za-z0-9_-]{30,}'; then echo "ERROR: plausible key in repo"; exit 1; fi

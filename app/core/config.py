@@ -1,0 +1,141 @@
+"""小剧组 (Little Crew) — 应用配置。
+
+读取根目录 .env（若存在）或系统环境变量，集中管理密钥、Mock 开关与路径。
+使用 pydantic-settings，字段名与 .env 变量大小写不敏感对应（如
+`deepseek_api_key` <-> `DEEPSEEK_API_KEY`）。
+
+示例：
+    from app.core.config import settings
+    print(settings.deepseek_model)
+"""
+
+from pathlib import Path
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 项目根目录：app/core/config.py -> 上溯三级
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=BASE_DIR / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # ------------------- 大语言模型 (OpenAI 兼容协议，可切换提供者) -------------------
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-v4-flash"
+
+    # 可切换的其他 LLM 提供者（deepseek | zhipu | openai | ollama | custom）
+    llm_provider: str = "deepseek"
+    llm_api_key: str = ""       # 优先；为空则退回 deepseek_api_key
+    llm_base_url: str = ""      # 覆盖预设
+    llm_model: str = ""         # 覆盖预设
+
+    # ------------------- 图像生成 (阿里百炼 / Replicate / MiniMax) -------------------
+    image_api_key: str = ""          # 备用（IMAGE_API_KEY）
+    dashscope_api_key: str = ""      # 阿里百炼（读取 DASHSCOPE_API_KEY）
+    image_provider: str = "minimax"  # dashscope | replicate | minimax
+    image_base_url: str = ""
+    image_model: str = "image-01"    # MiniMax 文生图模型（image-01）；dashscope 时可为 z-image-turbo/wanx
+    replicate_api_token: str = ""
+
+    # MiniMax（文生图 / 图生视频）。读取 MINIMAX_API_KEY。
+    # 注意：平台分国内(api.minimaxi.com)与海外(api.minimax.io)两套 host，按你的密钥选。
+    minimax_api_key: str = ""
+    minimax_base_url: str = "https://api.minimaxi.com"
+
+    # ------------------- 视频合成 -------------------
+    # ffmpeg: 本地图片幻灯 + Edge TTS（需安装 FFmpeg）
+    # minimax: 调用 MiniMax-H3 图生视频（每段 ≤ video_max_duration 秒、≤ video_resolution 分辨率）
+    video_provider: str = "minimax"
+    video_model: str = "MiniMax-H3"
+    video_base_url: str = ""          # 覆盖默认 base_url
+    video_max_duration: int = 15      # 每段视频最大时长（秒）
+    video_resolution: str = "768P"    # 视频最高分辨率（MiniMax-H3 支持 768P | 2K）
+
+    # ------------------- IP-Adapter（角色一致性方案B 参考图生成） -------------------
+    ip_adapter_provider: str = "mock"    # replicate | comfyui | mock
+    ip_adapter_api_key: str = ""         # 平台 API Key（replicate/fal.ai，可复用 replicate_api_token）
+    ip_adapter_model: str = "cross-attention"  # cross-attention | style
+    ip_adapter_strength: float = 0.8     # 强度 0~1
+    comfyui_url: str = "http://localhost:8188"
+    comfyui_workflow: str = "ip_adapter_workflow.json"  # ComfyUI 工作流 JSON 文件
+
+    # ------------------- 一致性评估（方案B） -------------------
+    consistency_threshold: float = 75.0  # 一致性评分阈值 0-100，低于此标记偏差/需人工审核
+    consistency_model: str = "clip"      # clip | sentence-transformers
+
+    # ------------------- Mock 开关 (1=占位逻辑, 0=调真实 API) -------------------
+    mock_llm: bool = True
+    mock_image: bool = True
+
+    # ------------------- 分镜粒度 -------------------
+    # total:     全片共 5-8 个镜头（当前收紧，控成本）
+    # per_scene: 按场细分，镜头数更多（后续开发完成后再启用）
+    shot_mode: str = "total"
+
+    # ------------------- 人工介入（Human-in-the-Loop）-------------------
+    # True:  用 checkpointer + interrupt 实现原地暂停/续跑（供前端/API 交互）
+    # False: 自动放行人工确认点，整条流程无停顿跑完（供脚本/CLI）
+    hitl: bool = Field(default=False, validation_alias="HITL_ENABLED")
+
+    # ------------------- 生产化：限流 / 配额 / 日志 -------------------
+    rate_limit_per_minute: int = 10      # 每 IP+用户 每分钟请求上限
+    quota_daily_generations: int = 5     # 每用户每日创作上限
+    log_level: str = "INFO"              # 日志级别
+
+    # ------------------- 视觉质量评估 -------------------
+    # True: 占位评分（零成本）；False: 用真实 CLIP(open_clip) 计算 t2i 相似度
+    mock_quality: bool = True
+    quality_threshold: float = 0.5       # 低于此分则标记为需重试
+
+    # 跳过 CLIP 大模型下载（防卡），一致性改用模拟评分。
+    # 对应环境变量 LITTLE_CREW_SKIP_CLIP=1（默认跳过，避免首次下载发卡）。
+    skip_clip: bool = Field(default=True, validation_alias="LITTLE_CREW_SKIP_CLIP")
+
+    # ------------------- 剧评 Agent -------------------
+    # True: 用占位评审（零成本）；False: 调用 DeepSeek 真实评审
+    mock_critics: bool = True
+
+    # ------------------- 视频合成 -------------------
+    # True: 占位（免 FFmpeg/edge-tts）；False: 用 FFmpeg 合成 + Edge TTS 配音
+    mock_video: bool = True
+
+    # ------------------- 生成数量 / 质量控制 -------------------
+    max_images: int = 8               # 全片最多生成的图片/镜头数（控制图片数量）
+    video_count: int = 0              # 最多生成的视频段数（0=跟随图片数）
+    image_quality: str = "standard"   # standard | high | ultra（图片细节/清晰度）
+    video_quality: str = "768P"       # 768P | 2K（视频分辨率，可由设置页选择）
+
+    # ------------------- 路径 -------------------
+    db_path: str = "./data/little_crew.db"
+    output_dir: str = "./data/outputs"
+
+    # 数据库连接串：留空则用 SQLite(db_path)；填 PostgreSQL 等(如
+    # postgresql://user:pass@host:5432/db) 即切到对应库
+    db_url: str = ""
+
+    # ------------------- 服务 -------------------
+    api_host: str = "127.0.0.1"
+    api_port: int = 8000
+
+    @property
+    def output_dir_path(self) -> Path:
+        """输出目录绝对路径；相对路径基于项目根目录解析。"""
+        p = Path(self.output_dir)
+        return p if p.is_absolute() else BASE_DIR / p
+
+    @property
+    def db_path_value(self) -> Path:
+        """SQLite 数据库绝对路径；相对路径基于项目根目录解析。"""
+        p = Path(self.db_path)
+        return p if p.is_absolute() else BASE_DIR / p
+
+
+# 全局唯一配置实例
+settings = Settings()

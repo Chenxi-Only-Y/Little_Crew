@@ -1,0 +1,53 @@
+# ============================================================
+# 小剧组 (Little Crew) — Git 忽略规则
+# 绝不让密钥 / 运行产物 / 本地环境进入仓库。
+# ============================================================
+
+# ---- 密钥与本地环境 ----
+.env
+!.env.example
+*.local
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+build/
+dist/
+*.egg
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+.venv*/
+
+# ---- 数据与运行产物(整个 data/ 都是运行时状态/本地草稿, 绝不提交) ----
+/data/*.db
+/data/outputs/
+/data/*.key
+/.little_crew.key
+# 兜底：忽略 data 下一切（含本地数据库、加密密钥、开发草稿、验证 token）
+data/
+*.sqlite
+*.sqlite3
+*.db
+
+# ---- 日志 ----
+*.log
+log/
+logs/
+
+# ---- IDE / 编辑器 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# ---- 测试与缓存 ----
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage

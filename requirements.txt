@@ -1,0 +1,43 @@
+# ============================================================
+# 小剧组 (Little Crew) — 依赖清单
+# 工作流编排 + 后端 API + 前端 + 配置
+# ============================================================
+
+# ---- 工作流编排 ----
+langgraph>=1.0.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0      # DeepSeek 兼容 OpenAI 协议，复用该封装
+
+# ---- 后端 API ----
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+websockets>=12.0             # WebSocket 推送工作流进度
+
+# ---- 前端 ----
+streamlit>=1.38.0,<1.61      # streamlit-cookies-manager 0.2.0 依赖 st.cache，新版 streamlit 已移除；锁定 <1.61，1.60 已验证可用
+streamlit-cookies-manager>=0.2.0   # 登录态用浏览器 cookie 持久化(刷新/重开不掉线)
+
+# ---- 配置 ----
+python-dotenv>=1.0.1         # 加载 .env
+pydantic>=2.8.0
+pydantic-settings>=2.4.0     # 读取环境变量 -> Settings 对象
+
+# ---- 外部服务 HTTP 调用 ----
+httpx>=0.27.0                # 图像生成 / 大模型 HTTP 调用
+requests>=2.32.0
+Pillow>=10.4.0               # 图片处理(占位图生成/校验)
+
+# ---- 角色一致性（方案B）：图像特征提取 / 相似度 / IP-Adapter ----
+sentence-transformers>=2.2.0  # 图像特征提取和相似度计算
+clip>=0.2.0                   # 风格一致性计算(openai/clip, 需 torch/torchvision; 懒加载可跳过)
+opencv-python>=4.8.0          # 图像处理（人脸/区域、参考图处理）
+replicate>=0.18.0             # IP-Adapter API 调用（如果使用 Replicate）
+
+# ---- 存储(可选, MVP 先 SQLite/内存) ----
+sqlalchemy>=2.0.0
+
+# ---- 可复现性 ----
+# 本文件仅列出顶层依赖；如需完全锁定版本，请 `pip freeze > requirements.lock` 并提交 lockfile，
+# 或改用 `pip-tools`/`uv` 生成哈希锁定，避免未来拉入破坏性新版。
+

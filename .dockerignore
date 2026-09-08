@@ -1,0 +1,22 @@
+# 构建镜像时排除敏感/易变文件
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+data/
+*.db
+*.sqlite
+.git/
+.gitignore
+.github/
+.gitbook/
+.mypy_cache/
+.pytest_cache/
+node_modules/
+.DS_Store
+.idea/
+.vscode/
+log/
+logs/
