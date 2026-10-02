@@ -77,6 +77,9 @@ class Settings(BaseSettings):
     # 火山方舟（Seedance）。端点与模型名请按方舟控制台核对。
     ark_api_key: str = ""
     ark_base_url: str = "https://ark.cn-beijing.volces.com"
+    # ffmpeg 可执行文件路径。空 = 自动查找（环境变量 LITTLE_CREW_FFMPEG → PATH）。
+    # 用途：把预演导出的帧序列编码成 mp4（白模参考视频）。
+    ffmpeg_path: str = ""
     # 每段时长（秒）。可选档位 5/7/9/12/15，默认 7；
     # **实际上限由 provider 决定**（本地 8GB 只到 9，超过 10s 必 OOM），
     # 详见 app/services/providers.py 的 allowed_durations / resolve_duration。

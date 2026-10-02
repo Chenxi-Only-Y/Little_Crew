@@ -383,6 +383,8 @@ def allowed_settings() -> set[str]:
         # ⚠️ 这几个曾经漏掉过：界面能填、保存却被白名单丢掉，
         # 表现为"明明填了 key 却报未配置"。有测试守住这条（见 test_providers）。
         "dashscope_video_base_url", "ark_api_key", "ark_base_url",
+        # ffmpeg 路径（白模帧序列 → mp4）
+        "ffmpeg_path",
     })
     # 兼容 v1 的 per-role 键：Agent 运行时按这些角色名读取
     # （`llm_provider_writer` / `image_provider_character_designer` …）。

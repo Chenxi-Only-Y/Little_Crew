@@ -10,6 +10,8 @@
 生产化：限流/配额、请求日志（脱敏）、统一异常兜底。
 """
 
+import pathlib
+import shutil
 import time
 import uuid
 import threading
@@ -804,7 +806,11 @@ async def delete_history(session_id: str, request: Request):
 async def make_video(session_id: str, request: Request, body: dict | None = None):
     """对已完成会话生成视频（非阻塞：后台线程合成，立即返回，可轮询状态）。
 
-    body 可带 {"video_count": N} 指定只生成前 N 段视频（0/缺省=跟图片数走）。
+    body 可带：
+      - `video_count`: 只生成前 N 段视频（0/缺省=跟图片数走）
+      - `reference_video`: 参考视频（`mm_file://{file_id}` 或公网 URL）。
+        给了它就走**参考驱动**（白模录像复刻运镜与走位），此时不再发首尾帧
+        ——官方限制两者互斥。
     """
     from app.core.config import settings
 
@@ -815,14 +821,20 @@ async def make_video(session_id: str, request: Request, body: dict | None = None
     script = payload.get("script") or {}
     user_id = row.get("user_id") or "local"
     video_count = None
-    if isinstance(body, dict) and body.get("video_count") is not None:
-        video_count = int(body["video_count"])
+    reference_video = ""
+    if isinstance(body, dict):
+        if body.get("video_count") is not None:
+            video_count = int(body["video_count"])
+        reference_video = str(body.get("reference_video") or "").strip()
     # 已在生成则直接返回，不重复起线程、也不阻塞事件循环
     if session_id in _VIDEO_JOBS and _VIDEO_JOBS[session_id].is_alive():
         return {"status": "ok", "message": "视频正在生成中", "session_id": session_id}
-    t = threading.Thread(target=_run_video,
-                         args=(session_id, user_id, row.get("user_input", ""), images, script, video_count),
-                         daemon=True)
+    t = threading.Thread(
+        target=_run_video,
+        args=(session_id, user_id, row.get("user_input", ""), images, script,
+              video_count, reference_video),
+        daemon=True,
+    )
     _VIDEO_JOBS[session_id] = t
     t.start()
     return {"status": "started", "message": "已开始生成视频（后台），可轮询状态", "session_id": session_id}
@@ -831,16 +843,129 @@ async def make_video(session_id: str, request: Request, body: dict | None = None
 _VIDEO_JOBS: dict[str, threading.Thread] = {}
 
 
+# ------------------------------------------------------------------
+# 白模参考视频：帧序列 → mp4 →（可选）上传换 mm_file://{file_id}
+# ------------------------------------------------------------------
+
+@app.post("/api/video/whitebox")
+async def upload_whitebox_video(request: Request):
+    """接收预演导出的帧序列，编码成 mp4 并（可选）上传，返回可用的参考地址。
+
+    `multipart/form-data`：
+      - `frames`: 多份 PNG，按表单顺序即播放顺序（顺序很重要，不能靠文件名猜）
+      - `upload`: `"1"` 则上传到 MiniMax 换 `mm_file://{file_id}`；
+                  否则只编码，返回本地文件路径（用于先看效果、或不走云端）
+
+    为什么由后端编码而不是浏览器：
+      浏览器端要么用 MediaRecorder（基本只能出 webm，而云端只收 mp4），
+      要么用 WebCodecs + 自己写 mp4 封装——复杂且兼容性差。
+      后端只需调一次 ffmpeg，可靠得多。
+
+    为什么让前端显式传 `upload`：
+      上传会消耗额度、且**7 天后过期**。让用户能先只看编码结果，
+      而不是一按导出就必然产生一次上传。
+    """
+    from app.core.config import settings
+    from app.services import runtime_settings as rs
+    from app.services.whitebox_video import (
+        MAX_REF_VIDEO_SECONDS,
+        encode_frames_to_mp4,
+        probe_duration,
+        upload_for_video_generation,
+    )
+
+    # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_HEALTH_PUBLIC` 里，
+    # 所以本端点自动要求有效 token——不需要（也不能）在这里手动调它。
+    form = await request.form()
+    raw_frames = [v for k, v in form.multi_items() if k == "frames"]
+    if not raw_frames:
+        raise HTTPException(status_code=400, detail="没有收到任何帧（表单字段应为 frames）。")
+    do_upload = str(form.get("upload") or "") in ("1", "true", "yes")
+    fps = int(str(form.get("fps") or 24))
+
+    work = pathlib.Path(settings.output_dir_path) / "whitebox" / uuid.uuid4().hex[:12]
+    frames_dir = work / "frames"
+    frames_dir.mkdir(parents=True, exist_ok=True)
+
+    saved: list[pathlib.Path] = []
+    try:
+        for i, item in enumerate(raw_frames):
+            data = await item.read() if hasattr(item, "read") else bytes(item)
+            if not data:
+                continue
+            # 按**接收顺序**编号：顺序即时间顺序，不依赖原文件名
+            fp = frames_dir / f"{i:05d}.png"
+            fp.write_bytes(data)
+            saved.append(fp)
+
+        if not saved:
+            raise HTTPException(status_code=400, detail="收到的帧都是空的。")
+
+        out_mp4 = work / "whitebox.mp4"
+        try:
+            encode_frames_to_mp4(saved, out_mp4, fps=fps,
+                                 ffmpeg=str(rs.get("ffmpeg_path") or settings.ffmpeg_path or ""))
+        except Exception as exc:  # 找不到 ffmpeg / 编码失败 → 明确回给用户
+            raise HTTPException(status_code=400, detail=redact(str(exc))) from exc
+
+        seconds = probe_duration(out_mp4) or (len(saved) / max(1, fps))
+        result: dict = {
+            "status": "ok",
+            "frames": len(saved),
+            "fps": fps,
+            "seconds": round(seconds, 2),
+            "size_mb": round(out_mp4.stat().st_size / (1024 * 1024), 2),
+            "local_path": str(out_mp4),
+        }
+        if seconds > MAX_REF_VIDEO_SECONDS:
+            # 不阻断——用户可以自己剪短；但必须明确告知，否则等到云端才失败
+            result["warning"] = (
+                f"视频 {seconds:.1f} 秒，超出参考视频上限 {MAX_REF_VIDEO_SECONDS} 秒。"
+                "云端可能拒绝；建议缩短片段或降低帧率。"
+            )
+
+        if do_upload:
+            from app.services.providers import resolve_provider
+
+            provider, why = resolve_provider("video_gen")
+            if provider != "minimax":
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"当前视频模型是「{provider or '未选择'}」，"
+                           f"上传换 file_id 只实现了 MiniMax。{why}",
+                )
+            key = str(rs.get("minimax_api_key") or settings.minimax_api_key or "").strip()
+            if not key:
+                raise HTTPException(status_code=400,
+                                    detail="未配置 MiniMax API Key，无法上传。")
+            base = str(rs.get("minimax_base_url") or settings.minimax_base_url or "")
+            try:
+                ref = upload_for_video_generation(out_mp4, key, base_url=base)
+            except Exception as exc:  # noqa: BLE001
+                raise HTTPException(status_code=400, detail=redact(str(exc))) from exc
+            result["reference_video"] = ref
+            result["expires_in_days"] = 7
+        return result
+    finally:
+        # 帧占位置且没有保留价值（mp4 已生成）；mp4 本身保留，便于用户查看与重试
+        shutil.rmtree(frames_dir, ignore_errors=True)
+
+
 def _run_video(session_id: str, user_id: str, user_input: str, images: list, script: dict,
-               video_count: int | None = None) -> None:
-    """后台线程：合成视频并写回会话 payload（不阻塞事件循环）。"""
+               video_count: int | None = None, reference_video: str = "") -> None:
+    """后台线程：合成视频并写回会话 payload（不阻塞事件循环）。
+
+    `reference_video` 非空时走**参考驱动**（白模录像复刻运镜与走位）——
+    这就是 `/api/video/whitebox` 上传后拿到的 `mm_file://{file_id}` 的去处。
+    """
     from app.core.config import settings
 
     store = get_session_store()
     try:
         out, produced = get_video_service().synthesize(
             images, script, str(settings.output_dir_path), session_id,
-            video_count=video_count, text_prompt=user_input)
+            video_count=video_count, text_prompt=user_input,
+            reference_video=reference_video)
         row = store.get(session_id) or {}
         payload = dict(row.get("payload") or {})
         payload["video"] = {"dir_or_path": out, "produced": produced}
