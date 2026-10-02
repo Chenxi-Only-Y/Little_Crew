@@ -11,6 +11,7 @@
 """
 
 import pathlib
+import re
 import shutil
 import time
 import uuid
@@ -90,22 +91,30 @@ async def auth_guard(request: Request, call_next):
     if path in _PUBLIC_PATHS or (path.endswith("/") and path[:-1] in _PUBLIC_PATHS):
         return await call_next(request)
 
+    # 两种凭据来源都要接受（SSE 的 EventSource 无法自定义请求头）。
+    # 关键：**在这里一次性解析出身份并写进 request.state**，
+    # 之后所有端点都只能从它读身份——绝不允许端点自己拿请求体里的
+    # `user_id` 当回退值（见 `_auth_user` 的说明，那是一个真实出现过的越权）。
     auth = request.headers.get("Authorization", "")
     token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
     if not token:
         token = request.query_params.get("token", "").strip()
     username = get_user_store().resolve(token) if token else None
     if username:
-        # 把当前用户放进**请求作用域**，这样任何端点内部调
-        # `runtime_settings.get(...)` 都能读到该用户的设置。
-        #
-        # 为什么不能只靠 `set_user()`（threading.local）：
-        # 它不跨线程传播——中间件在事件循环线程设置，而**同步端点**
-        # 跑在 AnyIO worker 线程里，读到的会是 `_global`。
-        # 实测危害：`ffmpeg_path` 之类的服务内部设置「填了不生效」。
-        from app.services import runtime_settings as _rs
+        request.state.user = username
+        try:
+            # 把当前用户放进**请求作用域**，这样任何端点内部调
+            # `runtime_settings.get(...)` 都能读到该用户的设置。
+            #
+            # 为什么不能只靠 `set_user()`（threading.local）：
+            # 它不跨线程传播——中间件在事件循环线程设置，而**同步端点**
+            # 跑在 AnyIO worker 线程里，读到的会是 `_global`。
+            # 实测危害：`ffmpeg_path` 之类的服务内部设置「填了不生效」。
+            from app.services import runtime_settings as _rs
 
-        _rs.set_request_user(username)
+            _rs.set_request_user(username)
+        except Exception:  # noqa: BLE001  身份已定，这里失败不该拦下请求
+            logger.exception("[auth] 设置请求作用域用户失败")
         return await call_next(request)
     return JSONResponse(status_code=401, content={"status": "error", "message": "未登录，请先登录"})
 
@@ -143,14 +152,32 @@ def health():
 # ------------------------------------------------------------------
 # 认证：注册 / 登录 / 解析当前用户
 # ------------------------------------------------------------------
-def _auth_user(request: Request, fallback: str = "local") -> str:
-    """从 Authorization: Bearer token 解析出用户名；否则用 fallback。"""
+def _auth_user(request: Request) -> str:
+    """返回**已认证的**用户名；未认证时返回空串。
+
+    ⚠️ 身份只有一个来源：中间件在 `request.state.user` 里放的那个值。
+    它由 `auth_guard` 从 `Authorization: Bearer` **或** `?token=` 解析后写入，
+    两者都已验证有效。
+
+    这里**不再回退到调用方给的 fallback**——那是一个真实出现过的高危越权：
+        `auth_guard` 接受 `?token=` 并放行，而本函数原来只看 Authorization 头，
+        于是 `?token=<攻击者的>` + `body.user_id=<受害者>` 就能冒充受害者。
+        实测：攻击者用自己 token 成功改写了受害者的 `llm_base_url`。
+        更严重的是 `ffmpeg_path` 在白名单里，会被 `subprocess.run` 直接执行。
+    所以任何"由请求体/路径决定身份"的写法都必须去掉；调用方若要区分
+    "未登录"，请判断返回值是否为空串。
+    """
+    user = getattr(request.state, "user", "")
+    if user:
+        return str(user)
+    # 兼容：万一某个请求没走中间件（例如直接单元测试里调用端点函数），
+    # 仍然只认 Authorization 头——绝不使用 fallback。
     auth = request.headers.get("authorization", "")
     if auth.lower().startswith("bearer "):
-        user = get_user_store().resolve(auth[7:].strip())
-        if user:
-            return user
-    return fallback
+        resolved = get_user_store().resolve(auth[7:].strip())
+        if resolved:
+            return resolved
+    return ""
 
 
 def _require_owner(session_id: str, request: Request) -> dict:
@@ -162,32 +189,48 @@ def _require_owner(session_id: str, request: Request) -> dict:
     row = get_session_store().get(session_id)
     if not row:
         raise HTTPException(status_code=404, detail="会话不存在")
-    owner = _auth_user(request, "")
+    owner = _auth_user(request)
     if owner != row.get("user_id"):
         # 匿名/遗留会话仅允许 "local" 或未登录态访问，登录用户不可越权。
         raise HTTPException(status_code=403, detail="无权访问该会话")
     return row
 
 
+#: 合法的会话 ID：只允许 URL 安全字符，且限长。
+#: 它同时被用作目录名，所以这条正则也是**路径穿越防线**（见 `_claim_session`）。
+_SESSION_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
 def _claim_session(session_id: object, user_id: str):
     """校验客户端带来的 `session_id` 是否可归当前用户使用。
-
     Returns:
         None  = 可以继续（id 为空＝新建；或已存在且属主是自己；或尚不存在）
-        JSONResponse = 应当直接返回给客户端的 403
+        JSONResponse = 应当直接返回给客户端的 400/403
 
-    ⚠️ 为什么必须有这个检查：
+    ⚠️ 为什么必须有"属主"这一层：
         `SessionStore.save` 是 `ON CONFLICT(session_id) DO UPDATE`，**会把
         user_id 一起改写**。若不校验就接受客户端给的 id，
-        登录用户 B 只要把 A 的 session_id 放进请求体，就能把属主改成自己——
-        之后 `_require_owner` 反而认为 B 是主人，B 便可持续读状态、
-        触发 resume，并因 thread_id 相同而复用 A 的 checkpoint。
-        （这不是推测：实测 B 用 A 的 id 建会话后，读到的是
+        另一个登录用户只要把别人的 session_id 放进请求体，就能把属主改成自己——
+        之后 `_require_owner` 反而认为他是主人，他便可持续读状态、
+        触发 resume，并因 thread_id 相同而复用对方的 checkpoint。
+        （实测：B 用 A 的 id 建会话后，读到的是
           `{"status":"running","phase":"writer","user_id":"iso_b"}`。）
+
+    ⚠️ 为什么还要校验**格式**：
+        `session_id` 会被拼进输出目录（`output/<user>/<部门>/<职业>/<session_id>/`）。
+        未校验时 `../../..` 能在输出根之外建目录并写文件（实测目录被真实创建）。
+        限制为 `[A-Za-z0-9_-]{1,64}` 从源头掐掉路径穿越。
     """
     sid = str(session_id or "").strip()
     if not sid:
         return None
+    if not _SESSION_ID_RE.fullmatch(sid):
+        logger.warning("[auth] 用户 %s 提交了非法 session_id：%r", user_id, sid[:80])
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error",
+                     "message": "非法 session_id（只允许字母、数字、下划线、连字符，1~64 位）"},
+        )
     existing = get_session_store().get(sid)
     if existing and existing.get("user_id") not in (user_id,):
         logger.warning("[auth] 用户 %s 试图占用他人会话 %s（属主 %s）",
@@ -248,7 +291,7 @@ async def login(payload: dict):
 @app.get("/api/settings")
 async def get_settings(request: Request):
     """返回指定用户（默认当前认证用户/local）的运行时可读设置（密钥已掩码）。"""
-    uid = _auth_user(request, "local")
+    uid = _auth_user(request)
     return {"status": "ok", "user_id": uid, "settings": _mask_secrets(rs_snap(uid))}
 
 
@@ -261,7 +304,7 @@ async def put_settings(payload: dict, request: Request):
     """
     from app.registry import api as registry
 
-    uid = _auth_user(request, payload.get("user_id") or "local")
+    uid = _auth_user(request)
     settable = registry.allowed_settings()
     allowed = {k: payload[k] for k in settable if k in payload}
     # 丢弃掩码哨兵，避免把掩码回写覆盖真实密钥；空串=清除覆盖
@@ -286,6 +329,33 @@ async def test_settings(payload: dict, request: Request):
     model = str(body.get("model") or "")
     api_key = str(body.get("api_key") or "")
     base_url = str(body.get("base_url") or "")
+
+    # SSRF 防护：这个端点的 base_url **完全由调用方决定**，而服务端会带着
+    # 调用方给的 key 去 POST 它，并把响应前 200 字符回显给调用方。
+    # 不加校验就是"认证用户可让服务端访问任意内网/本机地址并读回响应"。
+    # 另外 `{base}/v1/...` 这种拼接允许用 `?`/`#` 改写实际请求路径，一并拒绝。
+    if base_url:
+        from urllib.parse import urlparse as _urlparse
+
+        parsed = _urlparse(base_url)
+        if parsed.query or parsed.fragment or parsed.username or parsed.password:
+            raise HTTPException(
+                status_code=400,
+                detail="base_url 不允许包含查询串、片段或用户信息（可能被用来改写实际请求路径）",
+            )
+        # localhost 也不放行：测试端点没有任何"必须访问本机"的场景，
+        # 而放行它等于把本机管理接口（Docker/ES/ComfyUI 等）暴露给任意登录用户。
+        from app.services.url_guard import assert_public_url
+
+        try:
+            assert_public_url(base_url, context="base_url")
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=redact(str(exc))) from exc
+        if _urlparse(base_url).hostname in ("localhost", "127.0.0.1", "::1"):
+            raise HTTPException(
+                status_code=400,
+                detail="base_url 不允许指向本机（该端点无访问本机的必要）",
+            )
 
     # 用 body 里的 provider 优先；若不填则按当前运行时设置解析默认 provider
     if not provider:
@@ -389,14 +459,14 @@ def _test_minimax_video(api_key: str, base_url: str, model: str) -> dict:
 @app.get("/api/user/profile")
 async def get_profile(request: Request):
     """返回当前用户的个人资料。"""
-    uid = _auth_user(request, "local")
+    uid = _auth_user(request)
     return {"status": "ok", "profile": get_profile_store().get(uid)}
 
 
 @app.put("/api/user/profile")
 async def put_profile(payload: dict, request: Request):
     """更新当前用户的个人资料（display_name / avatar / avatar_color）。"""
-    uid = _auth_user(request, payload.get("user_id") or "local")
+    uid = _auth_user(request)
     prof = get_profile_store().set(
         uid,
         display_name=payload.get("display_name"),
@@ -584,7 +654,7 @@ async def cost_audit(request: Request):
     from app.core.config import settings as _cfg
     from app.services.cloud_cost import audit_settings
 
-    uid = _auth_user(request, "local")
+    uid = _auth_user(request)
     defaults = {
         "llm_provider": _cfg.llm_provider,
         "deepseek_model": _cfg.deepseek_model,
@@ -687,7 +757,7 @@ async def previs_plan(request: Request):
     """
     from app.services.providers import previs_plan as build_plan
 
-    uid = _auth_user(request, "local")
+    uid = _auth_user(request)
     from app.services import runtime_settings as rs
 
     rs.set_user(uid)
@@ -713,7 +783,7 @@ async def create_session(payload: dict, request: Request):
     if not user_input:
         return JSONResponse(status_code=400, content={"status": "error", "message": "缺少 user_input"})
 
-    user_id = _auth_user(request, payload.get("user_id") or "local")
+    user_id = _auth_user(request)
     client_ip = request.client.host if request.client else "unknown"
     ok, msg = quota.check(client_ip, user_id)
     if not ok:
@@ -791,7 +861,7 @@ async def run_crew(payload: dict, request: Request):
     user_input = (payload.get("user_input") or "").strip()
     if not user_input:
         return {"status": "error", "message": "缺少 user_input"}
-    user_id = _auth_user(request, payload.get("user_id") or "local")
+    user_id = _auth_user(request)
     client_ip = request.client.host if request.client else "unknown"
 
     ok, msg = quota.check(client_ip, user_id)
@@ -859,7 +929,7 @@ async def resume_crew(payload: dict, request: Request):
 @app.get("/api/crew/history/{user_id}")
 async def history(user_id: str, request: Request):
     """用户创作历史（按时间倒序）。已登录时按 token 用户隔离。"""
-    resolved = _auth_user(request, user_id)
+    resolved = _auth_user(request)
     return {"user_id": resolved, "items": get_session_store().list_by_user(resolved)}
 
 
@@ -1431,7 +1501,7 @@ async def link_platform(platform: str, request: Request, body: dict | None = Non
         body = json.loads(body or "{}")
     body = body or {}
     token = body.get("token") or secrets.token_urlsafe(16)
-    user_id = _auth_user(request, "local")
+    user_id = _auth_user(request)
     rs_set(user_id, {f"publish_{platform}_token": token})
     return {"status": "ok", "platform": platform, "linked": True, "token": token[:8] + "…",
             "settings_keys": [k for k in rs_snap(user_id) if "publish_" in k]}

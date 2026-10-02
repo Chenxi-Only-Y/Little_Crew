@@ -238,3 +238,143 @@ def test_session_endpoint_rejects_foreign_id():
     # 且属主没被改写：A 仍然拥有它
     r3 = c.get(f"/api/crew/status/{sid}", headers=ha)
     assert r3.status_code == 200, f"A 反而访问不了自己的会话：{r3.text}"
+
+
+# ------------------------------------------------------------------
+# 4. 身份只能来自中间件（曾可用 ?token= + body.user_id 冒充他人）
+# ------------------------------------------------------------------
+
+def test_query_token_cannot_impersonate_body_user_id():
+    """`?token=<自己>` + body 里填**别人的** user_id，不得写到别人名下。
+
+    这是一个实测过的高危越权：`auth_guard` 接受 `?token=`，但 `_auth_user`
+    原先只看 `Authorization` 头、否则退回**调用方给的 fallback**
+    （来自 `body["user_id"]`）。于是任何注册用户都能读改删他人数据。
+    最严重的是 `ffmpeg_path` 在白名单里，会被 `subprocess.run` 直接执行。
+    """
+    c = _client()
+    ha = _register(c, "imp_atk")
+    hv = _register(c, "imp_vic")
+    # 取回各自的用户名
+    ua = c.get("/api/settings", headers=ha).json()["user_id"]
+    uv = c.get("/api/settings", headers=hv).json()["user_id"]
+    assert ua != uv
+
+    # 受害者先设一个值
+    c.put("/api/settings", headers=hv, json={"llm_base_url": "https://victim.example/v1"})
+
+    # 攻击者：token 走 query（自己），body 里塞受害者的 user_id
+    r = c.put(f"/api/settings?token=" + ha["Authorization"].split()[1],
+              json={"user_id": uv, "llm_base_url": "http://attacker.evil/v1"})
+    assert r.status_code == 200, r.text
+    assert r.json()["user_id"] == ua, (
+        f"身份被请求体左右了：响应 user_id={r.json()['user_id']}（应为自己 {ua}）"
+    )
+
+    # 受害者的值必须没动
+    got = c.get("/api/settings", headers=hv).json()["settings"].get("llm_base_url")
+    assert got == "https://victim.example/v1", f"受害者的设置被改写成了 {got!r}"
+    # 攻击者名下被写（符合"身份来自 token"的预期）
+    mine = c.get("/api/settings", headers=ha).json()["settings"].get("llm_base_url")
+    assert mine == "http://attacker.evil/v1"
+
+
+def test_history_ignores_path_user_id():
+    """`/api/crew/history/{别人的名字}` 必须只返回自己的历史。"""
+    c = _client()
+    ha = _register(c, "hist_atk")
+    hv = _register(c, "hist_vic")
+    c.post("/api/sessions", headers=hv, json={"user_input": "受害者的创作"})
+    uv = c.get("/api/settings", headers=hv).json()["user_id"]
+
+    r = c.get(f"/api/crew/history/{uv}", headers=ha)
+    assert r.status_code == 200, r.text
+    assert r.json()["items"] == [], (
+        f"读到了他人历史：{len(r.json()['items'])} 条"
+    )
+
+
+# ------------------------------------------------------------------
+# 5. session_id 格式（曾可路径穿越）
+# ------------------------------------------------------------------
+
+def test_session_id_rejects_path_traversal():
+    """session_id 会被拼进输出目录，非法值必须 400 拒绝。
+
+    实测过：`../../../../api_pwned` 能在输出根之外把目录真实创建出来。
+    """
+    c = _client()
+    h = _register(c, "sid_guard")
+    for bad in ("../../../../pwned", "..\\..\\pwned", "a" * 80, "has space", "a/b"):
+        r = c.post("/api/sessions", headers=h,
+                   json={"session_id": bad, "user_input": "x"})
+        assert r.status_code == 400, f"{bad!r} 未被拒（HTTP {r.status_code}）"
+
+
+def test_session_id_accepts_normal_ids():
+    """合法的 session_id 必须能用（别把校验做得过严）。
+
+    用唯一 id：固定 id 会撞上**上一次运行**留下的会话，
+    于是属主是旧用户 → 被 `_claim_session` 正确拒绝成 403，
+    而断言却以为"正常 id 被误拒"。这类残留会让测试时红时绿，必须避免。
+    """
+    import uuid as _uuid
+
+    c = _client()
+    h = _register(c, "sid_ok")
+    sid = f"ok_id-{_uuid.uuid4().hex[:8]}"
+    r = c.post("/api/sessions", headers=h,
+               json={"session_id": sid, "user_input": "正常"})
+    assert r.status_code == 200, r.text
+    assert r.json()["session_id"] == sid
+
+
+# ------------------------------------------------------------------
+# 6. SSRF
+# ------------------------------------------------------------------
+
+def test_settings_test_endpoint_rejects_internal_targets():
+    """/api/settings/test 的 base_url 由调用方决定，必须挡住内网/本机。
+
+    该端点会**带着调用方给的 key 去 POST 任意地址**，并把响应前 200 字符回显，
+    且原先没有任何 `assert_public_url` —— 是现成的 SSRF 出口。
+    """
+    c = _client()
+    h = _register(c, "ssrf_guard")
+    for bad in ("http://127.0.0.1:8080/x", "http://localhost:2375/y",
+                "http://169.254.169.254/latest/meta-data/", "http://192.168.1.1/",
+                "http://10.0.0.5:9200/", "file:///etc/passwd",
+                "http://evil.example.com/x?a=1"):
+        r = c.post("/api/settings/test", headers=h,
+                   json={"type": "llm", "provider": "deepseek",
+                         "api_key": "k", "base_url": bad})
+        assert r.status_code == 400, f"{bad} 未被拒（HTTP {r.status_code}）"
+
+
+def test_url_guard_allows_proxy_fake_ip_but_still_blocks_lan():
+    """`198.18.0.0/15`（代理 fake-ip 段）应放行；真实内网仍必须拒绝。
+
+    为什么要有这条：Clash/Surge 等 fake-ip 模式会把**所有域名**解析到
+    198.18.x.x，而 ipaddress 判它为 private。不放行的话，
+    挂了代理的机器上每个域名都被拒——表现为"DeepSeek/百炼全连不上"，
+    报错还写着"指向内网/保留地址"，完全指不到真正原因。
+    代价可接受：该网段不可路由（IANA 保留），真实内网照常拒绝。
+    """
+    import ipaddress
+
+    from app.services.url_guard import assert_public_url
+
+    fake = "198.18.0.16"
+    assert ipaddress.ip_address(fake).is_private, "198.18/15 应是 private（否则本测试无意义）"
+    # 代理段：放行
+    assert_public_url(f"https://{fake}/v1")
+
+    # 真实内网/保留：仍必须拒绝
+    for bad in ("http://10.0.0.5/", "http://192.168.1.1/", "http://172.16.0.1/",
+                "http://169.254.169.254/", "http://0.0.0.0/", "http://[fd00::1]/",
+                "http://[::ffff:10.0.0.1]/", "file:///etc/passwd"):
+        try:
+            assert_public_url(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"{bad} 竟然被放行——SSRF 防线被削弱了")
