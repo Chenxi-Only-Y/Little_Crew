@@ -14,10 +14,13 @@
 | --- | --- |
 | 工作流编排 | LangGraph (StateGraph + checkpointer + interrupt) |
 | 后端 API | FastAPI + Python 3.11+ |
-| 前端界面 | Streamlit（多页） |
+| 前端界面 | **导演台**：React + TypeScript + Vite（`web/`，端口 5183） |
+| 画布 | @xyflow/react（节点画布） + Zustand |
+| 预演（白模） | Three.js + @react-three/fiber（人形骨架 / 环境 / 多机位） |
 | 大语言模型 | DeepSeek（OpenAI 兼容协议） |
 | 图像生成 | 阿里百炼（Z-Image / wanx）/ Replicate |
-| 视频合成 | FFmpeg + Edge TTS |
+| 视频生成 | MiniMax H3 · 阿里百炼（万相 / Vidu）· Seedance · 本地 H3 · FFmpeg |
+| 视频编码 | ffmpeg（`imageio-ffmpeg` 自带一份，零配置可用） |
 | 存储 | SQLite（开发）/ 可切 PostgreSQL |
 | 配置 | python-dotenv + pydantic-settings |
 
@@ -68,32 +71,41 @@ little_crew/
 │   │   ├── shot_composer.py / prompt_refiner.py
 │   │   ├── image_generator.py / quality_assessor.py
 │   │   └── aggregator.py
+│   ├── registry/                # 唯一事实来源：职业/节点/端口/校验规则
+│   │   ├── roles.py             # 7 部门 / 16 职业 / 18 节点 / 34 端口
+│   │   ├── api.py               # allowed_settings() 等派生逻辑
+│   │   └── types.py
 │   ├── workflows/main_workflow.py  # 图编排 + 确认点 + HITL
 │   ├── services/
 │   │   ├── llm.py / image.py / quality.py / video.py
+│   │   ├── providers.py         # 提供者能力声明（条件/时长/分辨率）
+│   │   ├── video_adapters.py    # 多家视频 API 的统一适配层
+│   │   ├── whitebox_video.py    # 白模帧序列 → mp4 → 上传换 file_id
+│   │   ├── runtime_settings.py  # 按用户的运行时设置（加密落库）
 │   │   ├── session_store.py     # SQLite 会话/结果 + 用户历史
 │   │   ├── auth.py              # 注册/登录/token
 │   │   ├── task_runner.py       # 后台线程跑工作流 + 进度
 │   │   ├── quota.py             # 限流/每日配额
 │   │   └── logging.py           # 日志 + 密钥脱敏
 │   └── main.py                  # FastAPI 入口（所有端点）
-├── frontend/
-│   ├── streamlit_app.py         # 主页（登录/卡片入口）
-│   ├── _styles.py               # Sentry 设计系统 CSS + 导航/登录态(cookie)
-│   ├── _api.py                  # 后端/本地调用封装
-│   ├── renderers.py / _console.py / _dept.py  # 各环节结果渲染 / 控制台 / 部门
-│   └── pages/
-│       ├── 01~13_*.py           # 各职业环节页（策划/编剧/角色/场景/分镜/剪辑/场记/技术/摄影/质检/发行…）
-│       ├── 20_*.py              # 5 个部门入口页（创作策划/导演分镜/美术资产/技术制作/后期分发）
-│       ├── 7_我的创作.py         # 历史回顾
-│       ├── 8_登录.py            # 登录/注册
-│       └── 9_设置.py            # 模型/API Key/生成参数
-├── scripts/                     # run_demo / run_server / check_secrets
+├── web/                         # 导演台（React + Vite，端口 5183）
+│   ├── src/app/router.ts        # 5 个页面：首页 / 导演台 / 预演 / 用户 / 设置
+│   ├── src/canvas/              # 节点画布（ComfyUI 式）
+│   ├── src/previs/              # 3D 白模预演编辑器
+│   │   ├── humanoid.ts          # 17 关节骨架 + 姿态 + 前向运动学
+│   │   ├── env.ts               # 环境预设（房间/广场/街道/舞台）
+│   │   ├── types.ts             # 多机位轨道 + 锁定跟随
+│   │   ├── exporter.ts          # 剪影/深度/帧序列导出
+│   │   └── whiteboxVideo.ts     # 白模参考视频上传封装
+│   └── src/registry.snapshot.json  # 后端注册表导出（构建时校验一致性）
+├── scripts/                     # run_demo / run_server / check_secrets / export_registry
+├── docs/recon/                  # 重构勘察记录（01~10）
 ├── data/outputs/                # 图片/结果（gitignored）
 ├── .github/workflows/ci.yml     # CI（安全扫描 + 测试 + 密钥防泄漏）
 ├── requirements.lock            # 环境锁定（pip freeze）
-├── Dockerfile / docker-compose.yml
+├── Dockerfile / docker-compose.yml  # 只含后端；前端容器化见 compose 注释
 ├── .env.example / requirements.txt / LICENSE / README.md
+└── DESIGN.md                    # 导演台的品牌设计令牌（配色/字体）
 ```
 
 ---
@@ -132,7 +144,7 @@ pip install -r requirements.txt
 > 由 PyCharm 用该解释器执行 `pip install -r requirements.txt`。
 
 > 依赖较重的有 `sentence-transformers`、`clip`、`replicate`（角色一致性/质量评估用，会拉 torch）。
-> 若只需核心"文字→图片"链路、不想下这么大，可先手动安装 `fastapi uvicorn streamlit httpx langgraph langchain-openai python-dotenv pydantic-settings`，其余按需再补。
+> 若只需核心"文字→图片"链路、不想下这么大，可先手动安装 `fastapi uvicorn httpx langgraph langchain-openai python-dotenv pydantic-settings pillow imageio-ffmpeg`，其余按需再补。
 
 ### 2. 配置 `.env`
 
@@ -167,12 +179,36 @@ python scripts/run_demo.py "一只会说话的小猫想当侦探"
 # 后端 API（异步任务 + 状态轮询 + 登录 + 历史 + 视频）
 python scripts/run_server.py        # http://127.0.0.1:8000/docs
 
-# 前端
-streamlit run frontend/streamlit_app.py   # http://localhost:8501
-
-# Docker 一键起后端+前端
-docker compose up --build
+# 导演台（前端）——需要 Node.js 与 pnpm
+cd web
+pnpm install                        # 首次
+pnpm run dev                        # http://127.0.0.1:5183
 ```
+
+> **Windows 用户可以直接双击 `start.bat`**：它会检查 `.venv` 与 `pnpm`、
+> 首次自动装前端依赖、拉起后端与导演台并打开浏览器。
+
+前端在开发期把 `/api` 代理到 `http://127.0.0.1:8000`（见 `web/vite.config.ts`），
+所以前后端同源、无需处理 CORS。
+
+```bash
+# 只起后端（Docker）
+docker compose up --build           # http://127.0.0.1:8000
+```
+
+> `docker-compose.yml` **只含后端**。导演台要容器化需另加 Node 构建阶段
+> （多阶段 Dockerfile + 静态托管），见该文件内的说明。
+
+### 4. 模型凭据填在哪
+
+| 能力 | 密钥键 | 位置 |
+| --- | --- | --- |
+| 文字（LLM） | `llm_api_key_{角色}` | 设置页 → ② 按职业指定模型 |
+| 图像 | `image_api_key_{角色}` | 设置页 → ② |
+| **视频** | `minimax_api_key` / `dashscope_api_key` / `ark_api_key` | **设置页 → ③ 模型凭据** |
+
+视频的密钥是**提供者级**的（与按职业的命名不同），必须填在 ③。
+想用白模参考视频（把预演录像送进视频模型复刻运镜），就得先配这个 Key。
 
 ---
 
@@ -198,7 +234,7 @@ docker compose up --build
 - 密钥只经 `config.py` 从 `.env`/系统环境变量读取，代码无硬编码（`check_secrets.py` 可自检）。
 - `.env`、`data/`、`*.db` 均被 gitignore；仓库只提交 `.env.example`。
 - 日志/异常经 `redact()` 脱敏，不泄漏密钥。
-- **登录态持久化**：前端用浏览器 cookie（`streamlit-cookies-manager`）存 token，刷新/关闭重开浏览器不掉线。cookie 为**普通 JS 可读、非 HttpOnly**，本地/演示够用；公网部署建议升级为「服务端会话 + HttpOnly Cookie」，不要把凭据放进 URL。
+- **登录态持久化**：导演台把 token 存在浏览器 `localStorage`（键 `lc_token`），刷新/重开不掉线。该 token 为**普通 JS 可读、非 HttpOnly**，本地/演示够用；公网部署建议升级为「服务端会话 + HttpOnly Cookie」，不要把凭据放进 URL。SSE 订阅因浏览器 `EventSource` 无法自定义请求头，token 需走 `?token=` 查询参数——非 HTTPS 部署下会明文出现在 URL 与日志中，务必配 HTTPS。
 - 开源许可证：**MIT**（见 `LICENSE`）。集成外部模型请留意各厂商条款。
 
 ---

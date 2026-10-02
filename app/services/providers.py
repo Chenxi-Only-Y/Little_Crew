@@ -1,8 +1,9 @@
 """小剧组 (Little Crew) — Provider 注册表（能力 → 提供者 → 参数）。
 
-解决的问题：现状 provider 清单散在 **3 处**
+解决的问题：provider 清单曾散在 **3 处**
     - `app/core/config.py` 的默认值
-    - `frontend/pages/9_设置.py` 的 PROVIDER_OPTIONS / PROVIDER_LABEL / PROVIDER_DEFAULT_MODEL
+    - 旧 Streamlit 设置页的 PROVIDER_OPTIONS / PROVIDER_LABEL / PROVIDER_DEFAULT_MODEL
+      （那个前端与 `frontend/pages/9_设置.py` 已删除；现由本表 + `/api/providers` 下发）
     - `app/services/image.py` / `video.py` 里的 `if provider == ...` 分派
 并且"并发度"是写死在调用方的常量（`ImageGenerator.CONCURRENCY = 4`），
 接了本地推理后会与服务端的串行锁打架（见 `docs/recon/07-risks-predictions.md §2`）。
@@ -10,7 +11,10 @@
 本模块只做三件事：
     1. 声明每个 provider 的元数据（类别/可用性/默认模型/并发上限/已知模型）
     2. 给调用方查"并发度"等能力参数
-    3. 供接口下发给前端，消除前端那份重复清单
+    3. 供接口下发给前端（`/api/providers`，含 `credential_spec`），消除重复清单
+
+视频类提供者由 `app/services/video_adapters.py` 声明、在文件末尾自动并入本表，
+避免两处手写清单漂移。
 
 ⚠️ **不重写既有的 provider 实现**：`image.py` 的 `_local()` / `video.py` 的 `_real_local()`
    等函数体保持原样，只把"分派分支"改为查本表。

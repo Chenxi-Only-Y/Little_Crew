@@ -15,8 +15,9 @@ python-multipart>=0.0.9
 websockets>=12.0             # WebSocket 推送工作流进度
 
 # ---- 前端 ----
-streamlit>=1.38.0,<1.61      # streamlit-cookies-manager 0.2.0 依赖 st.cache，新版 streamlit 已移除；锁定 <1.61，1.60 已验证可用
-streamlit-cookies-manager>=0.2.0   # 登录态用浏览器 cookie 持久化(刷新/重开不掉线)
+# 导演台在 web/（React + Vite），依赖由 pnpm 管理，见 web/package.json。
+# 原先这里装 streamlit + streamlit-cookies-manager 给旧前端用，
+# 那套前端已删除，故不再需要（Python 侧不再有任何前端依赖）。
 
 # ---- 配置 ----
 python-dotenv>=1.0.1         # 加载 .env

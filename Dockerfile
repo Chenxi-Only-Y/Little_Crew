@@ -1,4 +1,7 @@
-# 小剧组 (Little Crew) — 后端/前端镜像
+# 小剧组 (Little Crew) — 后端镜像
+#
+# 只打后端。导演台（React + Vite）要容器化需另加 Node 构建阶段，
+# 见 docker-compose.yml 的说明。
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -7,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# 安装依赖（含 langgraph / fastapi / streamlit 等）
+# 安装依赖（langgraph / fastapi / pillow / imageio-ffmpeg 等）
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -16,5 +19,5 @@ COPY . .
 
 EXPOSE 8000
 
-# 默认命令：后端 API。前端服务在 compose 里用 command 覆盖为 streamlit。
+# 默认命令：后端 API
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

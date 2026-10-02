@@ -19,18 +19,16 @@ services:
       timeout: 5s
       retries: 5
 
-  # 前端（Streamlit）
-  frontend:
-    build: .
-    depends_on:
-      - api
-    environment:
-      - FRONTEND_API=http://api:8000
-    ports:
-      - "8501:8501"
-    command: >
-      streamlit run frontend/streamlit_app.py
-      --server.port 8501 --server.headless true --browser.gatherUsageStats false
+  # 导演台（React + Vite）**不在本文件里**。
+  #
+  # 原先这里跑 Streamlit（frontend/），那个前端已删除。
+  # 新前端是 Vite 应用，要放进 compose 就得加一个 Node 构建阶段
+  # （多阶段 Dockerfile + 静态托管），属于独立改动，没顺手塞进来。
+  #
+  # 需要容器化前端时，两种做法：
+  #   1) 本机跑 `cd web && pnpm run dev`（默认 5183，已代理 /api 到 8000）；
+  #   2) 用 nginx 托管 `pnpm run build` 产物，并把 /api 反代到 api:8000。
+  # 见 README「启动」一节。
 
 volumes:
   crew-data:

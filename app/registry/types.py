@@ -1,10 +1,12 @@
 """小剧组 (Little Crew) — 注册表类型定义。
 
-设计目标：把系统中**四处散落的四套概念**收敛为**唯一数据源**：
-  - 职业 role      → 现状散在 `app/core/org.py` / `frontend/_org.py` / `_console.py` / 各页面文件名
-  - 部门 dept      → 现状隐式写在 `ROLE_ORG` 元组里 + 前端 `_org.py`
-  - 阶段 stage     → 现状硬编码在 `main_workflow._STAGE_ORDER` + `_console._ALL_PHASES` + `_segment_select.FULL_ROLES`
-  - 确认点 checkpoint → 现状散在 `REVIEW_*_POINT` 常量 + 各 review 节点 + `_console._CHECKPOINT_OPTIONS`
+设计目标：把系统中**四处散落的概念**收敛为**唯一数据源**。
+下面记的是**重构前**的散落位置（前端那几处随 Streamlit 前端一并删除，
+现为 `web/` 导演台，它从 `/api/registry` 读，不再自带清单）：
+  - 职业 role      → 曾散在 `app/core/org.py` / `frontend/_org.py` / `_console.py` / 各页面文件名
+  - 部门 dept      → 曾隐式写在 `ROLE_ORG` 元组里 + 前端 `_org.py`
+  - 阶段 stage     → 曾硬编码在 `main_workflow._STAGE_ORDER` / `_console._ALL_PHASES` / `_segment_select.FULL_ROLES`
+  - 确认点 checkpoint → 曾散在 `REVIEW_*_POINT` 常量 + 各 review 节点 + `_console._CHECKPOINT_OPTIONS`
 
 三层结构（关键设计，避免"1 职业 = 1 节点"的错误假设）：
     Role （职业）  —— 面向用户，15 个
