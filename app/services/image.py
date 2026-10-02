@@ -226,13 +226,18 @@ class ImageService:
             return data[0]["url"]
 
         img_url = _retry_call(_call, "本地文生图")
-        # 从本地服务取回图片字节，落到项目自己的输出目录
+        # 从本地服务取回图片字节，落到项目自己的输出目录。
+        # 必须走 safe_get：这个 URL 来自服务响应，不校验就是"服务端照下载任意地址"。
+        # 又因为本地服务默认就在 127.0.0.1:8100，所以要 allow_local=True
+        # —— 否则零成本的本地生图会直接坏掉（这是**功能**，不是漏洞）。
+        from app.services.url_guard import safe_get
+
         out_dir = _run_output_dir(self.output_dir, _cur_role(), prompt["shot_id"])
         path = out_dir / f"{prompt['shot_id']}.png"
-        with httpx.Client(timeout=120) as client:
-            resp = client.get(img_url)
-            resp.raise_for_status()
-            path.write_bytes(resp.content)
+        resp = safe_get(img_url, context="本地文生图结果下载", timeout=120,
+                        allow_local=True)
+        resp.raise_for_status()
+        path.write_bytes(resp.content)
         return str(path), str(path), True
 
     def _dashscope(self, prompt: dict) -> Tuple[str, str, bool]:

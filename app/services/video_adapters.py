@@ -526,7 +526,16 @@ def submit_and_wait(
     """
     validate_exclusive(req)
 
-    body = provider.build_body(provider.model, req, req.extra)
+    # 用调用方选定的模型，而不是适配器的默认模型。
+    #
+    # ⚠️ 这里原先写的是 `provider.build_body(provider.model, ...)` ——
+    # 于是用户在设置页改的 `video_model` **完全被忽略**：
+    # `video.py::_via_adapter` 算出了 model 却从不使用（死变量），
+    # 而注册表声明了 `video_model`、白名单也放行它，
+    # 结果是"设置页能改、PUT 返回 200、提示已保存，实际恒用默认模型"。
+    # 现在优先取 `req.extra["model"]`（调用方传入），回退到适配器默认。
+    model = str(req.extra.get("model") or provider.model).strip() or provider.model
+    body = provider.build_body(model, req, req.extra)
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",

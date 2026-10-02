@@ -102,7 +102,7 @@ little_crew/
 ├── data/outputs/                # 图片/结果（gitignored）
 ├── .github/workflows/ci.yml     # CI（安全扫描 + 测试 + 密钥防泄漏）
 ├── requirements.lock            # 环境锁定（pip freeze）
-├── Dockerfile / docker-compose.yml  # 只含后端；前端容器化见 compose 注释
+├── Dockerfile / docker-compose.yml  # 后端 + 导演台（web/Dockerfile 多阶段 + nginx）
 ├── .env.example / requirements.txt / LICENSE / README.md
 └── DESIGN.md                    # 导演台的品牌设计令牌（配色/字体）
 ```

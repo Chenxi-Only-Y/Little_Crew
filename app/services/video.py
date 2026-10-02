@@ -246,7 +246,10 @@ class VideoService:
                 "请到「设置」页填写。"
             )
 
-        model = str(rs.get("video_model") or settings.video_model or prov.model).strip()
+        # 模型：用户可覆盖 → 必须传进适配器，否则这个值算出来也没人用
+        # （原先就是死变量，导致设置页改 `video_model` 完全不生效）。
+        model = str(rs.resolve("video_model", settings.video_model or prov.model)
+                    or prov.model).strip() or prov.model
         # 端点解析：全局覆盖 → 该提供者的端点设置 → 提供者默认。
         # 用 `endpoint_setting` 而不是按 `{provider_key}_base_url` 拼——
         # 两者可能不同名（Seedance 的键是 `ark_base_url`）。
@@ -280,6 +283,9 @@ class VideoService:
             duration=duration,
             resolution=str(rs.resolve("video_resolution", settings.video_resolution) or "720P"),
             ratio="adaptive",
+            # 把用户选定的模型传给适配器——否则适配器会用 provider 默认模型，
+            # 设置页的 `video_model` 就成了摆设。
+            extra={"model": model},
             reference_videos=[reference_video] if reference_video else [],
         )
         if items and not reference_video:
@@ -302,11 +308,29 @@ class VideoService:
             raise RuntimeError(str(exc)) from exc
 
         out_mp4 = d / "out.mp4"
-        with httpx.Client(timeout=300) as client:
-            vr = client.get(dl_url)
-            vr.raise_for_status()
-        out_mp4.write_bytes(vr.content)
+        # 成品 URL 由 provider 响应给出 → 必须过 SSRF 校验（且逐跳）。
+        # 攻击者可以把自己的服务当"provider"，返回 `302 → 内网/本机` 让服务端照跳。
+        self._download(dl_url, out_mp4, allow_local=False, context="视频成品下载")
         return str(d), 1
+
+    def _download(self, url: str, dest, *, allow_local: bool = False,
+                  context: str = "视频成品下载", timeout: int = 300) -> None:
+        """把远端成品下载到 `dest`。
+
+        做成**单独方法**而不是内联在调用点，有两个理由：
+          1. 安全逻辑集中一处 —— 谁调它都自动带 SSRF 校验，不容易漏；
+          2. **可测** —— 测试可以 mock 掉它来避免真发网络请求
+             （`tests/test_video_routes.py` 一直是这么 mock 的，但此前它并不存在，
+              所以 mock 是"空转"的、真去连了本机；这也是我把下载内联后
+              测试立刻变红的原因）。
+        """
+        from app.services.url_guard import safe_get
+
+        resp = safe_get(url, context=context, timeout=timeout, allow_local=allow_local)
+        resp.raise_for_status()
+        import pathlib as _pl
+
+        _pl.Path(dest).write_bytes(resp.content)
 
     # ---------------------------------------------------------------
     # 本地 MiniMax H3 图生视频（D:\AI\local-gen 服务，零 API 成本）
@@ -423,11 +447,13 @@ class VideoService:
 
             dl_url = self._poll_local(base, job_id, timeout=timeout, interval=10)
             if dl_url:
-                with httpx.Client(timeout=300) as client:
-                    vr = client.get(dl_url)
-                    vr.raise_for_status()
+                # 本地服务返回的 URL —— 它**经常就是 127.0.0.1 / localhost**
+                # （默认端点 `http://127.0.0.1:8100`），所以这里必须
+                # `allow_local=True`，否则本地图生视频的成品会下载失败。
+                # 同时仍走 safe_get：逐跳校验，避免本地服务被劫持后 302 到别处。
                 out_mp4 = d / f"{sid}.mp4"
-                out_mp4.write_bytes(vr.content)
+                self._download(dl_url, out_mp4, allow_local=True,
+                               context="本地视频成品下载")
                 produced = 1
         return str(d), produced
 

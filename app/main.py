@@ -25,7 +25,11 @@ from app.services.auth import get_user_store
 from app.services.events import get_hub
 from app.services.logging import redact, setup_logging
 from app.services.profile import get_profile_store
-from app.services.runtime_settings import set_many as rs_set, snapshot as rs_snap
+from app.services.runtime_settings import (
+    DecryptError,
+    set_many as rs_set,
+    snapshot as rs_snap,
+)
 from app.services.session_store import get_session_store
 from app.services.task_runner import cancel_run, resume_run, start_run
 from app.services.video import get_video_service
@@ -130,6 +134,34 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+@app.exception_handler(DecryptError)
+async def decrypt_error_handler(request: Request, exc: DecryptError):
+    """密钥/密文问题 → **把可操作的提示透给用户**，不要吞成通用 500。
+
+    为什么单独注册：`DecryptError` 的文案是精心写的、唯一有用的排障指引
+    （例如"请先修复密钥文件 `.little_crew.key`，数据仍在库里"）。
+    但原先全仓没有处理器，于是它落到下面的通用兜底，
+    用户只看到"服务内部错误，请稍后重试"——**完全不知道该做什么**。
+    实测：换掉密钥后 `PUT /api/settings` 返回 500 且不含任何指引。
+
+    用异常处理器而不是在每个调用点 try/except：这是**环境级**故障，
+    会从多个路径抛出（`put_settings`、`link_platform`、以及将来任何写设置的
+    地方），集中处理才不会漏。状态码 500（服务端配置问题，非客户端错误），
+    但 `message` 带上原因与下一步。
+    """
+    detail = redact(str(exc))
+    logger.error("settings storage error on %s: %s", request.url.path, detail)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": detail,
+            "hint": "这是本地数据加密/密钥问题，不是操作错误。"
+                    "请检查 data/.little_crew.key 是否被替换或删除。",
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception(request: Request, exc: Exception):
     """全局异常兜底：只回显脱敏后的通用信息，细节进日志。"""
@@ -183,8 +215,12 @@ def _auth_user(request: Request) -> str:
 def _require_owner(session_id: str, request: Request) -> dict:
     """校验当前登录用户对该 session 有属主权限；返回该会话行，否则抛 404/403。
 
-    auth_guard 已保证这些端点带有效 token，故 _auth_user 返回的是认证用户本身。
-    任何按 session 操作的端点都应以它为准，否则任意登录用户可读写他人会话(IDOR)。
+    auth_guard 已保证这些端点带有效 token（Bearer 或 `?token=`），
+    且身份只在中间件解析一次并写入 `request.state.user`（见 `_auth_user`），
+    所以这里拿到的一定是认证用户本身，不会受请求体影响。
+    任何按 session 操作的端点都必须以它为准，否则任意登录用户可读写他人会话(IDOR)
+    —— 注意实现比"宽松放行"更严：属主不匹配一律 403，**没有**任何
+    "匿名/遗留会话放行"的分支（早期注释这么写过，但代码从未如此）。
     """
     row = get_session_store().get(session_id)
     if not row:
@@ -1018,7 +1054,7 @@ async def upload_whitebox_video(request: Request):
         upload_for_video_generation,
     )
 
-    # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_HEALTH_PUBLIC` 里，
+    # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_PUBLIC_PATHS` 里，
     # 所以本端点自动要求有效 token——不需要（也不能）在这里手动调它。
     #
 
