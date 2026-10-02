@@ -1157,9 +1157,19 @@ def _run_video(session_id: str, user_id: str, user_input: str, images: list, scr
 
     `reference_video` 非空时走**参考驱动**（白模录像复刻运镜与走位）——
     这就是 `/api/video/whitebox` 上传后拿到的 `mm_file://{file_id}` 的去处。
+
+    ⚠️ **必须在这里 `set_context`**：后台线程不继承请求上下文，
+    而 `runtime_settings` 读取运行时设置靠的是 threading.local / ContextVar。
+    不设的话这一线程会用 `_global` 的设置，导致：
+      · 用全局（而非该用户）的 API Key 与本地服务端点；
+      · 产物按 `_global` 归类，落进错误的输出目录；
+      · IP-Adapter 等"按用户"的缓存键退化成同一个值。
+    实测过这类症状（产物落 `_global/`）。用 try/finally 保证线程结束前复位。
     """
     from app.core.config import settings
+    from app.services.runtime_settings import set_context as _rs_set_ctx
 
+    _rs_set_ctx(user_id, session_id)
     store = get_session_store()
     try:
         out, produced = get_video_service().synthesize(
@@ -1177,6 +1187,20 @@ def _run_video(session_id: str, user_id: str, user_input: str, images: list, scr
         payload["video"] = {"dir_or_path": "", "produced": 0, "error": redact(str(exc))}
         store.save(session_id, user_id, user_input, row.get("status", "done"),
                    row.get("phase", "done"), payload)
+    finally:
+        # 线程结束前复位，避免"设置跟着线程泄漏"
+        _rs_reset_for_thread()
+
+
+def _rs_reset_for_thread() -> None:
+    """把当前线程的运行时设置上下文复位。
+
+    独立成函数是为了**可测**：测试可以直接调它验证复位行为，
+    而不必真的起一个视频合成线程（那需要 ffmpeg 和几分钟）。
+    """
+    from app.services.runtime_settings import set_user as _set_user
+
+    _set_user(None)
 
 
 @app.post("/api/crew/reassess/{session_id}")
@@ -1249,6 +1273,11 @@ def retry_shots(session_id: str, request: Request, body: dict | None = None):
     store.save(session_id, user_id, row.get("user_input", ""), row["status"], "retry_quality", payload)
 
     def _do_retry():
+        # 后台线程不继承请求上下文 → 必须显式设，否则会用 `_global` 的设置
+        # （他人的 API Key、错误的输出目录、退化的按用户缓存键）。见 `_run_video`。
+        from app.services.runtime_settings import set_context as _rs_set_ctx
+
+        _rs_set_ctx(user_id, session_id)
         try:
             from app.agents.image_generator import ImageGenerator
             from app.agents.quality_assessor import QualityAssessor
@@ -1304,6 +1333,8 @@ def retry_shots(session_id: str, request: Request, body: dict | None = None):
             cur["_retry_progress"] = {"state": "error", "message": redact(str(exc)),
                                       "total": len(shot_ids), "done": 0, "shot_ids": shot_ids}
             store.save(session_id, user_id, row.get("user_input", ""), row["status"], "retry_quality", cur)
+        finally:
+            _rs_reset_for_thread()
 
     threading.Thread(target=_do_retry, daemon=True).start()
     return {"status": "accepted", "session_id": session_id, "retried": shot_ids}
