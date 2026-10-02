@@ -90,8 +90,12 @@ export const usePrevis = create<PrevisState>((set) => ({
         name: `角色 ${st.scene.actors.length + 1}`,
         position: [0, 0, 0],
         yaw: 0,
-        size: [0.5, 1.7, 0.3],
-        color: '#f0b23d',
+        scale: 1,
+        pose: 'idle',
+        poseSpeed: 1,
+        // 相位错开，避免多人走路完全同步（那看起来像复制粘贴）
+        posePhase: (st.scene.actors.length * 0.37) % 1,
+        color: ['#c8f04a', '#f0b23d', '#e8736a', '#61d6a0'][st.scene.actors.length % 4],
       };
       return {
         scene: { ...st.scene, actors: [...st.scene.actors, a] },

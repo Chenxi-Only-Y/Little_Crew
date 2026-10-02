@@ -19,6 +19,7 @@ import Scene3D, { three } from './Scene3D';
 import { usePrevis } from './store';
 import { exportShot, exportDepth, dataUrlToBlob, type DepthPolarity } from './exporter';
 import { sampleCamera, type PrevisScene, type Vec3 } from './types';
+import { POSE_PRESETS } from './humanoid';
 import { getToken } from '../api/auth';
 import { loadProject, listProjects, saveProject, type ProjectSummary } from '../api/projects';
 
@@ -644,13 +645,58 @@ export default function PrevisPage() {
               step={5}
               onChange={(v) => usePrevis.getState().updateActor(selActor.id, { yaw: (v * Math.PI) / 180 })}
             />
-            <Vec3Field
-              label="体量（宽/高/厚）"
-              value={selActor.size}
+            <NumField
+              label="身高倍"
+              value={selActor.scale}
               step={0.05}
-              onChange={(v) => usePrevis.getState().updateActor(selActor.id, { size: v })}
+              onChange={(v) => usePrevis.getState().updateActor(selActor.id, { scale: Math.max(0.3, v) })}
             />
-            <div className="hint">白模不需要像人，一个柱体足够表达占位与体量。</div>
+
+            <label style={{ fontSize: 11, color: 'var(--s-violet-mid)', display: 'block', marginTop: 8 }}>
+              肢体动作
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+              {POSE_PRESETS.map((p) => (
+                <button
+                  key={p.key}
+                  className="btn ghost"
+                  style={{
+                    fontSize: 11,
+                    padding: '3px 7px',
+                    borderColor: selActor.pose === p.key ? 'var(--s-lime)' : undefined,
+                    color: selActor.pose === p.key ? 'var(--s-lime)' : undefined,
+                  }}
+                  onClick={() => usePrevis.getState().updateActor(selActor.id, { pose: p.key })}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {(selActor.pose === 'walk' || selActor.pose === 'run') && (
+              <>
+                <NumField
+                  label="速度"
+                  value={selActor.poseSpeed}
+                  step={0.1}
+                  onChange={(v) =>
+                    usePrevis.getState().updateActor(selActor.id, { poseSpeed: Math.max(0.1, v) })
+                  }
+                />
+                <NumField
+                  label="相位"
+                  value={selActor.posePhase}
+                  step={0.05}
+                  onChange={(v) =>
+                    usePrevis.getState().updateActor(selActor.id, { posePhase: v })
+                  }
+                />
+                <div className="hint">
+                  相位让多人不要完全同步走路（0~1）。动作随时间自动推进，
+                  导出序列里会自然循环，不需要逐帧摆。
+                </div>
+              </>
+            )}
           </Section>
         )}
 

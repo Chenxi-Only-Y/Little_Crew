@@ -13,7 +13,15 @@
 
 export type Vec3 = [number, number, number];
 
-/** 人物块：白模不需要像人，胶囊/圆柱足够表达占位与体量 */
+/** 姿势预设（实现见 humanoid.ts） */
+export type PosePreset = 'idle' | 'walk' | 'run' | 'sit' | 'wave' | 'point';
+
+/** 人物块：**人形骨架**，可摆姿态。
+ *
+ * 为什么不再用圆柱：圆柱只能表达"人在那"，表达不了"人在干什么"。
+ * 视频模型最难自己编的正是**动作**（手往哪伸、腿怎么迈、转身还是停顿），
+ * 所以白模必须能摆出肢体动作。
+ */
 export interface Actor {
   id: string;
   name: string;
@@ -21,9 +29,15 @@ export interface Actor {
   position: Vec3;
   /** 朝向（绕 Y 轴，弧度；0 = 面向 -Z，即面向默认相机） */
   yaw: number;
-  /** [宽, 高, 厚]（世界单位） */
-  size: Vec3;
-  /** 显示颜色（**仅编辑器内用于区分**，导出时一律渲染成纯白剪影） */
+  /** 人体缩放（1.0 = 身高约 1.7 米） */
+  scale: number;
+  /** 姿势预设 */
+  pose: PosePreset;
+  /** 动作速度倍率（仅对循环姿态 walk/run 有意义） */
+  poseSpeed: number;
+  /** 相位偏移 0~1：让多个人不要完全同步走路 */
+  posePhase: number;
+  /** 显示颜色（**仅编辑器内用于区分**，导出时一律渲染成纯白/灰度） */
   color: string;
 }
 
@@ -83,7 +97,10 @@ export const DEFAULT_SCENE: PrevisScene = {
       name: '角色 A',
       position: [0, 0, 0],
       yaw: 0,
-      size: [0.5, 1.7, 0.3],
+      scale: 1,
+      pose: 'idle',
+      poseSpeed: 1,
+      posePhase: 0,
       color: '#c8f04a',
     },
   ],

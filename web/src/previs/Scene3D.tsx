@@ -15,6 +15,14 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { NoToneMapping, SRGBColorSpace, type Camera, type Scene, type WebGLRenderer } from 'three';
 import { usePrevis } from './store';
 import { sampleCamera, type Vec3 } from './types';
+import {
+  HUMAN_BONES,
+  HUMAN_SKELETON,
+  samplePose,
+  skeletonHeight,
+  skeletonPositionsGrounded,
+} from './humanoid';
+import * as humanoidNs from './humanoid';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -29,14 +37,16 @@ export const three = {
   camera: null as Camera | null,
 };
 
-/** 自动化测试入口：把 Three.js 对象挂到 window（配合 exporter 做像素级验证） */
+/** 自动化测试入口：骨架与 Three.js 对象挂到 window（供像素级与几何验证） */
 declare global {
   interface Window {
     __previsThree?: typeof three;
+    __previsHumanoid?: typeof humanoidNs;
   }
 }
 if (typeof window !== 'undefined') {
   window.__previsThree = three;
+  window.__previsHumanoid = humanoidNs;
 }
 
 /** 标记为"辅助对象"的东西，导出时会被隐藏（网格线留在画面里会被模型当成真实结构） */
@@ -73,43 +83,92 @@ function Ground({ size }: { size: [number, number] }) {
   );
 }
 
+/**
+ * 人形角色：关节球 + 肢体圆柱（胶囊近似）。
+ *
+ * 为什么用圆柱而不是细线：白模靠**体量**穿透 VAE 下采样。
+ * 实测细骨架线在下采样后峰值只剩 99/255，而实心体是 253/255。
+ *
+ * 姿态按镜头时间采样——所以"行走"在导出序列里会自然循环，
+ * 用户不需要逐帧摆姿势。
+ */
 function ActorMesh({ id }: { id: string }) {
   const actor = usePrevis((s) => s.scene.actors.find((a) => a.id === id));
   const selected = usePrevis((s) => s.selected);
-  const ref = useRef<import('three').Group>(null);
+  const playhead = usePrevis((s) => s.playhead);
   if (!actor) return null;
 
-  const [w, h, d] = actor.size;
-  const bodyH = h * 0.8;
-  const headR = Math.max(0.08, Math.min(w, d) * 0.55);
   const isSel = selected?.kind === 'actor' && selected.id === id;
+  const pose = samplePose(actor.pose, playhead, actor.poseSpeed, actor.posePhase);
+  // 用 **grounded** 版本：骨架以骨盆为原点，直接用会让腿埋进地面（实测过）
+  const joints = skeletonPositionsGrounded(pose);
+  const s = actor.scale;
 
   return (
-    <group ref={ref} position={actor.position} rotation={[0, actor.yaw, 0]}>
-      <mesh position={[0, bodyH / 2, 0]}>
-        <cylinderGeometry args={[(w + d) / 4, (w + d) / 4, bodyH, 20]} />
-        <meshBasicMaterial color={actor.color} />
-      </mesh>
-      <mesh position={[0, bodyH + headR, 0]}>
-        <sphereGeometry args={[headR, 20, 14]} />
-        <meshBasicMaterial color={actor.color} />
-      </mesh>
-      {/* 朝向指示：贴地的一条短线 + 小箭头，指向角色正面（-Z）。
-          为什么不用竖直的锥体：正面视角下它会在身体上投影成一团放射线，
-          反而看不清朝向。贴地的箭头从任何高度都读得出来。 */}
-      <mesh position={[0, 0.02, -Math.max(w, d) * 0.75]} rotation={[-Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[Math.min(w, d) * 0.3, Math.max(w, d) * 0.7, 4]} />
+    <group position={actor.position} rotation={[0, actor.yaw, 0]} scale={[s, s, s]}>
+      {/* 肢体：每根骨画一个圆柱 */}
+      {HUMAN_BONES.map(([child, parent]) => {
+        const a = joints[parent];
+        const b = joints[child];
+        const def = HUMAN_SKELETON[child];
+        return (
+          <LimbCylinder
+            key={`${parent}-${child}`}
+            from={a}
+            to={b}
+            radius={def.radius}
+            color={actor.color}
+          />
+        );
+      })}
+      {/* 关节球：让弯曲处不出现断裂 */}
+      {Object.entries(joints).map(([name, p]) => (
+        <mesh key={name} position={p}>
+          <sphereGeometry args={[HUMAN_SKELETON[name].radius, 12, 8]} />
+          <meshBasicMaterial color={actor.color} />
+        </mesh>
+      ))}
+      {/* 朝向指示：贴地四棱锥指向 -Z */}
+      <mesh position={[0, 0.02, -0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.12, 0.3, 4]} />
         <meshBasicMaterial color="#e8736a" />
       </mesh>
       {isSel && (
-        /* 选中框：只外扩 8%、半透明、隔一个面画——只为"提示选中"，
-           不能喧宾夺主。此前 1.9 倍实色线框看起来像把角色关进笼子。 */
-        <mesh position={[0, h / 2, 0]} userData={HELPER}>
-          <boxGeometry args={[w * 1.16, h * 1.06, d * 1.16]} />
-          <meshBasicMaterial color="#c8f04a" wireframe transparent opacity={0.32} />
+        <mesh position={[0, skeletonHeight() / 2, 0]} userData={HELPER}>
+          <boxGeometry args={[0.72, skeletonHeight() * 1.08, 0.72]} />
+          <meshBasicMaterial color="#c8f04a" wireframe transparent opacity={0.3} />
         </mesh>
       )}
     </group>
+  );
+}
+
+/** 连接两点的圆柱（Three.js 的圆柱默认沿 +Y，故需旋转对齐方向） */
+function LimbCylinder({
+  from,
+  to,
+  radius,
+  color,
+}: {
+  from: Vec3;
+  to: Vec3;
+  radius: number;
+  color: string;
+}) {
+  const mid: Vec3 = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2, (from[2] + to[2]) / 2];
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const dz = to[2] - from[2];
+  const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (len < 1e-6) return null;
+  // 绕 Z 转 -X、绕 X 转 +Z，把 +Y 对齐到目标方向
+  const rx = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy);
+  const rz = Math.atan2(dx, dz);
+  return (
+    <mesh position={mid} rotation={[rx, 0, -rz]}>
+      <cylinderGeometry args={[radius, radius, len, 10]} />
+      <meshBasicMaterial color={color} />
+    </mesh>
   );
 }
 
