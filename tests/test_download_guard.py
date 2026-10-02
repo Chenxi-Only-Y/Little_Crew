@@ -52,7 +52,39 @@ def test_remote_download_rejects_loopback_by_default(local_service):
                  context="远端下载", timeout=5)
 
 
-def test_video_download_helper_is_mockable_and_guarded():
+def test_local_download_bypasses_system_proxy(local_service, monkeypatch):
+    """连本机时**必须绕开系统代理**。
+
+    ⚠️ 这条来自实测踩坑：httpx 默认 `trust_env=True`，会读系统/环境里的代理
+    设置（本机实测：Windows 注册表把 http/https 都指向 `127.0.0.1:7890`）。
+    开着 Clash 之类的工具时，**连 `127.0.0.1` 的请求也被送去代理**，
+    于是本地推理服务（local-gen，默认 `127.0.0.1:8100`）的产物取不回来——
+    表现为"本地生图/生视频莫名其妙失败"，而代码看着完全正常。
+
+    这里人为把代理指向一个**必然连不上**的端口：若 safe_get 仍走代理，
+    请求会失败；绕开代理则本地服务能正常响应。
+    """
+    import socket
+
+    # 占一个端口再立刻关掉 → 该端口上几乎必然没有服务在听
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    dead_port = s.getsockname()[1]
+    s.close()
+
+    for var in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
+                "http_proxy", "https_proxy", "all_proxy"):
+        monkeypatch.setenv(var, f"http://127.0.0.1:{dead_port}")
+    monkeypatch.setenv("NO_PROXY", "")
+    monkeypatch.setenv("no_proxy", "")
+
+    r = safe_get(f"http://127.0.0.1:{local_service}/a.png",
+                 context="本地下载", timeout=5, allow_local=True)
+    assert r.status_code == 200
+    assert b"PNG-LOCAL-OK" in r.content, (
+        "本地下载走了系统代理 —— 开着代理工具时本地推理会失败"
+    )
+
     """`VideoService._download` 必须存在且带 SSRF 校验。
 
     它是一个**方法**而不是内联代码，理由有二：

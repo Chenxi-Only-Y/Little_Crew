@@ -131,6 +131,20 @@ def safe_get(url: str, *, context: str = "下载", allow_local: bool = False, **
     timeout = opts.pop("timeout", 60)
 
     current = assert_public_url(url, context=context, allow_local=allow_local)
+    # ⚠️ 连本机地址时**必须绕开环境里的代理**。
+    #
+    # httpx 默认 `trust_env=True`，会读 `HTTP_PROXY` / `ALL_PROXY` 等环境变量。
+    # 挂着 Clash / 类似工具时这些变量指向本地代理端口，于是**连 127.0.0.1
+    # 的请求也被送去代理**——本地推理服务（local-gen，默认 127.0.0.1:8100）
+    # 的产物就取不回来了。实测：梯子开着时 `safe_get("http://127.0.0.1:...")`
+    # 会走到代理并失败。
+    #
+    # 对回环地址而言，代理**没有任何意义**（就在同一台机器上），
+    # 所以这里直接禁用 trust_env；其余地址保持默认行为（用户可能确实需要代理）。
+    _origins = {urlparse(current).hostname or ""}
+    use_env = not (_origins & {"localhost", "127.0.0.1", "::1", "0.0.0.0"})
+    opts["trust_env"] = use_env
+
     for _ in range(_MAX_REDIRECTS):
         resp = httpx.get(current, timeout=timeout, **opts)
         if resp.status_code not in (301, 302, 303, 307, 308):
@@ -144,4 +158,8 @@ def safe_get(url: str, *, context: str = "下载", allow_local: bool = False, **
         current = assert_public_url(
             nxt, context=f"{context}（重定向后）", allow_local=allow_local
         )
+        # 跳转后若落到本机，同样不该走代理
+        if (urlparse(current).hostname or "") in {
+                "localhost", "127.0.0.1", "::1", "0.0.0.0"}:
+            opts["trust_env"] = False
     raise ValueError(f"{context} 重定向次数超过 {_MAX_REDIRECTS}，已中止")
