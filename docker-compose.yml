@@ -1,4 +1,11 @@
-version: "3.8"
+# 小剧组 Little Crew —— 后端 API + 导演台
+#
+# 用法：docker compose up --build
+#   导演台  http://127.0.0.1:8080   （nginx 静态产物 + 反代 /api 到 api:8000）
+#   后端    http://127.0.0.1:8000/docs
+#
+# 注意：已不再写 `version:` —— Compose v2 起该属性废弃，
+# 存在只会被忽略并打警告（会让人误以为版本被遵守了）。
 
 services:
   # 后端 API（FastAPI 异步任务 + HITL + 持久化）
@@ -19,16 +26,34 @@ services:
       timeout: 5s
       retries: 5
 
-  # 导演台（React + Vite）**不在本文件里**。
+  # 导演台（React + Vite，多阶段构建 → nginx 托管静态产物 + 反代 /api）
   #
-  # 原先这里跑 Streamlit（frontend/），那个前端已删除。
-  # 新前端是 Vite 应用，要放进 compose 就得加一个 Node 构建阶段
-  # （多阶段 Dockerfile + 静态托管），属于独立改动，没顺手塞进来。
-  #
-  # 需要容器化前端时，两种做法：
-  #   1) 本机跑 `cd web && pnpm run dev`（默认 5183，已代理 /api 到 8000）；
-  #   2) 用 nginx 托管 `pnpm run build` 产物，并把 /api 反代到 api:8000。
-  # 见 README「启动」一节。
+  # 为什么 context 是仓库根而不是 ./web：
+  #   Dockerfile 要 `COPY web/package.json`，从 web/ 作上下文就找不到它。
+  #   根 .dockerignore 已排除 node_modules/，不会把本机依赖塞进构建上下文。
+  frontend:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        # 覆盖 npm 源（默认官方源）。国内网络下拉不动时指向可达的镜像，例如：
+        #   NPM_REGISTRY=https://registry.npmmirror.com/ docker compose build frontend
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org/}
+    depends_on:
+      api:
+        # 等后端**健康**再起：nginx 一启动就要反代 /api，
+        # 后端没就绪会让首次访问拿到 502。
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    healthcheck:
+      # 用 `--spider`（只发请求、不读正文）。
+      # 不用 `wget -qO-`：它会把正文写到 stdout，而健康检查里没人读那个管道，
+      # 服务器返回 200 时反倒可能以退出码 8（写失败）结束 → 健康检查永远不过。
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
 volumes:
   crew-data:

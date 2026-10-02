@@ -1,7 +1,10 @@
 # 小剧组 (Little Crew) — 后端镜像
 #
-# 只打后端。导演台（React + Vite）要容器化需另加 Node 构建阶段，
-# 见 docker-compose.yml 的说明。
+# 只打后端。导演台（React + Vite）见 web/Dockerfile（多阶段 + nginx）。
+#
+# ⚠️ 本仓库所在环境**无法访问 registry-1.docker.io**（实测超时），
+#   所以本机 `docker compose build` 会卡在拉取基础镜像。
+#   需要配置镜像加速器/代理后再构建。
 FROM python:3.11-slim
 
 WORKDIR /app

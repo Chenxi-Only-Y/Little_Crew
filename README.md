@@ -192,12 +192,26 @@ pnpm run dev                        # http://127.0.0.1:5183
 所以前后端同源、无需处理 CORS。
 
 ```bash
-# 只起后端（Docker）
-docker compose up --build           # http://127.0.0.1:8000
+# Docker 一键起后端 + 导演台
+docker compose up --build
+#   导演台  http://127.0.0.1:8080
+#   后端    http://127.0.0.1:8000/docs
 ```
 
-> `docker-compose.yml` **只含后端**。导演台要容器化需另加 Node 构建阶段
-> （多阶段 Dockerfile + 静态托管），见该文件内的说明。
+容器化的做法与几个取舍：
+
+| 项 | 做法 | 为什么 |
+| --- | --- | --- |
+| 前端镜像 | **多阶段**：`node:22-alpine` 里 `pnpm build` → `nginx:alpine` 托管 `dist` | 后端镜像不必多背一个 Node 运行时与整套 devDeps |
+| 构建上下文 | **仓库根**（`context: .` + `dockerfile: web/Dockerfile`） | Dockerfile 要 `COPY web/package.json`，从 `web/` 作上下文找不到 |
+| `/api` 反代 | nginx `proxy_pass http://api:8000` | 保持**同源**：前端代码里全是相对路径 `/api/...`，同源就不用处理 CORS，也不用分"开发走 vite 代理、生产走别的" |
+| SSE | `proxy_buffering off` + `proxy_read_timeout 3600s` | `/api/sessions/{id}/events` 是长连接事件流。不关缓冲的话事件会被 nginx 攒着不发，界面进度看起来"卡住不动"，而后端日志一切正常 |
+| 静态托管 | 交给 nginx，**不塞进 FastAPI** | FastAPI 的鉴权是**全局中间件**；由它托管静态文件的话，未登录访问页面会先被 401 挡住，连登录页都看不到 |
+| 资源缓存 | `assets/` 长期缓存（带内容哈希）、`index.html` 不缓存 | 反过来的话，前端发版后用户仍拿旧 index，而它引用的 assets 已被替换 → 白屏 |
+| 启动顺序 | `depends_on: condition: service_healthy` | nginx 一启动就要反代 `/api`，后端没就绪会让首次访问拿到 502 |
+
+> 上传白模帧序列（15 秒 × 24fps 的 PNG）可能较大，nginx 侧设了
+> `client_max_body_size 128m`，避免被 413 提前拒掉。
 
 ### 4. 模型凭据填在哪
 
