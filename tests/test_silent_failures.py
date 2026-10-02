@@ -378,3 +378,54 @@ def test_url_guard_allows_proxy_fake_ip_but_still_blocks_lan():
         except ValueError:
             continue
         raise AssertionError(f"{bad} 竟然被放行——SSRF 防线被削弱了")
+
+
+# ------------------------------------------------------------------
+# 8. redact 的 fail-closed：深层嵌套不能漏
+# ------------------------------------------------------------------
+
+def test_redact_covers_common_shotgunshapes():
+    """四类实测漏过的形态必须被遮蔽。"""
+    from app.services.logging import redact
+
+    cases = [
+        ('{"api_key": "minimax-secret-value-1234567890"}', "minimax-secret-value"),
+        ('{"token": "abcdef1234567890"}', "abcdef1234567890"),
+        ("api_key=minimax-secret-value-1234567890", "minimax-secret-value"),
+        ("MINIMAX_API_KEY=eyJhbGciOiJIUzI1NiJ9.abc.def", "eyJhbGciOiJIUzI1NiJ9"),
+        ("Authorization: Bearer sk-live-abcdefgh12345678", "sk-live-abcdefgh"),
+        ("sk-proj-ABCDEFGH12345678", "sk-proj-ABCDEFGH"),
+    ]
+    for raw, secret in cases:
+        out = redact(raw)
+        assert secret not in out, f"密钥漏出：{raw!r} → {out!r}"
+
+
+def test_redact_deep_nesting_fails_closed():
+    """超过深度上限时必须**保守遮蔽**，不能原样放过。
+
+    原先写的是 `if depth > 6: return obj`，于是第 7 层往里的
+    `{"api_key": "..."}` 原样通过（实测漏出）。而 provider 的错误体
+    恰恰是深度嵌套的 JSON——正好落在被放弃的那一段。
+    这条测试锁住"宁可遮掉无关键，也不能漏一个密钥"。
+    """
+    from app.services.logging import redact
+
+    deep = {"a": {"b": {"c": {"d": {"e": {"f": {"g": {"api_key": "SUPERSECRET123456"}}}}}}}}
+    out = redact(deep)
+    assert "SUPERSECRET" not in out, f"深层密钥漏出：{out}"
+
+    deep_list = {"a": {"b": {"c": {"d": {"e": {"f": [{"token": "SECRETLIST12345"}]}}}}}}
+    out2 = redact(deep_list)
+    assert "SECRETLIST" not in out2, f"深层列表里的密钥漏出：{out2}"
+
+
+def test_redact_does_not_mangle_benign_text():
+    """遮蔽不能误伤普通内容（否则日志会变得没法读）。"""
+    from app.services.logging import redact
+
+    for ok in ("model=z-image-turbo",
+               "base_url=https://api.deepseek.com/v1",
+               "status=ok",
+               "stage=photographer"):
+        assert redact(ok) == ok, f"普通内容被改动：{ok!r} → {redact(ok)!r}"

@@ -54,9 +54,15 @@ def _scrub_obj(obj, depth: int = 0):
 
     只做正则是不够的：`{"api_key": "minimax-secret-..."}` 里那个值没有任何
     可识别的"密钥前缀"，只能靠键名判定。
+
+    ⚠️ 超过深度上限时**必须保守遮蔽**，不能原样返回。
+    这里原先写的是 `if depth > 6: return obj` —— 于是第 7 层往里的
+    `{"api_key": "..."}` 会**原样通过**（实测确认漏出）。而 provider 的错误体
+    恰恰是深度嵌套的 JSON，正好落在被放弃的那一段。
+    现在改为返回 `"***"`：宁可把无关键也遮掉，也不能漏一个密钥。
     """
     if depth > 6:
-        return obj
+        return "***" if obj is not None else obj
     if isinstance(obj, dict):
         return {
             k: ("***" if _is_secret_key(str(k)) and v else _scrub_obj(v, depth + 1))
