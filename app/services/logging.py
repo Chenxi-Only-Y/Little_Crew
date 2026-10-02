@@ -14,8 +14,12 @@ import re
 
 from app.core.config import settings
 
-#: 参数名里出现这些词，就认为它的值敏感
-_SECRET_KEY_HINTS = ("api_key", "apikey", "api-key", "token", "secret",
+#: 参数名里出现这些词，就认为它的值敏感。
+#:
+#: ⚠️ 比对前会把键名归一化：小写 + 去掉空格/连字符/下划线。
+#: 原先只做 `replace("-", "_")`，于是 `{"api key": "..."}`（带空格）
+#: **原样漏出**（复审实测）。归一化后 `api key` / `API-KEY` / `apiKey` 都能命中。
+_SECRET_KEY_HINTS = ("api_key", "apikey", "token", "secret",
                      "password", "passwd", "authorization", "credential",
                      "access_key", "private_key")
 
@@ -29,24 +33,40 @@ _SECRET_RE = re.compile(
     r"|xox[baprs]-[A-Za-z0-9\-]{10,}"
     # JWT（三段 base64url）——provider 错误体里很常见
     r"|eyJ[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{5,}"
-    # Authorization 头
-    r"|Bearer\s+[A-Za-z0-9._\-]{8,}",
+    # 任意 Authorization 方案（Bearer / Basic / Token / Digest…）
+    # ⚠️ 必须覆盖 Basic：它后面跟的是 base64(user:pass)，
+    # 原先只在 `_SECRET_RE` 里处理 `Bearer\s+...`，而 `_KV_RE` 会先把
+    # `Authorization:` 的**参数名**换成 `***`、使 `Bearer` 一起消失，
+    # 结果 base64 凭据原样留在日志里（复审实测）。
+    r"|(?<=Authorization:\s)(?:Bearer|Basic|Token|Digest|ApiKey)\s+[A-Za-z0-9._\-+/=]{6,}",
+    re.IGNORECASE,
+)
+
+#: `Authorization: <scheme> <credential>` —— 整体遮蔽（不依赖上面的 lookbehind）
+_AUTH_RE = re.compile(
+    r"(?P<name>[\"']?authorization[\"']?\s*[=:]\s*)"
+    r"(?P<val>(?:Bearer|Basic|Token|Digest|ApiKey)\s+[A-Za-z0-9._\-+/=]{6,})",
     re.IGNORECASE,
 )
 
 #: `key=value` / `key: value` —— 值**可带引号也可不带**
 #: 原先只匹配带引号的值，于是 `api_key=minimax-secret-value` 原样漏出。
 _KV_RE = re.compile(
-    r"(?P<name>[\"']?(?:api[_-]?key|apikey|token|secret|password|passwd|"
-    r"authorization|credential|access[_-]?key|private[_-]?key)[\"']?\s*[=:]\s*)"
+    r"(?P<name>[\"']?(?:api[ _-]?key|apikey|token|secret|password|passwd|"
+    r"authorization|credential|access[ _-]?key|private[ _-]?key)[\"']?\s*[=:]\s*)"
     r"(?P<val>\"[^\"]{4,}\"|'[^']{4,}'|[^\s,;&}\)\]\}]{4,})",
     re.IGNORECASE,
 )
 
 
 def _is_secret_key(name: str) -> bool:
-    n = name.lower().replace("-", "_")
-    return any(h.replace("-", "_") in n for h in _SECRET_KEY_HINTS)
+    """键名是否表示敏感值。
+
+    归一化：小写 + 去掉空格/连字符/下划线，这样
+    `api key` / `API-KEY` / `apiKey` / `api_key` 全部命中。
+    """
+    n = re.sub(r"[\s\-_]", "", str(name).lower())
+    return any(re.sub(r"[\s\-_]", "", h) in n for h in _SECRET_KEY_HINTS)
 
 
 def _scrub_obj(obj, depth: int = 0):
@@ -102,9 +122,13 @@ def redact(text) -> str:
         except (ValueError, TypeError):
             pass  # 不是合法 JSON，继续走文本路径
 
-    # 3) key=value（含无引号值）；用函数保留参数名，只替换值
+    # 3) Authorization 头**先单独处理**：它整体是 `<scheme> <credential>`，
+    #    若交给下面的 `_KV_RE`，它只会把参数名换成 ***、连 `Bearer`/`Basic`
+    #    一起吃掉，剩下的 base64 凭据就漏了。
+    out = _AUTH_RE.sub(lambda m: f"{m.group('name')}***", out)
+    # 4) 其余 key=value（含无引号值）；保留参数名，只替换值
     out = _KV_RE.sub(lambda m: f"{m.group('name')}***", out)
-    # 4) 独立形态
+    # 5) 独立形态（各家前缀 / JWT / 任意 scheme 的 Authorization）
     out = _SECRET_RE.sub("***", out)
     return out
 

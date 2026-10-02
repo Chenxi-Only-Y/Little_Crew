@@ -146,18 +146,23 @@ async def decrypt_error_handler(request: Request, exc: DecryptError):
 
     用异常处理器而不是在每个调用点 try/except：这是**环境级**故障，
     会从多个路径抛出（`put_settings`、`link_platform`、以及将来任何写设置的
-    地方），集中处理才不会漏。状态码 500（服务端配置问题，非客户端错误），
-    但 `message` 带上原因与下一步。
+    地方），集中处理才不会漏。
+
+    ⚠️ 对外文案**不能原样回显异常字符串**：里面含服务端文件系统的**绝对路径**
+    与内部类名（例如 `密钥文件不可用：C:\\Users\\...\\.little_crew.key（ValueError）`）。
+    那既泄漏部署结构、对用户也毫无帮助（他关心的是"该做什么"，不是路径）。
+    所以：详细原因只进日志，对外只给**固定文案 + 可操作 hint**。
     """
-    detail = redact(str(exc))
-    logger.error("settings storage error on %s: %s", request.url.path, detail)
+    logger.error("settings storage error on %s: %s",
+                 request.url.path, redact(str(exc)), exc_info=exc)
     return JSONResponse(
         status_code=500,
         content={
             "status": "error",
-            "message": detail,
+            "message": "本地加密数据无法读取或写入，本次操作已中止（未改动任何数据）。",
             "hint": "这是本地数据加密/密钥问题，不是操作错误。"
-                    "请检查 data/.little_crew.key 是否被替换或删除。",
+                    "请检查 data/.little_crew.key 是否被替换或删除；"
+                    "详细原因见服务端日志。",
         },
     )
 
@@ -549,13 +554,14 @@ async def list_projects(request: Request):
 async def create_project(payload: dict, request: Request):
     """保存工程。
 
-    body: {name, canvas:{nodes,edges,viewport}, settings_snapshot?, project_id?}
+    body: {name, canvas:{nodes,edges,viewport}, settings_snapshot?, project_id?, force?}
     `project_id` 存在则覆盖该工程（用于"另存/更新"）。
+    `force=true` 才允许覆盖一份**解不开**的既有工程（需用户明确确认）。
     """
     uid = _auth_user(request)
     if not uid:
         raise HTTPException(status_code=401, detail="未登录")
-    from app.services.project_store import get_project_store
+    from app.services.project_store import ProjectUnreadable, get_project_store
 
     body = payload or {}
     try:
@@ -565,23 +571,35 @@ async def create_project(payload: dict, request: Request):
             canvas=body.get("canvas") or {},
             settings_snapshot=_mask_for_project(body.get("settings_snapshot") or {}),
             project_id=body.get("project_id") or None,
+            allow_overwrite_unreadable=bool(body.get("force")),
         )
     except ValueError as exc:            # 体积超限等
         raise HTTPException(status_code=413, detail=str(exc)) from exc
     except PermissionError as exc:       # 覆盖他人工程
         raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ProjectUnreadable as exc:     # 覆盖读不懂的旧工程 → 需显式确认
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return {"status": "ok", **summary}
 
 
 @app.get("/api/projects/{project_id}")
 async def get_project(project_id: str, request: Request):
-    """读取工程。不存在或不属于当前用户都返回 404（不暴露他人工程 id）。"""
+    """读取工程。不存在或不属于当前用户都返回 404（不暴露他人工程 id）。
+
+    ⚠️ 若工程存在但**解不开**，返回 409 而不是"空工程"。
+    返回空工程会让用户以为工程本来就是空的、随手保存一次就把**能救回**的数据
+    永久覆盖（原先就是 `except: doc = {}`）。409 的 detail 会说明要修
+    `.little_crew.key`。见 `ProjectUnreadable`。
+    """
     uid = _auth_user(request)
     if not uid:
         raise HTTPException(status_code=401, detail="未登录")
-    from app.services.project_store import get_project_store
+    from app.services.project_store import ProjectUnreadable, get_project_store
 
-    doc = get_project_store().get(project_id, uid)
+    try:
+        doc = get_project_store().get(project_id, uid)
+    except ProjectUnreadable as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     if not doc:
         raise HTTPException(status_code=404, detail="工程不存在")
     return {"status": "ok", "project": doc}
@@ -1162,7 +1180,7 @@ def _run_video(session_id: str, user_id: str, user_input: str, images: list, scr
 
 
 @app.post("/api/crew/reassess/{session_id}")
-async def reassess_quality(session_id: str, request: Request):
+def reassess_quality(session_id: str, request: Request):
     """对已有会话的图片重新跑一遍 QualityAssessor，更新 quality_report（不重跑工作流）。
 
     供「质检总监」独立页的『重新评估』按钮调用；仅做展示/手动触发，不改动自动流程。
@@ -1193,7 +1211,7 @@ async def reassess_quality(session_id: str, request: Request):
 
 
 @app.post("/api/crew/retry/{session_id}")
-async def retry_shots(session_id: str, request: Request, body: dict | None = None):
+def retry_shots(session_id: str, request: Request, body: dict | None = None):
     """对已有会话精确重排被点选的镜头（body.shot_ids），其它镜头保持原图。
 
     异步执行：立即返回 accepted，后台线程逐镜重排并在 payload._retry_progress 更新进度，
@@ -1292,7 +1310,7 @@ async def retry_shots(session_id: str, request: Request, body: dict | None = Non
 
 
 @app.post("/api/crew/review/{session_id}")
-async def re_review(session_id: str, request: Request):
+def re_review(session_id: str, request: Request):
     """对已有会话的剧本重新跑一遍 ScriptCritic，更新 critic_report（不重跑工作流）。
 
     供「文学策划」独立页『重新审查』按钮调用；仅做展示/手动触发，不改动自动流程。
@@ -1342,7 +1360,7 @@ async def review_history(session_id: str, request: Request):
 
 
 @app.post("/api/crew/scene/{session_id}")
-async def regen_scenes(session_id: str, request: Request, body: dict | None = None):
+def regen_scenes(session_id: str, request: Request, body: dict | None = None):
     """对已有会话重新生成场景氛围参考图。
 
     body 可选：{scene_ids: [...]} 指定只重做部分场景；缺省则重做全部场景。
@@ -1399,7 +1417,7 @@ async def regen_scenes(session_id: str, request: Request, body: dict | None = No
 
 
 @app.post("/api/crew/rhythm/{session_id}")
-async def replan_rhythm(session_id: str, request: Request, body: dict | None = None):
+def replan_rhythm(session_id: str, request: Request, body: dict | None = None):
     """对已有会话重新规划镜头节奏（RhythmDirector），写回 storyboard 时长。
 
     body 可选：{overrides: {shot_id: duration}} 手动调整指定镜头时长；
@@ -1459,7 +1477,7 @@ async def replan_rhythm(session_id: str, request: Request, body: dict | None = N
 
 
 @app.post("/api/crew/continuity/{session_id}")
-async def check_continuity(session_id: str, request: Request, body: dict | None = None):
+def check_continuity(session_id: str, request: Request, body: dict | None = None):
     """对已有会话的完整分镜做连续性(穿帮)检查，更新 continuity_report。
 
     供「场记」独立页『重新检查』调用；仅检查、不改动分镜。
@@ -1487,7 +1505,7 @@ async def check_continuity(session_id: str, request: Request, body: dict | None 
 
 
 @app.post("/api/crew/publish/{session_id}")
-async def publish_crew(session_id: str, request: Request, body: dict | None = None):
+def publish_crew(session_id: str, request: Request, body: dict | None = None):
     """把成片发布到选定平台（Distributor）。
 
     body 可选：{platforms: [...], meta: {title, description, tags}}

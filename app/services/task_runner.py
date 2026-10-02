@@ -230,6 +230,40 @@ def _run_stream(job_input, session_id: str, user_id: str, user_input: str) -> No
             _THINKING.pop(session_id, None)
 
 
+#: 允许由调用方"预置"进 State 的键（白名单）。
+#:
+#: ⚠️ 为什么必须白名单而不是 `state.update(seed)` 全收：
+#:   `seed` 来自请求体，而 State 里有 `run_context`（决定**以谁的身份**读设置、
+#:   用谁的 API Key、产物写谁的目录）。无白名单时攻击者可传
+#:   `{"run_context": {"user_id": "受害者"}}` 直接改写身份（已实测）。
+#:   除身份外，`images`/`scripts`/`character_reference_images` 等键也会影响
+#:   真实调用（例如让服务端去下载任意地址），所以同样不能任意注入。
+#:
+#: 这里只留**测试/调试真正需要**的几个中性键；其余一律丢弃并记警告。
+_ALLOWED_SEED_KEYS = frozenset({
+    "user_input", "topic", "style", "aspect_ratio", "video_seconds",
+    "mock", "dry_run", "feedback", "notes",
+})
+
+
+def _sanitize_seed(seed: dict) -> dict:
+    """只保留白名单内的 seed 键；拒绝 `run_context` 等敏感键并记录。
+
+    白名单之外的键**直接丢弃**（不报错——seed 本身是可选调试入口，
+    为了一个未知键让整次运行失败不划算），但会留下 warning 便于排查
+    "为什么我的 seed 没生效"。
+    """
+    if not isinstance(seed, dict):
+        logger.warning("[task] seed 不是 dict（%s），已忽略", type(seed).__name__)
+        return {}
+    allowed = {k: v for k, v in seed.items() if k in _ALLOWED_SEED_KEYS}
+    rejected = sorted(set(seed) - _ALLOWED_SEED_KEYS)
+    if rejected:
+        logger.warning("[task] seed 里有 %d 个键被白名单拒绝：%s",
+                       len(rejected), ", ".join(rejected[:8]))
+    return allowed
+
+
 def start_run(session_id: str, user_input: str, user_id: str = "anon", seed: dict | None = None) -> None:
     """异步启动一次创作（可带 seed：已有中间产物则跳过对应环节）。"""
     store = get_session_store()
@@ -250,10 +284,23 @@ def start_run(session_id: str, user_input: str, user_id: str = "anon", seed: dic
     state = {
         "user_input": user_input,
         "session_id": session_id,
-        "run_context": RunContext(user_id=user_id, session_id=session_id).as_dict(),
     }
     if seed:
-        state.update(seed)
+        state.update(_sanitize_seed(seed))
+    # ⚠️ run_context 必须**最后**写，且不接受 seed 里的值。
+    #
+    # 原先的顺序是 `state["run_context"] = RunContext(user_id=user_id, ...)`
+    # 再 `state.update(seed)` —— 而 seed 来自请求体（`payload["seed"]`）。
+    # 于是攻击者可以传
+    #     seed={"run_context": {"user_id": "受害者"}}
+    # 覆盖掉服务端刚设好的身份，下游 `context.bind()` 会
+    # `rs.set_context("受害者", ...)`，造成：
+    #   · 以受害者的设置/API Key 发起真实请求（花他的钱）；
+    #   · 产物写进受害者的输出目录；
+    #   · 还能借 `images`/`character_reference_images` 等键影响流程。
+    # 实测确认过这条链（产物确实落在了他人的 uid 目录下）。
+    # 身份只能由服务端按**已认证用户**决定，任何"客户端可指定身份"的口子都要堵死。
+    state["run_context"] = RunContext(user_id=user_id, session_id=session_id).as_dict()
     t = threading.Thread(target=_run_stream, args=(state, session_id, user_id, user_input), daemon=True)
     with _LOCK:
         _JOBS[session_id] = t

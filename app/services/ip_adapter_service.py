@@ -16,14 +16,10 @@
   - replicate / comfyui 任一路径失败时会抛出异常（带清晰信息），便于上游回退到 mock。
 """
 
-import ipaddress
-import os
-import socket
 import tempfile
 import uuid
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse
 
 import httpx
 
@@ -36,28 +32,15 @@ _TMP_ROOT.mkdir(parents=True, exist_ok=True)
 # 参考图下载最大字节数（约 8MB）：防超大文件打满磁盘/内存
 _REF_MAX_BYTES = 8 * 1024 * 1024
 
-
-def _assert_public_http(url: str) -> None:
-    """校验 URL 仅为公网 http(s)，禁止内网/回环/链路本地等私有地址(防 SSRF)。
-
-    简化处理：解析主机名并拒绝解析出任何私有地址的主机，避免 DNS 重绑绕过。
-    """
-    s = urlparse(url)
-    if s.scheme not in ("http", "https"):
-        raise ValueError("参考图 URL 仅支持 http/https")
-    host = s.hostname
-    if not host:
-        raise ValueError("参考图 URL 缺少主机名")
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except OSError:
-        raise ValueError(f"无法解析参考图主机：{host}")
-    for info in infos:
-        ip = ipaddress.ip_address(info[4][0])
-        if (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_multicast or ip.is_reserved or ip.is_unspecified):
-            raise ValueError(f"参考图 URL 指向内网/保留地址，已拒绝：{host}")
-    return None
+# 说明：这里原先有一个本地实现的 `_assert_public_http()`，与
+# `url_guard.assert_public_url` 功能重复，而且：
+#   · 没有 `allow_local` 概念，语义与全仓其它校验点不一致；
+#   · docstring 声称"避免 DNS 重绑绕过"，但它先解析再连接，**做不到**
+#     （TTL=0 的域名可在第二次解析时指向 127.0.0.1）；
+#   · 当时已无任何调用点（死代码）——留着就是下一次误用它的入口。
+# 已删除。所有 URL 校验统一走 `url_guard`：
+#   · 用户显式配置的端点 → `assert_public_url(...)`
+#   · 由远端响应决定的 URL → `safe_get(..., allow_local=False)`（逐跳校验）
 
 
 def _download_reference(reference_image_url: str) -> str:

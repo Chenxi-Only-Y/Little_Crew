@@ -20,13 +20,24 @@ from pathlib import Path
 from typing import Any, Optional
 
 from app.core.config import settings
-from app.services.runtime_settings import _decrypt, _encrypt
+from app.services.runtime_settings import DecryptError, _decrypt, _encrypt
 
 #: 工程文件格式版本。读取时按版本做兼容处理（见 `_migrate`）。
 CURRENT_VERSION = 1
 
 #: 单个工程的大小上限（防止塞入超大 base64 把库撑爆）
 MAX_PAYLOAD_BYTES = 512 * 1024
+
+
+class ProjectUnreadable(RuntimeError):
+    """工程在库里，但**解不开**（密钥轮换/丢失/数据损坏）。
+
+    ⚠️ 为什么必须显式区分"空工程"与"读不懂的工程"：
+        原先 `get()` 把异常吞掉、返回 `{}`，于是前端显示成一个**空画布**。
+        用户看到空白、随手保存一次，**原来那份数据就被永久覆盖了**——
+        而它本来是能救回来的（只要把密钥修好）。
+        "看起来是空的"和"确实是空的"必须有区别，这正是静默失效最伤人的形态。
+    """
 
 
 def _db_path() -> str:
@@ -81,6 +92,8 @@ class ProjectStore:
         canvas: dict,
         settings_snapshot: Optional[dict] = None,
         project_id: Optional[str] = None,
+        *,
+        allow_overwrite_unreadable: bool = False,
     ) -> dict:
         """保存（新建或覆盖）。返回工程概要。
 
@@ -88,6 +101,10 @@ class ProjectStore:
             canvas: `{nodes: [...], edges: [...], viewport: {...}}`
             settings_snapshot: 可选的运行时设置快照（**密钥已掩码**，见 API 层）
             project_id: 传入则覆盖同 id 的工程（且必须属于同一 user）
+            allow_overwrite_unreadable: 覆盖一份**解不开**的既有工程时需要显式置 True。
+                默认 False：那种情况下直接抛错，避免"用户以为在改一个空工程、
+                实际把能救回的数据永久覆盖掉"（见 `ProjectUnreadable`）。
+                前端在用户**明确确认**后可以传 True。
         """
         now = _now()
         pid = project_id or f"prj_{uuid.uuid4().hex[:12]}"
@@ -117,11 +134,23 @@ class ProjectStore:
         c = self._conn()
         if project_id:
             row = c.execute(
-                "SELECT user_id FROM projects WHERE project_id=?", (pid,)
+                "SELECT user_id,payload FROM projects WHERE project_id=?", (pid,)
             ).fetchone()
             if row and row[0] != user_id:
                 c.close()
                 raise PermissionError("该工程属于其它用户，无法覆盖")
+            # 覆盖前确认旧内容**读得懂**——否则这次保存会永久毁掉一份
+            # 本来能救回的数据（密钥修好即可恢复）。要覆盖必须显式声明。
+            if row and row[1] and not allow_overwrite_unreadable:
+                try:
+                    _decrypt(row[1])
+                except (DecryptError, ValueError, TypeError) as exc:
+                    c.close()
+                    raise ProjectUnreadable(
+                        "既有工程无法解密，为避免永久覆盖已中止保存。"
+                        "请先修复 data/.little_crew.key；"
+                        "若确认要丢弃旧内容，请显式选择覆盖。"
+                    ) from exc
             c.execute(
                 "UPDATE projects SET name=?, payload=?, updated=? WHERE project_id=?",
                 (doc["name"], _encrypt(blob), now, pid),
@@ -154,8 +183,14 @@ class ProjectStore:
             return None
         try:
             doc = json.loads(_decrypt(payload) or "{}")
-        except Exception:  # noqa: BLE001  密钥轮换/损坏时不 500
-            doc = {}
+        except (DecryptError, ValueError, TypeError) as exc:
+            # **不再静默返回空工程**：那会让用户以为是空的、随手保存就把
+            # 能救回的数据永久覆盖。改为显式抛错，让上层给出可操作提示。
+            raise ProjectUnreadable(
+                f"工程「{name}」无法解密（{type(exc).__name__}）。"
+                "数据仍在库中；请检查 data/.little_crew.key 是否被替换或删除，"
+                "**在修好之前不要覆盖保存**。"
+            ) from exc
         doc = _migrate(doc)
         doc.update({"project_id": project_id, "name": name,
                     "created": created, "updated": updated})
@@ -172,13 +207,17 @@ class ProjectStore:
         out = []
         for pid, name, payload, created, updated in rows:
             node_count = 0
+            unreadable = False
             try:
                 doc = json.loads(_decrypt(payload) or "{}")
                 node_count = len(((doc.get("canvas") or {}).get("nodes")) or [])
-            except Exception:  # noqa: BLE001
-                pass
+            except (DecryptError, ValueError, TypeError):
+                # 列表页**不抛**（否则一个坏工程会让整个列表打不开），
+                # 但必须把"这份读不懂"标出来，让前端能提示而不是显示成 0 个节点。
+                unreadable = True
             out.append({"project_id": pid, "name": name, "node_count": node_count,
-                        "created": created, "updated": updated})
+                        "created": created, "updated": updated,
+                        "unreadable": unreadable})
         return out
 
     def delete(self, project_id: str, user_id: str) -> bool:
