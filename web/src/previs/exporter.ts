@@ -17,7 +17,7 @@
 
 import type { Camera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { Vector2 } from 'three';
-import { sampleCamera, type PrevisScene } from './types';
+import { sampleCamera, type PrevisScene, type Shot } from './types';
 
 export interface ExportFrame {
   /** 帧序号（从 0 开始） */
@@ -150,6 +150,59 @@ export interface ExportOptions {
 }
 
 /**
+ * 逐帧渲染的核心生成器（按镜头时间推进相机并读回像素）。
+ *
+ * 抽成生成器的原因：帧序列导出与"编码成参考视频"需要**同一套渲染**，
+ * 若各写一份，两处一旦漂移就会出现"导出的图对、送进模型的视频不对"。
+ * 生成器让调用方按需消费，也避免了一次性把所有帧都留在内存里。
+ */
+function* renderShotFrames(
+  renderer: WebGLRenderer,
+  threeScene: Scene,
+  camera: Camera,
+  previsScene: PrevisScene,
+  shot: Shot,
+  opts: ExportOptions,
+  width: number,
+  height: number,
+  fps: number,
+  buffer: Uint8Array,
+): Generator<{ index: number; time: number; flipped: Uint8Array }, void, void> {
+  const total = Math.max(1, Math.round(shot.duration * fps));
+  const indices = opts.only ?? Array.from({ length: total }, (_, i) => i);
+
+  for (let n = 0; n < indices.length; n += 1) {
+    const i = indices[n];
+    const time = (i / fps) * 1;
+    const pose = sampleCamera(previsScene, shot, time);
+    camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
+    camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
+    // 只有透视相机有 fov；正交相机跳过（导出仍可用，只是不受 fov 关键帧影响）
+    if ((camera as PerspectiveCamera).isPerspectiveCamera) {
+      const pc = camera as PerspectiveCamera;
+      pc.fov = pose.fov;
+      pc.updateProjectionMatrix();
+    }
+
+    renderer.render(threeScene, camera);
+    // 从 framebuffer 读回像素（y 轴是反的，下面翻转）
+    const gl = renderer.getContext();
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+
+    const flipped = new Uint8Array(buffer.length);
+    const stride = width * 4;
+    for (let y = 0; y < height; y += 1) {
+      flipped.set(
+        buffer.subarray((height - 1 - y) * stride, (height - y) * stride),
+        y * stride,
+      );
+    }
+    yield { index: i, time, flipped };
+    opts.onProgress?.(n + 1, indices.length);
+  }
+}
+
+/**
  * 按镜头渲染并导出帧序列。
  *
  * 相机姿态在每个采样时刻由 `sampleCamera` 重新求值并直接写入相机，
@@ -170,7 +223,6 @@ export async function exportShot(
   const width = opts.width ?? 832;
   const height = opts.height ?? 480;
   const fps = shot.fps || 24;
-  const total = Math.max(1, Math.round(shot.duration * fps));
 
   const prevSize = renderer.getSize(new Vector2());
   const prevRatio = renderer.getPixelRatio();
@@ -182,36 +234,10 @@ export async function exportShot(
   const frames: ExportFrame[] = [];
 
   try {
-    const indices = opts.only ?? Array.from({ length: total }, (_, i) => i);
-    for (let n = 0; n < indices.length; n += 1) {
-      const i = indices[n];
-      const time = (i / fps) * 1;
-      const pose = sampleCamera(previsScene, shot, time);
-      camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
-      camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
-      // 只有透视相机有 fov；正交相机跳过（导出仍可用，只是不受 fov 关键帧影响）
-      if ((camera as PerspectiveCamera).isPerspectiveCamera) {
-        const pc = camera as PerspectiveCamera;
-        pc.fov = pose.fov;
-        pc.updateProjectionMatrix();
-      }
-
-      renderer.render(threeScene, camera);
-      // 从 framebuffer 读回像素（y 轴是反的，下面翻转）
-      const gl = renderer.getContext();
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
-
-      const flipped = new Uint8Array(buffer.length);
-      const stride = width * 4;
-      for (let y = 0; y < height; y += 1) {
-        flipped.set(
-          buffer.subarray((height - 1 - y) * stride, (height - y) * stride),
-          y * stride,
-        );
-      }
-
-      frames.push({ index: i, time, dataUrl: await encodePng(flipped, width, height) });
-      opts.onProgress?.(n + 1, indices.length);
+    for (const f of renderShotFrames(renderer, threeScene, camera, previsScene,
+                                     shot, opts, width, height, fps, buffer)) {
+      frames.push({ index: f.index, time: f.time,
+                    dataUrl: await encodePng(f.flipped, width, height) });
     }
   } finally {
     restore(hidden);
@@ -220,6 +246,52 @@ export async function exportShot(
   }
 
   return { frames, width, height, fps, duration: shot.duration };
+}
+
+/**
+ * 渲染整数帧并直接返回 PNG Blob（用于编码成白模参考视频）。
+ *
+ * 为什么单独返回 Blob 而不是复用 `exportShot` 的 dataUrl：
+ * `multipart/form-data` 需要二进制；把 dataUrl 再 base64 解码一遍是白费功夫，
+ * 而且 base64 会让内存占用膨胀 33%（15 秒 × 24fps = 360 帧，不可忽略）。
+ */
+export async function renderShotBlobs(
+  renderer: WebGLRenderer,
+  threeScene: Scene,
+  camera: Camera,
+  previsScene: PrevisScene,
+  shotIndex: number,
+  opts: ExportOptions = {},
+): Promise<{ blobs: Blob[]; width: number; height: number; fps: number }> {
+  const shot = previsScene.shots[shotIndex];
+  if (!shot) throw new Error('没有可导出的镜头');
+
+  const width = opts.width ?? 832;
+  const height = opts.height ?? 480;
+  const fps = shot.fps || 24;
+
+  const prevSize = renderer.getSize(new Vector2());
+  const prevRatio = renderer.getPixelRatio();
+  renderer.setPixelRatio(1);
+  renderer.setSize(width, height, false);
+
+  const hidden = setHelpersVisible(threeScene, false);
+  const buffer = new Uint8Array(width * height * 4);
+  const blobs: Blob[] = [];
+
+  try {
+    for (const f of renderShotFrames(renderer, threeScene, camera, previsScene,
+                                     shot, opts, width, height, fps, buffer)) {
+      const dataUrl = await encodePng(f.flipped, width, height);
+      blobs.push(dataUrlToBlob(dataUrl));
+    }
+  } finally {
+    restore(hidden);
+    renderer.setPixelRatio(prevRatio);
+    if (prevSize && prevSize.x) renderer.setSize(prevSize.x, prevSize.y, false);
+  }
+
+  return { blobs, width, height, fps };
 }
 
 /** 把 data URL 转成 Blob（用于上传） */

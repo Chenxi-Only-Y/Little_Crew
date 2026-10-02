@@ -53,7 +53,7 @@ class FFmpegNotFound(RuntimeError):
 
 
 def find_ffmpeg(explicit: str = "") -> str:
-    """按 设置项 → 环境变量 → PATH 的顺序找 ffmpeg。
+    """按 设置项 → 环境变量 → PATH → 内置包 的顺序找 ffmpeg。
 
     Args:
         explicit: 设置项 `ffmpeg_path` 的值（最高优先级）。
@@ -64,34 +64,70 @@ def find_ffmpeg(explicit: str = "") -> str:
     Raises:
         FFmpegNotFound: 都没找到。错误信息里带**可执行的修复步骤**，
             而不是只说"未安装"。
+
+    为什么把 `imageio-ffmpeg` 放在**最后**而不是最前：
+        它随 pip 安装、版本可控，所以适合当"开箱即用"的兜底；
+        但如果用户明确指定了路径（或 PATH 里有自己的版本），
+        那应优先用用户的——否则设了也不生效，很难排查。
     """
     tried: list[str] = []
 
-    for cand in (explicit, os.environ.get("LITTLE_CREW_FFMPEG", "")):
+    # 用户**显式配置**了路径却没找到 → 立即报错，不悄悄回退。
+    #
+    # 为什么要这样：若静默回退到 PATH 或内置版本，用户手一抖打错路径
+    # （或者换了台机器、路径失效）会看到"一切正常"，实际用的是另一个
+    # 版本的 ffmpeg。这类"配置错了却没人告诉你"最难排查——
+    # 本项目的其他部分（提供者解析）也遵循同一条原则：不静默取默认值。
+    for label, cand in (("设置项 ffmpeg_path", explicit),
+                        ("环境变量 LITTLE_CREW_FFMPEG",
+                         os.environ.get("LITTLE_CREW_FFMPEG", ""))):
         if not cand:
             continue
         p = pathlib.Path(cand)
-        tried.append(str(p))
         if p.is_file():
             return str(p)
-        # 允许给目录，自动补上文件名
-        for name in ("ffmpeg.exe", "ffmpeg"):
-            q = p / name
-            if q.is_file():
-                return str(q)
+        # 允许给**目录**：在其中找 ffmpeg 可执行文件。
+        # 不能只匹配 `ffmpeg.exe` / `ffmpeg` 这两个死名字——
+        # 不少发行包带版本后缀（例如 imageio-ffmpeg 里的
+        # `ffmpeg-win-x86_64-v7.1.exe`），死名字会找不到。
+        if p.is_dir():
+            hits = sorted(
+                q for q in p.iterdir()
+                if q.is_file() and q.stem.lower().startswith("ffmpeg")
+                and q.suffix.lower() in (".exe", "")
+            )
+            if hits:
+                return str(hits[0])
+        raise FFmpegNotFound(
+            f"{label} 指向的路径不存在：{cand}\n"
+            "请改正它，或把它清空以使用自动查找（PATH → 内置 imageio-ffmpeg）。"
+        )
 
     which = shutil.which("ffmpeg")
     tried.append("PATH 中的 ffmpeg")
     if which:
         return which
 
+    # 内置兜底：`imageio-ffmpeg` 自带一份静态 ffmpeg（含 libx264 与 concat，
+    # 正好是编码 mp4 所需）。装了它就不必再单独配路径。
+    try:
+        import imageio_ffmpeg  # type: ignore
+
+        exe = imageio_ffmpeg.get_ffmpeg_exe()
+        tried.append("imageio-ffmpeg 自带")
+        if exe and pathlib.Path(exe).is_file():
+            return str(exe)
+    except Exception:  # noqa: BLE001  没装这个包就走报错分支
+        tried.append("imageio-ffmpeg 自带（未安装）")
+
     raise FFmpegNotFound(
         "找不到 ffmpeg，无法把帧序列编码成 mp4。\n"
         "已尝试：" + "、".join(tried) + "\n"
-        "三种解法任选其一：\n"
-        "  1) 在「设置」里填 `ffmpeg_path`，指向任意一份 ffmpeg 可执行文件（推荐）；\n"
-        "  2) 设环境变量 `LITTLE_CREW_FFMPEG` 指向它；\n"
-        "  3) 把 ffmpeg 放进 PATH（Windows 可用 `choco install ffmpeg`）。"
+        "四种解法任选其一：\n"
+        "  1) `pip install imageio-ffmpeg`（推荐：装在项目环境里，开箱即用）；\n"
+        "  2) 在「设置」里填 `ffmpeg_path`，指向任意一份 ffmpeg 可执行文件；\n"
+        "  3) 设环境变量 `LITTLE_CREW_FFMPEG` 指向它；\n"
+        "  4) 把 ffmpeg 放进 PATH（Windows 可用 `choco install ffmpeg`，需管理员）。"
     )
 
 

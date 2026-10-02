@@ -124,6 +124,14 @@ export default function PrevisPage() {
   const [outH, setOutH] = useState(480);
   const [polarity, setPolarity] = useState<DepthPolarity>('near_white');
   const [withGround, setWithGround] = useState(false);
+  /**
+   * 白模参考视频：是否在上传时换 `file_id`。
+   * 默认**否**——上传消耗额度且 7 天后过期，不该一按导出就必然产生一次上传。
+   */
+  const [wbUpload, setWbUpload] = useState(false);
+  const [wbStage, setWbStage] = useState('');
+  /** 已拿到的参考视频地址（`mm_file://…`），可直接用于生成 */
+  const [wbRef, setWbRef] = useState('');
 
   /* ---- 工程存档 ---- */
   const [projName, setProjName] = useState('未命名预演');
@@ -349,6 +357,68 @@ export default function PrevisPage() {
     } finally {
       setExporting(false);
       setProgress(null);
+    }
+  };
+
+  /**
+   * 导出**白模参考视频**：逐帧渲染 → 交后端编码成 mp4 →（可选）上传换 `file_id`。
+   *
+   * 这是"白模 + 参考视频"那条路的最后一步。云端模型会照着它复刻运镜与走位，
+   * 而不是自己编空间。
+   */
+  const doExportWhiteboxVideo = async () => {
+    const three = window.__previsThree;
+    if (!three?.renderer || !three?.scene || !three?.camera) {
+      setMsg({ ok: false, text: '3D 视口还没准备好' });
+      return;
+    }
+    setExporting(true);
+    setMsg(null);
+    setProgress({ done: 0, total: 0 });
+    setWbRef('');
+    try {
+      const { renderShotBlobs } = await import('./exporter');
+      const { encodeWhiteboxVideo } = await import('./whiteboxVideo');
+
+      setWbStage('渲染帧…');
+      const { blobs, fps } = await renderShotBlobs(
+        three.renderer,
+        three.scene,
+        three.camera,
+        scene,
+        shotIndex,
+        {
+          width: outW,
+          height: outH,
+          onProgress: (done, total) => {
+            setProgress({ done, total });
+            setWbStage(`渲染帧 ${done}/${total}`);
+          },
+        },
+      );
+
+      const res = await encodeWhiteboxVideo({
+        frames: blobs,
+        fps,
+        upload: wbUpload,
+        onProgress: (s) => setWbStage(s),
+      });
+
+      setWbRef(res.reference_video ?? '');
+      const parts = [
+        `${res.frames} 帧 / ${res.seconds}s / ${res.size_mb}MB`,
+        res.reference_video
+          ? `已上传：${res.reference_video}（${res.expires_in_days} 天后过期）`
+          : `已编码到 ${res.local_path}`,
+      ];
+      if (res.warning) parts.push(`⚠ ${res.warning}`);
+      setMsg({ ok: true, text: parts.join(' · ') });
+    } catch (err) {
+      setMsg({ ok: false, text: `白模视频失败：${(err as Error).message}` });
+    } finally {
+      setExporting(false);
+      setProgress(null);
+      setWbStage('');
     }
   };
 
@@ -708,6 +778,40 @@ export default function PrevisPage() {
           >
             仅首尾帧
           </button>
+        </div>
+
+        {/* ---------------- 白模参考视频 ---------------- */}
+        <div className="app-toolbar" style={{ marginTop: 6, flexWrap: 'wrap' }}>
+          <button
+            className="btn"
+            disabled={exporting}
+            onClick={() => void doExportWhiteboxVideo()}
+            title="渲染整段并编码成 mp4；勾选上传则换回 mm_file:// 可直接用于生成"
+          >
+            {exporting && wbStage ? wbStage : '导出白模视频（参考）'}
+          </button>
+          <label className="pill" style={{ gap: 4, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={wbUpload}
+              disabled={exporting}
+              onChange={(e) => setWbUpload(e.target.checked)}
+            />
+            同时上传（7 天有效）
+          </label>
+          {wbRef && (
+            <span
+              className="pill"
+              style={{ color: 'var(--s-lime)', cursor: 'pointer' }}
+              title="点击复制，可直接作为生成时的参考视频"
+              onClick={() => void navigator.clipboard?.writeText(wbRef)}
+            >
+              {wbRef} ⧉
+            </span>
+          )}
+          <span className="pill" style={{ color: 'var(--s-violet-mid)' }}>
+            参考视频复刻运镜与走位（与首尾帧互斥）
+          </span>
         </div>
       </div>
 

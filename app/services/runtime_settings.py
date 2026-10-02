@@ -9,6 +9,7 @@
 import json
 import sqlite3
 import threading
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +21,20 @@ _lock = threading.Lock()
 _local = threading.local()
 _global_override: dict = {}
 _GLOBAL = "_global"
+
+#: 请求作用域的当前用户。
+#:
+#: 为什么需要它：`threading.local()` **不跨线程传播**。中间件在事件循环线程
+#: 设的 `_local.user`，运行在 AnyIO worker 线程里的**同步端点**看不到——
+#: 实测表现为 `rs.get("ffmpeg_path")` 在同步端点里返回 None，
+#: 用户"明明填了设置却不生效"。`ContextVar` 会随 await 与
+#: `run_in_threadpool` 一起传播，正好补上这个缺口。
+_request_user: ContextVar[Optional[str]] = ContextVar("lc_request_user", default=None)
+
+
+def set_request_user(user_id: Optional[str]) -> None:
+    """中间件在每个请求开始时调用：把当前用户放进请求作用域。"""
+    _request_user.set(user_id or None)
 
 
 # ---- 落库加密：密钥文件放 data 目录(gitignored)，增量保护供应商密钥 ----
@@ -76,15 +91,46 @@ def _user_override(user_id: str) -> dict:
 
 
 def _merged(user_id: str | None = None) -> dict:
-    uid = user_id or user()
+    """合并设置。优先级的取值顺序：
+
+    1. 显式传入的 `user_id`
+    2. 当前线程用户（`set_user`，生成流程用）
+    3. 请求作用域用户（`set_request_user`，中间件设；同步端点靠它）
+    4. `_global`
+
+    第 3 条是必须的：同步端点跑在 AnyIO worker 线程里，
+    `threading.local()` 传不过去，只有 `ContextVar` 能到。
+    """
+    uid = user_id or _local_user_or_none() or _request_user.get() or _GLOBAL
     if uid == _GLOBAL:
         return dict(_global_override)
     return dict(_global_override) | _user_override(uid)
 
 
+def _local_user_or_none() -> Optional[str]:
+    """读线程本地用户；**未设置时返回 None**（而不是 `_GLOBAL`）。
+
+    为什么不能直接 `return user()`：`user()` 在未设置时返回 `_GLOBAL`，
+    那是个真值，会把请求作用域的用户挡在外面——于是又回到"读不到设置"。
+    """
+    return getattr(_local, "user", None)
+
+
 def set_user(user_id: str | None) -> None:
-    """设置当前线程的用户（供 llm/image 按该用户读取）。"""
-    _local.user = user_id or _GLOBAL
+    """设置当前线程的用户；传 `None` 表示**清除**（不是"设为 _global"）。
+
+    ⚠️ 传 None 时必须真的删掉属性：若存成 `_GLOBAL` 这个真值，
+    `_local_user_or_none()` 就会返回它，从而**把请求作用域的用户挡在外面**，
+    于是"用户填了设置却不生效"。实测踩过这个坑。
+    `user()` 在未设置时本来就会回退到 `_GLOBAL`，所以删除是安全的。
+    """
+    if user_id:
+        _local.user = user_id
+    else:
+        try:
+            del _local.user
+        except AttributeError:
+            pass
 
 
 def set_context(user_id: str | None, session_id: str | None = None) -> None:

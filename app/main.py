@@ -65,7 +65,18 @@ async def auth_guard(request: Request, call_next):
     token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
     if not token:
         token = request.query_params.get("token", "").strip()
-    if token and get_user_store().resolve(token):
+    username = get_user_store().resolve(token) if token else None
+    if username:
+        # 把当前用户放进**请求作用域**，这样任何端点内部调
+        # `runtime_settings.get(...)` 都能读到该用户的设置。
+        #
+        # 为什么不能只靠 `set_user()`（threading.local）：
+        # 它不跨线程传播——中间件在事件循环线程设置，而**同步端点**
+        # 跑在 AnyIO worker 线程里，读到的会是 `_global`。
+        # 实测危害：`ffmpeg_path` 之类的服务内部设置「填了不生效」。
+        from app.services import runtime_settings as _rs
+
+        _rs.set_request_user(username)
         return await call_next(request)
     return JSONResponse(status_code=401, content={"status": "error", "message": "未登录，请先登录"})
 
