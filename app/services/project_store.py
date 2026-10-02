@@ -205,7 +205,11 @@ class ProjectStore:
 
 
 def _norm_canvas(canvas: Any) -> dict:
-    """把画布规范成固定形状，避免存入半截数据导致读出来崩。"""
+    """把画布规范成固定形状，避免存入半截数据导致读出来崩。
+
+    保留 `previs`（3D 预演场景）：那不是画布的一部分，但复用同一份工程存储。
+    若在这里丢掉它，用户保存的预演场景会被**静默清空**——打开时才发现白摆了。
+    """
     canvas = canvas if isinstance(canvas, dict) else {}
     nodes = canvas.get("nodes") if isinstance(canvas.get("nodes"), list) else []
     edges = canvas.get("edges") if isinstance(canvas.get("edges"), list) else []
@@ -234,7 +238,15 @@ def _norm_canvas(canvas: Any) -> dict:
             "targetHandle": e.get("targetHandle"),
         })
 
-    return {"nodes": clean_nodes, "edges": clean_edges, "viewport": viewport}
+    out = {"nodes": clean_nodes, "edges": clean_edges, "viewport": viewport}
+
+    # 3D 预演场景：只做类型与体积的基本校验，结构交给前端自描述
+    # （预演的数据模型会演进，后端不该跟着改一次就迁移一次）
+    previs = canvas.get("previs")
+    if isinstance(previs, dict) and isinstance(previs.get("actors"), list):
+        out["previs"] = previs
+
+    return out
 
 
 def _migrate(doc: dict) -> dict:

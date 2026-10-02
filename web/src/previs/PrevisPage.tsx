@@ -14,11 +14,13 @@
  * 不依赖 React 渲染循环。
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Scene3D, { three } from './Scene3D';
 import { usePrevis } from './store';
-import { exportShot, dataUrlToBlob } from './exporter';
-import { sampleCamera, type Vec3 } from './types';
+import { exportShot, exportDepth, dataUrlToBlob, type DepthPolarity } from './exporter';
+import { sampleCamera, type PrevisScene, type Vec3 } from './types';
+import { getToken } from '../api/auth';
+import { loadProject, listProjects, saveProject, type ProjectSummary } from '../api/projects';
 
 const AXES: Array<{ key: 0 | 1 | 2; label: string }> = [
   { key: 0, label: 'X 右' },
@@ -118,6 +120,75 @@ export default function PrevisPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [outW, setOutW] = useState(832);
   const [outH, setOutH] = useState(480);
+  const [polarity, setPolarity] = useState<DepthPolarity>('near_white');
+  const [withGround, setWithGround] = useState(false);
+
+  /* ---- 工程存档 ---- */
+  const [projName, setProjName] = useState('未命名预演');
+  const [projId, setProjId] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [showOpen, setShowOpen] = useState(false);
+
+  // 场景一改就标记未保存（用订阅而非轮询，避免把 playhead 变化也算进去）
+  useEffect(() => {
+    const unsub = usePrevis.subscribe((s, prev) => {
+      if (s.scene !== prev.scene) setDirty(true);
+    });
+    return unsub;
+  }, []);
+
+  const refreshProjects = async () => {
+    const res = await listProjects(getToken());
+    setProjects(res.projects);
+  };
+
+  const onSavePrevis = async (asNew = false) => {
+    // 复用工程的存储层：把预演场景塞进 canvas 字段的扩展位，
+    // 后端 `_norm_canvas` 只认 nodes/edges/viewport，未知字段会被丢弃——
+    // 所以这里把场景整体序列化进 viewport 之外的一个专用键，由 _norm_canvas 放行。
+    const canvas = {
+      nodes: [],
+      edges: [],
+      viewport: {},
+      previs: scene,
+    } as unknown as Parameters<typeof saveProject>[1];
+    const res = await saveProject(
+      projName || '未命名预演',
+      canvas,
+      {},
+      getToken(),
+      asNew ? null : projId,
+    );
+    if (res.ok && res.projectId) {
+      setProjId(res.projectId);
+      setDirty(false);
+      setMsg({ ok: true, text: asNew ? '已另存为' : '预演已保存' });
+      void refreshProjects();
+    } else {
+      setMsg({ ok: false, text: res.error ?? '保存失败' });
+    }
+  };
+
+  const onOpenPrevis = async (id: string) => {
+    if (dirty && !window.confirm('当前预演有未保存改动，打开其它会丢弃它们。继续？')) return;
+    const res = await loadProject(id, getToken());
+    if (!res.ok || !res.project) {
+      setMsg({ ok: false, text: res.error ?? '打开失败' });
+      return;
+    }
+    const doc = res.project.canvas as unknown as { previs?: PrevisScene };
+    if (!doc.previs || !Array.isArray(doc.previs.actors)) {
+      setMsg({ ok: false, text: '这个工程不是预演工程（没有 3D 场景数据）' });
+      return;
+    }
+    usePrevis.getState().setScene(doc.previs);
+    setProjId(res.project.project_id);
+    setProjName(res.project.name);
+    setDirty(false);
+    setShowOpen(false);
+    setMsg({ ok: true, text: `已打开「${res.project.name}」` });
+  };
 
   const shot = scene.shots[shotIndex];
   const selActor = selected?.kind === 'actor' ? scene.actors.find((a) => a.id === selected.id) : null;
@@ -174,6 +245,91 @@ export default function PrevisPage() {
       setMsg({ ok: true, text: `已导出 ${res.frames.length} 帧（含首尾帧 PNG）` });
     } catch (err) {
       setMsg({ ok: false, text: `导出失败：${(err as Error).message}` });
+    } finally {
+      setExporting(false);
+      setProgress(null);
+    }
+  };
+
+  /** 只导一帧深度：直接算，不走序列（省时间） */
+  const doExportDepthSingle = async () => {
+    const { scene: tScene, camera } = three;
+    if (!tScene || !camera) {
+      setMsg({ ok: false, text: '3D 视口还没准备好' });
+      return;
+    }
+    setExporting(true);
+    setMsg(null);
+    try {
+      const { renderDepthFrame } = await import('./exporter');
+      const shotNow = scene.shots[shotIndex];
+      const pose = sampleCamera(shotNow, 0);
+      camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
+      camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
+      if ((camera as import('three').PerspectiveCamera).isPerspectiveCamera) {
+        const pc = camera as import('three').PerspectiveCamera;
+        pc.fov = pose.fov;
+        pc.updateProjectionMatrix();
+      }
+      camera.updateMatrixWorld(true);
+      const rgba = renderDepthFrame(tScene, camera, outW, outH, polarity, withGround);
+      const cv = document.createElement('canvas');
+      cv.width = outW;
+      cv.height = outH;
+      const cx = cv.getContext('2d');
+      if (!cx) throw new Error('无法创建 2D 上下文');
+      const id = cx.createImageData(outW, outH);
+      id.data.set(rgba);
+      cx.putImageData(id, 0, 0);
+      const link = document.createElement('a');
+      link.href = cv.toDataURL('image/png');
+      link.download = `previs_depth_${projName || 'shot'}_0000.png`;
+      link.click();
+      setMsg({ ok: true, text: '已导出深度首帧' });
+    } catch (err) {
+      setMsg({ ok: false, text: `深度导出失败：${(err as Error).message}` });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /** 导出整段深度序列 */
+  const doExportDepthAll = async () => {
+    const { scene: tScene, camera } = three;
+    if (!tScene || !camera) {
+      setMsg({ ok: false, text: '3D 视口还没准备好' });
+      return;
+    }
+    setExporting(true);
+    setMsg(null);
+    setProgress({ done: 0, total: 0 });
+    try {
+      const res = await exportDepth(tScene, camera, scene, shotIndex, {
+        width: outW,
+        height: outH,
+        polarity,
+        includeGround: withGround,
+        onProgress: (done, total) => setProgress({ done, total }),
+      });
+      const payload = {
+        kind: 'depth',
+        polarity: res.polarity,
+        includeGround: res.includeGround,
+        fps: res.fps,
+        width: res.width,
+        height: res.height,
+        frames: res.frames.map((f) => ({ index: f.index, time: f.time, png: f.dataUrl })),
+      };
+      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `previs_depth_${res.frames.length}f.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setMsg({ ok: true, text: `已导出 ${res.frames.length} 帧深度图` });
+    } catch (err) {
+      setMsg({ ok: false, text: `深度导出失败：${(err as Error).message}` });
     } finally {
       setExporting(false);
       setProgress(null);
@@ -333,6 +489,93 @@ export default function PrevisPage() {
             画面只剩白模本体（网格线若留在画面里会被视频模型当成真实结构）。
           </div>
         </div>
+
+        <div className="app-statusbar" style={{ borderTop: '1px solid var(--s-hairline)' }}>
+          <span className="pill">📁</span>
+          <input
+            value={projName}
+            onChange={(e) => setProjName(e.target.value)}
+            placeholder="预演名称"
+            style={{ width: 130 }}
+          />
+          <button className="btn" onClick={() => void onSavePrevis(false)} disabled={exporting}>
+            保存
+          </button>
+          <button className="btn ghost" onClick={() => void onSavePrevis(true)} disabled={exporting}>
+            另存为
+          </button>
+          <button
+            className="btn ghost"
+            onClick={() => {
+              setShowOpen((v) => !v);
+              if (!showOpen) void refreshProjects();
+            }}
+          >
+            打开
+          </button>
+          {dirty && (
+            <span className="pill" style={{ color: 'var(--st-review)' }}>
+              ● 未保存
+            </span>
+          )}
+          <div className="app-spacer" />
+
+          <span className="pill">深度极性</span>
+          <select
+            value={polarity}
+            onChange={(e) => setPolarity(e.target.value as DepthPolarity)}
+            style={{ fontSize: 11 }}
+          >
+            <option value="near_white">近处亮（depth 常用）</option>
+            <option value="far_white">远处亮（反相）</option>
+          </select>
+          <label
+            className="pill"
+            style={{ gap: 4, cursor: 'pointer' }}
+            title="无细节的光滑地面在深度图上只是一片渐变，ControlNet 会坚持它是光滑的、从而压制提示词要的纹理。默认不计入。"
+          >
+            <input
+              type="checkbox"
+              checked={withGround}
+              onChange={(e) => setWithGround(e.target.checked)}
+            />
+            含地面
+          </label>
+          <button
+            className="btn ghost"
+            disabled={exporting}
+            onClick={() => void doExportDepthSingle()}
+          >
+            深度·首帧
+          </button>
+          <button className="btn ghost" disabled={exporting} onClick={() => void doExportDepthAll()}>
+            深度·全部帧
+          </button>
+        </div>
+
+        {showOpen && (
+          <div
+            className="app-statusbar"
+            style={{ display: 'block', maxHeight: 150, overflowY: 'auto', borderTop: '1px solid var(--s-hairline)' }}
+          >
+            {projects.length === 0 ? (
+              <span style={{ fontSize: 11, color: 'var(--s-muted)' }}>还没有保存过预演。</span>
+            ) : (
+              projects.map((p) => (
+                <div
+                  key={p.project_id}
+                  style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11, padding: '3px 0' }}
+                >
+                  <span style={{ flex: '1 1 auto' }}>{p.name}</span>
+                  <span style={{ color: 'var(--s-violet-mid)' }}>{p.updated.slice(5, 16)}</span>
+                  <button className="btn ghost" onClick={() => void onOpenPrevis(p.project_id)}>
+                    打开
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         <div className="app-statusbar" style={{ borderTop: '1px solid var(--s-hairline)' }}>
           <span className="pill">导出尺寸</span>

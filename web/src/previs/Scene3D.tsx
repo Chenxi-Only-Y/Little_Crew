@@ -42,6 +42,17 @@ if (typeof window !== 'undefined') {
 /** 标记为"辅助对象"的东西，导出时会被隐藏（网格线留在画面里会被模型当成真实结构） */
 const HELPER = { helper: true } as const;
 
+/**
+ * 地面：**同时**带 `helper` 与 `ground` 两个标记。
+ *
+ * 为什么要分开标：两者行为不同——
+ *   - 渲染/剪影：地面属辅助，要隐藏（它是参照，不是要被拍进去的结构）
+ *   - 深度图：地面**是否计入是可选项**（ControlNet-Union 作者实测：
+ *     无细节的光滑地面会压制提示词要求的纹理）
+ * 只用一个标记就没法表达这个差别。
+ */
+const GROUND = { helper: true, ground: true } as const;
+
 function Ground({ size }: { size: [number, number] }) {
   const [w, d] = size;
   // 网格格数固定为跨度的一半（每格 2 单位）。等分太密时线会挤到亚像素，
@@ -50,8 +61,8 @@ function Ground({ size }: { size: [number, number] }) {
   const cells = Math.max(4, Math.round(span / 2));
   return (
     <group>
-      {/* 地面本体也算辅助：它是参照，不是要拍进画面的结构 */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} userData={HELPER}>
+      {/* 地面本体：带 ground 标记，深度图里可选计入（见 GROUND 的说明） */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} userData={GROUND}>
         <planeGeometry args={[w, d]} />
         <meshBasicMaterial color="#1b1730" />
       </mesh>

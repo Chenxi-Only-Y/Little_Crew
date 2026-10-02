@@ -210,3 +210,69 @@ def test_name_is_trimmed_and_bounded(store):
 
     s2 = store.save("u1", "   ", {"nodes": []})
     assert store.get(s2["project_id"], "u1")["name"] == "未命名工程"
+
+
+# ------------------------------------------------------------------
+# 5) 3D 预演场景（复用同一份工程存储）
+# ------------------------------------------------------------------
+
+PREVIS = {
+    "ground": [12, 12],
+    "actors": [
+        {"id": "a1", "name": "角色 A", "position": [0, 0, 0], "yaw": 0.4,
+         "size": [0.5, 1.7, 0.3], "color": "#c8f04a"},
+    ],
+    "props": [
+        {"id": "p1", "name": "桌子", "position": [1.8, 0, -0.6], "yaw": 0,
+         "size": [1.2, 0.75, 0.7], "color": "#8b8bf0"},
+    ],
+    "shots": [
+        {"id": "s1", "name": "镜头 1", "duration": 7, "fps": 24,
+         "cameraKeys": [
+             {"id": "k0", "time": 0, "position": [0, 1.6, 4.2], "target": [0, 1, 0], "fov": 40},
+             {"id": "k1", "time": 7, "position": [1.4, 1.5, 3.0], "target": [0.6, 0.9, -0.4], "fov": 40},
+         ]},
+    ],
+}
+
+
+def test_previs_scene_roundtrip(store):
+    """预演场景必须能原样存回来。
+
+    否则用户摆好的走位与机位在刷新后就白费了——而且是**静默**丢的
+    （`_norm_canvas` 会过滤未知字段，`previs` 若未放行就整块消失）。
+    """
+    canvas = {"nodes": [], "edges": [], "viewport": {}, "previs": PREVIS}
+    s = store.save("u1", "预演工程", canvas)
+
+    doc = store.get(s["project_id"], "u1")
+    got = doc["canvas"].get("previs")
+    assert got is not None, "previs 字段被丢弃了——用户摆的场景会静默消失"
+    assert len(got["actors"]) == 1
+    assert len(got["props"]) == 1
+    assert len(got["shots"]) == 1
+    # 关键帧的数值必须逐字保留（否则运镜全变）
+    assert got["shots"][0]["cameraKeys"][0]["position"] == [0, 1.6, 4.2]
+    assert got["shots"][0]["cameraKeys"][1]["target"] == [0.6, 0.9, -0.4]
+    assert got["ground"] == [12, 12]
+
+
+def test_previs_survives_migration(store):
+    """旧工程（无 previs）读出来不应报错，也不应凭空长出 previs。"""
+    s = store.save("u1", "纯画布工程", CANVAS)
+    doc = store.get(s["project_id"], "u1")
+    assert "previs" not in doc["canvas"]
+
+    # 预演工程的 version 字段应被补齐
+    s2 = store.save("u1", "预演", {"nodes": [], "previs": PREVIS})
+    doc2 = store.get(s2["project_id"], "u1")
+    assert doc2["version"] >= 1
+    assert doc2["canvas"]["previs"]["actors"][0]["id"] == "a1"
+
+
+def test_previs_garbage_is_dropped(store):
+    """previs 不是合法形状时应被丢弃，而不是原样存进去（读出来会崩）。"""
+    for bad in ("字符串", 42, [], {"actors": "不是数组"}):
+        s = store.save("u1", "坏预演", {"nodes": [], "previs": bad})
+        doc = store.get(s["project_id"], "u1")
+        assert "previs" not in doc["canvas"], f"非法 previs 被存下来了：{bad!r}"
