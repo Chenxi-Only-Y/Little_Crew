@@ -1,4 +1,4 @@
-"""小剧组 (Little Crew) — FastAPI 服务入口（异步任务 + 状态轮询 + 限流/配额）。
+"""小剧组 (Little Crew) — FastAPI 服务入口（异步任务 + 状态轮询）。
 
 端点：
   GET  /health                   健康检查
@@ -7,7 +7,8 @@
   POST /api/crew/resume          对暂停的确认点续跑
   GET  /api/crew/history/{uid}   用户创作历史
 
-生产化：限流/配额、请求日志（脱敏）、统一异常兜底。
+生产化：请求日志（脱敏）、统一异常兜底。
+注：**不做限流/配额**（开源非商业项目，用户 2026-10-02 决定）。
 """
 
 import pathlib
@@ -24,7 +25,6 @@ from app.services.auth import get_user_store
 from app.services.events import get_hub
 from app.services.logging import redact, setup_logging
 from app.services.profile import get_profile_store
-from app.services.quota import quota
 from app.services.runtime_settings import set_many as rs_set, snapshot as rs_snap
 from app.services.session_store import get_session_store
 from app.services.task_runner import cancel_run, resume_run, start_run
@@ -356,6 +356,7 @@ async def test_settings(payload: dict, request: Request):
                 status_code=400,
                 detail="base_url 不允许指向本机（该端点无访问本机的必要）",
             )
+
 
     # 用 body 里的 provider 优先；若不填则按当前运行时设置解析默认 provider
     if not provider:
@@ -784,10 +785,6 @@ async def create_session(payload: dict, request: Request):
         return JSONResponse(status_code=400, content={"status": "error", "message": "缺少 user_input"})
 
     user_id = _auth_user(request)
-    client_ip = request.client.host if request.client else "unknown"
-    ok, msg = quota.check(client_ip, user_id)
-    if not ok:
-        return JSONResponse(status_code=429, content={"status": "error", "message": msg})
 
     # 客户端可以带 session_id（便于重试/续跑），但**必须先确认它属于自己**：
     # `SessionStore.save` 是 upsert，会把 user_id 一起改写——若无校验，
@@ -813,6 +810,12 @@ async def session_events(session_id: str, request: Request, token: str | None = 
     鉴权说明：浏览器 `EventSource` **无法自定义请求头**，因此这里额外接受
     `?token=` 查询参数；同时保留 `Authorization` 头（便于 fetch-based 客户端）。
     非 loopback 部署务必用 HTTPS，否则 token 会在 URL 中明文传输。
+
+    ⚠️ 光"token 有效"不够：还必须确认**这个 token 的主人就是会话属主**。
+    否则任何登录用户都能订阅他人会话的事件流，**实时**读走 AI 思考日志与
+    确认点内容（剧本/提示词/用户输入）。原先这里只判了 token 有效性，
+    而相邻的 `/events/snapshot` 反而判了属主——不一致本身就是信号。
+    用 `_require_owner`：不存在→404、非属主→403（都是 JSON，不是 SSE 帧）。
     """
     from app.services.events import get_hub as _hub
 
@@ -822,6 +825,9 @@ async def session_events(session_id: str, request: Request, token: str | None = 
     supplied = bearer or (token or "")
     if not supplied or not get_user_store().resolve(supplied):
         return JSONResponse(status_code=401, content={"status": "error", "message": "未登录"})
+
+    # 属主校验（越权订阅）
+    _require_owner(session_id, request)
 
     hub = _hub()
     return StreamingResponse(
@@ -857,16 +863,15 @@ async def session_events_snapshot(session_id: str, request: Request):
 
 @app.post("/api/crew/run")
 async def run_crew(payload: dict, request: Request):
-    """异步启动一次创作（后台运行，轮询 /status 取进度）。含限流与每日配额。"""
+    """异步启动一次创作（后台运行，轮询 /status 取进度）。
+
+    注：**不做限流/配额**（用户 2026-10-02 决定：本项目是开源项目、非商业用途，
+    不替使用者的成本做拦截）。自部署者若担心被刷，请在反向代理层做限制。
+    """
     user_input = (payload.get("user_input") or "").strip()
     if not user_input:
         return {"status": "error", "message": "缺少 user_input"}
     user_id = _auth_user(request)
-    client_ip = request.client.host if request.client else "unknown"
-
-    ok, msg = quota.check(client_ip, user_id)
-    if not ok:
-        return JSONResponse(status_code=429, content={"status": "error", "message": msg})
 
     # 同 `/api/sessions`：客户端给的 session_id 必须先确认属于自己（见 `_claim_session`）
     claimed = _claim_session(payload.get("session_id"), user_id)
@@ -1015,6 +1020,8 @@ async def upload_whitebox_video(request: Request):
 
     # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_HEALTH_PUBLIC` 里，
     # 所以本端点自动要求有效 token——不需要（也不能）在这里手动调它。
+    #
+
     form = await request.form()
     raw_frames = [v for k, v in form.multi_items() if k == "frames"]
     if not raw_frames:

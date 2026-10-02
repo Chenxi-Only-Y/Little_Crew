@@ -481,15 +481,21 @@ class ImageService:
         return "9:16"
 
     def _save_remote(self, img_url: str, shot_id: str) -> Tuple[str, str, bool]:
-        """把远端图片下载到本地输出目录（按账号/部门/职业/会话归类）。"""
+        """把远端图片下载到本地输出目录（按账号/部门/职业/会话归类）。
+
+        用 `safe_get` 而不是裸 `httpx.get`：图片 URL 可能来自 provider 的响应，
+        而攻击者可以把自己的服务当"provider"、返回 `302 → 内网` 让服务端照跳。
+        `safe_get` 会对**每一跳**重新做 SSRF 校验。
+        """
         if not img_url:
             return "", "", False
         out_dir = _run_output_dir(self.output_dir, _cur_role(), shot_id)
         path = out_dir / f"{shot_id}.png"
-        with httpx.Client(timeout=60) as client:
-            resp = client.get(img_url)
-            resp.raise_for_status()
-            path.write_bytes(resp.content)
+        from app.services.url_guard import safe_get
+
+        resp = safe_get(img_url, context="远端图片下载", timeout=60)
+        resp.raise_for_status()
+        path.write_bytes(resp.content)
         return img_url, str(path), True
 
 

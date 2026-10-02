@@ -112,9 +112,11 @@ class Settings(BaseSettings):
     # False: 自动放行人工确认点，整条流程无停顿跑完（供脚本/CLI）
     hitl: bool = Field(default=False, validation_alias="HITL_ENABLED")
 
-    # ------------------- 生产化：限流 / 配额 / 日志 -------------------
-    rate_limit_per_minute: int = 10      # 每 IP+用户 每分钟请求上限
-    quota_daily_generations: int = 5     # 每用户每日创作上限
+    # ------------------- 日志 -------------------
+    # 注：`RATE_LIMIT_PER_MINUTE`（限流）与 `QUOTA_DAILY_GENERATIONS`（日额度）
+    # **都已删除**（用户 2026-10-02 决定：本项目是开源项目、非商业用途，
+    # 不替使用者的成本做拦截）。旧 .env 里留着这两个变量会被忽略，不报错。
+    # 自部署者若担心被刷，请在**反向代理层**做限制（见 README 部署提示）。
     log_level: str = "INFO"              # 日志级别
 
     # ------------------- 视觉质量评估 -------------------

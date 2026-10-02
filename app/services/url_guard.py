@@ -56,3 +56,42 @@ def assert_public_url(url: str, *, context: str = "URL") -> str:
                 or ip.is_multicast or ip.is_reserved or ip.is_unspecified):
             raise ValueError(f"{context} 指向内网/保留地址，已拒绝：{host}")
     return url
+
+
+#: 跟随重定向的上限（防止无穷跳转）
+_MAX_REDIRECTS = 5
+
+
+def safe_get(url: str, *, context: str = "下载", **kwargs):
+    """带 **逐跳 SSRF 校验**的 GET，返回 `httpx.Response`。
+
+    为什么不能直接 `httpx.get(url, follow_redirects=True)`：
+        入口校验只检查了**第一个** URL。攻击者让自己的公网服务返回
+        `302 Location: http://127.0.0.1:8080/admin`，客户端就会照跳——
+        校验形同虚设。这类"重定向跳板"是 SSRF 的经典绕过。
+
+    这里手工跟跳，**每一跳**都重新过 `assert_public_url`。
+
+    用法：把 `with httpx.Client(...) as c: c.get(url)` 换成
+        `resp = safe_get(url, context="...")`
+    """
+    import httpx
+
+    opts = dict(kwargs)
+    # 自己管重定向，所以强制关掉 httpx 的自动跟随
+    opts["follow_redirects"] = False
+    timeout = opts.pop("timeout", 60)
+
+    current = assert_public_url(url, context=context)
+    for _ in range(_MAX_REDIRECTS):
+        resp = httpx.get(current, timeout=timeout, **opts)
+        if resp.status_code not in (301, 302, 303, 307, 308):
+            return resp
+        location = resp.headers.get("location", "")
+        if not location:
+            return resp
+        # 相对 Location 要先补成绝对地址，再逐跳校验
+        current = assert_public_url(
+            str(httpx.URL(current).join(location)), context=f"{context}（重定向后）"
+        )
+    raise ValueError(f"{context} 重定向次数超过 {_MAX_REDIRECTS}，已中止")

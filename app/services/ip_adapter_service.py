@@ -65,20 +65,53 @@ def _download_reference(reference_image_url: str) -> str:
     if not reference_image_url:
         raise ValueError("缺少 reference_image_url")
     if reference_image_url.startswith(("http://", "https://")):
-        _assert_public_http(reference_image_url)
-        with httpx.Client(timeout=120, follow_redirects=True) as client:
-            resp = client.get(reference_image_url)
-            resp.raise_for_status()
-            if len(resp.content) > _REF_MAX_BYTES:
-                raise ValueError(f"参考图过大（>{_REF_MAX_BYTES // 1024 // 1024}MB），已拒绝")
+        # `safe_get` 会**逐跳**校验重定向：原先用
+        # `httpx.Client(follow_redirects=True)`，入口校验只查了第一个 URL，
+        # 攻击者让公网服务返回 `302 → http://127.0.0.1/...` 就能绕过。
+        from app.services.url_guard import safe_get
+
+        resp = safe_get(reference_image_url, context="参考图下载", timeout=120)
+        resp.raise_for_status()
+        if len(resp.content) > _REF_MAX_BYTES:
+            raise ValueError(f"参考图过大（>{_REF_MAX_BYTES // 1024 // 1024}MB），已拒绝")
         ext = _sniff_ext(resp.headers.get("content-type"))
         path = _TMP_ROOT / f"ref_{uuid.uuid4().hex[:8]}{ext}"
         path.write_bytes(resp.content)
         return str(path)
-    # 已支持本地路径（直接使用）
-    if Path(reference_image_url).exists():
+    # 已支持本地路径（直接使用）。**仅允许本地推理服务自己的输出目录**，
+    # 不做"任意已存在路径"的放行——那等于把服务端当任意文件读取器
+    # （参考图内容会被上传给第三方 provider）。
+    if _is_allowed_local_ref(reference_image_url):
         return reference_image_url
-    raise ValueError(f"参考图既不是 URL 也不是已存在的本地路径：{reference_image_url[:60]}")
+    raise ValueError(f"参考图既不是可访问的 URL，也不在允许的本地目录内：{reference_image_url[:60]}")
+
+
+def _is_allowed_local_ref(p: str) -> bool:
+    """本地参考图必须落在允许的根目录内（防任意文件读取）。"""
+    try:
+        target = Path(p).resolve()
+    except (OSError, ValueError):
+        return False
+    if not target.is_file():
+        return False
+    from app.core.config import settings
+
+    roots = []
+    try:
+        roots.append(Path(str(settings.output_dir_path)).resolve())
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        roots.append(_TMP_ROOT.resolve())
+    except Exception:  # noqa: BLE001
+        pass
+    for root in roots:
+        try:
+            target.relative_to(root)
+            return True
+        except ValueError:
+            continue
+    return False
 
 
 def _normalize_references(reference_images) -> list:

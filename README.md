@@ -85,7 +85,6 @@ little_crew/
 │   │   ├── session_store.py     # SQLite 会话/结果 + 用户历史
 │   │   ├── auth.py              # 注册/登录/token
 │   │   ├── task_runner.py       # 后台线程跑工作流 + 进度
-│   │   ├── quota.py             # 限流/每日配额
 │   │   └── logging.py           # 日志 + 密钥脱敏
 │   └── main.py                  # FastAPI 入口（所有端点）
 ├── web/                         # 导演台（React + Vite，端口 5183）
@@ -167,7 +166,7 @@ HITL_ENABLED=0                      # 1=人工确认点交互
 MOCK_QUALITY=1  QUALITY_THRESHOLD=0.5
 MOCK_CRITICS=1
 MOCK_VIDEO=1                        # 0 需本机 FFmpeg + edge-tts
-RATE_LIMIT_PER_MINUTE=10  QUOTA_DAILY_GENERATIONS=5  LOG_LEVEL=INFO
+LOG_LEVEL=INFO                              # 注：限流与每日额度都已删除（开源非商业）
 ```
 
 ### 3. 运行
@@ -233,7 +232,7 @@ docker compose up --build
 | GET | `/health` | 健康检查 |
 | POST | `/api/auth/register` | 注册 `{username,password}` → token |
 | POST | `/api/auth/login` | 登录 → token |
-| POST | `/api/crew/run` | 异步启动创作（限流+每日配额）→ `{session_id}` |
+| POST | `/api/crew/run` | 异步启动创作 → `{session_id}` |
 | GET | `/api/crew/status/{id}` | 轮询进度/结果/确认点 |
 | POST | `/api/crew/resume` | 确认点 approve/redo(+feedback) |
 | GET | `/api/crew/history/{uid}` | 用户创作历史（按 token 隔离） |
@@ -249,6 +248,11 @@ docker compose up --build
 - `.env`、`data/`、`*.db` 均被 gitignore；仓库只提交 `.env.example`。
 - 日志/异常经 `redact()` 脱敏，不泄漏密钥。
 - **登录态持久化**：导演台把 token 存在浏览器 `localStorage`（键 `lc_token`），刷新/重开不掉线。该 token 为**普通 JS 可读、非 HttpOnly**，本地/演示够用；公网部署建议升级为「服务端会话 + HttpOnly Cookie」，不要把凭据放进 URL。SSE 订阅因浏览器 `EventSource` 无法自定义请求头，token 需走 `?token=` 查询参数——非 HTTPS 部署下会明文出现在 URL 与日志中，务必配 HTTPS。
+- ⚠️ **本项目不做限流、不做配额**（有意为之：开源项目、非商业用途，不替使用者的成本做拦截）。
+  这意味着**自部署到公网时，任何注册用户都能无限触发真实生图/生视频**，而费用由
+  **部署者的 API Key** 承担。若你不是只在本机跑，**必须在反向代理层自己做限制**
+  （例如 nginx `limit_req`，或干脆关闭公开注册 `/api/auth/register`）。
+  容器化部署已在 `web/nginx.conf` 里预留了反代位置。
 - 开源许可证：**MIT**（见 `LICENSE`）。集成外部模型请留意各厂商条款。
 
 ---
@@ -260,6 +264,6 @@ docker compose up --build
 | 核心工作流（文本） | ✅ 多智能体 + 全链路 |
 | 视觉接入（图像/质量） | ✅ z-image 真实出图 + CLIP 质量回环 |
 | 用户体系 | ✅ 注册/登录、token、历史、按用户隔离 |
-| 生产化 | ✅ 异步任务、持久化、限流/配额、日志、错误兜底、Docker |
+| 生产化 | ✅ 异步任务、持久化、日志、错误兜底、Docker |
 | 完整版扩展 | ✅ 剧评、质量评估、视频合成（mock 可跑/真实现待 FFmpeg） |
 | ⬜ 待做 | 真视频端到端、PostgreSQL/Redis 切换、一键分发、小说输入等 |
