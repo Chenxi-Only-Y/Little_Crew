@@ -186,21 +186,70 @@ export function samplePose(
   time: number,
   speed = 1,
   phaseOffset = 0,
+  override?: Record<string, Vec3>,
 ): Pose {
-  switch (preset) {
-    case 'walk':
-      return poseWalk(((time * speed * 0.9 + phaseOffset) % 1 + 1) % 1);
-    case 'run':
-      return poseRun(((time * speed * 1.6 + phaseOffset) % 1 + 1) % 1);
-    case 'sit':
-      return POSE_SIT;
-    case 'wave':
-      return POSE_WAVE;
-    case 'point':
-      return POSE_POINT;
-    default:
-      return POSE_IDLE;
+  const base = (() => {
+    switch (preset) {
+      case 'walk':
+        return poseWalk((((time * speed * 0.9 + phaseOffset) % 1) + 1) % 1);
+      case 'run':
+        return poseRun((((time * speed * 1.6 + phaseOffset) % 1) + 1) % 1);
+      case 'sit':
+        return POSE_SIT;
+      case 'wave':
+        return POSE_WAVE;
+      case 'point':
+        return POSE_POINT;
+      default:
+        return POSE_IDLE;
+    }
+  })();
+  return applyPoseOverride(base, override);
+}
+
+/** 关节分组：供属性面板按部位折叠，避免 17 个关节一次铺满 */
+export const JOINT_GROUPS: Array<{ label: string; joints: string[] }> = [
+  { label: '躯干 / 头', joints: ['pelvis', 'spine', 'chest', 'neck', 'head'] },
+  { label: '左臂', joints: ['sho_l', 'elb_l', 'wri_l'] },
+  { label: '右臂', joints: ['sho_r', 'elb_r', 'wri_r'] },
+  { label: '左腿', joints: ['hip_l', 'kne_l', 'ank_l'] },
+  { label: '右腿', joints: ['hip_r', 'kne_r', 'ank_r'] },
+];
+
+/** 关节中文名 */
+export const JOINT_LABELS: Record<string, string> = {
+  pelvis: '骨盆', spine: '脊柱', chest: '胸', neck: '颈', head: '头',
+  sho_l: '左肩', elb_l: '左肘', wri_l: '左腕',
+  sho_r: '右肩', elb_r: '右肘', wri_r: '右腕',
+  hip_l: '左髋', kne_l: '左膝', ank_l: '左踝',
+  hip_r: '右髋', kne_r: '右膝', ank_r: '右踝',
+};
+
+/** 旋转轴的中文说明（右手系，与 Three.js 一致） */
+export const AXIS_LABELS = ['前后摆动', '扭转', '左右张开'];
+
+/**
+ * 把叠加偏移合并进基础姿态。
+ *
+ * 逐关节相加即可：这些角度是**局部旋转**，彼此独立，
+ * 不存在"必须先转谁"的顺序问题（顺序由 FK 的父子链固定）。
+ */
+export function applyPoseOverride(
+  base: Pose,
+  override?: Record<string, Vec3>,
+): Pose {
+  if (!override) return base;
+  const out: Pose = { ...base };
+  for (const k of Object.keys(override)) {
+    const o = override[k];
+    const b = base[k] ?? [0, 0, 0];
+    if (o[0] === 0 && o[1] === 0 && o[2] === 0) {
+      out[k] = b;
+    } else {
+      out[k] = [b[0] + o[0], b[1] + o[1], b[2] + o[2]];
+    }
   }
+  return out;
 }
 
 /* ---------------- 前向运动学 ---------------- */

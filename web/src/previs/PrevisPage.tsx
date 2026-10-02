@@ -19,7 +19,8 @@ import Scene3D, { three } from './Scene3D';
 import { usePrevis } from './store';
 import { exportShot, exportDepth, dataUrlToBlob, type DepthPolarity } from './exporter';
 import { sampleCamera, type PrevisScene, type Vec3 } from './types';
-import { POSE_PRESETS } from './humanoid';
+import { POSE_PRESETS, JOINT_GROUPS, JOINT_LABELS, AXIS_LABELS } from './humanoid';
+import { ENV_PRESETS } from './env';
 import { getToken } from '../api/auth';
 import { loadProject, listProjects, saveProject, type ProjectSummary } from '../api/projects';
 
@@ -374,10 +375,26 @@ export default function PrevisPage() {
           </div>
         ))}
 
-        <button className="btn ghost" style={{ width: '100%', margin: '10px 0 6px' }} onClick={() => usePrevis.getState().addProp()}>
+        <div className="card-title" style={{ marginTop: 14 }}>环境</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+          {ENV_PRESETS.map((p) => (
+            <button
+              key={p.key}
+              className="btn ghost"
+              style={{ fontSize: 11, padding: '3px 7px' }}
+              title={p.hint}
+              onClick={() => usePrevis.getState().applyEnv(p.key)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="card-title" style={{ marginTop: 10 }}>道具</div>
+        <button className="btn ghost" style={{ width: '100%', marginBottom: 6 }} onClick={() => usePrevis.getState().addProp()}>
           + 道具
         </button>
-        {scene.props.map((p) => (
+        {scene.props.filter((p) => !p.env).map((p) => (
           <div
             key={p.id}
             onClick={() => usePrevis.getState().select({ kind: 'prop', id: p.id })}
@@ -397,6 +414,38 @@ export default function PrevisPage() {
             {p.name}
           </div>
         ))}
+
+        {/* 环境块：只在 UI 上与道具分开列，渲染/导出完全一视同仁 */}
+        {scene.props.some((p) => p.env) && (
+          <>
+            <div className="card-title" style={{ marginTop: 10 }}>
+              环境块（{scene.props.filter((p) => p.env).length}）
+            </div>
+            {scene.props.filter((p) => p.env).map((p) => (
+              <div
+                key={p.id}
+                onClick={() => usePrevis.getState().select({ kind: 'prop', id: p.id })}
+                style={{
+                  fontSize: 11,
+                  padding: '3px 6px',
+                  borderRadius: 5,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: 0.8,
+                  background:
+                    selected?.kind === 'prop' && selected.id === p.id
+                      ? 'rgba(200,240,74,0.14)'
+                      : 'transparent',
+                }}
+              >
+                <span style={{ fontSize: 9 }}>👁</span>
+                {p.name}
+              </div>
+            ))}
+          </>
+        )}
 
         <div className="card-title" style={{ marginTop: 14 }}>
           镜头
@@ -697,6 +746,108 @@ export default function PrevisPage() {
                 </div>
               </>
             )}
+
+            {/* 逐关节微调：叠加在预设之上，所以"行走"不会因调角而定格 */}
+            <details style={{ marginTop: 10 }}>
+              <summary style={{ cursor: 'pointer', fontSize: 11, color: 'var(--s-white)' }}>
+                逐关节微调
+                <span style={{ color: 'var(--s-violet-mid)', marginLeft: 6 }}>
+                  {Object.keys(selActor.poseOverride ?? {}).length} 处已改
+                </span>
+              </summary>
+              <div className="hint" style={{ marginTop: 4 }}>
+                角度是**叠加偏移**，加在「{selActor.pose}」预设之上——
+                所以微调不会让循环动作定格。单位：度。
+              </div>
+              {Object.keys(selActor.poseOverride ?? {}).length > 0 && (
+                <button
+                  className="btn ghost"
+                  style={{ width: '100%', margin: '6px 0', fontSize: 11 }}
+                  onClick={() => usePrevis.getState().clearAllJoints(selActor.id)}
+                >
+                  全部还原
+                </button>
+              )}
+              {JOINT_GROUPS.map((g) => {
+                const changed = g.joints.filter(
+                  (j) => selActor.poseOverride?.[j]?.some((v) => Math.abs(v) > 1e-6),
+                ).length;
+                return (
+                  <details key={g.label} style={{ marginTop: 4, paddingLeft: 6 }}>
+                    <summary style={{ cursor: 'pointer', fontSize: 11 }}>
+                      {g.label}
+                      {changed > 0 && (
+                        <span style={{ color: 'var(--s-lime)', marginLeft: 5 }}>•{changed}</span>
+                      )}
+                    </summary>
+                    {g.joints.map((joint) => {
+                      const off = selActor.poseOverride?.[joint] ?? [0, 0, 0];
+                      const any = off.some((v) => Math.abs(v) > 1e-6);
+                      return (
+                        <div key={joint} style={{ margin: '5px 0 5px 6px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              fontSize: 10,
+                              color: any ? 'var(--s-lime)' : 'var(--s-muted)',
+                            }}
+                          >
+                            <span>{JOINT_LABELS[joint] ?? joint}</span>
+                            {any && (
+                              <button
+                                className="btn ghost"
+                                style={{ fontSize: 9, padding: '1px 5px', marginLeft: 'auto' }}
+                                onClick={() => usePrevis.getState().clearJoint(selActor.id, joint)}
+                              >
+                                还原
+                              </button>
+                            )}
+                          </div>
+                          {[0, 1, 2].map((ax) => (
+                            <div key={ax} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span
+                                style={{
+                                  fontSize: 9,
+                                  color: 'var(--s-violet-mid)',
+                                  width: 46,
+                                  flex: '0 0 auto',
+                                }}
+                                title={AXIS_LABELS[ax]}
+                              >
+                                {AXIS_LABELS[ax]}
+                              </span>
+                              <input
+                                type="range"
+                                min={-180}
+                                max={180}
+                                step={5}
+                                value={Math.round(((off[ax] ?? 0) * 180) / Math.PI)}
+                                style={{ flex: '1 1 auto', minWidth: 0 }}
+                                onChange={(e) =>
+                                  usePrevis
+                                    .getState()
+                                    .setJointOffset(
+                                      selActor.id,
+                                      joint,
+                                      ax as 0 | 1 | 2,
+                                      (Number(e.target.value) * Math.PI) / 180,
+                                    )
+                                }
+                              />
+                              <span style={{ fontSize: 9, width: 26, textAlign: 'right' }}>
+                                {Math.round(((off[ax] ?? 0) * 180) / Math.PI)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </details>
+                );
+              })}
+            </details>
           </Section>
         )}
 

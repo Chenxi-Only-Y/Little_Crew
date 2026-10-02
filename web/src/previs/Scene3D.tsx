@@ -99,7 +99,13 @@ function ActorMesh({ id }: { id: string }) {
   if (!actor) return null;
 
   const isSel = selected?.kind === 'actor' && selected.id === id;
-  const pose = samplePose(actor.pose, playhead, actor.poseSpeed, actor.posePhase);
+  const pose = samplePose(
+    actor.pose,
+    playhead,
+    actor.poseSpeed,
+    actor.posePhase,
+    actor.poseOverride,
+  );
   // 用 **grounded** 版本：骨架以骨盆为原点，直接用会让腿埋进地面（实测过）
   const joints = skeletonPositionsGrounded(pose);
   const s = actor.scale;

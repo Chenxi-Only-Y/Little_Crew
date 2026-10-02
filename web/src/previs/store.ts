@@ -18,6 +18,7 @@ import {
   type Shot,
   type Vec3,
 } from './types';
+import { ENV_GROUND, applyEnvPreset, type EnvPreset } from './env';
 
 export type Selection =
   | { kind: 'actor'; id: string }
@@ -59,6 +60,16 @@ interface PrevisState {
   /** 镜头 */
   addShot: () => void;
   updateShot: (patch: Partial<Pick<Shot, 'name' | 'duration' | 'fps'>>) => void;
+
+  /** 逐关节姿态偏移（叠加在预设之上，见 Actor.poseOverride） */
+  setJointOffset: (id: string, joint: string, axis: 0 | 1 | 2, value: number) => void;
+  /** 清掉某个关节的偏移 */
+  clearJoint: (id: string, joint: string) => void;
+  /** 清掉全部偏移（回到纯预设） */
+  clearAllJoints: (id: string) => void;
+
+  /** 环境预设（替换环境块，保留用户自建道具） */
+  applyEnv: (preset: EnvPreset) => void;
 }
 
 function withShot(scene: PrevisScene, index: number, fn: (s: Shot) => Shot): PrevisScene {
@@ -213,6 +224,61 @@ export const usePrevis = create<PrevisState>((set) => ({
     set((st) => ({
       scene: withShot(st.scene, st.shotIndex, (s) => ({ ...s, ...patch })),
     })),
+
+  setJointOffset: (id, joint, axis, value) =>
+    set((st) => ({
+      scene: {
+        ...st.scene,
+        actors: st.scene.actors.map((a) => {
+          if (a.id !== id) return a;
+          const cur = a.poseOverride ?? {};
+          const j = [...(cur[joint] ?? [0, 0, 0])] as Vec3;
+          j[axis] = value;
+          return { ...a, poseOverride: { ...cur, [joint]: j } };
+        }),
+      },
+    })),
+
+  clearJoint: (id, joint) =>
+    set((st) => ({
+      scene: {
+        ...st.scene,
+        actors: st.scene.actors.map((a) => {
+          if (a.id !== id || !a.poseOverride) return a;
+          const next = { ...a.poseOverride };
+          delete next[joint];
+          return { ...a, poseOverride: next };
+        }),
+      },
+    })),
+
+  clearAllJoints: (id) =>
+    set((st) => ({
+      scene: {
+        ...st.scene,
+        actors: st.scene.actors.map((a) =>
+          a.id === id ? { ...a, poseOverride: undefined } : a,
+        ),
+      },
+    })),
+
+  applyEnv: (preset) =>
+    set((st) => {
+      const props = applyEnvPreset(st.scene.props, preset, st.scene.ground);
+      const g = ENV_GROUND[preset];
+      return {
+        scene: {
+          ...st.scene,
+          props,
+          // 地面太小时模型会以为世界是个盒子，所以预设会连带调整地面
+          ground: g ?? st.scene.ground,
+        },
+        // 环境块换了之后，之前选中的可能已不存在
+        selected: st.selected?.kind === 'prop' && !props.some((p) => p.id === st.selected?.id)
+          ? null
+          : st.selected,
+      };
+    }),
 }));
 
 /**
