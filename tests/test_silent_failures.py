@@ -429,3 +429,60 @@ def test_redact_does_not_mangle_benign_text():
                "status=ok",
                "stage=photographer"):
         assert redact(ok) == ok, f"普通内容被改动：{ok!r} → {redact(ok)!r}"
+
+
+# ------------------------------------------------------------------
+# 9. 被运行时读取的键必须可写（否则"设置了不生效"）
+# ------------------------------------------------------------------
+
+#: **有意**不做成运行时设置的键。
+#:
+#: 共同点：它们决定"要不要真的加载模型 / 调用外部 API"。
+#: 允许在线改的危害是**误导性**的——自部署者可能以为自己在 mock（省钱），
+#: 实际在真实计费；或以为模型已加载，实际被跳过。
+#: 这类开关属于**部署期**决策：写在 `.env` 里、重启生效。
+_MOCK_ONLY_KEYS = frozenset({
+    "mock_llm", "mock_image", "mock_quality", "mock_critics", "mock_video",
+    "skip_clip",   # 跳过加载 CLIP（角色一致性与质量评估会降级）
+})
+
+
+def test_runtime_read_keys_are_writable():
+    """凡是代码在运行时读的配置键，都必须能通过 `/api/settings` 写入。
+
+    否则就是"设置了不生效"：PUT 返回 200、界面提示已保存，值却被白名单丢掉，
+    运行时用的还是 .env 默认值。实测过 9 个这样的键
+    （`local_gen_url` / `local_image_steps` / `local_video_steps` /
+      `local_gen_timeout` / `ip_adapter_api_key` / 4 个 `mock_*`）。
+
+    `mock_*` 是**有意的例外**：它们是环境开关，在线改会让自部署者
+    误以为处于 mock 状态而实际在真实计费（见 `registry/api.py` 的说明）。
+    """
+    import pathlib
+    import re
+
+    from app.core.config import settings
+    from app.registry import api as reg
+
+    allowed = reg.allowed_settings()
+    root = pathlib.Path(__file__).resolve().parent.parent / "app"
+    src = "\n".join(p.read_text(encoding="utf-8", errors="replace")
+                    for p in root.rglob("*.py"))
+
+    # 收集所有"被当作可覆盖设置来读"的键：rs.get/rs.resolve/_img_role/getattr(settings,...)
+    keys: set[str] = set()
+    for pat in (r"rs\.get\([\"']([A-Za-z_][A-Za-z0-9_]*)[\"']",
+                r"rs\.resolve\([\"']([A-Za-z_][A-Za-z0-9_]*)[\"']",
+                r"\bresolve\([\"']([A-Za-z_][A-Za-z0-9_]*)[\"']",
+                r"_img_role\([\"']([A-Za-z_][A-Za-z0-9_]*)[\"']",
+                r"getattr\(settings,\s*[\"']([A-Za-z_][A-Za-z0-9_]*)[\"']"):
+        keys.update(re.findall(pat, src))
+
+    # 只关心"确实是 Settings 字段"的键（否则是别的东西的同名参数）
+    keys = {k for k in keys if hasattr(settings, k)}
+    keys -= _MOCK_ONLY_KEYS
+
+    missing = sorted(k for k in keys if k not in allowed)
+    assert not missing, (
+        f"这些键被运行时读取，但写不进设置（PUT 会静默丢弃）：{missing}"
+    )

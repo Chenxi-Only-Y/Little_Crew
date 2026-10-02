@@ -359,7 +359,9 @@ class VideoService:
         d = pathlib.Path(out_dir) / session_id / "video"
         d.mkdir(parents=True, exist_ok=True)
         produced = 0
-        steps = int(settings.local_video_steps or 50)
+        # 本地档位也走 rs.resolve：它们已在设置白名单里，只读 settings 的话
+        # "设置了却不生效"（与 local_gen_url / local_image_steps 保持一致）
+        steps = int(rs.resolve("local_video_steps", settings.local_video_steps) or 50)
         # 本地安全上限 10s：这里显式收敛（此前是 max(4, min(15, ...))，会把 12/15 直接发出去 → 必 OOM）
         from app.services.providers import resolve_duration
 
@@ -367,7 +369,7 @@ class VideoService:
             "local", rs.resolve("video_max_duration", settings.video_max_duration))
         if dur_note:
             logger.warning("[video] %s", dur_note)
-        timeout = int(settings.local_gen_timeout or 7200)
+        timeout = int(rs.resolve("local_gen_timeout", settings.local_gen_timeout) or 7200)
 
         for im in img_items:
             sid = str(im.get("shot_id") or _uuid.uuid4().hex[:8])

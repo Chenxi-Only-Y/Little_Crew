@@ -385,6 +385,20 @@ def allowed_settings() -> set[str]:
         "dashscope_video_base_url", "ark_api_key", "ark_base_url",
         # ffmpeg 路径（白模帧序列 → mp4）
         "ffmpeg_path",
+        # 本地推理服务的端点与档位。
+        # ⚠️ 这几个原先不在白名单，但**代码确实在运行时读它们**：
+        #   `image.py`    → `_img_role("local_gen_url" | "local_image_steps", ...)`
+        #   `video.py`    → `rs.resolve("local_gen_url" | ...)`
+        #   `ip_adapter_service.py` → `rs_get("ip_adapter_api_key")`
+        # 于是改它们会得到 200 却**被静默丢弃**，运行时仍用 .env 值。
+        # 有测试守着"被读的键必须可写"（见 test_silent_failures）。
+        "local_gen_url", "local_image_steps", "local_video_steps", "local_gen_timeout",
+        "ip_adapter_api_key",
+        # 说明：`mock_llm` / `mock_image` / `mock_quality` / `mock_critics`
+        # **有意不做成运行时设置**。它们是环境开关（决定"要不要真的调外部 API"），
+        # 而 `providers.py` 把它们登记成 provider 模式字段、前端设置页会显示。
+        # 若允许在线改，自部署者可能误以为处于 mock 状态而实际在真实计费。
+        # 要切换请改 .env 并重启。
     })
     # 兼容 v1 的 per-role 键：Agent 运行时按这些角色名读取
     # （`llm_provider_writer` / `image_provider_character_designer` …）。
