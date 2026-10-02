@@ -1,4 +1,11 @@
-"""小剧组 (Little Crew) — 主页（按部门划分的组织入口）。"""
+"""旧版 Streamlit 前端 —— **已由导演台取代，保留仅供灰度回退**。
+
+新前端在 `web/`（React + Vite，跑在 5183）。本文件及 `frontend/pages/*`
+不再新增功能，只维持可运行，方便在导演台出问题时对比与回退。
+
+下线时机：导演台完成一轮真实创作、确认无回归后再删除本目录。
+参见 docs/recon/02-refactor-plan.md。
+"""
 
 import streamlit as st
 

@@ -16,8 +16,18 @@ from app.core.config import settings
 
 
 class QualityService:
-    def __init__(self) -> None:
-        self.mock = settings.mock_quality
+    # ---- mock 开关：每次实时解析，不做快照（原先 __init__ 里快照导致改配置不生效）----
+    @property
+    def mock(self) -> bool:
+        from app.services.providers import is_mock
+
+        return is_mock("quality")
+
+    @mock.setter
+    def mock(self, value: bool) -> None:
+        from app.services.providers import set_override
+
+        set_override("quality", bool(value))
 
     def assess(self, prompt: str, image_path: str) -> Tuple[float, bool]:
         """返回 (score 0~1, 是否可接受)。"""

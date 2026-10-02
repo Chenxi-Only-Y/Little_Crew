@@ -2,6 +2,7 @@
 
 import pathlib
 import sys
+from html import escape
 
 import streamlit as st
 
@@ -9,8 +10,14 @@ FRONTEND = pathlib.Path(__file__).resolve().parent.parent
 if str(FRONTEND) not in sys.path:
     sys.path.insert(0, str(FRONTEND))
 
-from _api import backend_settings, backend_settings_update, backend_settings_test  # noqa: E402
+from _api import (backend_settings, backend_settings_update, backend_settings_test,  # noqa: E402
+                  backend_cost_audit, backend_cost_reminder, backend_providers,
+                  backend_generation_modes)
 from _styles import handle_nav, inject_css, render_nav  # noqa: E402
+
+# 时长档位的**唯一来源**在后端（app/services/providers.py）；
+# 这里只引入默认值常量，避免前端再抄一份档位列表。
+from app.services.providers import DEFAULT_DURATION  # noqa: E402
 
 st.set_page_config(page_title="设置 · 小剧组", layout="wide")
 inject_css()
@@ -27,6 +34,122 @@ st.markdown(
 
 token = st.session_state.get("_token")
 cur = backend_settings(token).get("settings", {})
+
+# ------------------------------------------------------------------
+# 第一步：选「云端 API」还是「本地推理」
+# ------------------------------------------------------------------
+# 设计决定（2026-10-02）：**不默认本地、也不默认云端**。
+# 未选时后端会明确报错而不是猜——避免"没部署本地却走本地"或"不知情产生云端费用"。
+st.markdown(
+    '<div class="lc-eyebrow">第一步 · 必选</div>'
+    '<div class="lc-title" style="font-size:1.5rem;">用云端还是本地？</div>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    "<p style='color:var(--s-muted);font-size:13px;margin:0 0 8px 0;'>"
+    "这里没有默认值：请显式选择。选完仍可在下方为每个职业单独指定具体提供者。</p>",
+    unsafe_allow_html=True,
+)
+
+_CAP_LABEL = {
+    "llm": "文字模型（策划/编剧/分镜/场记等）",
+    "image_gen": "图片生成（角色/场景/摄影师）",
+    "video_gen": "视频生成（剪辑师）",
+    "lora_train": "LoRA 训练（角色一致性）",
+    "tts": "配音（配音指导）",
+}
+_MODE_LABEL = {"unset": "— 请选择 —", "cloud": "云端 API", "local": "本地推理（零成本）"}
+
+_modes = backend_generation_modes()
+if not _modes:
+    st.info("后端不可达，无法读取模式设置项。", icon="ℹ️")
+else:
+    _mode_cols = st.columns(min(3, max(1, len(_modes))))
+    for _i, _m in enumerate(_modes):
+        with _mode_cols[_i % len(_mode_cols)]:
+            _cur_mode = str(cur.get(_m["mode_key"]) or "unset")
+            _opts = _m["mode_options"]
+            _defaults = _m.get("mode_defaults") or {}
+            _hint = "；".join(
+                f"{_MODE_LABEL.get(k, k)} → {v}" for k, v in _defaults.items()
+            )
+            st.selectbox(
+                _CAP_LABEL.get(_m["capability"], _m["capability"]),
+                _opts,
+                index=_opts.index(_cur_mode) if _cur_mode in _opts else 0,
+                key=f"mode_{_m['capability']}",
+                format_func=lambda k: _MODE_LABEL.get(k, k),
+                help=_hint,
+            )
+    _unset = [
+        _CAP_LABEL.get(m["capability"], m["capability"])
+        for m in _modes
+        if str(st.session_state.get(f"mode_{m['capability']}") or "unset") == "unset"
+    ]
+    if _unset:
+        st.warning(
+            "以下能力尚未选择云端/本地，运行到该环节会明确报错：\n\n"
+            + "、".join(_unset),
+            icon="⚠️",
+        )
+
+
+def _save_modes():
+    """保存模式选择。"""
+    payload = {}
+    for m in _modes:
+        v = st.session_state.get(f"mode_{m['capability']}")
+        if v:
+            payload[m["mode_key"]] = v
+    if payload:
+        backend_settings_update(payload, token)
+
+
+st.button("保存模式选择", key="save_modes", on_click=_save_modes, type="primary")
+st.markdown('<div class="lc-divider"></div>', unsafe_allow_html=True)
+
+
+def _cost_line(kind: str, provider: str, model: str, units: float = 1.0):
+    """在配置行下方渲染一条"云端/本地"费用提醒（只提醒，不阻止保存）。"""
+    if not provider or provider == "(自动)":
+        st.markdown(
+            "<p style='font-size:11px;color:var(--s-violet-mid);margin:2px 0 0 0;'>"
+            "未指定：将按默认提供者执行（用上方「当前生效」总览核对）</p>",
+            unsafe_allow_html=True,
+        )
+        return
+    cap = {"llm": "llm", "image": "image_gen", "video": "video_gen"}.get(kind, "image_gen")
+    r = backend_cost_reminder(provider, model, cap, units, token)
+    level = r.get("level", "unknown")
+    if level == "free":
+        icon, color = "🟢", "var(--s-lime)"
+    elif level in ("cloud", "cloud_subscription"):
+        icon, color = "🔴", "#ffb23d"
+    else:
+        icon, color = "🟡", "var(--s-violet-mid)"
+    badges = " · ".join(r.get("badges") or [])
+    st.markdown(
+        f"<p style='font-size:11px;color:{color};margin:2px 0 0 0;'>"
+        f"{icon} {escape(str(r.get('title','')))}"
+        f"<span style='color:var(--s-muted);'> · {escape(str(r.get('detail','')))}</span>"
+        + (f"<br><span style='color:var(--s-violet-mid);'>{escape(badges)}</span>" if badges else "")
+        + "</p>",
+        unsafe_allow_html=True,
+    )
+
+
+# ---- 云端使用总览（只提醒，不拦截）----
+_audit = backend_cost_audit(token)
+if _audit.get("status") == "ok":
+    if _audit.get("has_cloud"):
+        _cloud = _audit.get("cloud_items") or []
+        _lines = "；".join(
+            f"{it['key']}={it['provider']}" + ("（你已设置）" if it.get("from_user_setting") else "（默认）")
+            for it in _cloud
+        )
+        st.warning(f"💳 {_audit.get('summary')}\n\n将走云端：{_lines}", icon="💳")
+    else:
+        st.success(f"🟢 {_audit.get('summary')}", icon="🟢")
 
 # ---- 文字模型：综合默认 + 各职业（每个职业独立选） ----
 TEXT_ROWS = [
@@ -52,28 +175,59 @@ VIDEO_ROWS = [
     ("editor", "剪辑师", "video"),
 ]
 
-# 提供者选项：存储用 key，展示用中文名
-PROVIDER_OPTIONS = {
+# 提供者选项：**优先从后端注册表取（唯一数据源）**；下面的静态表仅作后端不可达时的兜底。
+# 见 docs/recon/02-refactor-plan.md §2.6：provider 清单原先散在 3 处，现已收敛。
+_FALLBACK_OPTIONS = {
     "llm": ["(自动)", "deepseek", "zhipu", "openai", "qwen", "moonshot", "claude", "gemini", "doubao", "ernie", "ollama", "vllm", "custom"],
-    "image": ["(自动)", "dashscope", "replicate", "minimax"],
-    "video": ["(自动)", "ffmpeg", "minimax"],
+    "image": ["(自动)", "local", "dashscope", "replicate", "minimax"],
+    "video": ["(自动)", "ffmpeg", "local", "minimax"],
 }
-PROVIDER_LABEL = {
+_FALLBACK_LABEL = {
     "deepseek": "DeepSeek", "zhipu": "智谱 GLM", "openai": "OpenAI", "qwen": "阿里通义千问",
     "moonshot": "月之暗面 Kimi", "claude": "Anthropic Claude", "gemini": "Google Gemini",
     "doubao": "字节豆包(火山方舟)", "ernie": "百度文心(千帆)",
     "ollama": "本地 Ollama", "vllm": "本地 vLLM", "custom": "自定义",
     "dashscope": "阿里百炼(DashScope)", "replicate": "Replicate", "minimax": "MiniMax",
     "ffmpeg": "FFmpeg(本地合成)",
+    "local": "本地推理 local-gen(零成本)",
 }
-# 每个提供者的默认模型（模型留空时自动用，用户只需填 API Key）
-PROVIDER_DEFAULT_MODEL = {
+_FALLBACK_DEFAULT_MODEL = {
     "deepseek": "deepseek-v4-flash", "zhipu": "glm-4", "openai": "gpt-4o-mini",
     "qwen": "qwen-plus", "moonshot": "moonshot-v1-8k", "claude": "claude-3-5-sonnet-latest",
     "gemini": "gemini-1.5-pro", "doubao": "doubao-pro-32k", "ernie": "ernie-4.0-8k",
     "dashscope": "z-image-turbo", "replicate": "sdxl", "minimax": "image-01",
     "ffmpeg": "MiniMax-H3",
 }
+
+# 前端「行类别」 -> 后端注册表「能力类别」
+_CAP_OF_KIND = {"llm": "llm", "image": "image_gen", "video": "video_gen"}
+
+
+def _build_provider_tables() -> tuple[dict, dict, dict]:
+    """从 `/api/providers` 构建 (options, label, default_model) 三张表。
+
+    后端不可达或某能力为空时，回退到内置静态表，保证设置页始终可用。
+    """
+    options, label, default_model = {}, {}, {}
+    for kind, cap in _CAP_OF_KIND.items():
+        items = backend_providers(cap)
+        if not items:
+            options[kind] = list(_FALLBACK_OPTIONS[kind])
+            for k in _FALLBACK_OPTIONS[kind]:
+                label.setdefault(k, _FALLBACK_LABEL.get(k, k))
+                if k in _FALLBACK_DEFAULT_MODEL:
+                    default_model.setdefault(k, _FALLBACK_DEFAULT_MODEL[k])
+            continue
+        options[kind] = ["(自动)"] + [p["key"] for p in items]
+        for p in items:
+            label[p["key"]] = p["label"]
+            if p.get("default_model"):
+                default_model[p["key"]] = p["default_model"]
+        label.setdefault("local", _FALLBACK_LABEL["local"])
+    return options, label, default_model
+
+
+PROVIDER_OPTIONS, PROVIDER_LABEL, PROVIDER_DEFAULT_MODEL = _build_provider_tables()
 
 # 行 -> 实际设置键 (provider, model, api_key)
 KEYMAP = {
@@ -143,6 +297,10 @@ def row_widgets(row_key, label, kind):
             f"{icon} {'通畅' if ok else '异常'} · {et_label} · {res.get('detail','')[:120]}</p>",
             unsafe_allow_html=True,
         )
+
+    # 费用提醒：告诉你这一行选的是云端还是本地（只提醒，不阻止保存）
+    _cost_line(kind, st.session_state.get(f"prov_{ns}") or "",
+               st.session_state.get(f"model_{ns}", "") or "")
 
 
 def _save():
@@ -225,15 +383,38 @@ with t3:
         "通用默认视频模型。剪辑师可独立选择（职业 > 默认）。选 MiniMax 即用图生视频（每段≤15s、≤768P）。</p>",
         unsafe_allow_html=True,
     )
-    # 视频参数：每段最大时长（秒）/ 最高分辨率
+    # 视频参数：每段时长 / 分辨率
+    # 档位与上限**由后端 provider 声明**（app/services/providers.py）：
+    #   本地 8GB 只到 9s（超过 10s 必 OOM），云端可到 15s；1080P 两个提供者都不支持。
+    _vprov = str(cur.get("video_provider") or st.session_state.get("prov_video_video_default") or "minimax")
+    _vopts = backend_providers("video_gen")
+    _spec = next((p for p in _vopts if p["key"] == _vprov), None)
+    _presets = (_spec or {}).get("presets") or {}
+    _durations = _presets.get("duration") or [5, 7, 9, 12, 15]
+    _resolutions = _presets.get("resolution") or ["768P", "2K"]
+
     c_d, c_r = st.columns(2)
     with c_d:
-        st.number_input("每段最大时长（秒，最大 15）", min_value=1, max_value=15, step=1,
-                        key="video_max_duration", value=int(cur.get("video_max_duration") or 15))
-        st.caption("MiniMax-H3 图生视频每段时长上限")
+        _cur_d = int(cur.get("video_max_duration") or DEFAULT_DURATION)
+        if _cur_d not in _durations:
+            _cur_d = max([d for d in _durations if d <= _cur_d] or _durations)
+        st.selectbox(
+            "每段时长（秒）", _durations, key="video_max_duration",
+            index=_durations.index(_cur_d),
+            format_func=lambda v: f"{v} 秒" + ("（默认）" if v == DEFAULT_DURATION else ""),
+            help="分辨率不影响时长上限；本地 8GB 超过 10s 必 OOM（降分辨率无效）",
+        )
+        st.caption(
+            f"「{_vprov}」可选：{'/'.join(str(d) for d in _durations)} 秒"
+            + ("　（本地上限 10s，12/15 已隐藏）" if "local" == _vprov else "")
+        )
     with c_r:
-        st.selectbox("视频最高分辨率", ["768P"], key="video_resolution", index=0)
-        st.caption("当前上限 768P")
+        _cur_r = str(cur.get("video_quality") or cur.get("video_resolution") or _resolutions[0]).upper()
+        if _cur_r not in _resolutions:
+            _cur_r = _resolutions[0]
+        st.selectbox("视频分辨率", _resolutions, key="video_quality",
+                     index=_resolutions.index(_cur_r))
+        st.caption(f"「{_vprov}」可选：{'/'.join(_resolutions)}（1080P 提供者不支持）")
     for rk, label, kind in VIDEO_ROWS[1:]:
         row_widgets(rk, label, kind)
 

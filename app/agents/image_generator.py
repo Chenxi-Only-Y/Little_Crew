@@ -22,8 +22,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.agents.base import BaseAgent
+from app.core.config import settings
 from app.core.state import CrewState
-from app.services.image import get_image_service
+from app.services.image import _img_role, get_image_service
 from app.services.ip_adapter_service import generate_with_ip_adapter
 
 logger = logging.getLogger("little_crew")
@@ -83,8 +84,24 @@ class ImageGenerator(BaseAgent):
 
     # 失败重试次数（总尝试次数 = MAX_RETRIES + 1）
     MAX_RETRIES = 2
-    # 并发生成线程数
+    # 期望的并发生成线程数；**实际上限由 provider 决定**（本地=1，云端=4）。
+    # 见 app/services/providers.py：本地推理服务端有一把全局串行锁，
+    # 调用方再并发只会堆积请求、且让进度显示与实际不符。
     CONCURRENCY = 4
+
+    def _concurrency(self) -> int:
+        """按当前生效的图片 provider 解析并发度。
+
+        注意：这里**显式传 "photographer"** 而不是依赖 `_cur_role()`——
+        线程局部的 role 只在 `ImageService.generate()` 内部设置，
+        在 `run()` 这个位置还是空的，会导致按职业的配置（image_provider_photographer）
+        被静默忽略（曾经如此）。
+        """
+        from app.services.providers import max_concurrency
+
+        provider = _img_role("image_provider", "photographer",
+                             settings.image_provider or "dashscope")
+        return max_concurrency("image_gen", provider, self.CONCURRENCY)
 
     def run(self, state: CrewState) -> dict:
         """图片生成（集成 IP-Adapter）
@@ -131,12 +148,22 @@ class ImageGenerator(BaseAgent):
             pending.append(p)
 
         if pending:
-            # 并发生成
-            with ThreadPoolExecutor(max_workers=self.CONCURRENCY) as pool:
-                futs = {
-                    pool.submit(self._generate_one_with_ip, p, svc, ip_svc, char_refs, known_names): p
-                    for p in pending
-                }
+            # 并发生成；并发上限由 provider 决定（本地=1 → 串行）
+            workers = self._concurrency()
+            logger.info("[image_generator] 生成 %d 张，并发度=%d（由 provider 决定）",
+                        len(pending), workers)
+            # threading.local 不会跨线程继承：先抓当前上下文，在 worker 内恢复。
+            # 否则 worker 里 run_session() 为空 → 产物落到 _global/no-session-*/
+            from app.services.runtime_settings import capture as _ctx_capture, restore as _ctx_restore
+
+            ctx = _ctx_capture()
+
+            def _job(prompt_item: dict):
+                _ctx_restore(ctx)
+                return self._generate_one_with_ip(prompt_item, svc, ip_svc, char_refs, known_names)
+
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futs = {pool.submit(_job, p): p for p in pending}
                 for fut in as_completed(futs):
                     p = futs[fut]
                     try:

@@ -42,10 +42,22 @@ _LOCAL_PROVIDERS = {"ollama", "vllm"}
 
 
 def _resolve(role: str = "") -> tuple:
-    """解析出 (provider, base_url, model, api_key)。role 非空时优先用该角色覆盖。"""
+    """解析出 (provider, base_url, model, api_key)。
+
+    provider 的解析**不做静默默认**（用户 2026-10-02 决定）：
+        职业级覆盖 > 全局 `llm_provider` > 模式（cloud/local）默认 > **未选则空**
+    返回空 provider 表示"用户还没选"，调用方（`_ensure_ready`）会给出可读提示。
+
+    base_url/model/api_key 仍按角色/全局/config 逐级回退——它们在 provider 选定后
+    都有合理预设，回退不会误导。
+    """
+    from app.services.providers import resolve_provider
+
     s = f"_{role}" if role else ""
-    provider = (rs_get(f"llm_provider{s}") or rs_get("llm_provider") or settings.llm_provider or "deepseek").lower()
-    preset = _PRESETS.get(provider, _PRESETS["deepseek"])
+    provider, _why = resolve_provider("llm", role)
+    provider = (provider or "").lower()
+
+    preset = _PRESETS.get(provider) or ("" , "")
     base_url = rs_get(f"llm_base_url{s}") or rs_get("llm_base_url") or settings.llm_base_url or preset[0]
     model = rs_get(f"llm_model{s}") or rs_get("llm_model") or settings.llm_model or preset[1]
     api_key = rs_get(f"llm_api_key{s}") or rs_get("llm_api_key") or settings.llm_api_key or settings.deepseek_api_key
@@ -54,8 +66,22 @@ def _resolve(role: str = "") -> tuple:
 
 class LLMService:
     def __init__(self) -> None:
-        self.mock = settings.mock_llm
         self._clients: dict = {}  # (provider,base,model,key) -> ChatOpenAI
+
+    # ---- mock 开关：每次实时解析，不做快照 ----
+    # 原先在 __init__ 里 `self.mock = settings.mock_llm`，导致运行中改配置不生效
+    # （设置页承诺"保存立即生效"，但已创建的单例永远停在旧值，已实测）。
+    @property
+    def mock(self) -> bool:
+        from app.services.providers import is_mock
+
+        return is_mock("llm")
+
+    @mock.setter
+    def mock(self, value: bool) -> None:
+        from app.services.providers import set_override
+
+        set_override("llm", bool(value))
 
     def _client(self, role: str = ""):
         """按解析配置获取（并缓存）对应 client，支持不同角色不同模型。"""
@@ -106,11 +132,23 @@ class LLMService:
             raise RuntimeError(
                 "MOCK_LLM=1 时请使用 Agent 的 _mock 分支；调用真实模型请设 MOCK_LLM=0。"
             )
+        provider, why = _resolve_provider_for_error(role)
+        if not provider:
+            # 用户还没选提供者：给可操作的提示，而不是抛一个看不懂的错
+            raise RuntimeError(why)
         if self._client(role) is None:
-            provider, _, _, _ = _resolve(role)
             raise RuntimeError(
-                f"LLM 客户端未初始化（provider={provider}, role={role or 'global'}）：请检查密钥或在「设置」页填写。"
+                f"LLM 客户端未初始化（provider={provider}, role={role or 'global'}）："
+                f"请检查密钥，或在「设置」页填写。{why}"
             )
+
+
+def _resolve_provider_for_error(role: str) -> tuple[str, str]:
+    """取 provider 与说明（供报错文案用）。"""
+    from app.services.providers import resolve_provider
+
+    provider, why = resolve_provider("llm", role)
+    return (provider or "").lower(), why
 
 
 _llm_instance: LLMService | None = None

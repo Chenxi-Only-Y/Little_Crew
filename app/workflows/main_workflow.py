@@ -178,6 +178,35 @@ def _attach_thinking(stage_name: str, out: dict) -> dict:
     return out
 
 
+def _bind_context(fn):
+    """把一个节点函数包成"进入时绑定 RunContext"的版本。
+
+    为什么放在这一层：`RunContext`（用户/会话/职业）原本靠 thread-local 隐式传递，
+    在多 worker / 线程池下会丢。把它放进 State 并在这里统一绑定，
+    既让"谁在跑"成为可传递的事实，又不必改动每个 Agent 的签名。
+
+    见 `app/core/context.py`。
+    """
+    from functools import wraps
+
+    from app.core.context import RunContext, bind
+
+    @wraps(fn)
+    def wrapper(state: CrewState) -> dict:
+        with bind(RunContext.from_state(state)):
+            return fn(state)
+
+    return wrapper
+
+
+def _ctx(name: str):
+    """按名字取一个已绑定上下文的节点函数（供 `add_node` 使用）。
+
+    这样不必给每个节点函数加装饰器，也不改变它们的定义顺序语义。
+    """
+    return _bind_context(globals()[name])
+
+
 def _make_stage_node(output_key: str, stage_name: str, agent_cls):
     """构造一个「分段」节点：
       - start_stage 更靠后 / end_stage 更靠前 -> 该环节跳过（AI 执行指定区间）
@@ -185,6 +214,7 @@ def _make_stage_node(output_key: str, stage_name: str, agent_cls):
       - 已有且完整产物 -> 跳过
       - 否则交给 AI agent 生成
     """
+    @_bind_context
     def node(state: CrewState) -> dict:
         if _skipped_by_scope(state, stage_name):
             return {"current_phase": stage_name}
@@ -534,29 +564,29 @@ def build_graph() -> StateGraph:
     """构建含人工确认点的 StateGraph。"""
     g = StateGraph(CrewState)
 
-    g.add_node("story_planner", node_story_planner)
-    g.add_node("screenwriter", node_screenwriter)
-    g.add_node("critics", node_critics)
+    g.add_node("story_planner", _ctx("node_story_planner"))
+    g.add_node("screenwriter", _ctx("node_screenwriter"))
+    g.add_node("critics", _ctx("node_critics"))
     g.add_node("review_script", review_script_node)
-    g.add_node("art_brief_parser", node_art_brief_parser)
-    g.add_node("character_designer", node_character_designer)
-    g.add_node("scene_designer", node_scene_designer)
-    g.add_node("consistency_auditor", node_consistency_auditor)
+    g.add_node("art_brief_parser", _ctx("node_art_brief_parser"))
+    g.add_node("character_designer", _ctx("node_character_designer"))
+    g.add_node("scene_designer", _ctx("node_scene_designer"))
+    g.add_node("consistency_auditor", _ctx("node_consistency_auditor"))
     g.add_node("review_assets", review_assets_node)
-    g.add_node("storyboarder", node_storyboarder)
+    g.add_node("storyboarder", _ctx("node_storyboarder"))
     g.add_node("review_storyboard", review_storyboard_node)
-    g.add_node("rhythm_director", node_rhythm_director)
-    g.add_node("continuity_checker", node_continuity_checker)
-    g.add_node("prompt_compiler", node_prompt_compiler)
-    g.add_node("image_generator", node_image_generator)
-    g.add_node("quality_assessor", node_quality_assessor)
+    g.add_node("rhythm_director", _ctx("node_rhythm_director"))
+    g.add_node("continuity_checker", _ctx("node_continuity_checker"))
+    g.add_node("prompt_compiler", _ctx("node_prompt_compiler"))
+    g.add_node("image_generator", _ctx("node_image_generator"))
+    g.add_node("quality_assessor", _ctx("node_quality_assessor"))
     g.add_node("review_images", review_images_node)
     g.add_node("review_critics", review_critics_node)
     g.add_node("review_rhythm", review_rhythm_node)
     g.add_node("review_continuity", review_continuity_node)
     g.add_node("review_prompts", review_prompts_node)
     g.add_node("review_quality", review_quality_node)
-    g.add_node("aggregator", node_aggregator)
+    g.add_node("aggregator", _ctx("node_aggregator"))
 
     g.add_edge(START, "story_planner")
     g.add_edge("story_planner", "screenwriter")

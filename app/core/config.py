@@ -31,7 +31,12 @@ class Settings(BaseSettings):
     deepseek_model: str = "deepseek-v4-flash"
 
     # 可切换的其他 LLM 提供者（deepseek | zhipu | openai | ollama | custom）
-    llm_provider: str = "deepseek"
+    #
+    # ⚠️ 设计决定（2026-10-02）：**不设静默默认**。
+    # 用户需先显式选择「云端 API / 本地推理」（`llm_provider_mode`），
+    # 再按模式取默认提供者；也可直接填具体提供者覆盖。
+    # 两者都没设时明确报错，而不是猜——避免"没配却以为配了"或意外产生费用。
+    llm_provider: str = ""
     llm_api_key: str = ""       # 优先；为空则退回 deepseek_api_key
     llm_base_url: str = ""      # 覆盖预设
     llm_model: str = ""         # 覆盖预设
@@ -39,7 +44,9 @@ class Settings(BaseSettings):
     # ------------------- 图像生成 (阿里百炼 / Replicate / MiniMax) -------------------
     image_api_key: str = ""          # 备用（IMAGE_API_KEY）
     dashscope_api_key: str = ""      # 阿里百炼（读取 DASHSCOPE_API_KEY）
-    image_provider: str = "minimax"  # dashscope | replicate | minimax
+    # ⚠️ 不设静默默认：用户先选 image_provider_mode（cloud/local），
+    # 或直接指定 image_provider。未选时明确报错（见 app/services/providers.py）。
+    image_provider: str = ""         # dashscope | replicate | minimax | local
     image_base_url: str = ""
     image_model: str = "image-01"    # MiniMax 文生图模型（image-01）；dashscope 时可为 z-image-turbo/wanx
     replicate_api_token: str = ""
@@ -49,13 +56,26 @@ class Settings(BaseSettings):
     minimax_api_key: str = ""
     minimax_base_url: str = "https://api.minimaxi.com"
 
+    # ------------------- 本地推理服务（零成本测试，部署于 D:\AI\local-gen）-------------------
+    # 把 IMAGE_PROVIDER / VIDEO_PROVIDER 设为 "local" 即走本机推理，不再产生 API 费用。
+    # 服务的启动方式与显存策略见 D:\AI\local-gen\README.md。
+    local_gen_url: str = "http://127.0.0.1:8100"
+    local_image_steps: int = 8         # Z-Image-Turbo 是蒸馏模型，固定 8 步（勿调高，否则画质变差）
+    local_video_steps: int = 50        # MiniMax H3 步数；Disk Offload 下很慢，测试建议 8~15
+    local_gen_timeout: int = 7200      # 本地视频生成超时（秒），Disk Offload 可能几十分钟
+
     # ------------------- 视频合成 -------------------
     # ffmpeg: 本地图片幻灯 + Edge TTS（需安装 FFmpeg）
     # minimax: 调用 MiniMax-H3 图生视频（每段 ≤ video_max_duration 秒、≤ video_resolution 分辨率）
-    video_provider: str = "minimax"
+    # ⚠️ 不设静默默认：用户先选 video_provider_mode（cloud/local），
+    # 或直接指定 video_provider。未选时明确报错（见 app/services/providers.py）。
+    video_provider: str = ""          # minimax | local | ffmpeg
     video_model: str = "MiniMax-H3"
     video_base_url: str = ""          # 覆盖默认 base_url
-    video_max_duration: int = 15      # 每段视频最大时长（秒）
+    # 每段时长（秒）。可选档位 5/7/9/12/15，默认 7；
+    # **实际上限由 provider 决定**（本地 8GB 只到 9，超过 10s 必 OOM），
+    # 详见 app/services/providers.py 的 allowed_durations / resolve_duration。
+    video_max_duration: int = 7
     video_resolution: str = "768P"    # 视频最高分辨率（MiniMax-H3 支持 768P | 2K）
 
     # ------------------- IP-Adapter（角色一致性方案B 参考图生成） -------------------
@@ -110,7 +130,7 @@ class Settings(BaseSettings):
     max_images: int = 8               # 全片最多生成的图片/镜头数（控制图片数量）
     video_count: int = 0              # 最多生成的视频段数（0=跟随图片数）
     image_quality: str = "standard"   # standard | high | ultra（图片细节/清晰度）
-    video_quality: str = "768P"       # 768P | 2K（视频分辨率，可由设置页选择）
+    video_quality: str = "768P"       # 768P | 2K（视频分辨率，可由设置页选择；1080P 提供者不支持）
 
     # ------------------- 路径 -------------------
     db_path: str = "./data/little_crew.db"

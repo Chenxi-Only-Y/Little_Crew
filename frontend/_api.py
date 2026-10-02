@@ -230,6 +230,69 @@ def backend_settings_test(payload: dict, token: str | None = None) -> dict:
         return {"status": "error", "message": "后端不可达"}
 
 
+def backend_cost_reminder(provider: str, model: str = "", capability: str = "image_gen",
+                          units: float = 1, token: str | None = None) -> dict:
+    """云端费用提醒（只提醒不拦截）：对一次将要执行的操作给出预估与门槛提示。"""
+    try:
+        r = requests.post(f"{API}/api/cost/reminder",
+                          json={"provider": provider, "model": model,
+                                "capability": capability, "units": units},
+                          headers=_auth_headers(token), timeout=15)
+        return r.json()
+    except requests.RequestException:
+        return {"status": "error", "message": "后端不可达"}
+
+
+def backend_cost_audit(token: str | None = None) -> dict:
+    """汇总当前配置里哪些项会走云端（含 .env 默认回退）。"""
+    try:
+        r = requests.get(f"{API}/api/cost/audit", headers=_auth_headers(token), timeout=15)
+        return r.json()
+    except requests.RequestException:
+        return {"status": "error", "message": "后端不可达"}
+
+
+def backend_providers(capability: str | None = None,
+                      include_unavailable: bool = False) -> list:
+    """取 provider 清单（唯一数据源；设置页不再自带 PROVIDER_OPTIONS）。
+
+    公开端点，无需 token；后端不可达时返回空列表，调用方回退到内置兜底清单。
+    """
+    try:
+        r = requests.get(f"{API}/api/providers",
+                         params={"capability": capability or "",
+                                 "include_unavailable": include_unavailable},
+                         timeout=10)
+        return r.json().get("providers", [])
+    except requests.RequestException:
+        return []
+
+
+def backend_generation_modes() -> list:
+    """取"云端 / 本地"模式设置项（必须先选的 5 项）。
+
+    后端不可达时返回内置兜底（与 app/services/providers.py 保持一致）
+    """
+    try:
+        r = requests.get(f"{API}/api/providers/modes", timeout=10)
+        return r.json().get("modes", [])
+    except requests.RequestException:
+        return [
+            {"capability": "llm", "mode_key": "llm_provider_mode",
+             "provider_key": "llm_provider", "mode_options": ["unset", "cloud", "local"],
+             "mode_labels": {"cloud": "云端 API", "local": "本地推理", "unset": "未选择"},
+             "mode_defaults": {"cloud": "deepseek", "local": "ollama"}},
+            {"capability": "image_gen", "mode_key": "image_provider_mode",
+             "provider_key": "image_provider", "mode_options": ["unset", "cloud", "local"],
+             "mode_labels": {"cloud": "云端 API", "local": "本地推理", "unset": "未选择"},
+             "mode_defaults": {"cloud": "dashscope", "local": "local"}},
+            {"capability": "video_gen", "mode_key": "video_provider_mode",
+             "provider_key": "video_provider", "mode_options": ["unset", "cloud", "local"],
+             "mode_labels": {"cloud": "云端 API", "local": "本地推理", "unset": "未选择"},
+             "mode_defaults": {"cloud": "minimax", "local": "local"}},
+        ]
+
+
 def backend_asset_upload(name: str, data_base64: str, ext: str, token: str | None = None) -> dict:
     """上传图片资产为 base64，后端保存到本地并返回可被 AI 消费的路径。"""
     try:

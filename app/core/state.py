@@ -24,6 +24,11 @@ class CrewState(TypedDict, total=False):
     user_input: str          # 用户的一句话创意 / 故事大纲
     session_id: str          # 会话 ID（用于结果落盘、进度追踪）
 
+    # 运行上下文（用户/会话/职业）：随 State 传递，避免依赖 thread-local。
+    # 结构：{"user_id": str, "session_id": str, "role": str}
+    # 每个节点进入时会用它绑定上下文（见 app/core/context.py 与 main_workflow._bind_context）。
+    run_context: dict
+
     # 美术资产部独立生成入口：用户填写的「美术设定包」自由文本（无剧本时据此设计角色/场景）。
     art_brief: str
     # 美术设定包解析结果：{characters:[{name,appearance,clothing,accessories}],

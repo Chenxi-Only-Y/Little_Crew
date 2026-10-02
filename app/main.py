@@ -14,10 +14,11 @@ import time
 import uuid
 import threading
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.services.auth import get_user_store
+from app.services.events import get_hub
 from app.services.logging import redact, setup_logging
 from app.services.profile import get_profile_store
 from app.services.quota import quota
@@ -35,20 +36,35 @@ app = FastAPI(
 )
 
 
-_HEALTH_PUBLIC = ("/health", "/api/auth", "/api/asset", "/docs", "/openapi.json", "/redoc")
+# 公开路径：健康检查 / 认证 / 静态结构 schema。
+# `/api/registry` 与 `/api/providers` 是**纯静态定义**（职业/节点/端口/提供者清单），
+# 不含任何用户数据或密钥；前端需要在登录前就能渲染导演台骨架，故一并公开。
+_HEALTH_PUBLIC = ("/health", "/api/auth", "/api/asset", "/api/providers", "/api/registry",
+                  "/docs", "/openapi.json", "/redoc")
 
 
 @app.middleware("http")
 async def auth_guard(request: Request, call_next):
-    """硬性门槛：除公开路径外，必须带有效登录 token（Authorization: Bearer）。"""
+    """硬性门槛：除公开路径外，必须带有效登录 token。
+
+    鉴权来源（按优先级）：
+      1. `Authorization: Bearer <token>`（常规请求）
+      2. `?token=<token>` 查询参数
+
+    为什么需要第 2 条：浏览器的 `EventSource` **无法自定义请求头**，
+    SSE 订阅（`/api/sessions/{id}/events`）只能把 token 放查询参数里。
+    非 loopback 部署务必用 HTTPS，否则 token 会在 URL 中明文传输。
+    """
     path = request.url.path
     if path.startswith(_HEALTH_PUBLIC):
         return await call_next(request)
+
     auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        user = get_user_store().resolve(auth[7:].strip())
-        if user:
-            return await call_next(request)
+    token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    if not token:
+        token = request.query_params.get("token", "").strip()
+    if token and get_user_store().resolve(token):
+        return await call_next(request)
     return JSONResponse(status_code=401, content={"status": "error", "message": "未登录，请先登录"})
 
 
@@ -151,26 +167,10 @@ async def login(payload: dict):
 # ------------------------------------------------------------------
 # API 设置（运行时可切换提供者/密钥）
 # ------------------------------------------------------------------
-# 可独立选模型的文字 Agent 职业（llm._resolve(role) 按这些值读 per-role 覆盖）
-_ROLES = ["writer", "critics", "screenwriter", "storyboarder", "director", "photographer", "continuity"]
-# 可独立选模型的图片/视频职业（image.py/video.py 按 _img_role 读 per-role 覆盖）
-_IMAGE_ROLES = ["character_designer", "scene_designer", "photographer"]
-_VIDEO_ROLES = ["editor"]
-_SETTABLE = ("llm_provider", "llm_api_key", "llm_base_url", "llm_model",
-             "image_provider", "image_api_key", "dashscope_api_key", "image_model", "replicate_api_token",
-             "minimax_api_key", "minimax_base_url",
-             "video_provider", "video_model", "video_api_key", "video_base_url",
-             "video_max_duration", "video_resolution",
-             "max_images", "video_count", "image_quality", "video_quality",
-             *[f"llm_provider_{r}" for r in _ROLES],
-             *[f"llm_model_{r}" for r in _ROLES],
-             *[f"llm_api_key_{r}" for r in _ROLES],
-             *[f"image_provider_{r}" for r in _IMAGE_ROLES],
-             *[f"image_model_{r}" for r in _IMAGE_ROLES],
-             *[f"image_api_key_{r}" for r in _IMAGE_ROLES],
-             *[f"video_provider_{r}" for r in _VIDEO_ROLES],
-             *[f"video_model_{r}" for r in _VIDEO_ROLES],
-             *[f"video_api_key_{r}" for r in _VIDEO_ROLES])
+# 白名单**不再手写**：由 `registry.api.allowed_settings()` 从注册表派生。
+# 原先这里有一份 `_SETTABLE` 常量，注册表新增配置键（tts_provider /
+# lora_train_provider / image_provider_image_edit 等）时没同步，
+# 导致界面上能改、保存却被静默丢弃。派生之后"能改的一定存得下"。
 
 
 @app.get("/api/settings")
@@ -182,9 +182,16 @@ async def get_settings(request: Request):
 
 @app.put("/api/settings")
 async def put_settings(payload: dict, request: Request):
-    """更新指定用户的运行时 API 配置（传 None=保留，传空串=清除覆盖回退默认）。"""
+    """更新指定用户的运行时 API 配置（传 None=保留，传空串=清除覆盖回退默认）。
+
+    白名单**由注册表派生**（`registry.api.allowed_settings()`），不再手写：
+    否则注册表新增配置键时，界面上能改、却会被这里静默丢弃（已实际发生过）。
+    """
+    from app.registry import api as registry
+
     uid = _auth_user(request, payload.get("user_id") or "local")
-    allowed = {k: payload[k] for k in _SETTABLE if k in payload}
+    settable = registry.allowed_settings()
+    allowed = {k: payload[k] for k in settable if k in payload}
     # 丢弃掩码哨兵，避免把掩码回写覆盖真实密钥；空串=清除覆盖
     cleaned = {k: v for k, v in allowed.items()
                if v is not None and not (_is_secret_key(k) and v == _MASK_SENTINEL)}
@@ -327,6 +334,329 @@ async def put_profile(payload: dict, request: Request):
     return {"status": "ok", "profile": prof}
 
 
+# ------------------------------------------------------------------
+# 工程文件（导演台画布）：保存/读取用户搭好的那张图
+# ------------------------------------------------------------------
+# 只存"画布形状 + 参数"，不存运行结果（结果是 sessions 的事）。
+# 密钥**绝不入库**：写入前把 settings_snapshot 里的敏感键替换为掩码哨兵。
+
+_PROJECT_SECRET_HINTS = ("api_key", "token", "secret", "password")
+
+
+def _mask_for_project(snap: dict) -> dict:
+    """工程快照里不保存任何密钥（只留"是否配过"的信息）。"""
+    out = {}
+    for k, v in (snap or {}).items():
+        if any(h in k.lower() for h in _PROJECT_SECRET_HINTS):
+            out[k] = _MASK_SENTINEL if v else ""
+        else:
+            out[k] = v
+    return out
+
+
+@app.get("/api/projects")
+async def list_projects(request: Request):
+    """列出当前用户的工程（按最近修改排序）。"""
+    uid = _auth_user(request)
+    if not uid:
+        raise HTTPException(status_code=401, detail="未登录")
+    from app.services.project_store import get_project_store
+
+    items = get_project_store().list_by_user(uid)
+    return {"status": "ok", "count": len(items), "projects": items}
+
+
+@app.post("/api/projects")
+async def create_project(payload: dict, request: Request):
+    """保存工程。
+
+    body: {name, canvas:{nodes,edges,viewport}, settings_snapshot?, project_id?}
+    `project_id` 存在则覆盖该工程（用于"另存/更新"）。
+    """
+    uid = _auth_user(request)
+    if not uid:
+        raise HTTPException(status_code=401, detail="未登录")
+    from app.services.project_store import get_project_store
+
+    body = payload or {}
+    try:
+        summary = get_project_store().save(
+            user_id=uid,
+            name=str(body.get("name") or "未命名工程"),
+            canvas=body.get("canvas") or {},
+            settings_snapshot=_mask_for_project(body.get("settings_snapshot") or {}),
+            project_id=body.get("project_id") or None,
+        )
+    except ValueError as exc:            # 体积超限等
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
+    except PermissionError as exc:       # 覆盖他人工程
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    return {"status": "ok", **summary}
+
+
+@app.get("/api/projects/{project_id}")
+async def get_project(project_id: str, request: Request):
+    """读取工程。不存在或不属于当前用户都返回 404（不暴露他人工程 id）。"""
+    uid = _auth_user(request)
+    if not uid:
+        raise HTTPException(status_code=401, detail="未登录")
+    from app.services.project_store import get_project_store
+
+    doc = get_project_store().get(project_id, uid)
+    if not doc:
+        raise HTTPException(status_code=404, detail="工程不存在")
+    return {"status": "ok", "project": doc}
+
+
+@app.delete("/api/projects/{project_id}")
+async def delete_project(project_id: str, request: Request):
+    uid = _auth_user(request)
+    if not uid:
+        raise HTTPException(status_code=401, detail="未登录")
+    from app.services.project_store import get_project_store
+
+    if not get_project_store().delete(project_id, uid):
+        raise HTTPException(status_code=404, detail="工程不存在")
+    return {"status": "ok", "project_id": project_id}
+
+
+@app.post("/api/projects/{project_id}/rename")
+async def rename_project(project_id: str, payload: dict, request: Request):
+    uid = _auth_user(request)
+    if not uid:
+        raise HTTPException(status_code=401, detail="未登录")
+    from app.services.project_store import get_project_store
+
+    name = str((payload or {}).get("name") or "")
+    if not get_project_store().rename(project_id, uid, name):
+        raise HTTPException(status_code=404, detail="工程不存在")
+    return {"status": "ok", "project_id": project_id, "name": name}
+
+
+# ------------------------------------------------------------------
+# 注册表（唯一数据源）：前端据此渲染节点库/面板/端口/确认点，不再自带清单
+# ------------------------------------------------------------------
+@app.get("/api/registry")
+async def get_registry(response: Response):
+    """下发完整注册表（职业/部门/节点/端口/确认点/配置字段/执行顺序/校验规格）。
+
+    设计目的见 `docs/recon/04-frontend-rewrite.md §1`：
+    前端**不得**自己定义职业、部门、阶段、产物、provider 清单——一律来自这里，
+    否则会重演 v1「同一概念散落 5 个文件、且已真实不一致」的问题。
+
+    这是**纯静态定义**（不含用户数据），故为公开端点；并要求每次重新校验，
+    避免注册表更新后前端仍拿旧结构渲染。
+    """
+    from app.registry import api as registry
+
+    response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return {"status": "ok", "registry": registry.snapshot()}
+
+
+@app.post("/api/registry/validate")
+async def validate_registry_topology(payload: dict | None = None):
+    """校验一组节点/连线能否执行（画布"能不能连"的后端判定）。
+
+    body: {
+        "nodes": [node_key...],
+        "edges": [[src, dst], ...] 或 [{"source": src, "target": dst}, ...],
+        "available_inputs": [artifact_key...]
+    }
+    两种 edges 格式都接受，避免前端为适配接口而多做一层转换。
+    与前端预校验共用同一份注册表规则，避免两边漂移。
+    """
+    from app.registry import api as registry
+
+    body = payload or {}
+    nodes = [str(k) for k in (body.get("nodes") or [])]
+    edges: list[tuple[str, str]] = []
+    for e in body.get("edges") or []:
+        if isinstance(e, dict):
+            src, dst = e.get("source"), e.get("target")
+            if src and dst:
+                edges.append((str(src), str(dst)))
+        elif isinstance(e, (list, tuple)) and len(e) >= 2:
+            edges.append((str(e[0]), str(e[1])))
+    inputs = [str(k) for k in (body.get("available_inputs") or [])]
+    result = registry.validate_topology(nodes, edges=edges or None, available_inputs=inputs)
+    return {"status": "ok" if result["ok"] else "error", **result}
+
+
+# ------------------------------------------------------------------
+# 云端使用提醒（只提醒，不拦截）—— 见 app/services/cloud_cost.py
+# ------------------------------------------------------------------
+@app.post("/api/cost/reminder")
+async def cost_reminder(payload: dict | None = None):
+    """对一次"将要执行"的操作给出云端费用提醒（不阻断）。
+
+    body: {provider, model, capability, units}
+    返回 {level, is_cloud, title, detail, estimate, badges}，供前端在按钮旁直接展示。
+    """
+    from app.services.cloud_cost import reminder
+
+    body = payload or {}
+    return {
+        "status": "ok",
+        **reminder(
+            str(body.get("provider") or ""),
+            str(body.get("model") or ""),
+            str(body.get("capability") or "image_gen"),   # type: ignore[arg-type]
+            float(body.get("units") or 1),
+        ),
+    }
+
+
+@app.get("/api/cost/audit")
+async def cost_audit(request: Request):
+    """扫描当前用户设置（含 .env 默认回退），汇总"哪些项会走云端、哪些本地免费"。"""
+    from app.core.config import settings as _cfg
+    from app.services.cloud_cost import audit_settings
+
+    uid = _auth_user(request, "local")
+    defaults = {
+        "llm_provider": _cfg.llm_provider,
+        "deepseek_model": _cfg.deepseek_model,
+        "llm_model": _cfg.llm_model,
+        "image_provider": _cfg.image_provider,
+        "image_model": _cfg.image_model,
+        "video_provider": _cfg.video_provider,
+        "video_model": _cfg.video_model,
+    }
+    return {"status": "ok", "user_id": uid, **audit_settings(rs_snap(uid), defaults)}
+
+
+@app.get("/api/cost/models")
+async def cost_models(capability: str | None = None):
+    """列出已知模型的成本/可用性元数据（供设置页展示"怎么选"）。"""
+    from app.services.cloud_cost import MODEL_COST
+
+    items = [v.__dict__ for v in MODEL_COST.values()]
+    if capability:
+        items = [i for i in items if i["capability"] == capability]
+    return {"status": "ok", "count": len(items), "models": items}
+
+
+@app.get("/api/providers/modes")
+async def provider_modes():
+    """下发"云端 / 本地"模式设置项（**必须先选**的 5 项）。
+
+    设计决定（用户 2026-10-02）：不默认本地、也不默认云端，让用户显式选择。
+    未选时后端会明确报错而不是猜——避免"没部署本地却走本地"或"不知情产生云端费用"。
+    """
+    from app.services.providers import generation_settings
+
+    modes = generation_settings()
+    return {"status": "ok", "count": len(modes), "modes": modes}
+
+
+@app.get("/api/providers")
+async def list_providers(capability: str | None = None, include_unavailable: bool = False):
+    """下发 provider 清单（唯一数据源，前端不再自带 PROVIDER_OPTIONS）。
+
+    设计目的见 `docs/recon/02-refactor-plan.md §2.6`：
+    provider 列表原先散在 config.py、设置页、image/video 分派三处。
+
+    Query:
+        capability: 只看某类能力（llm / image_gen / image_edit / video_gen /
+                    lora_train / tts / music / render_2d）
+        include_unavailable: 是否包含"已登记未接入"的提供者
+    """
+    from app.services.providers import PROVIDERS
+
+    items = [
+        {
+            "key": p.key, "label": p.label, "capability": p.capability,
+            "category": p.category, "available": p.available,
+            "default_model": p.default_model, "known_models": list(p.known_models),
+            "needs_api_key": p.needs_api_key, "needs_proxy": p.needs_proxy,
+            "max_concurrency": p.max_concurrency, "note": p.note,
+        }
+        for p in PROVIDERS
+        if (not capability or p.capability == capability)
+        and (include_unavailable or p.available)
+    ]
+    return {"status": "ok", "count": len(items), "providers": items}
+
+
+# ------------------------------------------------------------------
+# 会话：启动 + 实时事件流（导演台用）
+# ------------------------------------------------------------------
+@app.post("/api/sessions")
+async def create_session(payload: dict, request: Request):
+    """启动一次创作并返回 session_id（导演台入口）。
+
+    body: {user_input, seed?, session_id?}
+    与 `/api/crew/run` 等价，只是路径符合"资源"语义；
+    立刻返回，进度通过 `GET /api/sessions/{id}/events` 实时推送。
+    """
+    user_input = (payload.get("user_input") or "").strip()
+    if not user_input:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "缺少 user_input"})
+
+    user_id = _auth_user(request, payload.get("user_id") or "local")
+    client_ip = request.client.host if request.client else "unknown"
+    ok, msg = quota.check(client_ip, user_id)
+    if not ok:
+        return JSONResponse(status_code=429, content={"status": "error", "message": msg})
+
+    session_id = payload.get("session_id") or uuid.uuid4().hex[:8]
+    get_hub().reset(session_id)          # 新一轮：清掉上一轮的事件历史
+    start_run(session_id, user_input, user_id, seed=payload.get("seed") or None)
+    return {"status": "accepted", "session_id": session_id, "user_id": user_id}
+
+
+@app.get("/api/sessions/{session_id}/events")
+async def session_events(session_id: str, request: Request, token: str | None = None):
+    """实时事件流（SSE）：阶段状态、AI 思考过程、确认点、整体状态。
+
+    为什么用 SSE 而不是 WebSocket：只需服务端单向推送，浏览器原生支持断线重连，
+    实现与部署都更简单（见 docs/recon/04-frontend-rewrite.md §2）。
+
+    鉴权说明：浏览器 `EventSource` **无法自定义请求头**，因此这里额外接受
+    `?token=` 查询参数；同时保留 `Authorization` 头（便于 fetch-based 客户端）。
+    非 loopback 部署务必用 HTTPS，否则 token 会在 URL 中明文传输。
+    """
+    from app.services.events import get_hub as _hub
+
+    # 鉴权：优先 Authorization 头，其次 query token
+    auth = request.headers.get("Authorization", "")
+    bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    supplied = bearer or (token or "")
+    if not supplied or not get_user_store().resolve(supplied):
+        return JSONResponse(status_code=401, content={"status": "error", "message": "未登录"})
+
+    hub = _hub()
+    return StreamingResponse(
+        hub.stream(session_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            # 关掉 nginx 等反代的缓冲，否则事件会被攒着一起发
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.get("/api/sessions/{session_id}/events/snapshot")
+async def session_events_snapshot(session_id: str, request: Request):
+    """已发生事件的快照（用于排查"实时没收到"的问题）。"""
+    from app.services.events import get_hub as _hub
+
+    row = _require_owner(session_id, request)
+    hub = _hub()
+    return {
+        "status": "ok",
+        "session_id": session_id,
+        "session_status": row.get("status"),
+        "subscribers": hub.subscriber_count(session_id),
+        "events": [
+            {"type": e.type, "ts": e.ts, "seq": e.seq, **e.data}
+            for e in hub.history(session_id)
+        ],
+    }
+
+
 @app.post("/api/crew/run")
 async def run_crew(payload: dict, request: Request):
     """异步启动一次创作（后台运行，轮询 /status 取进度）。含限流与每日配额。"""
@@ -404,7 +734,11 @@ async def cancel_crew(session_id: str, request: Request):
 
 @app.post("/api/crew/resume")
 async def resume_crew(payload: dict, request: Request):
-    """对暂停的确认点/人工接管段续跑（approve / redo+feedback / 提供 content）。"""
+    """对暂停的确认点/人工接管段续跑（approve / redo+feedback / 提供 content）。
+
+    若工作流断点已丢失（如服务重启过），返回 409 并说明原因，**不会静默重放整张图**
+    （见 `docs/recon/01-usage.md §6.1`）。
+    """
     session_id = payload.get("session_id", "")
     decision = payload.get("decision", "approve")
     feedback = payload.get("feedback", {})
@@ -412,7 +746,14 @@ async def resume_crew(payload: dict, request: Request):
     row = _require_owner(session_id, request)
     if row["status"] != "review":
         return {"status": "error", "message": "会话不在确认点，无法续跑", "session_id": session_id}
-    resume_run(session_id, row["user_id"] or "local", decision, feedback, content)
+
+    started, message = resume_run(session_id, row["user_id"] or "local", decision, feedback, content)
+    if not started:
+        return JSONResponse(
+            status_code=409,
+            content={"status": "error", "message": message, "session_id": session_id,
+                     "reason": "checkpoint_lost"},
+        )
     return {"status": "accepted", "session_id": session_id}
 
 

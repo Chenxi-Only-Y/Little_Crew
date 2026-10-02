@@ -103,6 +103,30 @@ def user() -> str:
     return getattr(_local, "user", _GLOBAL)
 
 
+# ------------------------------------------------------------------
+# 上下文跨线程传递
+# ------------------------------------------------------------------
+# 背景（已实测）：`threading.local` 在 `ThreadPoolExecutor` 里**不会继承**——
+# 并发出图时 worker 拿到 `user=_global`、`session=''`，于是产物落到
+# `_global/no-session-<shot_id>/`（正是 01-usage §6.2 记录的现象）。
+#
+# 这里提供最小侵入的修法：提交任务前 `capture()`，在 worker 内 `restore()`。
+# 完全替换为显式 `RunContext` 参数是更彻底的做法（08-solutions §2），
+# 但会触及大量调用点；先用这一层把行为修正，接口保持不变。
+
+
+def capture() -> dict:
+    """抓取当前线程的上下文（供跨线程恢复）。"""
+    return {"user": user(), "session_id": run_session()}
+
+
+def restore(ctx: dict | None) -> None:
+    """在当前线程恢复由 `capture()` 抓取的上下文（None 则不动）。"""
+    if not ctx:
+        return
+    set_context(ctx.get("user"), ctx.get("session_id"))
+
+
 def get(name: str, default=None):
     """读取（合并后）设置：当前线程用户 > _global > default。"""
     return _merged().get(name, default)
@@ -113,10 +137,29 @@ def snapshot(user_id: str | None = None) -> dict:
     return _merged(user_id)
 
 
-def set_many(user_id: str, mapping: dict) -> None:
-    """写入某用户的覆盖设置（None 忽略；空串存为覆盖，读取时回退默认）。"""
-    data = {k: v for k, v in mapping.items() if v is not None}
+def set_many(user_id: str, mapping: dict, *, merge: bool = True) -> None:
+    """写入某用户的覆盖设置。
+
+    Args:
+        mapping: 要写入的键值。`None` 会被忽略；**空串会存为覆盖**，
+                 读取时按 falsy 回退到默认（即"清除该覆盖"的语义）
+        merge:   True（默认）与已有配置**合并**，只改动传入的键；
+                 False 则整体替换。
+
+    ⚠️ `merge` 默认必须是 True —— 这是一个**实际发生过的数据丢失**：
+        属性面板只保存一个字段（如职业级 `image_provider_photographer`）时，
+        整体替换会把该用户**其余所有设置清空**。
+        设置页之所以没暴露该问题，是因为它一次提交全部字段。
+    """
+    changes = {k: v for k, v in mapping.items() if v is not None}
     uid = user_id or _GLOBAL
+
+    if merge:
+        data = dict(_user_override(uid))
+        data.update(changes)
+    else:
+        data = changes
+
     c = _conn()
     c.execute(
         "INSERT INTO api_settings(user_id,payload) VALUES(?,?) "

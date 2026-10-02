@@ -113,10 +113,30 @@ def _cur_role() -> str:
 
 
 class ImageService:
-    def __init__(self) -> None:
-        self.mock = settings.mock_image
-        self.output_dir = settings.output_dir_path
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+    # ---- mock 开关：每次实时解析，不做快照（原先 __init__ 里快照导致改配置不生效）----
+    @property
+    def mock(self) -> bool:
+        from app.services.providers import is_mock
+
+        return is_mock("image")
+
+    @mock.setter
+    def mock(self, value: bool) -> None:
+        from app.services.providers import set_override
+
+        set_override("image", bool(value))
+
+    # ---- 输出目录：同样不做快照（改 OUTPUT_DIR 后应立即生效）----
+    @property
+    def output_dir(self) -> Path:
+        p = settings.output_dir_path
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    @output_dir.setter
+    def output_dir(self, value) -> None:
+        """兼容旧写法 `svc.output_dir = ...`（测试/脚本用），改为写回配置。"""
+        settings.output_dir = str(value)
 
     # ------------------- 统一入口 -------------------
 
@@ -153,12 +173,67 @@ class ImageService:
     # ------------------- real 模式 -------------------
 
     def _real_image(self, prompt: dict) -> Tuple[str, str, bool]:
-        provider = _img_role("image_provider", _cur_role(), settings.image_provider or "dashscope").lower()
+        # 提供者解析：职业级覆盖 > 全局 > 模式（云端/本地）> **未选则报错**
+        # 不再静默默认（见 app/services/providers.py 的 resolve_provider 说明）。
+        from app.services.providers import resolve_provider
+
+        provider, why = resolve_provider("image_gen", _cur_role())
+        if not provider:
+            raise RuntimeError(why)
+        provider = provider.lower()
         if provider == "replicate":
             return self._replicate(prompt)
         if provider == "minimax":
             return self._minimax(prompt)
+        if provider == "local":
+            return self._local(prompt)
         return self._dashscope(prompt)
+
+    def _local(self, prompt: dict) -> Tuple[str, str, bool]:
+        """本地 Z-Image-Turbo 文生图（D:\\AI\\local-gen 服务），零 API 成本。
+
+        与云端 provider 的差别：图片直接由本地服务落盘，这里只需再另存到项目的
+        输出目录（按账号/部门/职业/会话归类），因此返回值沿用 mock 的约定，
+        把本地路径同时作为 image_url 与 local_path，避免下游再去拉一次网络。
+        """
+        base = (_img_role("local_gen_url", _cur_role(), settings.local_gen_url)
+                or "http://127.0.0.1:8100").rstrip("/")
+        text = str(prompt.get("prompt") or "").strip()
+        if not text:
+            raise ValueError("图片生成 prompt 为空，无法调用本地 Z-Image")
+
+        body = {
+            "prompt": text,
+            "negative_prompt": str(prompt.get("negative_prompt") or ""),
+            "width": int(prompt.get("width", 1024)),
+            "height": int(prompt.get("height", 1024)),
+            "num_inference_steps": int(_img_role("local_image_steps", _cur_role(),
+                                                 settings.local_image_steps) or 8),
+            "response_format": "url",
+        }
+        if prompt.get("seed") is not None:
+            body["seed"] = int(prompt["seed"])
+
+        def _call() -> str:
+            # Disk Offload 下第一张图要等权重按需读盘，超时给足
+            with httpx.Client(timeout=httpx.Timeout(1800, connect=10)) as client:
+                resp = client.post(f"{base}/v1/images/generations", json=body)
+            if resp.status_code >= 400:
+                raise RuntimeError(f"本地文生图失败({resp.status_code}): {resp.text[:300]}")
+            data = resp.json().get("data") or []
+            if not data or not data[0].get("url"):
+                raise RuntimeError(f"本地文生图未返回图片：{resp.text[:300]}")
+            return data[0]["url"]
+
+        img_url = _retry_call(_call, "本地文生图")
+        # 从本地服务取回图片字节，落到项目自己的输出目录
+        out_dir = _run_output_dir(self.output_dir, _cur_role(), prompt["shot_id"])
+        path = out_dir / f"{prompt['shot_id']}.png"
+        with httpx.Client(timeout=120) as client:
+            resp = client.get(img_url)
+            resp.raise_for_status()
+            path.write_bytes(resp.content)
+        return str(path), str(path), True
 
     def _dashscope(self, prompt: dict) -> Tuple[str, str, bool]:
         """阿里百炼文生图路由。

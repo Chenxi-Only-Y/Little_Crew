@@ -1,0 +1,529 @@
+/**
+ * 设计 token —— 从旧前端 `frontend/_styles.py` 的 SENTRY_CSS 迁移而来。
+ *
+ * 迁移原则：**只取颜色/字体等 token，丢掉所有 `!important` 覆盖**——
+ * 那些是与 Streamlit 内部 `data-testid` 对抗的产物，新前端不再需要。
+ * 仓库根的 `DESIGN.md` 有更完整的设计系统定义，可继续补充。
+ */
+
+:root {
+  /* 底色 */
+  --s-primary: #150f23;      /* midnight violet：主背景 */
+  --s-ink-plum: #1f1633;     /* 卡片底 */
+  --s-night: #150f23;
+
+  /* 强调 */
+  --s-lime: #c2ef4e;         /* electric lime：主强调/主按钮 */
+  --s-pink: #fa7faa;
+  --s-violet: #6a5fc1;
+  --s-violet-deep: #422082;
+  --s-violet-mid: #79628c;
+
+  /* 描边与纸面 */
+  --s-hairline: #362d59;
+  --s-hairline-cool: #cfcfdb;
+  --s-white: #ffffff;
+  --s-muted: rgba(255, 255, 255, 0.72);
+  --s-faint: rgba(255, 255, 255, 0.18);
+
+  /* 状态色（与后端 stage 状态对应） */
+  --st-pending: var(--s-violet-mid);
+  --st-running: #6ab7ff;
+  --st-done: var(--s-lime);
+  --st-review: #ffb23d;
+  --st-skipped: #5b5470;
+  --st-stale: #b07a3d;
+  --st-failed: #e5484d;
+
+  font-family: 'Rubik', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.03) 0, transparent 32%),
+    radial-gradient(circle at 85% 20%, rgba(194, 239, 78, 0.05) 0, transparent 30%),
+    radial-gradient(circle at 50% 90%, rgba(106, 95, 193, 0.09) 0, transparent 38%),
+    var(--s-primary);
+  color: var(--s-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 纵向布局：工具栏 / 主体（左库+画布+右属性） */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--s-hairline);
+  flex: 0 0 auto;
+}
+
+.app-brand {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.app-brand span {
+  color: var(--s-lime);
+}
+
+.app-spacer {
+  flex: 1;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* 左侧节点库 */
+.node-library {
+  width: 240px;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--s-hairline);
+  overflow-y: auto;
+  padding: 10px 8px 24px;
+}
+.node-library .dept-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+  color: var(--s-violet-mid);
+  margin: 12px 6px 6px;
+}
+.lib-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  background: var(--s-ink-plum);
+  border: 1px solid var(--s-hairline);
+  border-radius: 10px;
+  padding: 7px 9px;
+  margin-bottom: 5px;
+  color: var(--s-white);
+  font-size: 13px;
+  cursor: grab;
+  transition: border-color 0.15s, transform 0.05s;
+}
+.lib-item:hover {
+  border-color: var(--s-lime);
+}
+.lib-item:active {
+  transform: scale(0.99);
+}
+.lib-item .lib-key {
+  font-family: Monaco, Menlo, monospace;
+  font-size: 10px;
+  color: var(--s-violet-mid);
+  margin-left: auto;
+}
+.lib-item .lib-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* 画布 */
+.canvas-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+/* 右侧属性面板 */
+.inspector {
+  width: 320px;
+  flex: 0 0 auto;
+  border-left: 1px solid var(--s-hairline);
+  overflow-y: auto;
+  padding: 12px;
+}
+.inspector h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+.inspector .ins-sub {
+  font-size: 11px;
+  color: var(--s-muted);
+  margin-bottom: 12px;
+}
+.field {
+  margin-bottom: 10px;
+}
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--s-violet-mid);
+  margin-bottom: 3px;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: var(--s-white);
+  color: var(--s-ink-plum);
+  border: 1px solid var(--s-hairline-cool);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+.field .hint {
+  font-size: 10px;
+  color: var(--s-muted);
+  margin-top: 3px;
+}
+
+/* 节点卡片 */
+.node-card {
+  min-width: 190px;
+  background: var(--s-ink-plum);
+  border: 1px solid var(--s-hairline);
+  border-radius: 12px;
+  color: var(--s-white);
+  font-size: 12px;
+  overflow: hidden;
+}
+.node-card.selected {
+  border-color: var(--s-lime);
+  box-shadow: 0 0 0 1px var(--s-lime);
+}
+.node-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--s-hairline);
+}
+.node-head .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.node-head .node-label {
+  font-weight: 600;
+  font-size: 13px;
+}
+.node-head .node-kind {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--s-violet-mid);
+}
+.node-meta {
+  padding: 6px 10px;
+  font-size: 10px;
+  color: var(--s-muted);
+  border-bottom: 1px solid var(--s-hairline);
+}
+.node-ports {
+  padding: 6px 10px 8px;
+}
+.port-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--s-muted);
+  margin-top: 2px;
+}
+.port-chip {
+  font-family: Monaco, Menlo, monospace;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.review-badge {
+  font-size: 10px;
+  color: var(--st-review);
+  border: 1px solid var(--st-review);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+/* 通用按钮 */
+.btn {
+  background: var(--s-white);
+  color: var(--s-ink-plum);
+  border: 1px solid var(--s-white);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn:hover {
+  background: #efefef;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--s-white);
+  border-color: var(--s-hairline);
+  font-weight: 500;
+}
+
+/* 空态 */
+.empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s-muted);
+  font-size: 13px;
+  pointer-events: none;
+  text-align: center;
+  padding: 24px;
+}
+
+/* 底部工具条（工程栏 / 运行栏 / 思考流共用） */
+.runbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--s-hairline);
+  background: var(--s-ink-deep);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+.runbar input,
+.runbar select {
+  background: var(--s-white);
+  color: var(--s-ink-plum);
+  border: 1px solid var(--s-hairline-cool);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+/* 小标签（状态提示用） */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--s-muted);
+  white-space: nowrap;
+}
+
+/* 顶部导航（四页：首页 / 导演台 / 用户 / 设置） */
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 14px;
+  padding: 2px;
+  border: 1px solid var(--s-hairline);
+  border-radius: 9px;
+}
+
+.nav-item {
+  background: transparent;
+  border: none;
+  color: var(--s-muted);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  color: var(--s-white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item.active {
+  color: var(--s-ink-plum);
+  background: var(--s-lime);
+  font-weight: 600;
+}
+
+/* 页面容器（首页/用户/设置用；导演台自己管理布局） */
+.page {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;          /* 防止子元素把父容器撑出横向滚动条 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 22px 26px 40px;
+}
+
+.page-title {
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.page-sub {
+  font-size: 12px;
+  color: var(--s-muted);
+  margin: 0 0 18px;
+}
+
+/* 卡片 */
+.card {
+  border: 1px solid var(--s-hairline);
+  border-radius: 11px;
+  background: var(--s-ink);
+  padding: 14px 16px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grid-cards {
+  display: grid;
+  /*
+   * 限制最大列数：`auto-fill` + 小 minmax 会在宽屏上挤出 5~6 列，
+   * 导致每格里的说明文字被压成窄条、下拉框被裁切（实测过）。
+   * 用 auto-fit + 放宽最小宽度，宽屏最多 3 列。
+   */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 360px));
+  gap: 12px;
+  justify-content: start;
+}
+
+/* 可点击的页面卡片 */
+.page-card {
+  border: 1px solid var(--s-hairline);
+  border-radius: 11px;
+  background: var(--s-ink);
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  transition: border-color 0.12s;
+}
+
+.page-card:hover {
+  border-color: var(--s-lime);
+}
+
+/* 键值行 */
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  font-size: 12px;
+}
+
+.kv dt {
+  color: var(--s-violet-mid);
+  white-space: nowrap;
+}
+
+.kv dd {
+  margin: 0;
+  color: var(--s-white);
+  word-break: break-word;
+}
+
+/* 启动/登录过渡屏 */
+.boot-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s-muted);
+  font-size: 13px;
+  background: var(--s-ink-deep);
+}
+
+/* 导演台状态条（运行栏 + 校验 + 布局） */
+.app-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--s-hairline);
+  background: var(--s-ink-deep);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+.app-statusbar input {
+  background: var(--s-white);
+  color: var(--s-ink-plum);
+  border: 1px solid var(--s-hairline-cool);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+/* 校验问题面板 */
+.issue-panel {
+  padding: 8px 16px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--s-muted);
+  border-bottom: 1px solid var(--s-hairline);
+  background: rgba(255, 178, 61, 0.06);
+  flex: 0 0 auto;
+}
+
+/* React Flow 深色适配 */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls button {
+  background: var(--s-ink-plum);
+  color: var(--s-white);
+  border-bottom: 1px solid var(--s-hairline);
+  fill: var(--s-white);
+}
+.react-flow__controls button:hover {
+  background: var(--s-violet-deep);
+}
+/* 缩略图：默认是浅色底，深色主题下会变成一块白框，需显式压暗 */
+.react-flow__minimap {
+  background: var(--s-ink-plum) !important;
+  border: 1px solid var(--s-hairline);
+  border-radius: 6px;
+}
+.react-flow__minimap-mask {
+  fill: rgba(21, 15, 35, 0.7);
+}
+.react-flow__minimap svg {
+  background: var(--s-ink-plum);
+}
+.react-flow__edges path {
+  transition: none;
+}
