@@ -32,6 +32,41 @@ Capability = Literal[
 #: 提供者类别
 Category = Literal["local", "cn_cloud", "overseas_cloud", "gateway", "free"]
 
+#: 视频模型能接受的**结构条件**维度。
+#:
+#: 为什么做成按维度声明：白模（预演）该产出什么，完全取决于所选的视频模型能吃什么。
+#: 模型只收首尾帧，白模就该去算"起点与终点的布局"；模型支持深度序列，
+#: 白模才值得去逐帧渲染深度图。**先问模型能吃什么，再决定画什么**，
+#: 否则会做出视频模型根本用不上的产物（本仓库 v1 踩过类似坑：
+#: 注册表声明了 `scene_whitebox`，但没有任何生产者与消费者）。
+ConditioningKind = Literal[
+    "text",          # 纯文生视频（无图）
+    "first_frame",   # 首帧图生视频
+    "last_frame",    # 尾帧引导（指定终点）
+    "depth",         # 深度序列控制
+    "pose",          # 骨架/姿态控制
+    "canny",         # 边缘控制
+    "reference",     # 参考图（角色一致性，非运动控制）
+    "camera",        # 显式相机参数（推拉摇移）
+]
+
+#: 维度的中文说明（给用户看，也用于白模页面的提示文案）
+CONDITIONING_LABELS: dict[str, str] = {
+    "text": "文字描述",
+    "first_frame": "首帧图",
+    "last_frame": "尾帧图（指定终点）",
+    "depth": "深度序列",
+    "pose": "骨架姿态",
+    "canny": "边缘控制",
+    "reference": "参考图（一致性）",
+    "camera": "相机参数",
+}
+
+#: 哪些维度属于"运动/结构控制"——决定白模是否有活可干
+STRUCTURAL_CONDITIONING: frozenset[str] = frozenset(
+    {"first_frame", "last_frame", "depth", "pose", "canny", "camera"}
+)
+
 
 @dataclass(frozen=True)
 class ProviderSpec:
@@ -51,6 +86,10 @@ class ProviderSpec:
         presets:         该提供者支持的**参数预设**，如时长/分辨率。
                          键为参数名，值为可选列表；UI 据此限制选项，避免给出
                          提供者根本不支持的组合（例如本地 8GB 上 12s 必 OOM）。
+        conditioning:    该提供者能接受的**结构条件**（见 `ConditioningKind`）。
+                         仅 `video_gen` 有意义。白模据此决定产出什么：
+                         只有 `first_frame` 就只算起点布局；含 `last_frame`
+                         就再算终点布局；含 `depth`/`pose` 才值得逐帧渲染。
         note:            补充说明（展示给用户）
     """
 
@@ -65,6 +104,7 @@ class ProviderSpec:
     needs_proxy: bool = False
     max_concurrency: int = 4
     presets: dict[str, tuple] = field(default_factory=dict)
+    conditioning: tuple[ConditioningKind, ...] = ()
     note: str = ""
 
 
@@ -168,16 +208,29 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  known_models=("minimax-h3",),
                  presets={"duration": DURATION_BY_PROVIDER["local"],
                           "resolution": RESOLUTION_BY_PROVIDER["local"]},
+                 # 依据：local-gen 的 H3 `generate(keyframes=...)` 把 1 张放 index 0、
+                 # 2 张放 index [0, -1]（见 local-gen/app/engines/h3.py:152），
+                 # 且 API 端点已暴露 `image_base64` 与 `last_image_base64`
+                 # （local-gen/app/server.py:179/188）。它是**首尾关键帧**模型，
+                 # 不接受 depth/pose 等逐帧结构条件。
+                 conditioning=("text", "first_frame", "last_frame"),
                  note="8GB 实测：8 步约 8.6 分钟/段；**时长上限 10 秒**，超过必 OOM（降分辨率无效）"),
     ProviderSpec("minimax", "MiniMax（Hailuo）", "video_gen", "cn_cloud",
                  default_model="MiniMax-H3", known_models=("MiniMax-H3",),
                  presets={"duration": DURATION_BY_PROVIDER["minimax"],
                           "resolution": RESOLUTION_BY_PROVIDER["minimax"]},
+                 # MiniMax 支持首帧图生视频；尾帧（first/last frame）能力
+                 # **尚未逐版本核实**，故此处保守地不声明 last_frame——
+                 # 宁可少声明（白模少算一份、不影响正确性），
+                 # 也不要声明了却发不出去（会让用户以为能控终点）。
+                 conditioning=("text", "first_frame", "reference"),
                  note="约 $0.01/秒（最便宜档）；渲染 <2 分钟/段"),
     ProviderSpec("ffmpeg", "FFmpeg 本地合成（免费）", "video_gen", "free",
                  default_model="ffmpeg", needs_api_key=False,
                  presets={"duration": DURATION_BY_PROVIDER["ffmpeg"],
                           "resolution": RESOLUTION_BY_PROVIDER["ffmpeg"]},
+                 # 图片拼接：能给首帧，但没有任何运动控制
+                 conditioning=("first_frame",),
                  note="图片幻灯片拼接；时长固定、无真实运镜（转场/字幕需自行实现）"),
 
     # ================= LoRA / 自定义模型训练 =================
@@ -458,6 +511,99 @@ def resolve_provider(capability: str, role: str = "") -> tuple[str | None, str]:
         f"未选择「{capability}」的提供者。请先在设置里选择 **云端 API** 或 **本地推理**"
         f"（对应设置项：{mkey}），这样系统才知道该走哪条路，避免猜错产生意外费用或直接失败。"
     )
+
+
+def video_conditioning(provider: str | None = None) -> tuple[str, ...]:
+    """某视频提供者能接受的结构条件。
+
+    provider 为空时按当前设置解析（**不猜**：未选则返回空元组）。
+    """
+    if not provider:
+        provider, _ = resolve_provider("video_gen")
+    if not provider:
+        return ()
+    spec = get("video_gen", provider.lower())
+    return tuple(spec.conditioning) if spec else ()
+
+
+def previs_plan(provider: str | None = None) -> dict:
+    """白模（预演）该产出什么 —— **由所选视频模型的能力决定**。
+
+    这是用户 2026-10-02 定的方向：「白模根据用户的视频模型加入，
+    如果模型支持就可以用」。所以白模不是一个固定产物，
+    而是"视频模型能吃什么，就准备什么"。
+
+    Returns:
+        {
+          "provider": 视频提供者（None=未选）,
+          "conditioning": 该提供者接受的条件维度,
+          "supported": 其中属于结构控制的维度,
+          "deliverables": 白模应产出的东西（人话，供界面显示）,
+          "useful": 白模是否有意义（只收 text/first_frame 时价值有限）,
+          "reason": 面向用户的说明,
+        }
+    """
+    provider = (provider or "").strip().lower() or None
+    if provider is None:
+        p, note = resolve_provider("video_gen")
+        provider = (p or "").lower() or None
+        if provider is None:
+            return {
+                "provider": None,
+                "conditioning": (),
+                "supported": (),
+                "deliverables": [],
+                "useful": False,
+                "reason": f"尚未选择视频模型，无法确定白模要产出什么。{note}",
+            }
+
+    cond = video_conditioning(provider)
+    supported = tuple(k for k in cond if k in STRUCTURAL_CONDITIONING)
+
+    deliverables: list[str] = []
+    if "last_frame" in supported:
+        deliverables.append("终点布局图（决定镜头结束时人物在哪、画面怎么收）")
+    if "first_frame" in supported:
+        deliverables.append("起点布局图（决定开场构图）")
+    if "depth" in supported:
+        deliverables.append("逐帧深度序列（限制空间结构，最严格）")
+    if "pose" in supported:
+        deliverables.append("逐帧骨架序列（限制人物姿态与走位）")
+    if "canny" in supported:
+        deliverables.append("逐帧边缘图（限制轮廓与线条）")
+    if "camera" in supported:
+        deliverables.append("相机轨迹参数（推拉摇移的显式数值）")
+
+    if not supported:
+        useful = False
+        reason = (
+            f"所选的「{provider}」只接受 {'/'.join(cond) or '文字'}，"
+            "没有任何结构条件入口——白模产出无法影响视频结果，做了也用不上。"
+        )
+    elif supported == ("first_frame",):
+        useful = True
+        reason = (
+            f"「{provider}」只接受首帧图：白模只需给出**起点构图**。"
+            "没有终点约束，运动过程仍由模型自行插值，复杂位移可能不稳。"
+        )
+    elif "last_frame" in supported:
+        useful = True
+        reason = (
+            f"「{provider}」支持首尾帧：白模给出**起点与终点布局**，"
+            "位移方向与落点被钉死——这是当前最有效且成本最低的结构控制。"
+        )
+    else:
+        useful = True
+        reason = f"「{provider}」支持 {len(supported)} 种结构条件，白模可逐帧渲染。"
+
+    return {
+        "provider": provider,
+        "conditioning": cond,
+        "supported": supported,
+        "deliverables": deliverables,
+        "useful": useful,
+        "reason": reason,
+    }
 
 
 def generation_settings() -> list[dict]:

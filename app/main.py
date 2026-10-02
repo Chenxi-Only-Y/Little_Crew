@@ -561,7 +561,7 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
                     lora_train / tts / music / render_2d）
         include_unavailable: 是否包含"已登记未接入"的提供者
     """
-    from app.services.providers import PROVIDERS
+    from app.services.providers import CONDITIONING_LABELS, PROVIDERS
 
     items = [
         {
@@ -570,12 +570,40 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
             "default_model": p.default_model, "known_models": list(p.known_models),
             "needs_api_key": p.needs_api_key, "needs_proxy": p.needs_proxy,
             "max_concurrency": p.max_concurrency, "note": p.note,
+            # 该提供者能接受的**结构条件**（仅 video_gen 有意义）。
+            # 白模据此决定产出什么——见 providers.previs_plan()。
+            "conditioning": list(p.conditioning),
+            "conditioning_labels": [CONDITIONING_LABELS.get(c, c) for c in p.conditioning],
         }
         for p in PROVIDERS
         if (not capability or p.capability == capability)
         and (include_unavailable or p.available)
     ]
     return {"status": "ok", "count": len(items), "providers": items}
+
+
+# ------------------------------------------------------------------
+# 白模（预演）：产出什么由**所选的视频模型能力**决定
+# ------------------------------------------------------------------
+@app.get("/api/previs/plan")
+async def previs_plan(request: Request):
+    """当前视频模型下，白模应产出什么。
+
+    设计方向（用户 2026-10-02）：白模跟着视频模型走——模型支持什么条件，
+    白模就准备什么。模型只收首帧，白模就只算起点布局；不支持任何结构条件，
+    白模就"做了也用不上"，此处会如实说明，而不是让用户白跑一遍。
+    """
+    from app.services.providers import previs_plan as build_plan
+
+    uid = _auth_user(request, "local")
+    from app.services import runtime_settings as rs
+
+    rs.set_user(uid)
+    try:
+        plan = build_plan()
+    finally:
+        rs.set_user(None)
+    return {"status": "ok", "plan": plan}
 
 
 # ------------------------------------------------------------------
@@ -811,7 +839,8 @@ def _run_video(session_id: str, user_id: str, user_input: str, images: list, scr
     store = get_session_store()
     try:
         out, produced = get_video_service().synthesize(
-            images, script, str(settings.output_dir_path), session_id, video_count=video_count)
+            images, script, str(settings.output_dir_path), session_id,
+            video_count=video_count, text_prompt=user_input)
         row = store.get(session_id) or {}
         payload = dict(row.get("payload") or {})
         payload["video"] = {"dir_or_path": out, "produced": produced}

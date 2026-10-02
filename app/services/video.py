@@ -66,10 +66,14 @@ class VideoService:
         out_dir: str,
         session_id: str,
         video_count: int | None = None,
+        text_prompt: str = "",
     ) -> Tuple[str, int]:
         """生成视频。
 
-        video_count: 可选，指定生成几个视频段（0/None=跟图片数走；>0 截取前 N 个）。
+        Args:
+            video_count: 可选，指定生成几个视频段（0/None=跟图片数走；>0 截取前 N 个）。
+            text_prompt: 无图片时（纯文生视频）用作提示词——通常是用户的一句话创意。
+                         有图片时忽略（画面已由首帧决定，只需描述怎么动）。
 
         Returns:
             (output_path_or_dir, produced) —— produced=1 表示真实产物，0 表示占位。
@@ -87,7 +91,8 @@ class VideoService:
         if provider == "minimax":
             return self._real_minimax(images, dialogue, out_dir, session_id, video_count=video_count)
         if provider == "local":
-            return self._real_local(images, dialogue, out_dir, session_id, video_count=video_count)
+            return self._real_local(images, dialogue, out_dir, session_id,
+                                    video_count=video_count, text_prompt=text_prompt)
         return self._real(images, dialogue, out_dir, session_id)
 
     def _mock(self, images: List[dict], dialogue: str, out_dir: str, session_id: str) -> Tuple[str, int]:
@@ -237,8 +242,16 @@ class VideoService:
     _LOCAL_MOTION_PROMPT = "镜头缓慢推近，画面中的角色/景物做轻微自然运动，电影感光影，稳定运镜"
 
     def _real_local(self, images: List[dict], dialogue: str, out_dir: str, session_id: str,
-                    video_count: int | None = None) -> Tuple[str, int]:
-        """调用本地 MiniMax H3 生成视频：每张分镜图生成一段（首帧图生视频）。"""
+                    video_count: int | None = None, text_prompt: str = "") -> Tuple[str, int]:
+        """调用本地 MiniMax H3 生成视频：每张分镜图生成一段。
+
+        条件能力（见 providers 里 local 的 conditioning 声明）：
+            - `image_base64`      → 首帧（起点构图）
+            - `last_image_base64` → 尾帧（终点布局；白模预演的产物送这里）
+        只给首帧时运动过程由模型自行插值；给了尾帧则"首起尾收"，落点被钉死。
+
+        无图片时走**纯文生视频**（H3 不传 keyframe），提示词取 `text_prompt`。
+        """
         import pathlib
         import time as _t
         import uuid as _uuid
@@ -248,12 +261,20 @@ class VideoService:
         # 注意：本地服务在 127.0.0.1，属于私网地址，因此这里有意不做 url_guard 公网校验
         base = (settings.local_gen_url or "http://127.0.0.1:8100").rstrip("/")
 
+        # 两种模式（H3 的 image_base64 是可选参数，不传即文生视频）：
+        #   - 有图：每张图生成一段（图生视频）
+        #   - 无图：生成 cap 段纯文生视频（cap<=0 时默认 1 段）
+        # 原先"无图直接报错"把本可支持的"纯文生视频"路线挡在了外面。
         img_items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
-        if not img_items:
-            raise RuntimeError("没有可用图片，无法调用本地图生视频。")
         cap = int(video_count if video_count is not None else (settings.video_count or 0))
-        if cap > 0:
-            img_items = img_items[:cap]
+
+        if img_items:
+            if cap > 0:
+                img_items = img_items[:cap]
+        else:
+            segments = cap if cap > 0 else 1
+            logger.info("[video] 无图片输入 → 走纯文生视频（不带 keyframe），段数=%d", segments)
+            img_items = [{} for _ in range(segments)]
 
         d = pathlib.Path(out_dir) / session_id / "video"
         d.mkdir(parents=True, exist_ok=True)
@@ -270,17 +291,45 @@ class VideoService:
         for im in img_items:
             sid = str(im.get("shot_id") or _uuid.uuid4().hex[:8])
             img_ref = self._image_ref(im)
-            if not img_ref:
+            # `im` 非空却没解析出图引用 = 图片路径损坏，跳过该段（避免发出空首帧）。
+            # 但 `im` 为空 dict 表示**纯文生视频**，此时本就没有首帧，不能跳过。
+            if not img_ref and im:
+                logger.warning("[video] 分镜 %s 的图片无法读取，跳过该段", sid)
                 continue
+
             width, height = self._local_size(im)
+            # 有首帧时用"运动描述"（画面已定，只需描述怎么动）；
+            # 无首帧的纯文生视频必须描述**画面内容**，优先用用户创意（text_prompt）。
+            if img_ref:
+                prompt_text = str(im.get("prompt") or "").strip() or self._LOCAL_MOTION_PROMPT
+            else:
+                prompt_text = (
+                    str(im.get("prompt") or "").strip()
+                    or str(text_prompt or "").strip()
+                    or str(dialogue or "").strip()
+                    or self._LOCAL_MOTION_PROMPT
+                )
+
             body = {
-                "prompt": self._LOCAL_MOTION_PROMPT,
-                "image_base64": img_ref,
+                "prompt": prompt_text,
                 "width": width,
                 "height": height,
                 "seconds": seconds,
                 "num_inference_steps": steps,
             }
+            # 首帧：仅在解析出图引用时发送（H3 的 image_base64 是可选参数）
+            if img_ref:
+                body["image_base64"] = img_ref
+            # 尾帧（终点布局）：H3 的 keyframes 传 2 张时会放到 index [0, -1]，
+            # 即"首帧起、尾帧收"，中间由模型插值。
+            # 这是当前**唯一**能把运动终点钉死的通道——白模（预演）给出的
+            # 终点布局图就送到这里（见 providers.previs_plan）。
+            # 未提供则不发送该字段，保持原行为（纯首帧引导）。
+            last_ref = self._image_ref(
+                im, url_key="last_image", path_key="last_local_path"
+            )
+            if last_ref:
+                body["last_image_base64"] = last_ref
             with httpx.Client(timeout=httpx.Timeout(120, connect=10)) as client:
                 resp = client.post(f"{base}/v1/videos/generations", json=body)
                 if resp.status_code >= 400:
@@ -342,15 +391,21 @@ class VideoService:
             _t.sleep(interval)
         raise TimeoutError(f"本地图生视频超时（>{timeout}s）：{job_id}")
 
-    def _image_ref(self, im: dict) -> str:
-        """返回可用于 MiniMax content.image_url 的图片引用（本地图转 data URL / 远端 URL）。"""
+    def _image_ref(self, im: dict, url_key: str = "image_url",
+                   path_key: str = "local_path") -> str:
+        """返回可直接提交给视频服务的图片引用（本地图转 data URL / 远端 URL）。
+
+        Args:
+            url_key / path_key: 取哪个字段。默认取首帧（`image_url`/`local_path`）；
+                传 `last_image` / `last_local_path` 即取尾帧（终点布局）。
+        """
         import pathlib
         import base64
 
-        url = im.get("image_url") or ""
+        url = im.get(url_key) or ""
         if url and str(url).startswith(("http://", "https://")):
             return url
-        path = im.get("local_path") or ""
+        path = im.get(path_key) or ""
         if path:
             p = pathlib.Path(path)
             if p.exists():
