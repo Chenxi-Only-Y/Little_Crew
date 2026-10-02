@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from 'react';
 
-export type PageKey = 'home' | 'director' | 'user' | 'settings';
+export type PageKey = 'home' | 'director' | 'previs' | 'user' | 'settings';
 
 export interface PageMeta {
   key: PageKey;
@@ -23,10 +23,11 @@ export interface PageMeta {
   icon: string;
 }
 
-/** 站点结构 —— 就这四页 */
+/** 站点结构 —— 就这五页 */
 export const PAGES: PageMeta[] = [
   { key: 'home', label: '首页', icon: '⌂', desc: '最近创作、常用入口' },
   { key: 'director', label: '导演台', icon: '⚏', desc: '在画布上编排流程并运行' },
+  { key: 'previs', label: '预演', icon: '◲', desc: '搭白模、摆走位、录机位，导出结构帧' },
   { key: 'user', label: '用户', icon: '☺', desc: '昵称、头像与账号信息' },
   { key: 'settings', label: '设置', icon: '⚙', desc: '云端 / 本地、模型与密钥' },
 ];

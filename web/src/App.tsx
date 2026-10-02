@@ -10,7 +10,7 @@
  * 而不是全局顶栏：它们只对当前画布有意义。
  */
 
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import LoginPage from './canvas/LoginPage';
 import Shell from './app/Shell';
 import HomePage from './pages/HomePage';
@@ -21,6 +21,15 @@ import { usePage } from './app/router';
 import { loadRegistry } from './api/registry';
 import { clearAuth, getToken, getUsername } from './api/auth';
 import { useCanvas } from './store/canvas';
+
+/**
+ * 预演编辑器**按需加载**。
+ *
+ * 它带 Three.js（约 1 MB+）。若静态引入，首页/导演台也得先下载完 3D 引擎才能显示——
+ * 实测未拆分时单块 1.38 MB。拆开后主包只剩业务代码，
+ * 用户点进「预演」时才拉那 1 MB。
+ */
+const PrevisPage = lazy(() => import('./previs/PrevisPage'));
 
 type AuthState = 'checking' | 'anonymous' | 'authenticated';
 
@@ -101,6 +110,17 @@ export default function App() {
     <Shell page={page} username={getUsername()} status={status} onLogout={onLogout}>
       {page === 'home' && <HomePage />}
       {page === 'director' && <DirectorPage />}
+      {page === 'previs' && (
+        <Suspense
+          fallback={
+            <div className="page">
+              <p className="page-sub">正在加载 3D 引擎…</p>
+            </div>
+          }
+        >
+          <PrevisPage />
+        </Suspense>
+      )}
       {page === 'user' && <UserPage />}
       {page === 'settings' && <SettingsPage />}
     </Shell>
