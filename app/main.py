@@ -11,6 +11,7 @@
 注：**不做限流/配额**（开源非商业项目，用户 2026-10-02 决定）。
 """
 
+import os
 import pathlib
 import re
 import shutil
@@ -21,6 +22,7 @@ import threading
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
+from app.core.config import settings
 from app.services.auth import get_user_store
 from app.services.events import get_hub
 from app.services.logging import redact, setup_logging
@@ -36,10 +38,23 @@ from app.services.video import get_video_service
 
 logger = setup_logging()
 
+#: 是否暴露交互式 API 文档（`/docs`、`/redoc`、`/openapi.json`）。
+#:
+#: 默认**关闭**：这些页面未鉴权即可访问，会把完整 API 结构（含
+#: 每个端点的路径与请求体字段）交给任何人——正好是构造越权请求的说明书。
+#: 本机开发想用就设 `LITTLE_CREW_DOCS=1`（或 `.env` 里 `ENABLE_DOCS=1`）。
+_DOCS_ENABLED = str(
+    os.environ.get("LITTLE_CREW_DOCS")
+    or getattr(settings, "enable_docs", False)
+).lower() in ("1", "true", "yes", "on")
+
 app = FastAPI(
     title="小剧组 Little Crew",
     description="基于 LangGraph 多智能体协作的 AI 漫剧自动生成平台",
     version="0.3.0",
+    docs_url="/docs" if _DOCS_ENABLED else None,
+    redoc_url="/redoc" if _DOCS_ENABLED else None,
+    openapi_url="/openapi.json" if _DOCS_ENABLED else None,
 )
 
 
@@ -69,12 +84,13 @@ _PUBLIC_PATHS = frozenset({
     # 注意它是**显式列出**的：原先靠 `/api/registry` 的前缀顺带放行，
     # 这样"公开"就没有成本、容易失控。有测试守住这份清单。
     "/api/registry/validate",
-    # 接口文档
-    "/docs",
-    "/docs/oauth2-redirect",
-    "/openapi.json",
-    "/redoc",
 })
+
+# 接口文档：**仅当显式开启时才公开**（见 `_DOCS_ENABLED`）。
+# 未开启时 FastAPI 根本不注册这些路由，所以这里也不必列出——
+# 列出反而会让"公开清单"与真实路由不一致（有测试校验每个公开路径都是真实路由）。
+if _DOCS_ENABLED:
+    _PUBLIC_PATHS |= {"/docs", "/docs/oauth2-redirect", "/openapi.json", "/redoc"}
 
 
 @app.middleware("http")
@@ -99,7 +115,20 @@ async def auth_guard(request: Request, call_next):
     # 关键：**在这里一次性解析出身份并写进 request.state**，
     # 之后所有端点都只能从它读身份——绝不允许端点自己拿请求体里的
     # `user_id` 当回退值（见 `_auth_user` 的说明，那是一个真实出现过的越权）。
-    auth = request.headers.get("Authorization", "")
+    #
+    # ⚠️ 重复的 `Authorization` 头一律拒绝。
+    # `headers.get()` 取**第一个**，而某些反向代理取**最后一个**——
+    # 在"代理做鉴权、应用做授权"的部署里，两边可能按不同身份判断，
+    # 攻击者只要发两个头就能制造分歧。与其赌代理的行为，不如直接拒绝。
+    auth_values = request.headers.getlist("Authorization")
+    if len(auth_values) > 1:
+        logger.warning("[auth] 请求带有 %d 个 Authorization 头，已拒绝：%s",
+                       len(auth_values), path)
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": "请求包含重复的 Authorization 头"},
+        )
+    auth = auth_values[0] if auth_values else ""
     token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
     if not token:
         token = request.query_params.get("token", "").strip()
@@ -177,7 +206,10 @@ async def unhandled_exception(request: Request, exc: Exception):
 @app.get("/")
 def root():
     """根路径：返回服务信息。"""
-    return {"message": "Little Crew API", "docs": "/docs", "health": "/health"}
+    info = {"message": "Little Crew API", "health": "/health"}
+    if _DOCS_ENABLED:
+        info["docs"] = "/docs"
+    return info
 
 
 @app.get("/health")
@@ -318,6 +350,26 @@ async def login(payload: dict):
     if token is None:
         return {"status": "error", "message": msg}
     return {"status": "ok", "token": token, "username": get_user_store().resolve(token)}
+
+
+@app.post("/api/auth/logout")
+async def logout(request: Request):
+    """登出：吊销当前 token。
+
+    原先**没有登出**：token 签发后只能等 90 天过期，用户（或管理员）
+    没有任何主动收回凭据的手段——而 token 又是长期有效的。
+    这里同时接受 `Authorization` 头与 `?token=`（与 SSE 一致的口径）。
+    """
+    auth = request.headers.get("Authorization", "")
+    token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    if not token:
+        token = (request.query_params.get("token") or "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="缺少 token")
+    ok = get_user_store().logout(token)
+    # 即使没命中（已过期/已登出）也返回 ok：登出是幂等的，
+    # 且不区分"有效/无效"以免变成 token 有效性探测接口。
+    return {"status": "ok", "revoked": ok}
 
 
 # ------------------------------------------------------------------
@@ -1592,8 +1644,33 @@ async def link_platform(platform: str, request: Request, body: dict | None = Non
     if isinstance(body, str):
         body = json.loads(body or "{}")
     body = body or {}
-    token = body.get("token") or secrets.token_urlsafe(16)
     user_id = _auth_user(request)
+
+    # ⚠️ 必须挡掉**掩码哨兵**再落库。
+    # 该端点直接 `rs_set`，绕过了 `put_settings` 的哨兵过滤，而后端把
+    # `publish_*_token` 回给前端时是掩码形态（`••••已配置`）。用户若把
+    # 界面上看到的那串哨兵再提交回来（或前端回填了掩码值），
+    # 就会用哨兵**覆盖掉真实令牌**——凭据被静默破坏，且不是泄漏、
+    # 更难发现（下次发布才报"未授权"）。
+    raw = body.get("token")
+    if raw is not None and str(raw).strip() == _MASK_SENTINEL:
+        raise HTTPException(
+            status_code=400,
+            detail="检测到掩码占位符（••••已配置），已拒绝写入以免覆盖真实令牌。"
+                   "如需更换令牌请提交新的真实值；如需清除请传空串。",
+        )
+    # 空串=显式清除；未提供=沿用已有值
+    if raw is None:
+        existing = rs_snap(user_id).get(f"publish_{platform}_token")
+        if existing:
+            return {"status": "ok", "platform": platform, "linked": True,
+                    "token": str(existing)[:8] + "…",
+                    "settings_keys": [k for k in rs_snap(user_id) if "publish_" in k]}
+        token: object = secrets.token_urlsafe(16)
+    else:
+        token = str(raw).strip()
     rs_set(user_id, {f"publish_{platform}_token": token})
-    return {"status": "ok", "platform": platform, "linked": True, "token": token[:8] + "…",
+    shown = str(token)[:8] + "…" if token else "(已清除)"
+    return {"status": "ok", "platform": platform, "linked": bool(token),
+            "token": shown,
             "settings_keys": [k for k in rs_snap(user_id) if "publish_" in k]}

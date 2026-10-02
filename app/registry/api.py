@@ -443,6 +443,38 @@ def validation_spec() -> dict[str, Any]:
 # 快照（供 GET /api/registry）
 # ------------------------------------------------------------------
 
+def _field_options(c) -> list[str]:
+    """该字段 select 的可选值。
+
+    两条来源：
+      1. `options_from` 非空 → **从注册表派生**该能力当前已登记的提供者；
+      2. 否则用字段里手写的 `options`。
+
+    为什么要有第 1 条（实测问题）：`video_provider` 原先手写
+    `('(按模式)', 'local', 'minimax', 'ffmpeg')`，而适配器里已有
+    `dashscope_video` / `seedance` 且都接好了——用户**在界面上根本选不到**。
+    手写清单必然与实际入网的提供者漂移，所以这里改成派生。
+    （与 `allowed_settings()` 同一个思路：清单由注册表派生，不手抄。）
+    """
+    base = list(c.options)
+    cap = getattr(c, "options_from", "")
+    if not cap:
+        return base
+    try:
+        from app.services import providers as _prov
+
+        rows = _prov.for_capability(cap, include_unavailable=True)
+    except Exception:  # noqa: BLE001  提供者表不可用时退回手写清单
+        return base
+    # 保留手写清单里的**占位项**（例如 `(按模式)`），它们是"不指定"的语义；
+    # 其余则换成真实的提供者 key。
+    placeholders = [o for o in base if o.startswith("(")]
+    real = [p.key for p in rows]
+    # 手写清单里若有派生表没有的 key，也保留（可能是尚未登记到 providers 的实现）
+    extra = [o for o in base if not o.startswith("(") and o not in real]
+    return placeholders + real + extra
+
+
 def snapshot(*, include_state_map: bool = True) -> dict[str, Any]:
     """一次性下发完整注册表，供前端零硬编码渲染。
 
@@ -495,7 +527,7 @@ def snapshot(*, include_state_map: bool = True) -> dict[str, Any]:
                 "config": [
                     {
                         "key": c.key, "label": c.label, "type": c.type, "scope": c.scope,
-                        "options": list(c.options), "default": c.default,
+                        "options": _field_options(c), "default": c.default,
                         "secret": c.secret, "help": c.help,
                     }
                     for c in n.config

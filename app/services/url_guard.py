@@ -1,9 +1,12 @@
 """URL 安全校验：用于防御 SSRF（base_url / 参考图 URL 指向内网）与敏感外发。
 
-- assert_public_url: 仅允许 http(s)，并拒绝解析出任何私有/回环/链路本地/保留地址的主机。
+判定原则：**白名单式**——只有"全局可路由（`is_global`）"的地址才放行，
+其余一律拒绝。这样新出现的特殊网段（CGNAT、保留段……）默认是**被拒**的，
+不会因为"忘了加进拒绝表"而漏过去。
+
 - 允许 localhost/127.0.0.1（自托管代理/本地 ComfyUI）；**调用方若不需要访问本机，
-  应额外拒绝它们**（见 `/api/settings/test`）。
-- 例外：`198.18.0.0/15` 视为可放行（见下方说明）。
+  应传 `allow_local=False`**（下载类默认就是 False，见 `safe_get`）。
+- 例外：`198.18.0.0/15`（代理 fake-ip 段）视为可放行，见下方说明。
 """
 
 import ipaddress
@@ -19,14 +22,41 @@ _ALLOWED_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "[::1]"}
 #:     api.deepseek.com       → 198.18.0.16
 #:     dashscope.aliyuncs.com → 198.18.0.74
 #:     example.com            → 198.18.0.62
-#: 而 `ipaddress` 把它判为 `is_private`，于是本函数会拒绝**每一个**域名——
-#: 表现为"挂了代理的机器上 DeepSeek / 百炼 / MiniMax 全部连不上"，
-#: 报错还写着"指向内网/保留地址"，完全指不到真正原因。
+#: 不放行的话本函数会拒绝**每一个**域名——表现为"挂了代理的机器上
+#: DeepSeek / 百炼 / MiniMax 全部连不上"，报错还写着"指向内网/保留地址"，
+#: 完全指不到真正原因。
 #:
-#: 放行它的代价可接受：该网段**不可路由**（IANA 保留用于基准测试），
-#: 真实内网目标（10/172.16/192.168/127/169.254）仍照常拒绝。
-#: 即这条例外不会把"真能连上的内网地址"放进来，只是不再误伤代理。
+#: 放行它的代价可接受：该网段**不可路由**（IANA 保留用于基准测试，
+#: 实测连接超时）。这是**唯一**的例外，且必须是**具体网段**——
+#: 早先的写法是"用一系列 `is_private`/`is_loopback`… 去拒"，那种**黑名单**
+#: 思路漏掉了 `100.64.0.0/10`（CGNAT，k8s Service CIDR / 云内网常用，
+#: **是可路由的**），实测 `assert_public_url("http://100.64.0.1/x")` 会放行。
+#: 现在改成白名单判定，这类网段默认被拒。
 _PROXY_FAKE_IP_NETS = (ipaddress.ip_network("198.18.0.0/15"),)
+
+
+def _is_allowed_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address,
+                   allow_local: bool) -> bool:
+    """该地址是否可放行。
+
+    白名单语义：
+      1. 代理 fake-ip 段 → 放行（唯一例外，见 `_PROXY_FAKE_IP_NETS`）；
+      2. `allow_local` 且是回环 → 放行（用户显式配置的本地服务）；
+      3. **只有 `is_global` 且是单播才放行**，其余（私有/CGNAT/保留/
+         链路本地/组播/未指定/基准测试…）一律拒绝。
+
+    第 3 条用 `is_global` 而不是逐项 `is_*` 取反，是为了让判定**随标准演进**：
+    Python 更新特殊网段表时这里自动跟着收紧，不必手工维护拒绝清单。
+    但**必须另外排除组播**：`is_global` 对 `224.0.0.1` 这类组播地址为 True
+    （实测），只靠它会把组播放进来。
+    """
+    if any(ip in net for net in _PROXY_FAKE_IP_NETS):
+        return True
+    if allow_local and ip.is_loopback:
+        return True
+    if ip.is_multicast or ip.is_unspecified:
+        return False
+    return bool(ip.is_global)
 
 
 def assert_public_url(url: str, *, context: str = "URL",
@@ -60,12 +90,10 @@ def assert_public_url(url: str, *, context: str = "URL",
             raise ValueError(f"{context} 无法解析主机：{host}")
     for info in infos:
         ip = ipaddress.ip_address(info[4][0])
-        if any(ip in net for net in _PROXY_FAKE_IP_NETS):
-            continue
-        if ip.is_loopback and not allow_local:
-            raise ValueError(f"{context} 指向本机地址，已拒绝：{host}")
-        if (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_multicast or ip.is_reserved or ip.is_unspecified):
+        if not _is_allowed_ip(ip, allow_local):
+            # 回环单独给一句更精确的提示（这是最常见的拒因，且解决方式不同）
+            if ip.is_loopback and not allow_local:
+                raise ValueError(f"{context} 指向本机地址，已拒绝：{host}")
             raise ValueError(f"{context} 指向内网/保留地址，已拒绝：{host}")
     return url
 

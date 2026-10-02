@@ -444,6 +444,9 @@ def test_redact_does_not_mangle_benign_text():
 _MOCK_ONLY_KEYS = frozenset({
     "mock_llm", "mock_image", "mock_quality", "mock_critics", "mock_video",
     "skip_clip",   # 跳过加载 CLIP（角色一致性与质量评估会降级）
+    # 暴露 `/docs`/`/openapi.json`：**绝不能在线开**——
+    # 那等于让任意登录用户把"完整 API 说明书"打开，方便他构造越权请求。
+    "enable_docs",
 })
 
 

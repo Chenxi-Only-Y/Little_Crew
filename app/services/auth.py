@@ -42,6 +42,21 @@ _RESERVED_USERNAMES = frozenset({
 })
 
 
+def _token_hash(token: str) -> str:
+    """token 的存储形态：sha256 十六进制。
+
+    ⚠️ 为什么不能明文存 token：token 就是**长期凭据**（90 天有效），
+    而 `users.token` 是明文列。任何能读到库的东西——备份、只读副本、
+    误提交的 .db 文件、同机的其它进程——都能直接拿去冒充所有用户。
+    存哈希后，读到库也**无法还原出可用 token**。
+
+    为什么用 sha256 而不是再上 PBKDF2：token 本身是
+    `secrets.token_urlsafe(32)`（256 bit 真随机），不存在"弱口令"可猜，
+    所以不需要慢哈希；用快哈希还能让每次请求的鉴权不走昂贵计算。
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 class UserStore:
     def __init__(self, db_path: str) -> None:
         self.db_path = str(db_path)
@@ -119,7 +134,8 @@ class UserStore:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 "INSERT INTO users(username,uid,token,salt,hash,created,token_at) VALUES(?,?,?,?,?,?,?)",
-                (username, uid, token, salt, self._hash(password, salt), time.time(), time.time()),
+                (username, uid, _token_hash(token), salt,
+                 self._hash(password, salt), time.time(), time.time()),
             )
         return token, "ok"
 
@@ -159,7 +175,7 @@ class UserStore:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 "UPDATE users SET token=?, token_at=? WHERE username=?",
-                (token, time.time(), user["username"]),
+                (_token_hash(token), time.time(), user["username"]),
             )
             if matched_legacy:
                 # 顺带升级到当前参数（下次登录即走新路径）
@@ -171,18 +187,54 @@ class UserStore:
                             user["username"])
         return token, "ok"
 
+    def logout(self, token: str) -> bool:
+        """吊销一个 token（登出）。返回是否确实清掉了一行。
+
+        原先**没有登出**：token 一旦签发就只能等 90 天过期，
+        用户没有任何主动收回的手段。
+        """
+        if not token:
+            return False
+        th = _token_hash(token)
+        with self._lock, sqlite3.connect(self.db_path) as conn:
+            cur = conn.execute(
+                "UPDATE users SET token=NULL, token_at=NULL "
+                "WHERE token IN (?, ?)", (th, token),
+            )
+            return cur.rowcount > 0
+
     def resolve(self, token: str) -> Optional[str]:
-        """token -> username；过期或无效返回 None。"""
+        """token -> username；过期或无效返回 None。
+
+        同时兼容**旧的明文 token 行**：老库里的 token 是明文，
+        直接改成哈希会让所有已登录用户突然掉线。命中明文行时顺手把它
+        升级成哈希（用户无感），迁移完就再也没有明文 token 了。
+        """
         if not token:
             return None
+        th = _token_hash(token)
+        row = None
+        legacy = False
         with self._lock, sqlite3.connect(self.db_path) as conn:
             row = conn.execute(
-                "SELECT username, token_at FROM users WHERE token=?", (token,)
+                "SELECT username, token_at FROM users WHERE token=?", (th,)
             ).fetchone()
+            if not row:
+                # 兼容旧明文行
+                row = conn.execute(
+                    "SELECT username, token_at FROM users WHERE token=?", (token,)
+                ).fetchone()
+                if row:
+                    legacy = True
+                    conn.execute(
+                        "UPDATE users SET token=? WHERE token=?", (th, token)
+                    )
         if not row:
             return None
         if time.time() - (row[1] or 0) > _TOKEN_TTL:
             return None
+        if legacy:
+            logger.info("[auth] 已把用户 %s 的 token 升级为哈希存储", row[0])
         return row[0]
 
     def resolve_uid(self, username: str) -> str:

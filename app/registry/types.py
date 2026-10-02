@@ -77,6 +77,14 @@ class ConfigField:
         default:  默认值
         secret:   True 表示不回显（API Key 类）
         help:     说明文字
+        options_from:
+            该 select 的选项**由注册表派生**，而不是手写。
+            取值为能力名（`llm` / `image_gen` / `video_gen` / `tts` /
+            `lora_train`），序列化时替换成"该能力当前已登记的提供者"。
+            为什么要这样：手写清单**必然漂移**——实测 `video_provider` 的选项
+            只有 `('(按模式)', 'local', 'minimax', 'ffmpeg')`，而适配器里明明有
+            `dashscope_video` 与 `seedance`（都已接好），用户**根本选不到**。
+            （同类问题在 `allowed_settings()` 上修过一次：那次是"能填却被白名单丢弃"。）
     """
 
     key: str
@@ -87,6 +95,7 @@ class ConfigField:
     default: object = None
     secret: bool = False
     help: str = ""
+    options_from: str = ""
 
 
 # ------------------------------------------------------------------

@@ -101,9 +101,48 @@ def test_public_addresses_still_pass():
                "https://198.18.0.16/v1"):     # 代理 fake-ip 段
         assert_public_url(ok, allow_local=False)
 
-    for bad in ("http://10.0.0.5/", "http://192.168.1.1/", "http://172.16.0.1/",
-                "http://169.254.169.254/", "http://0.0.0.0/", "http://[fd00::1]/",
-                "http://[::ffff:10.0.0.1]/", "file:///etc/passwd",
-                "gopher://x/", "http:///nohost"):
-        with pytest.raises(ValueError):
-            assert_public_url(bad, allow_local=False)
+
+#: 必须拒绝的特殊网段。
+#:
+#: ⚠️ 这份清单来自**两次真实漏判**：
+#:   1. 早先用"逐项 `is_private`/`is_loopback`…取反"的**黑名单**思路，
+#:      漏掉了 `100.64.0.0/10`（CGNAT，k8s Service CIDR / 云内网常用，
+#:      **是可路由的**，实测被放行）；
+#:   2. 改成 `is_global` 白名单后，漏掉了**组播**——`is_global` 对
+#:      `224.0.0.1` 为 True，实测被放行。
+#: 所以这里逐条钉死，网段再变也不会"因为忘了加进拒绝表"而漏。
+_REJECT_ADDRESSES = [
+    ("100.64.0.1", "CGNAT"),
+    ("100.127.255.254", "CGNAT 上界"),
+    ("10.0.0.5", "私网 10/8"),
+    ("172.16.0.1", "私网 172.16/12"),
+    ("192.168.1.1", "私网 192.168/16"),
+    ("169.254.169.254", "云元数据"),
+    ("127.0.0.2", "回环"),
+    ("0.0.0.0", "未指定"),
+    ("192.0.0.1", "IETF 协议分配"),
+    ("192.0.2.1", "TEST-NET-1"),
+    ("198.51.100.1", "TEST-NET-2"),
+    ("203.0.113.1", "TEST-NET-3"),
+    ("224.0.0.1", "组播（is_global 对它为 True）"),
+    ("239.255.255.250", "SSDP 组播"),
+    ("255.255.255.255", "广播"),
+    ("240.0.0.1", "保留"),
+    ("[fd00::1]", "IPv6 ULA"),
+    ("[fe80::1]", "IPv6 链路本地"),
+    ("[::ffff:10.0.0.1]", "IPv4 映射私网"),
+]
+
+
+@pytest.mark.parametrize("addr,why", _REJECT_ADDRESSES)
+def test_special_use_addresses_are_rejected(addr, why):
+    """特殊用途网段一律拒绝（白名单式的 `is_global` + 排除组播）。"""
+    with pytest.raises(ValueError):
+        assert_public_url(f"http://{addr}/x", allow_local=False)
+
+
+@pytest.mark.parametrize("bad", ["file:///etc/passwd", "gopher://x/",
+                                 "http:///nohost", "ftp://1.1.1.1/"])
+def test_non_http_schemes_rejected(bad):
+    with pytest.raises(ValueError):
+        assert_public_url(bad, allow_local=False)

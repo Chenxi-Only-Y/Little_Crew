@@ -69,6 +69,39 @@ export default function SettingsPage() {  const registry = useCanvas((s) => s.re
   const [cost, setCost] = useState<CostItem[] | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [creds, setCreds] = useState<CredentialSpec | null>(null);
+  /**
+   * 后端已**真正接入**的能力集合（如 `llm` / `image_gen` / `video_gen`）。
+   *
+   * 为什么需要它：注册表里有 5 个"云端/本地"模式字段，但 `lora_train` 与
+   * `tts` 目前**没有任何调用点**——只是声明。原先前端把它们一起标成
+   * "（必选）"并警告"未选择会报错"，**那是假的**：不选也不会报错。
+   * 用户于是被推着去配两个不影响任何行为的模式。
+   * 这里按后端下发的 `implemented` 只对真会用到的提示必选。
+   * 拉不到时**保守地全部视为必选**（宁可多提示，也不要漏提示真需要的）。
+   */
+  const [implementedCaps, setImplementedCaps] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      try {
+        const token = getToken();
+        const r = await fetch('/api/providers/modes', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const body = await r.json().catch(() => ({}));
+        const modes = (body?.modes ?? []) as Array<{ capability: string; implemented?: boolean }>;
+        if (alive && r.ok && modes.length) {
+          setImplementedCaps(new Set(modes.filter((m) => m.implemented).map((m) => m.capability)));
+        }
+      } catch {
+        /* 拉不到 → implementedCaps 保持 null → 视为全部必选（保守） */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   /**
    * 拉取"提供者凭据"清单。
@@ -137,6 +170,24 @@ export default function SettingsPage() {  const registry = useCanvas((s) => s.re
     return out;
   }, [registry]);
 
+  /**
+   * 该模式字段是否属于"后端已接入"的能力。
+   *
+   * 注册表只给字段，不给"有没有调用点"；这个信息只能由
+   * `/api/providers/modes` 的 `implemented` 下发。
+   * `implementedCaps === null`（还没拉到）时返回 true —— 保守处理。
+   */
+  const isImplementedMode = useMemo(() => {
+    return (fieldKey: string): boolean => {
+      if (implementedCaps === null) return true;
+      // 字段名形如 `llm_provider_mode` / `lora_train_provider_mode`
+      const cap = fieldKey.replace(/_provider_mode$/, '');
+      return implementedCaps.has(cap);
+    };
+  }, [implementedCaps]);
+
+  /** 需要用户显式选择、且**后端真的会用到**的模式 */
+
   /** 各职业的 provider/model/key 字段（模式字段已单独提出，不再重复显示） */
   const roleGroups = useMemo(() => {
     if (!registry) return [] as Array<{ node: string; label: string; fields: ConfigField[] }>;
@@ -156,10 +207,29 @@ export default function SettingsPage() {  const registry = useCanvas((s) => s.re
     return groups;
   }, [registry]);
 
-  const unsetModes = modeFields.filter(({ field }) => {
-    const v = settings?.[field.key];
-    return settings != null && (!v || v === 'unset');
-  });
+  /**
+   * 未选择的模式，分成两拨：
+   *   · blocked —— 已接入的能力（不选真的会在跑到那一步时报错）；
+   *   · optional —— 仅注册表声明、当前无调用点（不选不影响任何行为）。
+   *
+   * 分开的原因是原先只有一拨：把 `lora_train` / `tts` 也算作"必选"，
+   * 于是用户被告知"还有 2 项未选择，会报错"——而它们根本没人调用。
+   * 误导性的必选提示比不提示更糟：用户会去填一堆无用的配置。
+   */
+  const { blockedModes, optionalModes } = useMemo(() => {
+    const blocked: typeof modeFields = [];
+    const optional: typeof modeFields = [];
+    for (const item of modeFields) {
+      const v = settings?.[item.field.key];
+      const unset = settings != null && (!v || v === 'unset');
+      if (!unset) continue;
+      (isImplementedMode(item.field.key) ? blocked : optional).push(item);
+    }
+    return { blockedModes: blocked, optionalModes: optional };
+  }, [modeFields, settings, isImplementedMode]);
+
+  /** 兼容旧变量名（下面模板里用它决定卡片是否高亮） */
+  const unsetModes = blockedModes;
 
   const cloudItems = (cost ?? []).filter((c) => c.is_cloud);
   const localItems = (cost ?? []).filter((c) => c.is_cloud === false);
@@ -194,17 +264,32 @@ export default function SettingsPage() {  const registry = useCanvas((s) => s.re
           borderColor: unsetModes.length ? 'var(--st-review)' : undefined,
         }}
       >
-        <div className="card-title">① 用云端还是本地？<span style={{ color: 'var(--st-review)' }}>（必选）</span></div>
+        <div className="card-title">
+          ① 用云端还是本地？
+          <span style={{ color: 'var(--st-review)' }}>（必选）</span>
+        </div>
         {unsetModes.length > 0 && (
           <div style={{ fontSize: 12, color: 'var(--st-review)', marginBottom: 10 }}>
             ⚠ 还有 {unsetModes.length} 项未选择。跑到对应环节时后端会明确报错，
             而不是替你猜（猜本地会失败、猜云端会产生你没预期的费用）。
           </div>
         )}
+        {optionalModes.length > 0 && (
+          <div style={{ fontSize: 12, color: 'var(--s-muted)', marginBottom: 10 }}>
+            另有 {optionalModes.length} 项（
+            {optionalModes.map(({ field }) => field.label).join('、')}
+            ）当前**未接入流程**，不选不影响运行；将来接入后会自动变为必选。
+          </div>
+        )}
 
         <div className="grid-cards">
           {modeFields.map(({ node, field }) => (
             <div key={`${node}:${field.key}`}>
+              {!isImplementedMode(field.key) && (
+                <div style={{ fontSize: 11, color: 'var(--s-muted)', marginBottom: 4 }}>
+                  未接入（可选）
+                </div>
+              )}
               <ConfigFieldEditor
                 field={field}
                 current={settings?.[field.key]}

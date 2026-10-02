@@ -550,6 +550,19 @@ MODE_LABELS: dict[str, str] = {
     "unset": "未选择",
 }
 
+#: 目前**真正被调用**的能力。
+#:
+#: ⚠️ 为什么需要这个集合：`MODE_KEY_BY_CAPABILITY` 里有 6 个能力，但
+#: `lora_train` 与 `tts` 在代码里**没有任何调用点**——它们只是注册表声明。
+#: 前端却把它们和 llm/image/video 一起标成"（必选）"、并警告"未选择会报错"，
+#: 这**是假的**：没选也不会报错，因为根本没人用。
+#: 结果是用户被推着去配置两个不影响任何行为的模式（还可能要填密钥）。
+#: 这里如实下发"是否已接入"，让前端只对**真的会用到的**提示必选。
+#: 将来接入 TTS/LoRA 时把这个集合补上即可（前端会自动跟着变）。
+IMPLEMENTED_CAPABILITIES: frozenset[str] = frozenset({
+    "llm", "image_gen", "image_edit", "video_gen",
+})
+
 
 def mode_default_provider(capability: str, mode: str) -> str | None:
     """某能力在某模式下的默认提供者。"""
@@ -744,7 +757,12 @@ def previs_plan(provider: str | None = None) -> dict:
 def generation_settings() -> list[dict]:
     """需要用户显式选择的"模式"设置项（供设置页与导演台渲染）。
 
-    UI 应把它们放在最显眼位置：这是**必须先做的选择**。
+    UI 应把它们放在最显眼位置：对**已接入的能力**来说这是必须先做的选择。
+
+    每项带一个 `implemented` 字段：告知该能力**当前是否真的有调用点**。
+    前端据此只对已接入的提示"必选"——`lora_train` / `tts` 目前只是注册表
+    声明（无调用点），把它们也标成必选会让用户白填一堆配置（见
+    `IMPLEMENTED_CAPABILITIES` 的说明）。
     """
     out = []
     for cap in ("llm", "image_gen", "video_gen", "lora_train", "tts"):
@@ -757,6 +775,7 @@ def generation_settings() -> list[dict]:
             "mode_options": ["unset", *modes.keys()],
             "mode_labels": MODE_LABELS,
             "mode_defaults": {m: p for m, p in modes.items()},
+            "implemented": cap in IMPLEMENTED_CAPABILITIES,
         })
     return out
 

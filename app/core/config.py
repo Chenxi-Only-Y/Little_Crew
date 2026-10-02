@@ -119,6 +119,12 @@ class Settings(BaseSettings):
     # 自部署者若担心被刷，请在**反向代理层**做限制（见 README 部署提示）。
     log_level: str = "INFO"              # 日志级别
 
+    #: 是否暴露交互式 API 文档（`/docs`、`/redoc`、`/openapi.json`）。
+    #: 默认 **False**：这些页面未鉴权即可访问，会把完整 API 结构（每个端点的
+    #: 路径与请求体字段）交给任何人——正好是构造越权请求的说明书。
+    #: 本机开发要查接口时设 `ENABLE_DOCS=1`（或环境变量 `LITTLE_CREW_DOCS=1`）。
+    enable_docs: bool = False
+
     # ------------------- 视觉质量评估 -------------------
     # True: 占位评分（零成本）；False: 用真实 CLIP(open_clip) 计算 t2i 相似度
     mock_quality: bool = True

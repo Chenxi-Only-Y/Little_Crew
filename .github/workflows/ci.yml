@@ -36,6 +36,37 @@ jobs:
       - name: Run e2e test (mock / zero-cost)
         run: pytest tests/ -q
 
+  # 注册表快照时效性：后端注册表改了、前端快照必须跟着更新。
+  #
+  # 为什么单独一个 job：这是**不需要任何重依赖**的纯比对（导出注册表 +
+  # 比 SHA256），几秒钟就能跑完，但能挡住一类很难察觉的静默割裂——
+  # 后端支持某个 provider、而前端快照里没有它，界面上就"选不到"，
+  # 且所有其它检查都会显示通过（`check:parity` 只比拓扑校验器，不看快照）。
+  registry-snapshot:
+    name: Registry snapshot freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check frontend snapshot matches backend registry
+        run: |
+          python scripts/export_registry.py --out /tmp/fresh.json
+          python - <<'PY'
+          import hashlib, pathlib, sys
+          a = pathlib.Path("web/src/registry.snapshot.json").read_bytes()
+          b = pathlib.Path("/tmp/fresh.json").read_bytes()
+          ha = hashlib.sha256(a).hexdigest()[:16]
+          hb = hashlib.sha256(b).hexdigest()[:16]
+          if ha != hb:
+              print(f"ERROR: registry snapshot is stale (committed {ha} != fresh {hb})")
+              print("       后端注册表改了，前端快照没跟上 → 界面会缺东西。")
+              print("       修法：python scripts/export_registry.py")
+              sys.exit(1)
+          print(f"OK: snapshot up to date ({ha})")
+          PY
+
   # 密钥防泄漏：防止有人把 .env / 密钥文件误提交
   secrets:
     name: Secret leak guard

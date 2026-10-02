@@ -465,9 +465,9 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         + _image_fields("character_designer") + (
             # LoRA 训练的具体提供者（模式已在上方选定，这里可覆盖）
             ConfigField("lora_train_provider", "LoRA 训练来源（覆盖模式）", "select", "global",
-                        ("(按模式)", "local", "dashscope", "replicate"),
+                        ("(按模式)",),
                         help="留空/按模式即用上方的模式默认；也可强制指定",
-                        default=""),
+                        default="", options_from="lora_train"),
             ConfigField("lora_rank", "LoRA 秩", "number", "global", default=32,
                         help="百炼要求 2 的倍数；越大拟合越强、越慢"),
             ConfigField("lora_train_steps", "训练步数", "number", "global", default=800,
@@ -535,8 +535,9 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         config=(
             MODEL_MODE_FIELDS["tts"],
             ConfigField("tts_provider", "配音来源（覆盖模式）", "select", "global",
-                        ("(按模式)", "edge", "dashscope", "minimax", "elevenlabs"),
-                        help="按模式即用上方模式默认；edge=免费兜底"),
+                        ("(按模式)",),
+                        help="按模式即用上方模式默认；edge=免费兜底",
+                        options_from="tts"),
             ConfigField("tts_voice", "默认音色", "text", "global"),
             ConfigField("tts_speed", "语速", "slider", "global", default=1.0),
         ),
@@ -559,8 +560,9 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         config=(
             MODEL_MODE_FIELDS["video_gen"],
             ConfigField("video_provider", "视频来源（覆盖模式）", "select", "global",
-                        ("(按模式)", "local", "minimax", "ffmpeg"),
-                        help="按模式即用上方模式默认"),
+                        ("(按模式)",),
+                        help="按模式即用上方模式默认；选项由注册表派生（含 dashscope_video / seedance）",
+                        options_from="video_gen"),
             ConfigField("video_model", "视频模型", "text", "global"),
             ConfigField("video_max_duration", "每段时长（秒）", "select", "global",
                         options=("5", "7", "9", "12", "15"), default="7",

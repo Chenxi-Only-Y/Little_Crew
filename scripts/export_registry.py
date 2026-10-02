@@ -25,6 +25,17 @@ from app.registry import api as registry  # noqa: E402
 DEFAULT_OUT = ROOT / "web" / "src" / "registry.snapshot.json"
 
 
+def snapshot_json() -> str:
+    """注册表快照的**规范序列化**。
+
+    单独抽出来是为了让"导出"与"校验快照是否过期"共用同一段逻辑：
+    若各写一份，两边格式一旦不同就会互相打架（而漂移守卫本身失效最危险——
+    它会一直"通过"，掩盖真正的漂移）。
+    """
+    snap = registry.snapshot()
+    return json.dumps(snap, ensure_ascii=False, indent=2)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="导出注册表快照（供前端）")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="输出路径")
@@ -33,7 +44,7 @@ def main() -> int:
     snap = registry.snapshot()
     out = pathlib.Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(snap, ensure_ascii=False, indent=2), encoding="utf-8")
+    out.write_text(snapshot_json(), encoding="utf-8")
 
     print(f"已导出：{out}")
     print(f"  部门 {len(snap['departments'])} / 职业 {len(snap['roles'])} / "

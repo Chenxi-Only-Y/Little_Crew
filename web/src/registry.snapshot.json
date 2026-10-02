@@ -1624,11 +1624,13 @@
             "(按模式)",
             "local",
             "minimax",
-            "ffmpeg"
+            "ffmpeg",
+            "dashscope_video",
+            "seedance"
           ],
           "default": null,
           "secret": false,
-          "help": "按模式即用上方模式默认"
+          "help": "按模式即用上方模式默认；选项由注册表派生（含 dashscope_video / seedance）"
         },
         {
           "key": "video_model",
