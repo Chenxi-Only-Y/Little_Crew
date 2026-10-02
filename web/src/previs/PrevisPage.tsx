@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react';
 import Scene3D, { three } from './Scene3D';
 import { usePrevis } from './store';
 import { exportShot, exportDepth, dataUrlToBlob, type DepthPolarity } from './exporter';
-import { sampleCamera, type PrevisScene, type Vec3 } from './types';
+import { sampleCamera, activeTrack as activeTrackAt, migrateShot, type PrevisScene, type Vec3 } from './types';
 import { POSE_PRESETS, JOINT_GROUPS, JOINT_LABELS, AXIS_LABELS } from './humanoid';
 import { ENV_PRESETS } from './env';
 import { getToken } from '../api/auth';
@@ -192,11 +192,25 @@ export default function PrevisPage() {
     setMsg({ ok: true, text: `已打开「${res.project.name}」` });
   };
 
-  const shot = scene.shots[shotIndex];
+  const shot = scene.shots[shotIndex] ? migrateShot(scene.shots[shotIndex]) : undefined;
   const selActor = selected?.kind === 'actor' ? scene.actors.find((a) => a.id === selected.id) : null;
   const selProp = selected?.kind === 'prop' ? scene.props.find((p) => p.id === selected.id) : null;
-  const selKey =
-    selected?.kind === 'camera' ? shot?.cameraKeys.find((k) => k.id === selected.id) : null;
+  const activeTrackId = usePrevis((s) => s.activeTrackId);
+  const drawing = usePrevis((s) => s.drawing);
+  const drawHeight = usePrevis((s) => s.drawHeight);
+  /** 选中的相机关键帧 + 它所属的机位（多机位下必须知道是哪条轨道） */
+  const selKeyHit = (() => {
+    if (selected?.kind !== 'camera' || !shot) return null;
+    for (const t of shot.cameraTracks) {
+      const k = t.keys.find((x) => x.id === selected.id);
+      if (k) return { track: t, key: k };
+    }
+    return null;
+  })();
+  const activeTrack =
+    shot?.cameraTracks.find((t) => t.id === activeTrackId) ?? shot?.cameraTracks[0];
+  /** 当前生效的机位（按播放头分派）——用于提示"现在切到哪个机位了" */
+  const liveTrack = shot ? activeTrackAt(shot, playhead) : null;
 
   const doExport = async (only?: number[]) => {
     const { renderer, scene: tScene, camera } = three;
@@ -264,8 +278,8 @@ export default function PrevisPage() {
     setMsg(null);
     try {
       const { renderDepthFrame } = await import('./exporter');
-      const shotNow = scene.shots[shotIndex];
-      const pose = sampleCamera(shotNow, 0);
+      const shotNow = migrateShot(scene.shots[shotIndex]);
+      const pose = sampleCamera(scene, shotNow, 0);
       camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
       camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
       if ((camera as import('three').PerspectiveCamera).isPerspectiveCamera) {
@@ -464,7 +478,8 @@ export default function PrevisPage() {
           >
             {s.name}
             <span style={{ color: 'var(--s-violet-mid)', marginLeft: 6 }}>
-              {s.duration}s · {s.cameraKeys.length} 关键帧
+              {s.duration}s · {migrateShot(s).cameraTracks.length} 机位 ·{' '}
+              {migrateShot(s).cameraTracks.reduce((n, t) => n + t.keys.length, 0)} 关键帧
             </span>
           </div>
         ))}
@@ -517,6 +532,35 @@ export default function PrevisPage() {
             />
             辅助线
           </label>
+
+          {/* 绘制轨道：在视口里点一下就落一个关键帧 */}
+          <label
+            className="pill"
+            style={{ gap: 4, cursor: 'pointer', color: drawing ? 'var(--s-lime)' : undefined }}
+            title="打开后在视口里点击即可放置相机关键帧（落在当前机位上）"
+          >
+            <input
+              type="checkbox"
+              checked={drawing}
+              onChange={(e) => usePrevis.getState().setDrawing(e.target.checked)}
+            />
+            绘制轨道
+          </label>
+          {drawing && (
+            <>
+              <span className="pill">高度</span>
+              <input
+                type="number"
+                step={0.1}
+                value={drawHeight}
+                onChange={(e) => usePrevis.getState().setDrawHeight(Number(e.target.value))}
+                style={{ width: 62 }}
+              />
+              <span className="pill" style={{ color: 'var(--s-violet-mid)' }}>
+                点视口放帧 · 落在「{activeTrack?.name ?? '—'}」
+              </span>
+            </>
+          )}
         </div>
 
         <div style={{ flex: '1 1 auto', minHeight: 0, position: 'relative' }}>
@@ -879,38 +923,186 @@ export default function PrevisPage() {
           </Section>
         )}
 
-        {selKey && shot && (
-          <Section title="相机关键帧">
+        {selKeyHit && shot && (
+          <Section title={`相机关键帧 · ${selKeyHit.track.name}`}>
             <NumField
               label="时间s"
-              value={selKey.time}
+              value={selKeyHit.key.time}
               step={0.5}
-              onChange={(v) => usePrevis.getState().updateCameraKey(selKey.id, { time: v })}
+              onChange={(v) =>
+                usePrevis
+                  .getState()
+                  .updateCameraKey(selKeyHit.track.id, selKeyHit.key.id, { time: v })
+              }
             />
             <div style={{ height: 6 }} />
             <Vec3Field
               label="机位"
-              value={selKey.position}
-              onChange={(v) => usePrevis.getState().updateCameraKey(selKey.id, { position: v })}
+              value={selKeyHit.key.position}
+              onChange={(v) =>
+                usePrevis
+                  .getState()
+                  .updateCameraKey(selKeyHit.track.id, selKeyHit.key.id, { position: v })
+              }
             />
-            <Vec3Field
-              label="看向"
-              value={selKey.target}
-              onChange={(v) => usePrevis.getState().updateCameraKey(selKey.id, { target: v })}
-            />
+
+            {/* 看向方式：固定点 / 锁定跟随某个角色 */}
+            <label style={{ fontSize: 11, color: 'var(--s-violet-mid)', display: 'block', marginTop: 6 }}>
+              看向方式
+            </label>
+            <select
+              value={selKeyHit.key.aim?.kind === 'actor' ? `actor:${selKeyHit.key.aim.actorId}` : 'fixed'}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === 'fixed') {
+                  usePrevis
+                    .getState()
+                    .setKeyAim(selKeyHit.track.id, selKeyHit.key.id, undefined);
+                } else {
+                  const actorId = v.slice('actor:'.length);
+                  usePrevis.getState().setKeyAim(selKeyHit.track.id, selKeyHit.key.id, {
+                    kind: 'actor',
+                    actorId,
+                    height: 1.1,
+                  });
+                }
+              }}
+              style={{ width: '100%', marginBottom: 8 }}
+            >
+              <option value="fixed">固定目标（看向某个点）</option>
+              {scene.actors.map((a) => (
+                <option key={a.id} value={`actor:${a.id}`}>
+                  锁定跟随 · {a.name}
+                </option>
+              ))}
+            </select>
+
+            {selKeyHit.key.aim?.kind === 'actor' ? (
+              <>
+                <NumField
+                  label="视线高"
+                  value={selKeyHit.key.aim.height}
+                  step={0.1}
+                  onChange={(v) =>
+                    usePrevis.getState().setKeyAim(selKeyHit.track.id, selKeyHit.key.id, {
+                      kind: 'actor',
+                      actorId: (selKeyHit.key.aim as { actorId: string }).actorId,
+                      height: v,
+                    })
+                  }
+                />
+                <div className="hint">
+                  锁定目标取「角色位置 + 视线高度」，不是角色原点（脚底）——
+                  否则机位一靠近，看向点就落到脚下、画面变成仰拍地板。
+                </div>
+              </>
+            ) : (
+              <Vec3Field
+                label="看向"
+                value={selKeyHit.key.target}
+                onChange={(v) =>
+                  usePrevis
+                    .getState()
+                    .updateCameraKey(selKeyHit.track.id, selKeyHit.key.id, { target: v })
+                }
+              />
+            )}
+
             <NumField
               label="视场°"
-              value={selKey.fov}
+              value={selKeyHit.key.fov}
               step={2}
-              onChange={(v) => usePrevis.getState().updateCameraKey(selKey.id, { fov: v })}
+              onChange={(v) =>
+                usePrevis.getState().updateCameraKey(selKeyHit.track.id, selKeyHit.key.id, { fov: v })
+              }
             />
             <button
               className="btn ghost"
               style={{ width: '100%', marginTop: 6 }}
-              disabled={shot.cameraKeys.length <= 1}
-              onClick={() => usePrevis.getState().removeCameraKey(selKey.id)}
+              disabled={selKeyHit.track.keys.length <= 1}
+              onClick={() =>
+                usePrevis.getState().removeCameraKey(selKeyHit.track.id, selKeyHit.key.id)
+              }
             >
               删除该关键帧
+            </button>
+          </Section>
+        )}
+
+        {/* ---------------- 多机位 ---------------- */}
+        {shot && (
+          <Section title={`机位（${shot.cameraTracks.length}）`}>
+            <div className="hint" style={{ marginBottom: 6 }}>
+              多条机位会按数组顺序**均分片段时长**自动切换——
+              这就是正反打/多机位调度的做法。也可以给每条填起止秒数精确排期。
+            </div>
+            {shot.cameraTracks.map((t, i) => {
+              const isActive = t.id === (activeTrack?.id ?? '');
+              const isLive = liveTrack?.id === t.id;
+              return (
+                <div
+                  key={t.id}
+                  style={{
+                    padding: '5px 7px',
+                    marginBottom: 4,
+                    borderRadius: 6,
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    background: isActive ? 'rgba(200,240,74,0.12)' : 'transparent',
+                    border: `1px solid ${isLive ? 'var(--s-lime)' : 'var(--s-hairline)'}`,
+                  }}
+                  onClick={() => usePrevis.getState().setActiveTrack(t.id)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ color: isLive ? 'var(--s-lime)' : undefined }}>
+                      {isLive ? '● ' : ''}
+                      {t.name}
+                    </span>
+                    <span style={{ color: 'var(--s-violet-mid)', fontSize: 10 }}>
+                      {t.keys.length} 帧
+                      {t.start != null || t.end != null
+                        ? ` · ${t.start ?? 0}~${t.end ?? shot.duration}s`
+                        : ` · 均分第${i + 1}段`}
+                    </span>
+                    <button
+                      className="btn ghost"
+                      style={{ marginLeft: 'auto', fontSize: 9, padding: '1px 5px' }}
+                      disabled={shot.cameraTracks.length <= 1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        usePrevis.getState().removeTrack(t.id);
+                      }}
+                    >
+                      删
+                    </button>
+                  </div>
+                  {isActive && (
+                    <div style={{ marginTop: 4, display: 'flex', gap: 4 }}>
+                      <input
+                        value={t.name}
+                        onChange={(e) =>
+                          usePrevis.getState().updateTrack(t.id, { name: e.target.value })
+                        }
+                        style={{ flex: '1 1 auto', fontSize: 10, minWidth: 0 }}
+                      />
+                      <button
+                        className="btn ghost"
+                        style={{ fontSize: 9, padding: '1px 5px' }}
+                        onClick={() => usePrevis.getState().addCameraKey(playhead, t.id)}
+                      >
+                        +帧
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <button
+              className="btn ghost"
+              style={{ width: '100%', marginTop: 4 }}
+              onClick={() => usePrevis.getState().addTrack()}
+            >
+              + 机位
             </button>
           </Section>
         )}
@@ -943,10 +1135,10 @@ export default function PrevisPage() {
               + 在 {playhead.toFixed(2)}s 加关键帧
             </button>
             <div className="hint">
-              至少两个关键帧才能形成运镜。当前时刻相机姿态：
+              至少两个关键帧才能形成运镜。当前生效机位：{liveTrack?.name ?? '—'}
               {(() => {
-                const p = sampleCamera(shot, playhead);
-                return ` 机位(${p.position.map((v) => v.toFixed(1)).join(', ')})`;
+                const p = sampleCamera(scene, shot, playhead);
+                return ` · 机位(${p.position.map((v) => v.toFixed(1)).join(', ')})`;
               })()}
             </div>
           </Section>

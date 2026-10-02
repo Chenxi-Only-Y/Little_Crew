@@ -71,22 +71,55 @@ export interface Prop {
 }
 
 /**
- * 相机关键帧。
+ * 相机看向哪里。
  *
- * 为什么用"关键帧 + 插值"而不是录一条轨迹：
- * 白模的用途是**定义起点与终点**（H3 只吃首尾帧），
- * 关键帧让用户明确摆出这两端，而不是在一堆采样点里找。
+ * `actor` = **锁定跟随**：始终看向某个角色的当前位置。
+ * 关键在于取「角色位置 + 视线高度」，而不是角色原点（脚底）——
+ * 否则机位一靠近，看向点就落到脚下、画面变成仰拍地板。
  */
+export type CameraAim =
+  | { kind: 'fixed'; target: Vec3 }
+  | {
+      kind: 'actor';
+      actorId: string;
+      /** 视线高度（相对角色脚底，米）。1.1 ≈ 胸口/面部 */
+      height: number;
+    };
+
 export interface CameraKeyframe {
   id: string;
   /** 秒（相对片段起点） */
   time: number;
   /** 机位 */
   position: Vec3;
-  /** 看向的目标点 */
+  /**
+   * 看向点（固定目标）。
+   *
+   * 当 `aim` 为 actor 时，此字段被忽略但仍保留——切回 fixed 时能回到原值，
+   * 不必让用户重新摆一次。
+   */
   target: Vec3;
   /** 垂直视场角（度） */
   fov: number;
+  /** 看向方式；缺省等价于 `{kind:'fixed', target}` */
+  aim?: CameraAim;
+}
+
+/**
+ * 一条相机轨道（一个"机位"）。
+ *
+ * 多机位切换的实现方式：**一个片段里放多条轨道，按时间区间分派**。
+ * 这正是实测里《盗火线》正反打的做法——
+ * "三个机位，时间轴上设好四段切换：A 四秒、B 三秒、C 四秒、再切回 B 四秒"。
+ */
+export interface CameraTrack {
+  id: string;
+  name: string;
+  /** 生效区间（秒，含头不含尾）；两条都为空则与其他轨道均分片段时长 */
+  start?: number;
+  end?: number;
+  /** 该机位自己的关键帧（相对**片段**时间，不是轨道内时间） */
+  keys: CameraKeyframe[];
 }
 
 /** 一条片段（一个镜头） */
@@ -96,7 +129,15 @@ export interface Shot {
   /** 时长（秒）。本地 H3 安全上限 10 秒，云端可到 15。 */
   duration: number;
   fps: number;
-  cameraKeys: CameraKeyframe[];
+  /**
+   * 相机轨道（多机位）。**至少一条**。
+   *
+   * 早期版本只有一个 `cameraKeys` 数组，无法表达"切机位"；
+   * 而实测表明正反打、多机位调度是白模最常被用到的能力之一。
+   */
+  cameraTracks: CameraTrack[];
+  /** 旧格式（单机位）——读取时会被迁移进 cameraTracks */
+  cameraKeys?: CameraKeyframe[];
 }
 
 export interface PrevisScene {
@@ -138,9 +179,15 @@ export const DEFAULT_SCENE: PrevisScene = {
       name: '镜头 1',
       duration: 7,
       fps: 24,
-      cameraKeys: [
-        { id: 'k0', time: 0, position: [0, 1.6, 4.2], target: [0, 1.0, 0], fov: 40 },
-        { id: 'k1', time: 7, position: [1.4, 1.5, 3.0], target: [0.6, 0.9, -0.4], fov: 40 },
+      cameraTracks: [
+        {
+          id: 'track_1',
+          name: '机位 1',
+          keys: [
+            { id: 'k0', time: 0, position: [0, 1.6, 4.2], target: [0, 1.0, 0], fov: 40 },
+            { id: 'k1', time: 7, position: [1.4, 1.5, 3.0], target: [0.6, 0.9, -0.4], fov: 40 },
+          ],
+        },
       ],
     },
   ],
@@ -156,14 +203,61 @@ export function lerpVec(a: Vec3, b: Vec3, t: number): Vec3 {
 }
 
 /**
- * 取某时刻的相机姿态。
+ * 把旧格式（单 `cameraKeys`）迁移成新格式（`cameraTracks`）。
  *
- * 关键帧按 time 排序后**线性插值**。不引入缓动曲线：
- * 预演的用途是给出确定的起止构图，中间用什么曲线应由视频模型决定，
- * 这里额外加缓动反而会与模型自身的运动叠加、产生意外。
+ * 为什么要迁移而不是直接改：已保存的工程里存的是旧格式，
+ * 直接读新字段会拿到 undefined → 相机没有轨迹 → 画面全黑。
  */
-export function sampleCamera(shot: Shot, time: number): CameraKeyframe {
-  const keys = [...shot.cameraKeys].sort((a, b) => a.time - b.time);
+export function migrateShot(shot: Shot): Shot {
+  if (shot.cameraTracks && shot.cameraTracks.length > 0) return shot;
+  const keys = shot.cameraKeys ?? [];
+  return {
+    ...shot,
+    cameraTracks: [
+      {
+        id: `${shot.id}_track0`,
+        name: '机位 1',
+        keys: keys.length
+          ? keys
+          : [{ id: `${shot.id}_k0`, time: 0, position: [0, 1.6, 4], target: [0, 1, 0], fov: 40 }],
+      },
+    ],
+  };
+}
+
+/**
+ * 取某时刻生效的轨道（多机位分派）。
+ *
+ * 两种排布方式：
+ *   1. 显式给了 `start`/`end` 的轨道，按区间命中；
+ *   2. 都没给时，**按数组顺序均分**片段时长（最省事，用户只要加轨道就自动切）
+ * 命中的轨道内，再按该轨道自己的关键帧插值。
+ */
+export function activeTrack(shot: Shot, time: number): CameraTrack {
+  const tracks = shot.cameraTracks;
+  const explicit = tracks.filter((t) => t.start != null || t.end != null);
+  if (explicit.length === tracks.length && explicit.length > 0) {
+    const hit = tracks.find(
+      (t) => time >= (t.start ?? 0) && time < (t.end ?? shot.duration),
+    );
+    if (hit) return hit;
+    return tracks[tracks.length - 1];
+  }
+  // 均分：n 条轨道把 [0, duration) 切成 n 段
+  const n = Math.max(1, tracks.length);
+  const seg = shot.duration / n;
+  const idx = Math.min(n - 1, Math.max(0, Math.floor(time / Math.max(1e-6, seg))));
+  return tracks[idx];
+}
+
+/**
+ * 在单条轨道内按时间插值出相机姿态（位置 + 视角）。
+ *
+ * 关键帧之间**线性插值**。不引入缓动曲线：预演的用途是给出确定的起止构图，
+ * 中间用什么曲线应由视频模型决定，额外加缓动会与模型自身的运动叠加。
+ */
+export function sampleTrack(track: CameraTrack, time: number): CameraKeyframe {
+  const keys = [...track.keys].sort((a, b) => a.time - b.time);
   if (keys.length === 0) {
     return { id: 'fallback', time, position: [0, 1.6, 4], target: [0, 1, 0], fov: 40 };
   }
@@ -183,10 +277,51 @@ export function sampleCamera(shot: Shot, time: number): CameraKeyframe {
         position: lerpVec(a.position, b.position, t),
         target: lerpVec(a.target, b.target, t),
         fov: lerp(a.fov, b.fov, t),
+        // 看向方式在插值区间内取前一个关键帧的设定：
+        // 锁定目标不该在两个关键帧之间"渐变"，那是切换语义，不是插值语义
+        aim: a.aim,
       };
     }
   }
   return { ...last, time };
+}
+
+/** 角色在场景里的位置（找不到时任取原点，避免相机飞到 NaN） */
+export function actorPosition(scene: PrevisScene, actorId: string): Vec3 | null {
+  const a = scene.actors.find((x) => x.id === actorId);
+  return a ? a.position : null;
+}
+
+/**
+ * 把关键帧解析成实际使用的"机位 + 看向点"。
+ *
+ * 锁定跟随在这里生效：`aim.kind === 'actor'` 时取该角色**当前**位置
+ * 加上视线高度。因为每个时刻都会重新解析，角色走动时相机自然跟着转——
+ * 不需要用户为每一帧手动改看向点。
+ */
+export function resolveCamera(
+  scene: PrevisScene,
+  kf: CameraKeyframe,
+): { position: Vec3; target: Vec3; fov: number } {
+  let target = kf.target;
+  const aim = kf.aim;
+  if (aim && aim.kind === 'actor') {
+    const p = actorPosition(scene, aim.actorId);
+    if (p) target = [p[0], p[1] + aim.height, p[2]];
+  }
+  return { position: kf.position, target, fov: kf.fov };
+}
+
+/** 取某时刻的相机姿态（含多机位分派与锁定跟随） */
+export function sampleCamera(
+  scene: PrevisScene,
+  shot: Shot,
+  time: number,
+): { position: Vec3; target: Vec3; fov: number; trackName: string } {
+  const track = activeTrack(shot, time);
+  const kf = sampleTrack(track, time);
+  const r = resolveCamera(scene, kf);
+  return { ...r, trackName: track.name };
 }
 
 /** 简易唯一 id（不引 uuid 依赖） */

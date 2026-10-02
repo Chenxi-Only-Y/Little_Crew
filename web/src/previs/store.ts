@@ -9,16 +9,40 @@
 import { create } from 'zustand';
 import {
   DEFAULT_SCENE,
+  migrateShot,
   newId,
   sampleCamera,
   type Actor,
+  type CameraAim,
   type CameraKeyframe,
+  type CameraTrack,
   type PrevisScene,
   type Prop,
   type Shot,
   type Vec3,
 } from './types';
 import { ENV_GROUND, applyEnvPreset, type EnvPreset } from './env';
+
+/** 取当前片段（已迁移到新格式，避免旧工程读不到轨道） */
+function currentShot(scene: PrevisScene, index: number): Shot | null {
+  const s = scene.shots[index];
+  return s ? migrateShot(s) : null;
+}
+
+function withTrack(
+  scene: PrevisScene,
+  shotIndex: number,
+  trackId: string,
+  fn: (t: CameraTrack) => CameraTrack,
+): PrevisScene {
+  const shot = currentShot(scene, shotIndex);
+  if (!shot) return scene;
+  const next: Shot = {
+    ...shot,
+    cameraTracks: shot.cameraTracks.map((t) => (t.id === trackId ? fn(t) : t)),
+  };
+  return { ...scene, shots: scene.shots.map((s, i) => (i === shotIndex ? next : s)) };
+}
 
 export type Selection =
   | { kind: 'actor'; id: string }
@@ -52,10 +76,30 @@ interface PrevisState {
   updateProp: (id: string, patch: Partial<Prop>) => void;
   removeSelected: () => void;
 
-  /** 相机关键帧 */
-  addCameraKey: (atTime: number) => void;
-  updateCameraKey: (id: string, patch: Partial<CameraKeyframe>) => void;
-  removeCameraKey: (id: string) => void;
+  /** 相机关键帧（按轨道操作，支持多机位） */
+  addCameraKey: (atTime: number, trackId?: string) => void;
+  updateCameraKey: (trackId: string, id: string, patch: Partial<CameraKeyframe>) => void;
+  removeCameraKey: (trackId: string, id: string) => void;
+  /** 设定关键帧的看向方式（固定目标 / 锁定某个角色） */
+  setKeyAim: (trackId: string, id: string, aim: CameraAim | undefined) => void;
+
+  /** 机位（轨道）增删改 */
+  addTrack: () => void;
+  removeTrack: (trackId: string) => void;
+  updateTrack: (trackId: string, patch: Partial<Pick<CameraTrack, 'name' | 'start' | 'end'>>) => void;
+
+  /** 当前正在编辑的机位（属性面板与绘制轨道都用它） */
+  activeTrackId: string | null;
+  setActiveTrack: (id: string | null) => void;
+
+  /** 绘制轨道模式：在视口里点地面生成关键帧 */
+  drawing: boolean;
+  setDrawing: (v: boolean) => void;
+  /** 绘制时放置关键帧的高度（米） */
+  drawHeight: number;
+  setDrawHeight: (v: number) => void;
+  /** 在视口里放一个关键帧（由 Scene3D 的射线拾取调用） */
+  placeKeyAt: (pos: Vec3) => void;
 
   /** 镜头 */
   addShot: () => void;
@@ -76,6 +120,16 @@ function withShot(scene: PrevisScene, index: number, fn: (s: Shot) => Shot): Pre
   return { ...scene, shots: scene.shots.map((s, i) => (i === index ? fn(s) : s)) };
 }
 
+/**
+ * 载入场景时把**旧格式**（单 cameraKeys）迁移成 cameraTracks。
+ *
+ * 不做这一步的话，打开旧工程会拿到没有轨道的片段 → 相机无姿态 → 画面全黑，
+ * 而用户只会觉得"工程坏了"。
+ */
+function normalizeScene(s: PrevisScene): PrevisScene {
+  return { ...s, shots: (s.shots ?? []).map(migrateShot) };
+}
+
 export const usePrevis = create<PrevisState>((set) => ({
   scene: DEFAULT_SCENE,
   shotIndex: 0,
@@ -84,7 +138,8 @@ export const usePrevis = create<PrevisState>((set) => ({
   playing: false,
   showHelpers: true,
 
-  setScene: (s) => set({ scene: s, shotIndex: 0, selected: null, playhead: 0, playing: false }),
+  setScene: (s) =>
+    set({ scene: normalizeScene(s), shotIndex: 0, selected: null, playhead: 0, playing: false }),
   resetScene: () =>
     set({ scene: DEFAULT_SCENE, shotIndex: 0, selected: null, playhead: 0, playing: false }),
 
@@ -157,12 +212,14 @@ export const usePrevis = create<PrevisState>((set) => ({
       return { scene, selected: null };
     }),
 
-  addCameraKey: (atTime) =>
+  addCameraKey: (atTime, trackId) =>
     set((st) => {
-      const shot = st.scene.shots[st.shotIndex];
+      const shot = currentShot(st.scene, st.shotIndex);
       if (!shot) return st;
-      // 从当前播放头采样一个姿态作为新关键帧的起点（避免新帧跳到原点）
-      const cur = sampleCamera(shot, atTime);
+      const tid = trackId ?? st.activeTrackId ?? shot.cameraTracks[0]?.id;
+      if (!tid) return st;
+      // 从当前时刻采样一个姿态作为新关键帧的起点（避免新帧跳到原点）
+      const cur = sampleCamera(st.scene, shot, atTime);
       const k: CameraKeyframe = {
         id: newId('key'),
         time: atTime,
@@ -171,33 +228,123 @@ export const usePrevis = create<PrevisState>((set) => ({
         fov: cur.fov,
       };
       return {
-        scene: withShot(st.scene, st.shotIndex, (s) => ({
-          ...s,
-          cameraKeys: [...s.cameraKeys, k].sort((a, b) => a.time - b.time),
+        scene: withTrack(st.scene, st.shotIndex, tid, (t) => ({
+          ...t,
+          keys: [...t.keys, k].sort((a, b) => a.time - b.time),
         })),
         selected: { kind: 'camera', id: k.id },
+        activeTrackId: tid,
       };
     }),
 
-  updateCameraKey: (id, patch) =>
+  updateCameraKey: (trackId, id, patch) =>
     set((st) => ({
-      scene: withShot(st.scene, st.shotIndex, (s) => ({
-        ...s,
-        cameraKeys: s.cameraKeys.map((k) => (k.id === id ? { ...k, ...patch } : k)),
+      scene: withTrack(st.scene, st.shotIndex, trackId, (t) => ({
+        ...t,
+        keys: t.keys.map((k) => (k.id === id ? { ...k, ...patch } : k)),
       })),
     })),
 
-  removeCameraKey: (id) =>
+  removeCameraKey: (trackId, id) =>
     set((st) => {
-      const shot = st.scene.shots[st.shotIndex];
-      // 至少留一个关键帧，否则相机无姿态可用
-      if (!shot || shot.cameraKeys.length <= 1) return st;
+      const shot = currentShot(st.scene, st.shotIndex);
+      const track = shot?.cameraTracks.find((t) => t.id === trackId);
+      // 每条轨道至少留一个关键帧，否则该机位无姿态可用
+      if (!track || track.keys.length <= 1) return st;
       return {
-        scene: withShot(st.scene, st.shotIndex, (s) => ({
-          ...s,
-          cameraKeys: s.cameraKeys.filter((k) => k.id !== id),
+        scene: withTrack(st.scene, st.shotIndex, trackId, (t) => ({
+          ...t,
+          keys: t.keys.filter((k) => k.id !== id),
         })),
         selected: st.selected?.kind === 'camera' && st.selected.id === id ? null : st.selected,
+      };
+    }),
+
+  setKeyAim: (trackId, id, aim) =>
+    set((st) => ({
+      scene: withTrack(st.scene, st.shotIndex, trackId, (t) => ({
+        ...t,
+        keys: t.keys.map((k) => (k.id === id ? { ...k, aim } : k)),
+      })),
+    })),
+
+  addTrack: () =>
+    set((st) => {
+      const shot = currentShot(st.scene, st.shotIndex);
+      if (!shot) return st;
+      // 新机位默认与第一个机位错开，避免完全重叠看不出区别
+      const base = shot.cameraTracks[0]?.keys[0];
+      const t: CameraTrack = {
+        id: newId('track'),
+        name: `机位 ${shot.cameraTracks.length + 1}`,
+        keys: [
+          {
+            id: newId('key'),
+            time: 0,
+            position: base ? [base.position[0] + 2, base.position[1], base.position[2]] : [2, 1.6, 4],
+            target: base ? [...base.target] as Vec3 : [0, 1, 0],
+            fov: base?.fov ?? 40,
+          },
+        ],
+      };
+      const next: Shot = { ...shot, cameraTracks: [...shot.cameraTracks, t] };
+      return {
+        scene: { ...st.scene, shots: st.scene.shots.map((s, i) => (i === st.shotIndex ? next : s)) },
+        activeTrackId: t.id,
+      };
+    }),
+
+  removeTrack: (trackId) =>
+    set((st) => {
+      const shot = currentShot(st.scene, st.shotIndex);
+      // 至少留一条轨道，否则片段没有相机
+      if (!shot || shot.cameraTracks.length <= 1) return st;
+      const next: Shot = {
+        ...shot,
+        cameraTracks: shot.cameraTracks.filter((t) => t.id !== trackId),
+      };
+      return {
+        scene: { ...st.scene, shots: st.scene.shots.map((s, i) => (i === st.shotIndex ? next : s)) },
+        activeTrackId: st.activeTrackId === trackId ? next.cameraTracks[0].id : st.activeTrackId,
+      };
+    }),
+
+  updateTrack: (trackId, patch) =>
+    set((st) => ({
+      scene: withTrack(st.scene, st.shotIndex, trackId, (t) => ({ ...t, ...patch })),
+    })),
+
+  activeTrackId: null,
+  setActiveTrack: (id) => set({ activeTrackId: id }),
+
+  drawing: false,
+  setDrawing: (v) => set({ drawing: v }),
+  drawHeight: 1.5,
+  setDrawHeight: (v) => set({ drawHeight: v }),
+
+  placeKeyAt: (pos) =>
+    set((st) => {
+      const shot = currentShot(st.scene, st.shotIndex);
+      if (!shot) return st;
+      const tid = st.activeTrackId ?? shot.cameraTracks[0]?.id;
+      if (!tid) return st;
+      const k: CameraKeyframe = {
+        id: newId('key'),
+        time: st.playhead,
+        position: [pos[0], st.drawHeight, pos[2]],
+        // 看向点取当前该机位的看向，保持用户已设的构图意图
+        target: (() => {
+          const cur = sampleCamera(st.scene, shot, st.playhead);
+          return [...cur.target] as Vec3;
+        })(),
+        fov: 40,
+      };
+      return {
+        scene: withTrack(st.scene, st.shotIndex, tid, (t) => ({
+          ...t,
+          keys: [...t.keys, k].sort((a, b) => a.time - b.time),
+        })),
+        selected: { kind: 'camera', id: k.id },
       };
     }),
 
@@ -208,9 +355,15 @@ export const usePrevis = create<PrevisState>((set) => ({
         name: `镜头 ${st.scene.shots.length + 1}`,
         duration: 7,
         fps: 24,
-        cameraKeys: [
-          { id: newId('key'), time: 0, position: [0, 1.6, 4.2], target: [0, 1, 0], fov: 40 },
-          { id: newId('key'), time: 7, position: [0, 1.6, 3.0], target: [0, 1, 0], fov: 40 },
+        cameraTracks: [
+          {
+            id: newId('track'),
+            name: '机位 1',
+            keys: [
+              { id: newId('key'), time: 0, position: [0, 1.6, 4.2], target: [0, 1, 0], fov: 40 },
+              { id: newId('key'), time: 7, position: [0, 1.6, 3.0], target: [0, 1, 0], fov: 40 },
+            ],
+          },
         ],
       };
       return {

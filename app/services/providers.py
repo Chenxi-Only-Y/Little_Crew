@@ -62,10 +62,30 @@ CONDITIONING_LABELS: dict[str, str] = {
     "camera": "相机参数",
 }
 
-#: 哪些维度属于"运动/结构控制"——决定白模是否有活可干
+#: 哪些维度属于"结构/运动控制"——决定白模是否有活可干。
+#:
+#: 注意 `reference_*` 也算：参考视频能复刻运镜与走位、参考图能锚定外观，
+#: 它们同样让白模的产出能影响结果。早先把它们排除在外，
+#: 导致"支持参考视频"的模型被误判为"白模只能给首尾帧"。
 STRUCTURAL_CONDITIONING: frozenset[str] = frozenset(
-    {"first_frame", "last_frame", "depth", "pose", "canny", "camera"}
+    {
+        "first_frame", "last_frame", "depth", "pose", "canny", "camera",
+        "reference_image", "reference_video", "reference_audio",
+    }
 )
+
+
+#: 维度分组：同一次请求里**只能选一组**。
+#:
+#: 依据官方文档：首尾帧（i2v）与参考素材（r2v）互斥——
+#:   MiniMax：「Image-to-video and reference-to-video are mutually exclusive」
+#:   万相   ：「reference_xx/file/link 类型和 first_frame/last_frame 类型互斥，
+#:             不能在同一请求中混用」
+#: 与其让用户在运行时吃 API 错误，不如在这里声明出来，由 UI 提前拦住。
+CONDITIONING_GROUPS: dict[str, tuple[str, ...]] = {
+    "i2v": ("first_frame", "last_frame"),
+    "r2v": ("reference_image", "reference_video", "reference_audio"),
+}
 
 
 @dataclass(frozen=True)
@@ -216,15 +236,32 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  conditioning=("text", "first_frame", "last_frame"),
                  note="8GB 实测：8 步约 8.6 分钟/段；**时长上限 10 秒**，超过必 OOM（降分辨率无效）"),
     ProviderSpec("minimax", "MiniMax（Hailuo）", "video_gen", "cn_cloud",
-                 default_model="MiniMax-H3", known_models=("MiniMax-H3",),
+                 default_model="MiniMax-H3", known_models=("MiniMax-H3", "MiniMax-H3-Max"),
                  presets={"duration": DURATION_BY_PROVIDER["minimax"],
                           "resolution": RESOLUTION_BY_PROVIDER["minimax"]},
-                 # MiniMax 支持首帧图生视频；尾帧（first/last frame）能力
-                 # **尚未逐版本核实**，故此处保守地不声明 last_frame——
-                 # 宁可少声明（白模少算一份、不影响正确性），
-                 # 也不要声明了却发不出去（会让用户以为能控终点）。
-                 conditioning=("text", "first_frame", "reference"),
-                 note="约 $0.01/秒（最便宜档）；渲染 <2 分钟/段"),
+                 # 依据官方 v2 文档（POST /v2/video_generation）：
+                 #   content 数组支持 text / image_url / video_url / audio_url，
+                 #   并用 role 区分用途：
+                 #     first_frame / last_frame / reference_image /
+                 #     reference_video / reference_audio
+                 #   限制：参考视频 ≤3 段、每段 2~15s、总 ≤15s、单文件 ≤50MB
+                 #   **首尾帧与参考视频互斥**（不能同一请求混用）
+                 conditioning=("text", "first_frame", "last_frame",
+                               "reference_image", "reference_video", "reference_audio"),
+                 note="H3: 768P/2K，4~15s；H3-Max 更快但无 2K、5~15s。"
+                      "支持白模参考视频（复刻运镜与走位）。**首尾帧与参考视频互斥**"),
+    ProviderSpec("dashscope_video", "阿里百炼·万相（Wan）", "video_gen", "cn_cloud",
+                 default_model="wan3.0-video",
+                 known_models=("wan3.0-video", "wan3.0-video-prime",
+                               "wan2.2-kf2v-flash"),
+                 presets={"duration": (5, 10, 15, 20, 30),
+                          "resolution": ("480P", "720P", "1080P")},
+                 # 万相 3.0 是 All-in-One：同一模型按 media[].type 自动路由。
+                 # 与 MiniMax 一样，reference_* 与 first_frame/last_frame **互斥**。
+                 conditioning=("text", "first_frame", "last_frame",
+                               "reference_image", "reference_video", "reference_audio"),
+                 note="时长 2~30s、30fps、**原生带音频**；参考视频 ≤5 段总 ≤15s。"
+                      "首尾帧与参考素材互斥"),
     ProviderSpec("ffmpeg", "FFmpeg 本地合成（免费）", "video_gen", "free",
                  default_model="ffmpeg", needs_api_key=False,
                  presets={"duration": DURATION_BY_PROVIDER["ffmpeg"],
@@ -526,6 +563,47 @@ def video_conditioning(provider: str | None = None) -> tuple[str, ...]:
     return tuple(spec.conditioning) if spec else ()
 
 
+def conditioning_groups_for(provider: str | None = None) -> dict[str, list[str]]:
+    """该提供者当前可用的"条件分组"（同组内互斥，组间也互斥）。
+
+    用于界面：选了首尾帧就不能再选参考素材，反之亦然。
+    """
+    cond = set(video_conditioning(provider))
+    out: dict[str, list[str]] = {}
+    for name, members in CONDITIONING_GROUPS.items():
+        avail = [m for m in members if m in cond]
+        if avail:
+            out[name] = avail
+    return out
+
+
+def check_conditioning_choice(provider: str | None, chosen: list[str]) -> str | None:
+    """校验一次请求里选的条件组合是否合法。
+
+    Returns:
+        None = 合法；否则返回面向用户的错误说明。
+    """
+    cond = set(video_conditioning(provider))
+    unknown = [c for c in chosen if c not in cond]
+    if unknown:
+        labels = [CONDITIONING_LABELS.get(c, c) for c in unknown]
+        return f"所选的视频模型不支持这些条件：{'、'.join(labels)}"
+
+    used_groups = {
+        name for name, members in CONDITIONING_GROUPS.items()
+        if any(m in chosen for m in members)
+    }
+    if len(used_groups) > 1:
+        pretty = " 与 ".join(
+            "首尾帧" if g == "i2v" else "参考素材" for g in sorted(used_groups)
+        )
+        return (
+            f"{pretty} 互斥，不能在同一次请求里混用。"
+            "请二选一：要么用首尾帧锚定起止画面，要么用参考素材（图片/视频/音频）复刻。"
+        )
+    return None
+
+
 def previs_plan(provider: str | None = None) -> dict:
     """白模（预演）该产出什么 —— **由所选视频模型的能力决定**。
 
@@ -561,6 +639,11 @@ def previs_plan(provider: str | None = None) -> dict:
     supported = tuple(k for k in cond if k in STRUCTURAL_CONDITIONING)
 
     deliverables: list[str] = []
+    # 参考视频通道：白模**录像**直接作为参考，复刻运镜与走位。
+    # 这是当前云端最实用的一条（实测：三颗经典镜头里，白模参考版把抽卡次数
+    # 从 3 次降到 2 次，纯提示词版在推门/切换/站位上均失败）。
+    if "reference_video" in supported:
+        deliverables.append("白模参考视频（≤15 秒，复刻运镜与走位——最推荐）")
     if "last_frame" in supported:
         deliverables.append("终点布局图（决定镜头结束时人物在哪、画面怎么收）")
     if "first_frame" in supported:
@@ -580,6 +663,13 @@ def previs_plan(provider: str | None = None) -> dict:
             f"所选的「{provider}」只接受 {'/'.join(cond) or '文字'}，"
             "没有任何结构条件入口——白模产出无法影响视频结果，做了也用不上。"
         )
+    elif "reference_video" in supported:
+        useful = True
+        reason = (
+            f"「{provider}」支持参考视频：白模**录像**直接送进去，"
+            "运镜与人物走位会被复刻。这是当前可控性最高且最省事的一条路"
+            "（首尾帧与参考视频互斥，二选一）。"
+        )
     elif supported == ("first_frame",):
         useful = True
         reason = (
@@ -590,7 +680,7 @@ def previs_plan(provider: str | None = None) -> dict:
         useful = True
         reason = (
             f"「{provider}」支持首尾帧：白模给出**起点与终点布局**，"
-            "位移方向与落点被钉死——这是当前最有效且成本最低的结构控制。"
+            "位移方向与落点被钉死。若它也支持参考视频，优先用参考视频。"
         )
     else:
         useful = True

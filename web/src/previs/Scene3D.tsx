@@ -23,6 +23,8 @@ import {
   skeletonPositionsGrounded,
 } from './humanoid';
 import * as humanoidNs from './humanoid';
+import * as typesNs from './types';
+import { DrawPlane } from './DrawPlane';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -42,11 +44,13 @@ declare global {
   interface Window {
     __previsThree?: typeof three;
     __previsHumanoid?: typeof humanoidNs;
+    __previsTypes?: typeof typesNs;
   }
 }
 if (typeof window !== 'undefined') {
   window.__previsThree = three;
   window.__previsHumanoid = humanoidNs;
+  window.__previsTypes = typesNs;
 }
 
 /** 标记为"辅助对象"的东西，导出时会被隐藏（网格线留在画面里会被模型当成真实结构） */
@@ -205,81 +209,79 @@ function PropMesh({ id }: { id: string }) {
   );
 }
 
-/** 相机关键帧可视化 */
+/** 相机关键帧可视化（当前机位用实色，其它机位暗显） */
 function CameraGizmos() {
   const scene = usePrevis((s) => s.scene);
   const shotIndex = usePrevis((s) => s.shotIndex);
   const selected = usePrevis((s) => s.selected);
   const select = usePrevis((s) => s.select);
   const show = usePrevis((s) => s.showHelpers);
+  const activeTrackId = usePrevis((s) => s.activeTrackId);
   const shot = scene.shots[shotIndex];
 
   // 用 useMemo 复用几何体，避免每帧重建（原先每帧 new bufferAttribute 会漏显存）
   const lines = useMemo(
     () =>
-      (shot?.cameraKeys ?? []).map((k) => ({
-        id: k.id,
-        positions: new Float32Array([...k.position, ...k.target]),
-      })),
-    [shot?.cameraKeys],
+      (shot?.cameraTracks ?? []).flatMap((t) =>
+        t.keys.map((k) => ({
+          id: k.id,
+          positions: new Float32Array([...k.position, ...k.target]),
+        })),
+      ),
+    [shot?.cameraTracks],
   );
 
   if (!show || !shot) return null;
 
   return (
     <group>
-      {shot.cameraKeys.map((k) => {
-        const isSel = selected?.kind === 'camera' && selected.id === k.id;
-        const line = lines.find((l) => l.id === k.id);
-        return (
-          <group key={k.id}>
-            <mesh
-              position={k.position}
-              userData={HELPER}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                select({ kind: 'camera', id: k.id });
-              }}
-            >
-              {/* 缩小并半透明：关键帧常在相机与角色之间，太大太实会挡住主体 */}
-              <boxGeometry args={[0.14, 0.14, 0.22]} />
-              <meshBasicMaterial
-                color={isSel ? '#c8f04a' : '#61d6a0'}
-                wireframe={!isSel}
-                transparent
-                opacity={isSel ? 1 : 0.7}
-              />
-            </mesh>
-            {/*
-              只给**选中的**关键帧画指向线。
-              未选中的线会横穿整个画面（关键帧常在相机与角色之间），
-              实测非常碍眼，而它们并不提供额外信息——小方块本身已标示机位。
-            */}
-            {isSel && line && (
-              /**
-               * 用 `<lineSegments>` 而不是 `<line>`：
-               * R3F 里小写 `<line>` 会被 React 当成 **SVG 的 line 元素**，
-               * 拿不到 `userData`，也不会被加进 Three.js 场景。
-               * lineSegments 走 BufferGeometry + 顶点对，语义正确。
-               */
-              <lineSegments userData={HELPER}>
-                <bufferGeometry>
-                  <bufferAttribute
-                    attach="attributes-position"
-                    args={[line.positions, 3]}
-                  />
-                </bufferGeometry>
-                <lineBasicMaterial color="#c8f04a" transparent opacity={0.6} />
-              </lineSegments>
-            )}
-          </group>
-        );
+      {shot.cameraTracks.flatMap((track) => {
+        const isActive = !activeTrackId || track.id === activeTrackId;
+        return track.keys.map((k) => {
+          const isSel = selected?.kind === 'camera' && selected.id === k.id;
+          const line = lines.find((l) => l.id === k.id);
+          const base = isSel ? '#c8f04a' : isActive ? '#61d6a0' : '#4a4370';
+          return (
+            <group key={k.id}>
+              <mesh
+                position={k.position}
+                userData={HELPER}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  select({ kind: 'camera', id: k.id });
+                }}
+              >
+                {/* 缩小并半透明：关键帧常在相机与角色之间，太大太实会挡住主体 */}
+                <boxGeometry args={[0.14, 0.14, 0.22]} />
+                <meshBasicMaterial
+                  color={base}
+                  wireframe={!isSel}
+                  transparent
+                  opacity={isSel ? 1 : isActive ? 0.7 : 0.35}
+                />
+              </mesh>
+              {/*
+                只给**选中的**关键帧画指向线。
+                未选中的线会横穿整个画面（关键帧常在相机与角色之间），
+                实测非常碍眼，而它们并不提供额外信息——小方块本身已标示机位。
+              */}
+              {isSel && line && (
+                <lineSegments userData={HELPER}>
+                  <bufferGeometry>
+                    <bufferAttribute attach="attributes-position" args={[line.positions, 3]} />
+                  </bufferGeometry>
+                  <lineBasicMaterial color="#c8f04a" transparent opacity={0.6} />
+                </lineSegments>
+              )}
+            </group>
+          );
+        });
       })}
     </group>
   );
 }
 
-/** 相机由镜头关键帧驱动 */
+/** 相机由当前生效机位驱动（多机位按时间分派 + 锁定跟随） */
 function CameraRig() {
   const camRef = useRef<import('three').PerspectiveCamera>(null);
   const scene = usePrevis((s) => s.scene);
@@ -290,7 +292,8 @@ function CameraRig() {
     const cam = camRef.current;
     const shot = scene.shots[shotIndex];
     if (!cam || !shot) return;
-    const pose = sampleCamera(shot, usePrevis.getState().playhead);
+    // 每帧重新解析：角色走动时锁定跟随会自然生效
+    const pose = sampleCamera(scene, shot, usePrevis.getState().playhead);
     cam.position.set(pose.position[0], pose.position[1], pose.position[2]);
     cam.lookAt(pose.target[0], pose.target[1], pose.target[2]);
     cam.fov = pose.fov;
@@ -379,6 +382,8 @@ export default function Scene3D() {
       <CameraRig />
       <Playback />
       <Ground size={scene.ground} />
+      {/* 绘制轨道的拾取面：只在绘制模式下存在，放在角色之前以便优先接管点击 */}
+      <DrawPlane />
       {actorIds.map((id) => (
         <ActorMesh key={id} id={id} />
       ))}

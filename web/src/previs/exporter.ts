@@ -186,7 +186,7 @@ export async function exportShot(
     for (let n = 0; n < indices.length; n += 1) {
       const i = indices[n];
       const time = (i / fps) * 1;
-      const pose = sampleCamera(shot, time);
+      const pose = sampleCamera(previsScene, shot, time);
       camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
       camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
       // 只有透视相机有 fov；正交相机跳过（导出仍可用，只是不受 fov 关键帧影响）
@@ -499,7 +499,7 @@ export async function exportDepth(
   const frames: ExportFrame[] = [];
   for (let i = 0; i < total; i += 1) {
     const time = i / fps;
-    const pose = sampleCamera(shot, time);
+    const pose = sampleCamera(previsScene, shot, time);
     camera.position.set(pose.position[0], pose.position[1], pose.position[2]);
     camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
     if ((camera as import('three').PerspectiveCamera).isPerspectiveCamera) {
