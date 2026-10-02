@@ -258,6 +258,27 @@ POST /v1/files/upload   (multipart, purpose=video_generation_input)
 文件限制：参考视频 mp4/mov ≤50MB、参考图 ≤30MB、参考音频 ≤15MB，
 **有效期 7 天**（过期需重传，否则返回 file expired）。
 
+### ⚠️ 视频密钥在设置页的"模型凭据"区（不是按职业的密钥）
+
+视频的 API Key 是**提供者级**的，与 LLM / 图像的 `*_api_key_{角色}` **不是同一个键**：
+
+| 能力 | 密钥键 | 在哪填 |
+| --- | --- | --- |
+| LLM | `llm_api_key_{角色}` | 设置页 §②「按职业指定模型」 |
+| 图像 | `image_api_key_{角色}` | 设置页 §② |
+| **视频** | `minimax_api_key` / `dashscope_api_key` / `ark_api_key` | **设置页 §③「模型凭据」** |
+
+这个分区是必须的：设置页原先只渲染以 `llm_/image_/video_/tts_/lora_` 开头的字段，
+而上面三个视频密钥**完全不匹配**这些前缀——它们在写白名单里（能存）
+却**没有输入框**，用户根本没法配视频 API key。
+
+现在由后端在 `/api/providers` 里下发 `credential_spec`，设置页照着渲染，
+不再有"能填不能存"或"能存不能填"的漂移。
+
+**自定义端点**也在这个区（可折叠）：`minimax_base_url` /
+`dashscope_video_base_url` / `ark_base_url`（注意方舟的键名与提供者 key 不同名）。
+留空即用官方默认地址，只在走代理或私有网关时才填。
+
 ---
 
 ## 参考来源

@@ -343,9 +343,39 @@ class VideoProvider:
     submit_path: str = ""
     #: 查询用哪个端点模板（`{task}` 会被替换）
     query_path: str = ""
+    #: 设置页里"自定义端点"对应的设置键。
+    #:
+    #: 默认按 `{key}_base_url` 推导，但**不能一概而论**：
+    #: Seedance 的配置键叫 `ark_base_url`（火山方舟自己的名字），
+    #: 与提供者 key `seedance` 不同名。硬按 key 推导会得到一个
+    #: 不在写白名单里的键——设置页能填、保存却被静默丢弃。
+    #: 这个字段就是用来消除这类命名漂移的（有测试守着）。
+    endpoint_setting: str = ""
 
 
 VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
+    VideoProvider(
+        key="minimax",
+        label="MiniMax（Hailuo）",
+        category="cn_cloud",
+        base_url="https://api.minimax.io",
+        model="MiniMax-H3",
+        known_models=("MiniMax-H3", "MiniMax-H3-Max"),
+        api_key_setting="minimax_api_key",
+        build_body=_build_minimax_body,
+        conditioning=("text", "first_frame", "last_frame",
+                      "reference_image", "reference_video", "reference_audio"),
+        durations=(4, 15),
+        note="H3: 768P/2K，4~15s；H3-Max 更快但无 2K、5~15s。"
+             "**支持参考视频**（白模录像走这里）。首尾帧与参考视频互斥。"
+             "（端点与模型名依官方 v2 文档实现，尚未用真实 key 跑通）",
+        verified=False,
+        # 注意是 v2，不是 v1：`/v2/video_generation` 的 content 数组才支持
+        # video_url/audio_url 与 role 分派；v1 只有 first_frame_image 那些扁平字段。
+        submit_path="/v2/video_generation",
+        query_path="/v2/query/video_generation/{task}",
+        endpoint_setting="minimax_base_url",
+    ),
     VideoProvider(
         key="dashscope_video",
         label="阿里百炼（万相 / Vidu）",
@@ -370,6 +400,7 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         verified=False,
         submit_path="/api/v1/services/aigc/video-generation/video-synthesis",
         query_path="/api/v1/tasks/{task}",
+        endpoint_setting="dashscope_video_base_url",
     ),
     VideoProvider(
         key="seedance",
@@ -388,6 +419,8 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         verified=False,
         submit_path="/api/v3/contents/generations/tasks",
         query_path="/api/v3/contents/generations/tasks/{task}",
+        # 注意：方舟的配置键是 `ark_base_url`，不是 `seedance_base_url`
+        endpoint_setting="ark_base_url",
     ),
 )
 
@@ -397,6 +430,79 @@ def get_video_provider(key: str) -> VideoProvider | None:
         if p.key == key:
             return p
     return None
+
+
+# ------------------------------------------------------------------
+# 提供者凭据需求（供设置页渲染输入框）
+# ------------------------------------------------------------------
+# 为什么要在这里声明、而不是让前端硬编码：
+#   视频的密钥是**提供者级**的（`minimax_api_key` 等），与 LLM/图像的
+#   `*_api_key_{角色}` 命名不同。前端如果按前缀猜，就会像以前那样
+#   ——白名单里有、界面却没输入框，用户根本没法配。
+#   所以由后端导出"这个提供者需要填什么"，前端照着渲染。
+
+@dataclass(frozen=True)
+class CredentialField:
+    """一个需要用户填写的凭据/端点字段。"""
+
+    key: str
+    label: str
+    kind: str          # "secret" | "text"
+    hint: str = ""
+
+
+def video_credential_fields() -> list[dict]:
+    """返回所有视频提供者需要的凭据字段（去重）。
+
+    前端用它渲染"视频模型凭据"区域，键名与 PUT /api/settings 完全一致。
+    """
+    out: list[dict] = []
+    seen: set[str] = set()
+    for p in VIDEO_PROVIDERS:
+        # 本地/免费提供者不需要 key（api_key_setting 可能为空）
+        if not p.api_key_setting or p.api_key_setting in seen:
+            continue
+        seen.add(p.api_key_setting)
+        out.append({
+            "key": p.api_key_setting,
+            "label": f"{p.label} · API Key",
+            "kind": "secret",
+            "provider": p.key,
+            "hint": p.note,
+            "models": list(p.known_models),
+            "verified": p.verified,
+        })
+    return out
+
+
+def video_endpoint_fields() -> list[dict]:
+    """可覆盖的端点字段。
+
+    键名取 `endpoint_setting`，**不是**按提供者 key 推导——
+    两者可能不同名（Seedance 的配置键叫 `ark_base_url`）。
+    推导错了会导致"设置页能填、保存却被静默丢弃"。
+    """
+    out: list[dict] = []
+    for p in VIDEO_PROVIDERS:
+        field = p.endpoint_setting or f"{p.key}_base_url"
+        out.append({
+            "key": field,
+            "label": f"{p.label} · 端点",
+            "kind": "text",
+            "provider": p.key,
+            "hint": f"留空用默认：{p.base_url}",
+        })
+    return out
+
+
+def provider_credential_spec() -> dict:
+    """给设置页用的完整凭据说明（按能力分组）。"""
+    return {
+        "video": {
+            "keys": video_credential_fields(),
+            "endpoints": video_endpoint_fields(),
+        }
+    }
 
 
 # ------------------------------------------------------------------

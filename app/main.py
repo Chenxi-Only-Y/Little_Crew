@@ -576,6 +576,18 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
     """
     from app.services.providers import CONDITIONING_LABELS, PROVIDERS
 
+    # 提供者 → 需要的凭据字段（设置项 key）。
+    # 为什么要下发这个：视频的密钥是**提供者级**的（`minimax_api_key` 等），
+    # 与 LLM/图像的 `*_api_key_{角色}` 命名不同。前端若按前缀猜，
+    # 就会出现"白名单里有、界面却没输入框"，用户根本没法配——
+    # 这是本项目实际发生过的问题。
+    from app.services.video_adapters import VIDEO_PROVIDERS, provider_credential_spec
+
+    cred_by_provider: dict[str, list[str]] = {
+        p.key: ([p.api_key_setting] if p.api_key_setting else [])
+        for p in VIDEO_PROVIDERS
+    }
+
     items = [
         {
             "key": p.key, "label": p.label, "capability": p.capability,
@@ -587,12 +599,20 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
             # 白模据此决定产出什么——见 providers.previs_plan()。
             "conditioning": list(p.conditioning),
             "conditioning_labels": [CONDITIONING_LABELS.get(c, c) for c in p.conditioning],
+            # 需要在设置页填写的凭据键（供前端渲染输入框）
+            "credential_keys": cred_by_provider.get(p.key, []),
         }
         for p in PROVIDERS
         if (not capability or p.capability == capability)
         and (include_unavailable or p.available)
     ]
-    return {"status": "ok", "count": len(items), "providers": items}
+    return {
+        "status": "ok",
+        "count": len(items),
+        "providers": items,
+        # 设置页渲染"提供者凭据"区域用；键名与 PUT /api/settings 完全一致
+        "credential_spec": provider_credential_spec(),
+    }
 
 
 # ------------------------------------------------------------------

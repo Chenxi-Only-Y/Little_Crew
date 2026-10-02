@@ -169,87 +169,20 @@ class VideoService:
     # MiniMax-H3 图生视频（每段 ≤ video_max_duration 秒、≤ video_resolution 分辨率）
     # ---------------------------------------------------------------
     def _real_minimax(self, images: List[dict], dialogue: str, out_dir: str, session_id: str,
-                      video_count: int | None = None) -> Tuple[str, int]:
-        """调用 MiniMax-H3 图生视频：每张分镜图生成一段视频（I2V）。
+                      video_count: int | None = None, text_prompt: str = "",
+                      reference_video: str = "") -> Tuple[str, int]:
+        """MiniMax（Hailuo）：统一交给适配器。
 
-        视频参数：resolution=768P（最高 768P），duration=min(请求, video_max_duration)。
-        输出目录 structure: <out_dir>/<session_id>/video/<shot_id>.mp4（每段一个文件）。
+        为什么删掉原先的独立实现：
+            这里曾自己拼 `/v2/video_generation` 的 body、自己轮询——
+            与 `video_adapters` 里的 minimax 重复。两处一旦漂移，就会出现
+            "界面按适配器声明做校验、实际按旧代码发送"这类极难排查的问题
+            （例如尾帧/参考视频的 role 只在一边支持）。
+            现在只保留适配器一条路。
         """
-        import time as _t
-        import uuid as _uuid
-        import base64
-        import pathlib
-
-        key = settings.minimax_api_key or settings.video_api_key
-        if not key:
-            raise RuntimeError("MOCK_VIDEO=0 且 VIDEO_PROVIDER=minimax 但未配置 MINIMAX_API_KEY")
-        base = (settings.video_base_url or settings.minimax_base_url or "https://api.minimax.io").rstrip("/")
-        from app.services.url_guard import assert_public_url
-        assert_public_url(base, context="video_base_url")
-        model = settings.video_model or "MiniMax-H3"
-
-        # 时长与分辨率：**上限由 provider 声明**（app/services/providers.py）。
-        # 本地 8GB 显存超过 10s 必 OOM，故 local 只提供 5/7/9；
-        # 用户若选到 12/15，这里向下收敛并记录原因，而不是发出去把服务打挂。
-        from app.services.providers import resolve_duration, resolve_provider, resolve_resolution
-
-        # 走到本函数说明已是 minimax 分支；显式取一次以复用同一套解析（不做静默默认）
-        provider, _ = resolve_provider("video_gen")
-        provider = (provider or "minimax").lower()
-        requested_q = settings.video_quality or settings.video_resolution
-        resolution, res_note = resolve_resolution(provider, requested_q)
-        duration, dur_note = resolve_duration(provider, settings.video_max_duration)
-        for note in (res_note, dur_note):
-            if note:
-                logger.warning("[video] %s", note)
-
-        import httpx
-
-        img_items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
-        if not img_items:
-            raise RuntimeError("没有可用图片，无法调用 MiniMax 图生视频。")
-        # 视频数量：优先用传入的 video_count；否则用 settings.video_count（0=跟图片数走）
-        cap = int(video_count if video_count is not None else (settings.video_count or 0))
-        if cap > 0:
-            img_items = img_items[:cap]
-
-        d = pathlib.Path(out_dir) / session_id / "video"
-        d.mkdir(parents=True, exist_ok=True)
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        produced = 0
-        for im in img_items:
-            sid = str(im.get("shot_id") or _uuid.uuid4().hex[:8])
-            img_ref = self._image_ref(im)
-            if not img_ref:
-                continue
-            motion = "镜头缓慢推近，画面中的角色/景物做轻微自然运动，电影感光影，稳定运镜"
-            body = {
-                "model": model,
-                "content": [
-                    {"type": "text", "text": motion},
-                    {"type": "image_url", "image_url": {"url": img_ref}, "role": "first_frame"},
-                ],
-                "resolution": resolution,
-                "duration": duration,
-                "ratio": self._ratio(im),
-            }
-            with httpx.Client(timeout=60) as client:
-                resp = client.post(f"{base}/v2/video_generation", headers=headers, json=body)
-                if resp.status_code >= 400:
-                    raise RuntimeError(f"MiniMax 图生视频提交失败({resp.status_code}): {resp.text[:300]}")
-                task_id = resp.json().get("task_id")
-                if not task_id:
-                    raise RuntimeError(f"MiniMax 未返回 task_id：{resp.text[:300]}")
-                file_id = self._poll_minimax(client, headers, task_id)
-                dl_url = self._retrieve_minimax(client, headers, file_id)  # 在 with 块内，client 未关闭
-            if dl_url:
-                with httpx.Client(timeout=90) as client:
-                    vr = client.get(dl_url)
-                    vr.raise_for_status()
-                out_mp4 = d / f"{sid}.mp4"
-                out_mp4.write_bytes(vr.content)
-                produced = 1
-        return str(d), produced
+        return self._via_adapter("minimax", images, dialogue, out_dir, session_id,
+                                 video_count=video_count, text_prompt=text_prompt,
+                                 reference_video=reference_video)
 
     def _real_dashscope(self, images: List[dict], dialogue: str, out_dir: str, session_id: str,
                         video_count: int | None = None, text_prompt: str = "",
@@ -304,9 +237,17 @@ class VideoService:
             )
 
         model = str(rs.get("video_model") or settings.video_model or prov.model).strip()
+        # 端点解析：全局覆盖 → 该提供者的端点设置 → 提供者默认。
+        # 用 `endpoint_setting` 而不是按 `{provider_key}_base_url` 拼——
+        # 两者可能不同名（Seedance 的键是 `ark_base_url`）。
+        endpoint_key = prov.endpoint_setting or f"{provider_key}_base_url"
         base_url = str(
-            rs.get("video_base_url") or settings.video_base_url or ""
-        ).strip() or str(getattr(settings, f"{provider_key}_base_url", "") or prov.base_url)
+            rs.get("video_base_url")
+            or settings.video_base_url
+            or rs.get(endpoint_key)
+            or getattr(settings, endpoint_key, "")
+            or ""
+        ).strip() or prov.base_url
 
         cap = int(video_count if video_count is not None else (settings.video_count or 0))
         items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
@@ -551,35 +492,6 @@ class VideoService:
                 return "3:4"
             return "9:16"
         return "adaptive"
-
-    def _poll_minimax(self, client, headers: dict, task_id: str, timeout: int = 600, interval: int = 8) -> str:
-        """轮询 MiniMax 图生视频任务状态，返回成功时的 file_id。"""
-        import time as _t
-
-        deadline = _t.time() + timeout
-        while _t.time() < deadline:
-            resp = client.get(f"{settings.video_base_url or settings.minimax_base_url}/v1/query/video_generation",
-                              params={"task_id": task_id}, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-            if not isinstance(data, dict):
-                _t.sleep(interval)
-                continue
-            status = str(data.get("status") or "")
-            if status in ("Success", "success"):
-                return data.get("file_id") or ""
-            if status in ("Fail", "Failed", "fail"):
-                raise RuntimeError(f"MiniMax 图生视频失败：{data}")
-            _t.sleep(interval)
-        raise TimeoutError(f"MiniMax 图生视频超时：{task_id}")
-
-    def _retrieve_minimax(self, client, headers: dict, file_id: str) -> str:
-        """用 file_id 换取视频下载 URL。"""
-        resp = client.get(f"{settings.video_base_url or settings.minimax_base_url}/v1/files/retrieve",
-                          params={"file_id": file_id}, headers=headers)
-        resp.raise_for_status()
-        data = resp.json()
-        return (data.get("file") or {}).get("download_url") or ""
 
 
 _service: VideoService | None = None
