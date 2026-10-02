@@ -513,8 +513,10 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         produces=("previs",),
         capability=("render_2d",),
         config=(
-            ConfigField("previs_mode", "白模模式", "select", "global", ("2d", "3d"), "2d",
-                        help="v2 先只做 2D；3D 为后续模式"),
+            # 只保留 2d：3D 预演（白模建模 + 渲染）成本与复杂度都远超当前定位，
+            # 留着"3d"选项会让用户选了却没有任何反应。本项目统一 2D。
+            ConfigField("previs_mode", "白模模式", "select", "global", ("2d",), "2d",
+                        help="2D 俯视示意图（PIL 绘制）：走位与机位，零成本、零新依赖"),
             ConfigField("previs_size", "预演画布尺寸", "text", "global", default="1280x720"),
         ),
     ),

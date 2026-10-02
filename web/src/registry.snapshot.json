@@ -1374,12 +1374,11 @@
           "type": "select",
           "scope": "global",
           "options": [
-            "2d",
-            "3d"
+            "2d"
           ],
           "default": "2d",
           "secret": false,
-          "help": "v2 先只做 2D；3D 为后续模式"
+          "help": "2D 俯视示意图（PIL 绘制）：走位与机位，零成本、零新依赖"
         },
         {
           "key": "previs_size",
