@@ -67,6 +67,7 @@ class VideoService:
         session_id: str,
         video_count: int | None = None,
         text_prompt: str = "",
+        reference_video: str = "",
     ) -> Tuple[str, int]:
         """生成视频。
 
@@ -74,6 +75,10 @@ class VideoService:
             video_count: 可选，指定生成几个视频段（0/None=跟图片数走；>0 截取前 N 个）。
             text_prompt: 无图片时（纯文生视频）用作提示词——通常是用户的一句话创意。
                          有图片时忽略（画面已由首帧决定，只需描述怎么动）。
+            reference_video: **参考视频**（图片/视频 URL，或 `mm_file://{file_id}`）。
+                         走"参考驱动"而非"首尾帧"——白模录像就是从这里进去的。
+                         注意**首尾帧与参考视频互斥**（官方限制），
+                         所以给了它就不再发首帧。
 
         Returns:
             (output_path_or_dir, produced) —— produced=1 表示真实产物，0 表示占位。
@@ -89,7 +94,19 @@ class VideoService:
             raise RuntimeError(why)
         provider = provider.lower()
         if provider == "minimax":
-            return self._real_minimax(images, dialogue, out_dir, session_id, video_count=video_count)
+            return self._real_minimax(images, dialogue, out_dir, session_id,
+                                      video_count=video_count,
+                                      reference_video=reference_video)
+        if provider == "dashscope_video":
+            return self._real_dashscope(images, dialogue, out_dir, session_id,
+                                        video_count=video_count,
+                                        text_prompt=text_prompt,
+                                        reference_video=reference_video)
+        if provider == "seedance":
+            return self._real_seedance(images, dialogue, out_dir, session_id,
+                                       video_count=video_count,
+                                       text_prompt=text_prompt,
+                                       reference_video=reference_video)
         if provider == "local":
             return self._real_local(images, dialogue, out_dir, session_id,
                                     video_count=video_count, text_prompt=text_prompt)
@@ -233,6 +250,109 @@ class VideoService:
                 out_mp4.write_bytes(vr.content)
                 produced = 1
         return str(d), produced
+
+    def _real_dashscope(self, images: List[dict], dialogue: str, out_dir: str, session_id: str,
+                        video_count: int | None = None, text_prompt: str = "",
+                        reference_video: str = "") -> Tuple[str, int]:
+        """走阿里百炼的视频端点（万相 / Vidu 等，一个 key 覆盖多家）。
+
+        统一交给 `video_adapters` 处理：那里负责把统一请求翻成该端点的形状
+        （万相用显式 media.type，Vidu 要求 media 正好两张 image 且顺序即首尾帧）。
+        """
+        return self._via_adapter("dashscope_video", images, dialogue, out_dir, session_id,
+                                 video_count=video_count, text_prompt=text_prompt,
+                                 reference_video=reference_video)
+
+    def _real_seedance(self, images: List[dict], dialogue: str, out_dir: str, session_id: str,
+                       video_count: int | None = None, text_prompt: str = "",
+                       reference_video: str = "") -> Tuple[str, int]:
+        """走火山方舟（Seedance）。
+
+        ⚠️ 端点与模型名按方舟公开文档整理，**尚未用真实 key 跑通**；
+        首次使用请按返回的提示核对 `ark_base_url` 与 `video_model`。
+        """
+        return self._via_adapter("seedance", images, dialogue, out_dir, session_id,
+                                 video_count=video_count, text_prompt=text_prompt,
+                                 reference_video=reference_video)
+
+    def _via_adapter(self, provider_key: str, images: List[dict], dialogue: str,
+                     out_dir: str, session_id: str, video_count: int | None = None,
+                     text_prompt: str = "", reference_video: str = "") -> Tuple[str, int]:
+        """经适配器生成视频（云端通用路径）。
+
+        `reference_video` 非空时走**参考驱动**（白模录像就是从这里进去）；
+        否则按有无首帧走图生视频/纯文生视频。
+        """
+        import pathlib
+
+        from app.core.config import settings
+        from app.services import runtime_settings as rs
+        from app.services.video_adapters import (
+            VideoAdapterError, VideoRequest, get_video_provider, submit_and_wait,
+        )
+
+        prov = get_video_provider(provider_key)
+        if prov is None:
+            raise RuntimeError(f"未登记的视频提供者：{provider_key}")
+
+        api_key = str(rs.get(prov.api_key_setting) or getattr(
+            settings, prov.api_key_setting, "") or "").strip()
+        if not api_key:
+            raise RuntimeError(
+                f"{prov.label} 需要 API Key（设置项：{prov.api_key_setting}）。"
+                "请到「设置」页填写。"
+            )
+
+        model = str(rs.get("video_model") or settings.video_model or prov.model).strip()
+        base_url = str(
+            rs.get("video_base_url") or settings.video_base_url or ""
+        ).strip() or str(getattr(settings, f"{provider_key}_base_url", "") or prov.base_url)
+
+        cap = int(video_count if video_count is not None else (settings.video_count or 0))
+        items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
+        if cap > 0 and items:
+            items = items[:cap]
+
+        # 时长：按提供者声明的范围收敛（各家不同，例如 Vidu 1~16、万相 2~30）
+        want = int(settings.video_max_duration or 5)
+        lo, hi = prov.durations
+        duration = max(lo, min(hi, want))
+        if duration != want:
+            logger.warning("[video] %s 时长 %ds 超出 %d~%d，收敛为 %ds",
+                           prov.label, want, lo, hi, duration)
+
+        req = VideoRequest(
+            prompt=str(text_prompt or dialogue or "").strip(),
+            duration=duration,
+            resolution=str(settings.video_resolution or "720P"),
+            ratio="adaptive",
+            reference_videos=[reference_video] if reference_video else [],
+        )
+        if items and not reference_video:
+            # 有图且没走参考驱动 → 图生视频（首帧）
+            req.first_frame = self._image_ref(items[0])
+            last = self._image_ref(items[0], url_key="last_image", path_key="last_local_path")
+            if last:
+                req.last_frame = last
+
+        # 用适配器自己的端点（可能在 base_url 之外，例如方舟）
+        from dataclasses import replace
+
+        prov = replace(prov, base_url=base_url)
+
+        d = pathlib.Path(out_dir) / session_id / "video"
+        d.mkdir(parents=True, exist_ok=True)
+        try:
+            dl_url = submit_and_wait(prov, api_key, req, timeout=1200, interval=10)
+        except VideoAdapterError as exc:
+            raise RuntimeError(str(exc)) from exc
+
+        out_mp4 = d / "out.mp4"
+        with httpx.Client(timeout=300) as client:
+            vr = client.get(dl_url)
+            vr.raise_for_status()
+        out_mp4.write_bytes(vr.content)
+        return str(d), 1
 
     # ---------------------------------------------------------------
     # 本地 MiniMax H3 图生视频（D:\AI\local-gen 服务，零 API 成本）

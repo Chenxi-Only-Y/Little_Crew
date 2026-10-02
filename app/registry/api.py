@@ -379,6 +379,10 @@ def allowed_settings() -> set[str]:
         "image_provider", "image_model", "image_api_key", "image_base_url",
         "video_provider", "video_model", "video_api_key", "video_base_url",
         "dashscope_api_key", "replicate_api_token", "minimax_api_key", "minimax_base_url",
+        # 云端视频多家提供者的端点与密钥。
+        # ⚠️ 这几个曾经漏掉过：界面能填、保存却被白名单丢掉，
+        # 表现为"明明填了 key 却报未配置"。有测试守住这条（见 test_providers）。
+        "dashscope_video_base_url", "ark_api_key", "ark_base_url",
     })
     # 兼容 v1 的 per-role 键：Agent 运行时按这些角色名读取
     # （`llm_provider_writer` / `image_provider_character_designer` …）。

@@ -60,6 +60,10 @@ CONDITIONING_LABELS: dict[str, str] = {
     "canny": "边缘控制",
     "reference": "参考图（一致性）",
     "camera": "相机参数",
+    # reference_* 是"参考素材"族：给素材让它照着生成（外观/运镜/节奏）
+    "reference_image": "参考图",
+    "reference_video": "参考视频（复刻运镜与走位）",
+    "reference_audio": "参考音频",
 }
 
 #: 哪些维度属于"结构/运动控制"——决定白模是否有活可干。
@@ -250,18 +254,6 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                                "reference_image", "reference_video", "reference_audio"),
                  note="H3: 768P/2K，4~15s；H3-Max 更快但无 2K、5~15s。"
                       "支持白模参考视频（复刻运镜与走位）。**首尾帧与参考视频互斥**"),
-    ProviderSpec("dashscope_video", "阿里百炼·万相（Wan）", "video_gen", "cn_cloud",
-                 default_model="wan3.0-video",
-                 known_models=("wan3.0-video", "wan3.0-video-prime",
-                               "wan2.2-kf2v-flash"),
-                 presets={"duration": (5, 10, 15, 20, 30),
-                          "resolution": ("480P", "720P", "1080P")},
-                 # 万相 3.0 是 All-in-One：同一模型按 media[].type 自动路由。
-                 # 与 MiniMax 一样，reference_* 与 first_frame/last_frame **互斥**。
-                 conditioning=("text", "first_frame", "last_frame",
-                               "reference_image", "reference_video", "reference_audio"),
-                 note="时长 2~30s、30fps、**原生带音频**；参考视频 ≤5 段总 ≤15s。"
-                      "首尾帧与参考素材互斥"),
     ProviderSpec("ffmpeg", "FFmpeg 本地合成（免费）", "video_gen", "free",
                  default_model="ffmpeg", needs_api_key=False,
                  presets={"duration": DURATION_BY_PROVIDER["ffmpeg"],
@@ -301,7 +293,53 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
 )
 
 #: (capability, key) -> spec
-_BY_CAP_KEY: dict[tuple[str, str], ProviderSpec] = {(p.capability, p.key): p for p in PROVIDERS}
+_BY_CAP_KEY: dict[tuple[str, str], ProviderSpec] = {
+    (p.capability, p.key): p for p in PROVIDERS
+}
+
+
+# ------------------------------------------------------------------
+# 把 `video_adapters` 里登记的云端视频提供者并入注册表
+# ------------------------------------------------------------------
+# 为什么要合并而不是各留一份清单：
+#   `video_adapters` 是实现（怎么调），这里是**能力声明**（能干什么、让 UI 展示）。
+#   两份清单一旦漂移，就会出现"UI 里能选、实际没有实现"或反之。
+#   所以以 `video_adapters` 为准，在这里自动补齐。
+def _sync_video_providers() -> None:
+    try:
+        from app.services.video_adapters import VIDEO_PROVIDERS
+    except Exception:  # noqa: BLE001  适配器不可用时不应拖垮注册表
+        return
+
+    global PROVIDERS
+    have = {p.key for p in PROVIDERS if p.capability == "video_gen"}
+    extra: list[ProviderSpec] = []
+    for vp in VIDEO_PROVIDERS:
+        if vp.key in have:
+            continue
+        lo, hi = vp.durations
+        extra.append(
+            ProviderSpec(
+                key=vp.key,
+                label=vp.label,
+                capability="video_gen",
+                category=vp.category,  # type: ignore[arg-type]
+                available=True,
+                default_model=vp.model,
+                known_models=vp.known_models,
+                needs_api_key=True,
+                presets={"duration": tuple(range(lo, hi + 1)),
+                         "resolution": ("480P", "720P", "1080P")},
+                conditioning=vp.conditioning,  # type: ignore[arg-type]
+                note=vp.note + ("" if vp.verified else "（按公开文档实现，尚未用真实 key 跑通）"),
+            )
+        )
+    if extra:
+        PROVIDERS = PROVIDERS + tuple(extra)
+        _BY_CAP_KEY.update({(p.capability, p.key): p for p in extra})
+
+
+_sync_video_providers()
 
 
 def allowed_durations(provider: str) -> tuple[int, ...]:
@@ -468,7 +506,10 @@ def video_parameter_options() -> dict:
 
 ProviderMode = Literal["cloud", "local", "unset"]
 
-#: 能力 -> 模式 -> 该模式下的默认提供者（用户只选模式时的便捷取值）
+#: 各能力对应的"模式默认提供者"。
+#:
+#: 用户只选云端/本地、不指定具体提供者时用这里的值。
+#: `video_gen` 的云端默认选 MiniMax：它支持参考视频且单价最低（约 $0.01/秒）。
 _MODE_DEFAULT: dict[str, dict[str, str]] = {
     "llm": {"cloud": "deepseek", "local": "ollama"},
     "image_gen": {"cloud": "dashscope", "local": "local"},

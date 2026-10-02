@@ -182,11 +182,81 @@ ModelSpec(key, label, capability, price_hint, region_ok, needs_proxy,
 
 ## 8. 待核实（接入前必须逐项验证，不要凭本文档上线）
 
-1. **百炼当前视频生成模型名**与可用地域（本文档只确认了图像链路）。
-2. **ControlNet 在云端的可用性**：百炼有"图生图（含多图）"微调，但**姿态/深度/边缘结构控制的专门 API 未确认**——若没有，ControlNet 只能走本地。
+1. ~~**百炼当前视频生成模型名**与可用地域~~ → **已查实**，见 §9。
+2. **ControlNet 在云端的可用性**：**已确认没有**——托管 API 只提供
+   首尾帧与参考素材（`reference_image`/`reference_video`/`reference_audio`），
+   **没有** depth / pose / canny 的逐帧结构控制接口。
+   那只有开源的 `alibaba-pai/MiniMax-H3-Fun-Controlnet-Union` 有。
+   → 结论：逐帧结构控制只能走本地；云端走**参考视频**这条路。
 3. 各聚合平台（WaveSpeed / Replicate / fal / Mobbi）的**实际可用性、计费方式、是否需要海外支付**。
 4. **价格时效**：视频类价格变动频繁（原文明确说 "prices change frequently"），接入时应做**实时价格查询或人工核对**，不要硬编码。
 5. 各模型的**商用授权**（尤其 Seedream 经聚合、MiniMax H3 社区许可等）。
+
+---
+
+## 9. 已实现状态（取代 §8 的多数猜测）
+
+实现见 `app/services/video_adapters.py`。架构：**统一请求 + 每 provider 一个适配器**。
+
+```
+核心流程构造 VideoRequest（与提供者无关）
+        ↓
+适配器翻译成各家形状（认证头 / body / 查询方式不同）
+        ↓
+异步任务：提交 → 轮询 → 取回视频 URL
+```
+
+不把各家塞进 `video.py` 的 if-else：每加一家都要动核心流程、容易碰坏别家。
+
+| 提供者 | 覆盖模型 | 条件能力 | 状态 |
+| --- | --- | --- | --- |
+| `local` | MiniMax H3 NF4（本机） | 首帧 / 尾帧 | ✅ **已跑通** |
+| `minimax` | H3 / H3-Max | 首帧 / 尾帧 / 参考图 / **参考视频** / 参考音频 | 已实现，**未跑通** |
+| `dashscope_video` | 万相 3.0（standard/prime）、万相 2.2 kf2v、**Vidu** | 同上 | 已实现，**未跑通** |
+| `seedance` | doubao-seedance-1-0-pro / lite-i2v | 首帧 / 尾帧 / 参考图 | 已实现，**未跑通** |
+
+> 「未跑通」是**如实标注**，不是谦辞：这些适配器按官方文档实现，
+> 首次使用请按实际返回核对端点与参数名。有测试守住这个标注
+> （`test_unverified_providers_are_marked`），防止把未验证的当已验证。
+
+### 一个 key 覆盖多家：阿里百炼
+
+`dashscope_video` 用**同一个端点**调多家模型，靠 `model` 字段区分：
+
+| 模型 | media 约定 | 时长 |
+| --- | --- | --- |
+| `wan3.0-video` / `-prime` | `type` 直接用 `first_frame`/`last_frame`/`reference_*` | 2~30s、30fps、原生带音频 |
+| `vidu/*_start-end2video` | **必须正好 2 张 image**，第 1=首帧、第 2=尾帧 | 1~16s |
+| `wan2.2-kf2v-flash` | 首尾帧 | 固定 5s |
+
+请求体：`{model, input:{prompt, media:[{type,url}]}, parameters:{...}}`，
+必须带请求头 `X-DashScope-Async: enable`；查询 `GET /api/v1/tasks/{task_id}`。
+
+### 互斥约束（已在代码里做提交前校验）
+
+> 首尾帧（i2v）与参考素材（r2v）**互斥**。
+
+- 万相原文：*"The two modes are mutually exclusive. Do not pass reference_xx
+  and first_frame/last_frame at the same time."*
+- MiniMax 原文：*"Image-to-video and reference-to-video are mutually exclusive"*
+
+`validate_exclusive()` 在提交前挡住非法组合——不挡的话要等任务 FAILED
+才知道，白等几分钟（视频生成 1~5 分钟）。
+
+### 白模参考视频的完整路径
+
+```
+预演编辑器导出帧序列
+      ↓
+POST /v1/files/upload   (multipart, purpose=video_generation_input)
+      ↓ 返回 file_id
+生成请求用 "mm_file://{file_id}" 作 url（role=reference_video）
+      ↓
+模型复刻运镜与走位
+```
+
+文件限制：参考视频 mp4/mov ≤50MB、参考图 ≤30MB、参考音频 ≤15MB，
+**有效期 7 天**（过期需重传，否则返回 file expired）。
 
 ---
 

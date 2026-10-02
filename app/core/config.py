@@ -69,9 +69,14 @@ class Settings(BaseSettings):
     # minimax: 调用 MiniMax-H3 图生视频（每段 ≤ video_max_duration 秒、≤ video_resolution 分辨率）
     # ⚠️ 不设静默默认：用户先选 video_provider_mode（cloud/local），
     # 或直接指定 video_provider。未选时明确报错（见 app/services/providers.py）。
-    video_provider: str = ""          # minimax | local | ffmpeg
+    video_provider: str = ""          # minimax | dashscope_video | seedance | local | ffmpeg
     video_model: str = "MiniMax-H3"
     video_base_url: str = ""          # 覆盖默认 base_url
+    # 阿里百炼（万相 / Vidu 等）——一个 key 覆盖多家；也用于视频生成
+    dashscope_video_base_url: str = "https://dashscope.aliyuncs.com"
+    # 火山方舟（Seedance）。端点与模型名请按方舟控制台核对。
+    ark_api_key: str = ""
+    ark_base_url: str = "https://ark.cn-beijing.volces.com"
     # 每段时长（秒）。可选档位 5/7/9/12/15，默认 7；
     # **实际上限由 provider 决定**（本地 8GB 只到 9，超过 10s 必 OOM），
     # 详见 app/services/providers.py 的 allowed_durations / resolve_duration。
