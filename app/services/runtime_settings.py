@@ -178,6 +178,25 @@ def get(name: str, default=None):
     return _merged().get(name, default)
 
 
+def resolve(name: str, default=None):
+    """读取**可被用户覆盖**的运行参数：运行时设置优先，回退到 `config.py` 默认。
+
+    为什么需要它（真实存在过的静默失效）：
+        注册表把 `max_images` / `video_max_duration` / `video_resolution` /
+        `video_count` / `quality_threshold` / `consistency_threshold` 等声明为
+        用户可配置，`/api/settings` 也能存下来；但执行代码读的是
+        `settings.<name>`（config.py / .env）。实测：
+            PUT {"video_max_duration": 15} → 库里 15，运行时仍是 7
+        界面改了、提示"已保存"、**实际完全不生效且不报错**。
+        最要命的两例：本地 8GB 的「>10s 必 OOM」保护恒为 7s 而失效；
+        `max_images` 设为 3 张仍出 8 张（该键此前**没有任何读取点**）。
+
+    用法：把 `settings.<name>` 换成 `rs.resolve("<name>", settings.<name>)`。
+    """
+    v = _merged().get(name)
+    return default if v is None or v == "" else v
+
+
 def snapshot(user_id: str | None = None) -> dict:
     """返回某用户（或当前线程）的合并设置。"""
     return _merged(user_id)

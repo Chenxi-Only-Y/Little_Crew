@@ -13,9 +13,19 @@ import shutil
 import subprocess
 from typing import List, Tuple
 
+import httpx
+
 from app.core.config import settings
 
 logger = logging.getLogger("little_crew")
+
+# 说明：`httpx` 必须在这里导入。
+# 它原先只在部分函数体内 `import httpx`，而 `_via_adapter()` 里
+# **提交并轮询到成功之后**才用 `httpx.Client` 下载成品——
+# 那里拿不到模块级名字，于是在"云端已生成成功、下载 URL 已拿到"之后
+# 抛 `NameError: name 'httpx' is not defined`：
+# 费用已经产生，视频却丢掉，只能靠 task_id 手工捞。
+# 属于最贵的一类 bug（花了钱还丢产物），所以提到顶部统一导入。
 
 
 def _extract_dialogue(script: dict) -> str:
@@ -249,13 +259,16 @@ class VideoService:
             or ""
         ).strip() or prov.base_url
 
-        cap = int(video_count if video_count is not None else (settings.video_count or 0))
+        # 这些参数用户可在设置页覆盖 → 必须走 rs.resolve（运行时设置优先），
+        # 不能直接读 settings.*，否则"改了不生效还不报错"。
+        cap = int(video_count if video_count is not None
+                  else (rs.resolve("video_count", settings.video_count) or 0))
         items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
         if cap > 0 and items:
             items = items[:cap]
 
         # 时长：按提供者声明的范围收敛（各家不同，例如 Vidu 1~16、万相 2~30）
-        want = int(settings.video_max_duration or 5)
+        want = int(rs.resolve("video_max_duration", settings.video_max_duration) or 5)
         lo, hi = prov.durations
         duration = max(lo, min(hi, want))
         if duration != want:
@@ -265,7 +278,7 @@ class VideoService:
         req = VideoRequest(
             prompt=str(text_prompt or dialogue or "").strip(),
             duration=duration,
-            resolution=str(settings.video_resolution or "720P"),
+            resolution=str(rs.resolve("video_resolution", settings.video_resolution) or "720P"),
             ratio="adaptive",
             reference_videos=[reference_video] if reference_video else [],
         )
@@ -319,15 +332,21 @@ class VideoService:
 
         import httpx
 
+        from app.services import runtime_settings as rs
+
         # 注意：本地服务在 127.0.0.1，属于私网地址，因此这里有意不做 url_guard 公网校验
-        base = (settings.local_gen_url or "http://127.0.0.1:8100").rstrip("/")
+        # local_gen_url 也走运时设置：用户可能在设置页改成别的端口/主机
+        base = str(rs.resolve("local_gen_url", settings.local_gen_url)
+                   or "http://127.0.0.1:8100").rstrip("/")
 
         # 两种模式（H3 的 image_base64 是可选参数，不传即文生视频）：
         #   - 有图：每张图生成一段（图生视频）
         #   - 无图：生成 cap 段纯文生视频（cap<=0 时默认 1 段）
         # 原先"无图直接报错"把本可支持的"纯文生视频"路线挡在了外面。
         img_items = [im for im in images if (im.get("local_path") or im.get("image_url"))]
-        cap = int(video_count if video_count is not None else (settings.video_count or 0))
+        # 走 rs.resolve：用户在设置页改的 video_count 必须生效（见 runtime_settings.resolve）
+        cap = int(video_count if video_count is not None
+                  else (rs.resolve("video_count", settings.video_count) or 0))
 
         if img_items:
             if cap > 0:
@@ -344,7 +363,8 @@ class VideoService:
         # 本地安全上限 10s：这里显式收敛（此前是 max(4, min(15, ...))，会把 12/15 直接发出去 → 必 OOM）
         from app.services.providers import resolve_duration
 
-        seconds, dur_note = resolve_duration("local", settings.video_max_duration)
+        seconds, dur_note = resolve_duration(
+            "local", rs.resolve("video_max_duration", settings.video_max_duration))
         if dur_note:
             logger.warning("[video] %s", dur_note)
         timeout = int(settings.local_gen_timeout or 7200)

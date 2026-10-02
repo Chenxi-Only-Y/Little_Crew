@@ -38,6 +38,15 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  /**
+   * 后端是否已存有该密钥。
+   *
+   * 后端把已配置的密钥下发成掩码哨兵 `••••已配置`，据此判断"要不要显示
+   * 清除按钮"。注意 `current` 是**掩码**而不是真值，所以任何情况下都不能
+   * 把它当值提交回后端（那会把掩码写进密钥字段）。
+   */
+  const hasStoredSecret = isSecret && String(current ?? '') === MASK_SENTINEL;
+
   // 切换选中节点时同步外部值
   const currentStr = isSecret ? '' : current === undefined || current === null ? '' : String(current);
   const [lastKey, setLastKey] = useState(field.key);
@@ -59,6 +68,48 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
     } else {
       setMsg({ ok: false, text: res.error ?? '保存失败' });
     }
+  };
+
+  /**
+   * 数字项的提交：**不能把原始字符串直接送出去**。
+   *
+   * 三个坑：
+   *   1. 清空输入框得到空串 `""`。后端 `runtime_settings.set_many` 的语义是
+   *      「空串会**存为覆盖**」而不是"恢复默认"——用户以为清空=回默认，
+   *      实际写进了一条空覆盖记录。所以空串必须走**显式清除**分支并说清楚。
+   *   2. 输入 `abc`、或半途状态（`-`、`1e`）会得到 `NaN`，存进去后端只能靠
+   *      `int()/float()` 兜，或直接崩在转换处。非有限数一律**拒绝提交**。
+   *   3. 提交后要把输入框**回填成真实生效值**：否则用户清空后看到的是空框，
+   *      而 store/后端里并不是空，界面与实际状态脱节（下一次失焦又会重新提交）。
+   */
+  const commitNumber = async (raw: string) => {
+    const trimmed = raw.trim();
+
+    if (trimmed === '') {
+      setBusy(true);
+      setMsg(null);
+      const res = await saveSettings({ [field.key]: '' }, getToken());
+      setBusy(false);
+      if (res.ok) {
+        setValue('');
+        setMsg({ ok: true, text: '已清除覆盖，回退默认' });
+        onSaved(field.key, '');
+      } else {
+        // 清除失败就把原值填回去，避免界面停在一个并未生效的空值上
+        setValue(String(current ?? ''));
+        setMsg({ ok: false, text: res.error ?? '清除失败' });
+      }
+      return;
+    }
+
+    const num = Number(trimmed);
+    if (!Number.isFinite(num)) {
+      setValue(String(current ?? ''));
+      setMsg({ ok: false, text: `不是有效数字：${trimmed.slice(0, 20)}（未提交）` });
+      return;
+    }
+
+    await commit(String(num));
   };
 
   const optionLabel = (o: string) => {
@@ -94,7 +145,7 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
             value={value}
             disabled={busy}
             onChange={(e) => setValue(e.target.value)}
-            onBlur={() => void commit(value)}
+            onBlur={() => void commitNumber(value)}
           />
         );
       case 'slider':
@@ -130,9 +181,25 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
             type="password"
             value={value}
             disabled={busy}
-            placeholder={current === MASK_SENTINEL ? '已配置，留空沿用' : '未配置'}
+            placeholder={hasStoredSecret ? '已配置，留空沿用' : '未配置'}
             onChange={(e) => setValue(e.target.value)}
-            onBlur={() => void commit(value)}
+            // ⚠️ 密钥框**空值绝不提交**。
+            //
+            // 密钥不回显，所以 value 的初值恒为 ''。若无条件
+            // `commit(value)`，用户只要点进这个框再点走（哪怕什么都没输），
+            // 就会把已存的真实密钥抹掉——而后端把空串当"清除覆盖"，
+            // 接口还返回 200、界面显示"已保存"。实测：
+            //   PUT {"minimax_api_key":"sk-real"} → 库里有值
+            //   PUT {"minimax_api_key":""}        → 库里变成 ''，原密钥没了
+            // 这比"填了不生效"更糟：它是**静默删除用户的数据**。
+            // 要清除请用下方显式的「清除」按钮。
+            onBlur={() => {
+              if (value.trim() === '') {
+                setValue('');
+                return;
+              }
+              void commit(value);
+            }}
           />
         );
       default:
@@ -157,6 +224,25 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
         )}
       </label>
       {control}
+      {/*
+        密钥的「清除」必须是**显式动作**。
+        原先"清空输入框再失焦"就是隐式的清除路径，而密钥框初值本来就是空的，
+        等于一碰就删（实测会把已存密钥抹掉）。做成按钮后意图明确、也免得误删。
+      */}
+      {hasStoredSecret && (
+        <button
+          type="button"
+          className="btn ghost"
+          disabled={busy}
+          style={{ fontSize: 11, padding: '2px 6px', marginTop: 4 }}
+          onClick={() => {
+            if (!window.confirm(`确定要清除「${field.label}」已保存的密钥？`)) return;
+            void commit('');
+          }}
+        >
+          清除已保存的密钥
+        </button>
+      )}
       {field.help && <div className="hint">{field.help}</div>}
       {msg && (
         <div

@@ -91,7 +91,12 @@ class Storyboarder(BaseAgent):
         """
         if settings.shot_mode != "total":
             return shots
-        max_shots = max(1, int(getattr(settings, "max_images", 8) or 8))
+        # `max_images` 是用户可配置项（注册表声明 + /api/settings 可存），
+        # 所以必须走 runtime_settings.resolve —— 此前只读 config，
+        # 于是"设成 3 张仍出 8 张"，而且不报错。
+        from app.services.runtime_settings import resolve as rs_resolve
+
+        max_shots = max(1, int(rs_resolve("max_images", getattr(settings, "max_images", 8)) or 8))
         if len(shots) <= max_shots:
             return shots
         if max_shots <= 1:

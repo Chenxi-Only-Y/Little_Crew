@@ -6,6 +6,7 @@
   resume_run(session_id, user_id, decision, feedback)  对暂停的确认点续跑
 """
 
+import logging
 import threading
 import time
 
@@ -17,6 +18,8 @@ from app.services.logging import redact
 from app.workflows.main_workflow import app_workflow
 from app.services.session_store import get_session_store
 
+logger = logging.getLogger("little_crew")
+
 _JOBS: dict[str, threading.Thread] = {}
 # 实时 AI 思考日志：session_id -> [{"label","text"}, ...]（进程内存，供状态接口实时展示）
 _THINKING: dict[str, list] = {}
@@ -25,10 +28,38 @@ _CANCEL: dict[str, bool] = {}
 # 全局锁：上述 dict 会被后台线程与主线程并发读写
 _LOCK = threading.Lock()
 
+#: 单会话并发上限。同一会话同时只允许一个 runner：
+#: 两个线程用同一个 `thread_id` 跑同一张图会重复执行下游节点
+#: （含真实生图/生视频＝重复烧钱），而 LangGraph 的 MemorySaver 存储无锁，
+#: checkpoint 会互相覆盖导致续跑状态错乱。
+_MAX_RUNNERS_PER_SESSION = 1
+
 
 def get_thinking(session_id: str) -> list:
-    """返回某会话实时累积的「AI 思考过程」。"""
-    return _THINKING.get(session_id, [])
+    """返回某会话实时累积的「AI 思考过程」**快照**。
+
+    必须复制：调用方（`/api/crew/status`）会把它交给 JSON 序列化，
+    而同一时刻后台线程正在 `append`。直接返回内部列表 = 把
+    "边序列化边被改写"的竞态暴露出去（可能在迭代中途变长）。
+    """
+    with _LOCK:
+        return list(_THINKING.get(session_id, ()))
+
+
+def _join_job_locked(session_id: str) -> bool:
+    """在**已持锁**的前提下判断该会话是否已有存活的 runner。
+
+    顺带把已结束的线程条目清掉——否则 `_JOBS` 只增不减，
+    且 Thread 对象会一直持有 `args`（含该会话的 State，可能很大），
+    等于把历史会话永久钉在内存里。
+    """
+    t = _JOBS.get(session_id)
+    if t is None:
+        return False
+    if t.is_alive():
+        return True
+    _JOBS.pop(session_id, None)
+    return False
 
 
 def cancel_run(session_id: str) -> bool:
@@ -105,12 +136,11 @@ def _run_stream(job_input, session_id: str, user_id: str, user_input: str) -> No
         review = None
         for chunk in app_workflow.stream(job_input, config=config, stream_mode="updates"):
             if _CANCEL.get(session_id):
-                # 中途被打断：保存 cancelled 并退出
+                # 中途被打断：保存 cancelled 并退出。
+                # 关流与清理交给 finally（这里 return 也会走 finally），
+                # 避免"两处各写一遍清理"以后漂移。
                 store.save(session_id, user_id, user_input, "cancelled", phase or "cancelled", result or {})
                 hub.publish(session_id, "status", status="cancelled", phase=phase)
-                hub.close_stream(session_id)
-                with _LOCK:
-                    _CANCEL.pop(session_id, None)
                 return
             for node, data in chunk.items():
                 if node == "__interrupt__":
@@ -169,18 +199,48 @@ def _run_stream(job_input, session_id: str, user_id: str, user_input: str) -> No
             store.save(session_id, user_id, user_input, "done", phase or "done", result or {})
             hub.publish(session_id, "done", phase=phase)
             hub.publish(session_id, "status", status="done", phase=phase)
-        hub.close_stream(session_id)
     except Exception as exc:  # noqa: BLE001
-        store.save(session_id, user_id, user_input, "error", "error", {"error": redact(str(exc))})
-        hub.publish(session_id, "error", message=redact(str(exc)))
-        hub.publish(session_id, "status", status="failed")
-        hub.close_stream(session_id)
+        # 兜底写入本身也可能失败（SQLite locked / 磁盘满）。若让它抛出去：
+        #   线程静默死亡（daemon 线程，无日志出口）→ 会话永久停在 running，
+        #   且 `close_stream` 执行不到 → 所有 SSE 订阅者永久等待、前端永远"运行中"。
+        # 所以这里再包一层，并把清理挪到 finally。
+        logger.exception("[task] 会话 %s 运行失败", session_id)
+        try:
+            store.save(session_id, user_id, user_input, "error", "error",
+                       {"error": redact(str(exc))})
+        except Exception:  # noqa: BLE001
+            logger.exception("[task] 会话 %s 的失败状态也写不进去（DB 异常）", session_id)
+        try:
+            hub.publish(session_id, "error", message=redact(str(exc)))
+            hub.publish(session_id, "status", status="failed")
+        except Exception:  # noqa: BLE001
+            logger.exception("[task] 会话 %s 的失败事件推送失败", session_id)
+    finally:
+        # 无论成功、失败还是取消，都必须关流 + 清理标记：
+        #   - close_stream 让 SSE 订阅者收到哨兵并结束，不再无限等待；
+        #   - _CANCEL/_JOBS 不清就会只增不减（内存泄漏），
+        #     而 _JOBS 里的 Thread 一直持有 args（含 State，可能很大）。
+        try:
+            hub.close_stream(session_id)
+        except Exception:  # noqa: BLE001
+            logger.exception("[task] 会话 %s 关闭事件流出错", session_id)
+        with _LOCK:
+            _CANCEL.pop(session_id, None)
+            _JOBS.pop(session_id, None)
+            _THINKING.pop(session_id, None)
 
 
 def start_run(session_id: str, user_input: str, user_id: str = "anon", seed: dict | None = None) -> None:
     """异步启动一次创作（可带 seed：已有中间产物则跳过对应环节）。"""
     store = get_session_store()
     with _LOCK:
+        # 原子占用：检查与置位必须在**同一把锁**内完成。
+        # 否则两个并发请求都会通过检查、各自起一个线程、用同一个 thread_id
+        # 跑同一张图 → 下游节点（含真实生图/生视频）重复执行＝重复烧钱，
+        # 且 LangGraph 的 MemorySaver 无锁，checkpoint 会互相覆盖。
+        if _join_job_locked(session_id):
+            logger.warning("[task] 会话 %s 已在运行，忽略重复启动", session_id)
+            return
         _THINKING.pop(session_id, None)  # 新会话清空思考日志
         _CANCEL.pop(session_id, None)    # 清空取消标记
     store.save(session_id, user_id, user_input, "running", "start", None)
@@ -225,39 +285,61 @@ def resume_run(session_id: str, user_id: str, decision: str, feedback: dict, con
         (False, 原因)，避免静默重放整张图。
     """
     store = get_session_store()
-    existing = store.get(session_id) or {}
 
-    # 前置校验 1：会话必须存在
-    if not existing:
-        return False, f"会话不存在：{session_id}"
-
-    # 前置校验 2：必须**停在确认点**才能续跑。
+    # 关键：从"读会话状态"到"占用 _JOBS"必须**全程持同一把锁**。
     #
-    # 为什么在服务层也要查：`/api/crew/resume` 会查，但 `resume_run` 是个公共函数，
-    # 脚本/测试可直接调用。若不查，对已完成或运行中的会话调它会**再跑一遍**——
-    # 真实 provider 下就是重复烧钱。LangGraph 在跑完后仍保留 checkpoint，
-    # 所以"有 checkpoint"不等于"可以续跑"。
-    if existing.get("status") != "review":
-        return False, (
-            f"会话不在确认点，无法续跑（当前状态：{existing.get('status')}）。"
-            "只有停在人工确认点的会话才能继续。"
-        )
-
-    # 前置校验 3：断点必须还在内存中（服务重启后 MemorySaver 会丢）
-    if not has_checkpoint(session_id):
-        reason = (
-            "续跑状态已丢失（服务可能重启过）：当前会话的工作流断点不在内存中。"
-            "为避免重复执行（可能重复计费），本次续跑已被拒绝。"
-            "请重新发起一次创作。"
-        )
-        store.save(session_id, user_id, existing.get("user_input", ""),
-                   "failed", "resume_lost", {"error": reason, "reason": "checkpoint_lost"})
-        return False, reason
-
-    store.save(session_id, user_id, existing.get("user_input", ""), "running", "resume", None)
-    command = Command(resume={"decision": decision, "feedback": feedback, "content": content})
-    t = threading.Thread(target=_run_stream, args=(command, session_id, user_id, existing.get("user_input", "")), daemon=True)
+    # 否则两个并发 resume（双击「通过」、两个标签页、脚本并发调用）会：
+    #   1. 双双读到 status == "review" 并通过校验；
+    #   2. 各自起一个线程，用**同一个 thread_id** 跑同一张图；
+    #   3. 下游节点（含真实生图/生视频）重复执行＝重复烧钱，
+    #      LangGraph 的 MemorySaver 存储无锁，checkpoint 互相覆盖。
+    # 把判据与占用放进临界区后，第二个请求会看到"已在运行"而被拒。
     with _LOCK:
+        existing = store.get(session_id) or {}
+
+        # 前置校验 1：会话必须存在
+        if not existing:
+            return False, f"会话不存在：{session_id}"
+
+        # 前置校验 2：必须**停在确认点**才能续跑。
+        #
+        # 这就是防重复执行的**唯一权威判据**——不要再用"线程是否存活"来判：
+        # 停在确认点时上一个 `_run_stream` 已经退出，但线程收尾与测试轮询之间
+        # 有毫秒级窗口，用存活判据会把合法的连续 approve 误拒（实测踩到）。
+        # 而 `status == "review"` 是持久的、语义明确的：只有人工确认点才算。
+        #
+        # 为什么在服务层也要查：`/api/crew/resume` 会查，但 `resume_run` 是个公共函数，
+        # 脚本/测试可直接调用。若不查，对已完成或运行中的会话调它会**再跑一遍**——
+        # 真实 provider 下就是重复烧钱。LangGraph 在跑完后仍保留 checkpoint，
+        # 所以"有 checkpoint"不等于"可以续跑"。
+        if existing.get("status") != "review":
+            return False, (
+                f"会话不在确认点，无法续跑（当前状态：{existing.get('status')}）。"
+                "只有停在人工确认点的会话才能继续。"
+            )
+
+        # 前置校验 3：断点必须还在内存中（服务重启后 MemorySaver 会丢）
+        if not has_checkpoint(session_id):
+            reason = (
+                "续跑状态已丢失（服务可能重启过）：当前会话的工作流断点不在内存中。"
+                "为避免重复执行（可能重复计费），本次续跑已被拒绝。"
+                "请重新发起一次创作。"
+            )
+            store.save(session_id, user_id, existing.get("user_input", ""),
+                       "failed", "resume_lost", {"error": reason, "reason": "checkpoint_lost"})
+            return False, reason
+
+        # 到这一步才算占用成功：置状态 + 登记线程占位（真正 start 在锁外做，
+        # 避免持锁执行耗时操作）。登记前先清掉已退出的旧线程条目。
+        _join_job_locked(session_id)
+        store.save(session_id, user_id, existing.get("user_input", ""), "running", "resume", None)
+        command = Command(resume={"decision": decision, "feedback": feedback, "content": content})
+        t = threading.Thread(
+            target=_run_stream,
+            args=(command, session_id, user_id, existing.get("user_input", "")),
+            daemon=True,
+        )
         _JOBS[session_id] = t
+
     t.start()
     return True, "accepted"

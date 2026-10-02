@@ -38,11 +38,38 @@ app = FastAPI(
 )
 
 
-# 公开路径：健康检查 / 认证 / 静态结构 schema。
-# `/api/registry` 与 `/api/providers` 是**纯静态定义**（职业/节点/端口/提供者清单），
-# 不含任何用户数据或密钥；前端需要在登录前就能渲染导演台骨架，故一并公开。
-_HEALTH_PUBLIC = ("/health", "/api/auth", "/api/asset", "/api/providers", "/api/registry",
-                  "/docs", "/openapi.json", "/redoc")
+# 免鉴权路径：**逐个精确列出**。
+#
+# ⚠️ 这里必须用**精确匹配**，不能用 `startswith` 前缀匹配。
+# 原先用 `p.startswith(x for x in _HEALTH_PUBLIC)`，后果是：
+#   白名单里的 `/api/asset` 顺手把 `/api/asset/upload`（匿名可写盘、无大小
+#   限制）也一并公开了；它原本只服务于已删除的 Streamlit 前端，
+#   前端删掉后就成了没人用的公开匿名写盘入口。
+#   同类地 `/api/registry` 也会放行 `/api/registry/validate`。
+# 精确匹配后，新增端点不会因为命名碰巧以某个前缀开头而意外公开——
+# 要公开必须显式加到这里，这才是"公开"应有的成本。
+_PUBLIC_PATHS = frozenset({
+    "/",
+    "/health",
+    # 认证：登录/注册本身就必须免鉴权
+    "/api/auth/login",
+    "/api/auth/register",
+    # 静态结构 schema：纯定义，不含任何用户数据或密钥。
+    # 前端需要在登录前就能渲染导演台骨架与提供者清单，故公开。
+    "/api/registry",
+    "/api/providers",
+    "/api/providers/modes",
+    # 画布拓扑校验：纯内存的规则计算（不读库、不调外部服务、无副作用），
+    # 前端在**登录前**就要用它判断"这条连线能不能接"，所以必须免鉴权。
+    # 注意它是**显式列出**的：原先靠 `/api/registry` 的前缀顺带放行，
+    # 这样"公开"就没有成本、容易失控。有测试守住这份清单。
+    "/api/registry/validate",
+    # 接口文档
+    "/docs",
+    "/docs/oauth2-redirect",
+    "/openapi.json",
+    "/redoc",
+})
 
 
 @app.middleware("http")
@@ -58,7 +85,9 @@ async def auth_guard(request: Request, call_next):
     非 loopback 部署务必用 HTTPS，否则 token 会在 URL 中明文传输。
     """
     path = request.url.path
-    if path.startswith(_HEALTH_PUBLIC):
+    # 精确匹配（见 `_PUBLIC_PATHS` 的说明）。末尾多余的 `/` 容错一下，
+    # 否则 `/health/` 这种写法会得到 401，而它显然是同一个路径。
+    if path in _PUBLIC_PATHS or (path.endswith("/") and path[:-1] in _PUBLIC_PATHS):
         return await call_next(request)
 
     auth = request.headers.get("Authorization", "")
@@ -138,6 +167,36 @@ def _require_owner(session_id: str, request: Request) -> dict:
         # 匿名/遗留会话仅允许 "local" 或未登录态访问，登录用户不可越权。
         raise HTTPException(status_code=403, detail="无权访问该会话")
     return row
+
+
+def _claim_session(session_id: object, user_id: str):
+    """校验客户端带来的 `session_id` 是否可归当前用户使用。
+
+    Returns:
+        None  = 可以继续（id 为空＝新建；或已存在且属主是自己；或尚不存在）
+        JSONResponse = 应当直接返回给客户端的 403
+
+    ⚠️ 为什么必须有这个检查：
+        `SessionStore.save` 是 `ON CONFLICT(session_id) DO UPDATE`，**会把
+        user_id 一起改写**。若不校验就接受客户端给的 id，
+        登录用户 B 只要把 A 的 session_id 放进请求体，就能把属主改成自己——
+        之后 `_require_owner` 反而认为 B 是主人，B 便可持续读状态、
+        触发 resume，并因 thread_id 相同而复用 A 的 checkpoint。
+        （这不是推测：实测 B 用 A 的 id 建会话后，读到的是
+          `{"status":"running","phase":"writer","user_id":"iso_b"}`。）
+    """
+    sid = str(session_id or "").strip()
+    if not sid:
+        return None
+    existing = get_session_store().get(sid)
+    if existing and existing.get("user_id") not in (user_id,):
+        logger.warning("[auth] 用户 %s 试图占用他人会话 %s（属主 %s）",
+                       user_id, sid, existing.get("user_id"))
+        return JSONResponse(
+            status_code=403,
+            content={"status": "error", "message": "该会话不属于当前用户"},
+        )
+    return None
 
 
 _MASK_SENTINEL = "••••已配置"
@@ -660,7 +719,15 @@ async def create_session(payload: dict, request: Request):
     if not ok:
         return JSONResponse(status_code=429, content={"status": "error", "message": msg})
 
-    session_id = payload.get("session_id") or uuid.uuid4().hex[:8]
+    # 客户端可以带 session_id（便于重试/续跑），但**必须先确认它属于自己**：
+    # `SessionStore.save` 是 upsert，会把 user_id 一起改写——若无校验，
+    # 登录用户 B 只要把 A 的 session_id 放进 body，就能把属主改成自己，
+    # 之后 `_require_owner` 反而认为 B 是主人，B 可读状态、续跑并复用 A 的
+    # checkpoint（实测确认过）。见 `_claim_session`。
+    claimed = _claim_session(payload.get("session_id"), user_id)
+    if claimed is not None:
+        return claimed
+    session_id = str(payload.get("session_id") or "").strip() or uuid.uuid4().hex[:8]
     get_hub().reset(session_id)          # 新一轮：清掉上一轮的事件历史
     start_run(session_id, user_input, user_id, seed=payload.get("seed") or None)
     return {"status": "accepted", "session_id": session_id, "user_id": user_id}
@@ -731,7 +798,11 @@ async def run_crew(payload: dict, request: Request):
     if not ok:
         return JSONResponse(status_code=429, content={"status": "error", "message": msg})
 
-    session_id = payload.get("session_id") or uuid.uuid4().hex[:8]
+    # 同 `/api/sessions`：客户端给的 session_id 必须先确认属于自己（见 `_claim_session`）
+    claimed = _claim_session(payload.get("session_id"), user_id)
+    if claimed is not None:
+        return claimed
+    session_id = str(payload.get("session_id") or "").strip() or uuid.uuid4().hex[:8]
     start_run(session_id, user_input, user_id, seed=payload.get("seed") or None)
     return {"status": "accepted", "session_id": session_id, "user_id": user_id}
 
@@ -750,39 +821,6 @@ async def crew_status(session_id: str, request: Request):
         "session_id": session_id,
         "user_id": row["user_id"],
     }
-
-
-@app.post("/api/asset/upload")
-async def upload_asset(payload: dict, request: Request):
-    """保存用户上传的图片资产到本地，返回可被 AI 消费的本地路径。
-
-    body: {name: 文件名(不含扩展), data_base64: "base64...", ext: "png|jpg|webp"}
-    返回 {status, path}。
-    """
-    import base64
-    import uuid as _uuid
-
-    from app.core.config import settings
-
-    body = payload or {}
-    name = str(body.get("name") or "asset")
-    ext = str(body.get("ext") or "png").lower()
-    if ext not in ("png", "jpg", "jpeg", "webp"):
-        ext = "png"
-    data_b64 = str(body.get("data_base64") or "")
-    if not data_b64:
-        return {"status": "error", "message": "缺少图片数据"}
-    try:
-        raw = base64.b64decode(data_b64.split(",", 1)[-1])
-    except Exception as exc:  # noqa: BLE001
-        return {"status": "error", "message": f"base64 解析失败：{exc}"}
-
-    out_dir = settings.output_dir_path / "user_assets"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    safe = "".join(c for c in name if c.isalnum() or c in ("_", "-")) or "asset"
-    path = out_dir / f"{safe}_{_uuid.uuid4().hex[:8]}.{ext}"
-    path.write_bytes(raw)
-    return {"status": "ok", "path": str(path), "name": safe}
 
 
 @app.post("/api/crew/cancel/{session_id}")

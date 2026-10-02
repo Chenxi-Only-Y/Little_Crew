@@ -156,7 +156,12 @@ class QualityAssessor(BaseAgent):
             prompt.get("prompt", ""), im.get("local_path") or im.get("image_url", "")
         )
         im["quality"] = round(float(score), 3)
-        if not ok or float(im.get("quality", 1.0)) < settings.quality_threshold:
+        # 阈值走运行时设置：注册表把它声明为可配置项，只读 config 会导致
+        # "设置页改了、提示已保存、实际不生效"（实测库中 0.9 vs 运行时 0.5）。
+        from app.services.runtime_settings import resolve as rs_resolve
+
+        threshold = float(rs_resolve("quality_threshold", settings.quality_threshold))
+        if not ok or float(im.get("quality", 1.0)) < threshold:
             im["status"] = "failed"
 
     # ---------------------------------------------------------------
