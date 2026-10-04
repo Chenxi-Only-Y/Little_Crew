@@ -815,28 +815,31 @@ h3 {
 /**
  * 磨砂玻璃卡片（用户要求：登录卡片与首页各卡片统一用这套）。
  *
- * 做法是三层叠加，缺一层都不像玻璃：
- *   1. **半透明底**（`rgba` 而不是实色）—— 透出后面的内容；
- *   2. **`backdrop-filter: blur()`** —— 把透过来的东西糊掉，
- *      这才是"磨砂"而非"半透明"的关键；
- *   3. **1px 高光描边** —— 玻璃边缘的那圈亮线。
+ * ⚠️ 第一版做错了，记录一下：我用 `rgba(19,19,23,.62)`（深色玻璃），
+ * 结果看起来就是**实心深灰**——底色本来就是深的，62% 铺上去与实心
+ * 几乎没差别，`backdrop-filter` 的效果整个被盖住。用户一眼看出
+ * "这是你的半透明磨砂？"。
  *
- * ⚠️ 为什么不用 `background: rgba(255,255,255,.06)` 那种纯白叠加：
- * 在近黑底上、又叠在**视频**之上时，纯白叠加会把画面洗灰，
- * 而 `rgba(19,19,23,·)` 是"更暗的玻璃"，透出来的是**变暗的画面**，
- * 与整体近黑基调一致，文字对比度也更容易保住。
+ * 正确的做法是**浅色玻璃**：用**白色低透明度**叠加上去，
+ * 面板整体比背景**更亮**，透过来的画面被提亮 + 糊掉，
+ * 才像一块磨砂玻璃板盖在上面。
+ *
+ * 三层，缺一层都不像玻璃：
+ *   1. `rgba(255,255,255,.07)` —— 透出后面内容并**提亮**；
+ *   2. `backdrop-filter: blur(24px) saturate(1.3)` —— 把透过来的糊掉，
+ *      这是"磨砂"而非"半透明"的关键；
+ *   3. 1px 亮边 + 顶部内高光 —— 玻璃边缘那圈受光的线。
  */
 .card-frost {
   position: relative;
-  background: rgba(19, 19, 23, 0.62);
-  backdrop-filter: blur(18px) saturate(1.15);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--r-card);
-  /* 顶部一道更亮的边：模拟玻璃上沿受光 */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 20px 60px rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    0 24px 70px rgba(0, 0, 0, 0.5);
 }
 
 /**
@@ -848,8 +851,8 @@ h3 {
  * 却发现没生效，再去排查半天。
  */
 .card.card-frost {
-  background: rgba(19, 19, 23, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* 不支持 backdrop-filter 时（老浏览器）退回不透明底，保证可读。
@@ -914,6 +917,8 @@ h3 {
 
 .auth-sub {
   font-size: 12px;
+  /* 用 `--text-muted` 而不是 `--text-faint`：玻璃底把整体提亮了，
+     三级灰在上面会发灰发飘 */
   color: var(--text-muted);
   margin: 0 0 18px;
 }
@@ -928,21 +933,24 @@ h3 {
   margin-top: 0;
 }
 
-/*: 输入框也用玻璃：底色比卡片更透一点，聚焦时描边用光晕色 */
+/*: 输入框也用玻璃：比卡片再亮一点，聚焦时描边用光晕色 */
 .auth-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--r-inset);
   padding: 8px 10px;
   font-size: 13px;
   font-family: inherit;
 }
+.auth-input::placeholder {
+  color: var(--text-faint);
+}
 .auth-input:focus {
   outline: none;
   border-color: var(--glow-cool);
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .auth-error {
@@ -992,19 +1000,22 @@ h3 {
   /**
    * 入口卡片也用**磨砂玻璃**（用户要求："将首屏的几个卡片也是换成"）。
    *
-   * 与 `.card-frost` 同一套观感：半透明底 + backdrop blur + 高光描边。
-   * 之所以不直接复用 `.card-frost` 类：`.entry` 是 `<button>`，
-   * 自己的 `hover` 只改描边、不做位移（见下），玻璃那层属性写在这里
-   * 更省事，也避免两类名在同一个元素上互相覆盖。
+   * 与 `.card-frost` **刻意用完全相同的四个值**（底色/模糊/描边/阴影），
+   * 这样首页上两种卡片看起来是同一块材料。以后改玻璃质感时
+   * **两处要一起改**——这也是没有强行复用一个类名的代价，
+   * 但 `.entry` 是 `<button>` 且有自己的 hover 行为，合并反而更绕。
+   *
+   * 用**浅色玻璃**（白色低透明度）而不是深色：深色叠在近黑底上
+   * 与实心无异，看不出透明（第一版就是这么错的）。
    */
-  background: rgba(19, 19, 23, 0.62);
-  backdrop-filter: blur(18px) saturate(1.15);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--r-card);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 20px 60px rgba(0, 0, 0, 0.45);
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    0 24px 70px rgba(0, 0, 0, 0.5);
   color: inherit;
   cursor: pointer;
   text-align: left;
