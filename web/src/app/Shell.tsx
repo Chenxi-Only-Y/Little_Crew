@@ -33,19 +33,25 @@ export default function Shell({ page, username, actions, status, onLogout, child
           小剧组<span>DIRECTOR CONSOLE</span>
         </span>
 
-        {PAGES.filter((p) => !p.hidden).map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            className="nav-pill"
-            aria-current={p.key === page ? 'page' : undefined}
-            onClick={() => navigate(p.key)}
-            title={p.desc}
-          >
-            <span aria-hidden="true" className="nav-pill-icon">{p.icon}</span>
-            {p.label}
-          </button>
-        ))}
+        {/* 药丸放在一个**绝对居中**的容器里，而不是靠 flex 顺序排。
+            为什么：flex 里居中要两侧等宽才成立，而左侧是品牌字、右侧是
+            状态+退出，宽度天然不等，药丸会被挤偏。
+            用绝对定位 + translate 才能做到"真居中"，且不受两侧内容影响。 */}
+        <div className="dock-center">
+          {PAGES.filter((p) => !p.hidden).map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              className="nav-pill"
+              aria-current={p.key === page ? 'page' : undefined}
+              onClick={() => navigate(p.key)}
+              title={p.desc}
+            >
+              <span aria-hidden="true" className="nav-pill-icon">{p.icon}</span>
+              {p.label}
+            </button>
+          ))}
+        </div>
 
         <span className="dock-spacer" />
 

@@ -426,14 +426,32 @@ h3 {
   height: 56px;
   padding: 0 var(--sp-6);
   pointer-events: none;      /* 只有药丸可点，空隙不挡下方内容 */
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 0%,
-    rgba(11, 11, 13, 0.72) 58%,
-    rgba(11, 11, 13, 0) 100%
-  );
+  /* ⚠️ **故意不给它背景**。
+     早先这里有一条横贯整宽的深色渐变（"内容从药丸下淡出"），
+     结果视觉上仍然读成**一条导航栏**——用户连着两次指出"为什么还有导航栏"。
+     药丸的意义就是"不占位、不成条"：任何贯穿整宽的底色都会把它变回栏。
+     药丸自己带毛玻璃底（见 `.nav-pill`），滚动时内容从药丸后面穿过也看得清。 */
+  background: none;
 }
 .pill-dock > * {
+  pointer-events: auto;
+}
+
+/**
+ * 导航药丸的居中容器。
+ *
+ * 为什么用绝对定位而不是 flex 居中：flex 的 `justify-content: center`
+ * 要**两侧等宽**才真的居中，而这里左侧是品牌字、右侧是状态+退出，
+ * 宽度天然不等 —— 药丸会被挤偏（实测偏左）。
+ * 绝对定位 + `translateX(-50%)` 才能不受两侧影响地居中。
+ */
+.dock-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   pointer-events: auto;
 }
 
@@ -475,7 +493,10 @@ h3 {
   padding: 0 var(--sp-4);
   border-radius: var(--r-pill);
   border: 1px solid transparent;
-  background: transparent;
+  /* 药丸自己带一层毛玻璃底：这样"没有栏"也仍然看得清——
+     滚动时内容会从药丸后面穿过，没这层底色文字会糊在一起。 */
+  background: rgba(19, 19, 23, 0.72);
+  backdrop-filter: blur(10px);
   color: var(--text-faint);
   font-family: inherit;
   font-size: var(--fs-body);
@@ -497,10 +518,12 @@ h3 {
 .nav-pill[aria-current='page'] {
   color: var(--text);
   border-color: rgba(110, 123, 255, 0.5);
-  background: rgba(110, 123, 255, 0.1);
+  background: rgba(110, 123, 255, 0.14);
 }
 
 .nav-pill-quiet {
+  background: transparent;
+  backdrop-filter: none;
   color: var(--text-faint);
 }
 .nav-pill-quiet:hover {
