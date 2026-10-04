@@ -23,7 +23,7 @@
  * 不用固定常量：AI 生成的角色腿长各不相同，固定值会让长腿陷地、短腿悬空。
  */
 
-import type { BodySegment, Vec3, WhiteModelSpec } from './types';
+import type { BodySegment, PosePreset, Vec3, WhiteModelSpec } from './types';
 import {
   BODY_JOINT_PARENT,
   normalizeBodySpec,
@@ -190,7 +190,7 @@ function clampJointRadii(
  */
 export function buildBody(
   spec: WhiteModelSpec,
-  opts: { time?: number; poseOverride?: Record<string, Vec3> } = {},
+  opts: { time?: number; poseOverride?: Record<string, Vec3>; pose?: PosePreset } = {},
 ): BuiltBody {
   /**
    * ⚠️ 先归一化。
@@ -210,11 +210,19 @@ export function buildBody(
    *   · `idle`      → 规格的 rotations 就是静止姿态，不叠加任何预设；
    *   · 其余预设     → 预设给的是**绝对角度**，直接采用、不叠加规格旋转；
    *   · 用户的逐关节微调（`poseOverride`）永远**叠加**在最上层。
+   *
+   * ⚠️ 姿态以 `opts.pose`（即 `Actor.pose`）为准，`spec.pose` 只作兜底。
+   *
+   * 这里踩过一个坑：右栏「肢体动作」按钮改的是 `Actor.pose`，
+   * 而渲染器先前只读 `spec.pose` —— **一旦有了规格，那些按钮就完全失效**
+   * （点"坐下"没反应，但碰撞箱却按坐姿算，箱子与模型对不上）。
+   * 现在以 actor 的姿势为权威，规格只提供各关节的休息角度。
    */
-  const isIdle = safe.pose === 'idle';
+  const activePose: PosePreset = opts.pose ?? safe.pose;
+  const isIdle = activePose === 'idle';
   const poseBase = isIdle
     ? ({} as Record<string, Vec3>)
-    : (samplePose(safe.pose, opts.time ?? 0, 1, 0) as Record<string, Vec3>);
+    : (samplePose(activePose, opts.time ?? 0, 1, 0) as Record<string, Vec3>);
   const pose = applyPoseOverride(poseBase, opts.poseOverride);
 
   const joints = specForwardKinematics(safe, pose, !isIdle);
@@ -274,37 +282,123 @@ export function buildBody(
 }
 
 /**
- * 把"局部 +Y 轴要指向的方向"转成 Three.js 的欧拉角 `[rx, 0, -rz]`。
+ * 把"局部 +Y 轴要指向的方向"转成 Three.js 的**四元数**。
  *
- * ## ⚠️ 这里有个曾经让整具模型散架的坑
+ * ## 为什么改用四元数，而不是继续调欧拉角
  *
- * Three.js 的欧拉顺序是 `R = Rx(rx) · Ry(0) · Rz(-rz)`。
- * 把 +Y 代进去，方向是：
+ * 用欧拉角（只用 `rx` / `rz` 两个轴）**无法精确对齐任意方向**——
+ * 当方向同时有 x 与 z 分量时会出现耦合：我试过两版公式，
+ * 第二版对纯轴向完美（误差 0），但 `[0.05, −0.996, −0.075]`
+ * 这类方向的误差仍有 **0.15**（z 分量符号反掉）。
  *
- *     R · (0,1,0) = (sin(-rz)·cos(rx),  cos(rx)·cos(rz),  −sin(rx))
+ * `Quaternion.setFromUnitVectors(from, to)` 是"把某轴对齐到某方向"的
+ * 标准精确解法，**误差理论上为 0**。而且它直接返回四元数，
+ * 交给 `mesh.quaternion` 即可——不必再操心欧拉顺序（XYZ/YXZ/ZYX）
+ * 这个我错了两次的地方。
  *
- * 反解出：
- *
- *     rx = −asin(dir.y)
- *     rz = −atan2(dir.x, dir.z)
- *
- * 我先前写的是 `pitch = acos(dir.y)` + `rz = atan2(dir.x, dir.z)`，
- * 两处都错，而 `acos` 丢掉符号是**最致命**的那处：
- * 朝下的向量（dir.y = −1）会得到 `pitch = π`，于是 `Rx(π)` 把 +Y
- * 轴转成了 **−Y 的反方向**——所有朝下的肢体（大腿、小腿、上臂、前臂）
- * **全部被翻成朝上**，画面上就是"四肢呈 V 形往外撇、关节错位断开"。
- *
- * 而几何数据一直是**正确**的（实测大腿 `dir = [0.03, −1, 0]`，
- * 几乎垂直向下）。所以这个 bug 只能在渲染这一步找，查数据是查不出来的。
+ * ⚠️ 关键前提：`dir` 必须是**局部空间**的方向。
+ * 渲染时把 mesh 放进角色的 group 里，group 自己的旋转由世界变换承担，
+ * 所以这里用局部 `dir` 是对的。
  */
-export function dirToEuler(dir: Vec3): Vec3 {
-  const y = Math.max(-1, Math.min(1, dir[1]));
-  const rx = -Math.asin(y);
-  // 完全竖直时 atan2(0,0) 无意义，此时 yaw 取 0 即可
-  const rz = Math.abs(dir[0]) < 1e-9 && Math.abs(dir[2]) < 1e-9
-    ? 0
-    : -Math.atan2(dir[0], dir[2]);
-  return [rx, 0, rz];
+export function dirToQuaternion(dir: Vec3): [number, number, number, number] {
+  const [dx, dy, dz] = dir;
+  const len = Math.hypot(dx, dy, dz);
+  if (len < 1e-9) return [0, 0, 0, 1]; // 退化：单位四元数
+  const x = dx / len;
+  const y = dy / len;
+  const z = dz / len;
+  // 从 (0,1,0) 转到 (x,y,z)：q = (cross, 1 + dot)，再归一化
+  //   dot = y, cross = (0,1,0) × (x,y,z) = (z, 0, −x)
+  const w = 1 + y;
+  if (w < 1e-9) {
+    // 方向与 +Y 恰好相反：任取一条垂直轴旋转 180°
+    return [1, 0, 0, 0];
+  }
+  const qx = z;
+  const qy = 0;
+  const qz = -x;
+  const qw = w;
+  const qlen = Math.hypot(qx, qy, qz, qw);
+  return [qx / qlen, qy / qlen, qz / qlen, qw / qlen];
+}
+
+/** 轴对齐包围盒（模型局部坐标，已含接地偏移） */
+export interface LocalBounds {
+  min: Vec3;
+  max: Vec3;
+  center: Vec3;
+  size: Vec3;
+}
+
+/**
+ * 从**实际几何**求包围盒 —— 这就是"碰撞箱"。
+ *
+ * ## 为什么不能用固定值（用户指出的问题）
+ *
+ * 我先前把选择框写死成 `[0.8, height × 1.08, 0.8]`：
+ * **站起来、坐着、跑步、举手，箱子一样大**。这显然是错的——
+ * 一个人坐下时高度只剩六成，伸手时横向宽一倍，
+ * 固定的箱子既框不住、也框太多。
+ *
+ * 正确的做法是把每段体块的端点与半径都算进去：
+ *   · 关节位置（`joints`）给出骨架的极值；
+ *   · 每段肢体沿它的两个端点各按该端半径外扩（圆柱侧面也算进去）；
+ *   · 关节球按各自半径外扩。
+ *
+ * 所以箱子**随姿态变化**：坐姿会矮、举手会高、跑步会前倾加长。
+ */
+export function localBounds(built: BuiltBody): LocalBounds {
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+
+  const grow = (x: number, y: number, z: number, r: number) => {
+    if (x - r < minX) minX = x - r;
+    if (x + r > maxX) maxX = x + r;
+    if (y - r < minY) minY = y - r;
+    if (y + r > maxY) maxY = y + r;
+    if (z - r < minZ) minZ = z - r;
+    if (z + r > maxZ) maxZ = z + r;
+  };
+
+  // 关节球
+  for (const [name, jw] of Object.entries(built.joints)) {
+    grow(jw.pos[0], jw.pos[1], jw.pos[2], built.radii[name] ?? 0);
+  }
+
+  /**
+   * 每段体块：**两端各按该端半径外扩**。
+   *
+   * 只取两个端点是不够的——一段横着的肢体（例如平举的手臂），
+   * 两个端点在同一高度，但圆柱本身有半径，箱子必须把它算进去。
+   */
+  for (const item of built.segments) {
+    const r = Math.max(item.seg.r0, item.seg.r1);
+    grow(item.a[0], item.a[1], item.a[2], r);
+    grow(item.b[0], item.b[1], item.b[2], r);
+    // `box` 形状（手脚）用 size，取半对角线作为外扩量
+    if (item.seg.size) {
+      const half = Math.hypot(item.seg.size[0], item.seg.size[1], item.seg.size[2]) / 2;
+      grow(item.a[0], item.a[1], item.a[2], half);
+      grow(item.b[0], item.b[1], item.b[2], half);
+    }
+  }
+
+  // 全空（理论上不会发生）时给一个最小盒子，避免 NaN 传进渲染
+  if (!Number.isFinite(minX)) {
+    minX = minY = minZ = -0.1;
+    maxX = maxY = maxZ = 0.1;
+  }
+
+  return {
+    min: [minX, minY, minZ],
+    max: [maxX, maxY, maxZ],
+    center: [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2],
+    size: [maxX - minX, maxY - minY, maxZ - minZ],
+  };
 }
 
 /** 规格里所有 segment 引用到的关节名（用于 C 模式的"物体树"展示） */

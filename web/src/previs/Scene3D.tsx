@@ -32,7 +32,7 @@ import * as typesNs from './types';
 import * as bodySpecNs from './bodySpec';
 import * as bodyMeshNs from './bodySpecMesh';
 import { DrawPlane } from './DrawPlane';
-import { buildBody, dirToEuler } from './bodySpecMesh';
+import { buildBody, dirToQuaternion, localBounds } from './bodySpecMesh';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -191,7 +191,9 @@ function BodySpecActor({ id }: { id: string }) {
 
   const spec = actor.bodySpec;
   const isSel = selected?.kind === 'actor' && selected.id === id;
-  const built = buildBody(spec, { time: playhead, poseOverride: actor.poseOverride });
+  // ⚠️ 必须传 `actor.pose`：右栏「肢体动作」按钮改的就是它。
+  // 只读 `spec.pose` 的话，有规格后那些按钮会完全失效。
+  const built = buildBody(spec, { time: playhead, poseOverride: actor.poseOverride, pose: actor.pose });
   /**
    * 两个缩放叠加：
    *   · `actor.scale`  —— 用户拖的"身高倍"
@@ -201,6 +203,14 @@ function BodySpecActor({ id }: { id: string }) {
   const s = actor.scale * built.heightScale;
   /** 接地：把整组上移，让最低脚掌落在 y=0 */
   const gy = actor.position[1] + built.groundOffset * s;
+  /**
+   * 碰撞箱：从**实际几何**求，随姿态变化。
+   *
+   * ⚠️ 先前写死成 `[0.8, height × 1.08, 0.8]`——站起来、坐下、跑步、
+   * 举手箱子一样大，既框不住也框太多（用户指出的问题）。
+   * 现在由 `localBounds(built)` 逐段累加端点与半径得出。
+   */
+  const bounds = localBounds(built);
 
   return (
     <group position={[actor.position[0], gy, actor.position[2]]} rotation={[0, actor.yaw, 0]} scale={[s, s, s]}>
@@ -213,7 +223,7 @@ function BodySpecActor({ id }: { id: string }) {
         if (r <= 0.001) return null;
         return (
           <mesh key={name} position={jw.pos}>
-            <sphereGeometry args={[r, 12, 8]} />
+            <sphereGeometry args={[r, 16, 12]} />
             <meshLambertMaterial color={actor.color} />
           </mesh>
         );
@@ -224,8 +234,8 @@ function BodySpecActor({ id }: { id: string }) {
         <meshBasicMaterial color="#e0925f" />
       </mesh>
       {isSel && (
-        <mesh position={[0, spec.proportions.height / 2, 0]} userData={HELPER}>
-          <boxGeometry args={[0.8, spec.proportions.height * 1.08, 0.8]} />
+        <mesh position={bounds.center} userData={HELPER}>
+          <boxGeometry args={[bounds.size[0], bounds.size[1], bounds.size[2]]} />
           <meshBasicMaterial color={PREVIS_COLOR.ACCENT} wireframe transparent opacity={0.3} />
         </mesh>
       )}
@@ -236,10 +246,14 @@ function BodySpecActor({ id }: { id: string }) {
 /**
  * 画一个体块。四种形状各自用最合适的 Three.js 内置几何。
  *
- * ⚠️ 朝向**必须**统一用 `dirToEuler`。先前这里手写了一套
- * `atan2(√(dx²+dz²), dy)` + `atan2(dx, dz)` 的旋转，与 `dirToEuler`
- * 的约定不一致（且 `acos`/`atan2` 都丢符号），结果朝下的肢体被翻成朝上，
- * 画面上四肢呈 V 形外撇、关节错位。**一处算错，整具模型散架。**
+ * ⚠️ 朝向**必须**统一走 `dirToQuaternion`。
+ *
+ * 这里曾经手写了一套 `atan2(√(dx²+dz²), dy)` + `atan2(dx, dz)` 的欧拉角，
+ * 与另一处的约定不一致，而且欧拉角**只用两轴无法精确对齐任意方向**
+ * （x 与 z 同时非零时有耦合，实测残差 0.15）——结果是朝下的肢体被翻成
+ * 朝上、四肢横躺。**一处算错，整具模型散架。**
+ *
+ * 四元数没有这些问题：误差是机器精度，也不依赖欧拉顺序的约定。
  */
 function SpecSegment({
   item,
@@ -257,13 +271,20 @@ function SpecSegment({
   const { seg, a, b, length, dir } = item;
   const mid: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
   const mat = seg.color ?? color;
-  const rot = dirToEuler(dir);
+  /**
+   * 朝向用**四元数**（`dirToQuaternion`），不用欧拉角。
+   *
+   * 欧拉角只用 rx/rz 两轴**无法精确对齐任意方向**（x 与 z 同时非零时
+   * 有耦合，实测残差 0.15 → 手脚横躺）。四元数误差是机器精度。
+   * 而且它绕开了"欧拉顺序到底是 XYZ 还是 YXZ"这个我错了两次的地方。
+   */
+  const quat = dirToQuaternion(dir);
 
   if (seg.shape === 'box') {
     // 手掌/脚掌：一块有长宽高的板，按盒子尺寸画，朝向同段
     const size = seg.size ?? [0.1, 0.1, 0.1];
     return (
-      <mesh position={mid} rotation={rot}>
+      <mesh position={mid} quaternion={quat}>
         <boxGeometry args={[size[0], size[1], size[2]]} />
         <meshLambertMaterial color={mat} />
       </mesh>
@@ -284,7 +305,7 @@ function SpecSegment({
 
   if (seg.shape === 'taperedCylinder') {
     return (
-      <mesh position={mid} rotation={rot}>
+      <mesh position={mid} quaternion={quat}>
         <cylinderGeometry args={[seg.r1, seg.r0, length, 16]} />
         <meshLambertMaterial color={mat} />
       </mesh>
@@ -308,7 +329,7 @@ function SpecSegment({
   ];
   return (
     <group>
-      <mesh position={capMid} rotation={rot}>
+      <mesh position={capMid} quaternion={quat}>
         <cylinderGeometry args={[seg.r1, seg.r0, cylLen, 16]} />
         <meshLambertMaterial color={mat} />
       </mesh>

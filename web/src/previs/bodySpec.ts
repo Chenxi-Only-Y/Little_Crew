@@ -107,7 +107,7 @@ export const BODY_DEFAULT_LENGTHS: Record<string, number> = {
 
 /** 默认关节球半径（米）。关节球用来填住两段肢体交接处的缝隙。 */
 export const BODY_DEFAULT_RADII: Record<string, number> = {
-  pelvis: 0.125, spine: 0.115, chest: 0.14, neck: 0.045, head: 0.135,
+  pelvis: 0.062, spine: 0.062, chest: 0.068, neck: 0.034, head: 0.115,
   // 肘/腕/膝/踝的球要**略小于**相接的肢体半径，否则交接处会鼓出疙瘩
   sho_l: 0.055, elb_l: 0.048, wri_l: 0.04,
   sho_r: 0.055, elb_r: 0.048, wri_r: 0.04,
@@ -176,10 +176,10 @@ export const BODY_ROOT_WIDTH = { hip: 0.055 };
 /** 默认体块表 —— 这是"一个完整的人"的定义，也是缺字段时的兜底。 */
 export const DEFAULT_SEGMENTS: BodySegment[] = [
   // 躯干：两段胶囊（不是三个球，那样会糊成一坨菱形）
-  { joint: 'spine', shape: 'capsule', r0: 0.14, r1: 0.13 },
-  { joint: 'chest', shape: 'capsule', r0: 0.15, r1: 0.15 },
-  { joint: 'neck', shape: 'taperedCylinder', r0: 0.048, r1: 0.048 },
-  { joint: 'head', shape: 'sphere', r0: 0.135, r1: 0.135 },
+  { joint: 'spine', shape: 'capsule', r0: 0.064, r1: 0.06 },
+  { joint: 'chest', shape: 'capsule', r0: 0.07, r1: 0.068 },
+  { joint: 'neck', shape: 'taperedCylinder', r0: 0.036, r1: 0.036 },
+  { joint: 'head', shape: 'sphere', r0: 0.115, r1: 0.115 },
 
   // 手臂：上臂略粗、前臂略细
   { joint: 'elb_l', shape: 'taperedCylinder', r0: 0.055, r1: 0.046 },
