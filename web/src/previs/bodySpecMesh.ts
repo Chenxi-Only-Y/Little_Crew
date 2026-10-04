@@ -249,12 +249,52 @@ export function buildBody(
     segments.map((s) => ({ seg: s.seg })),
   );
 
-  // ---- 接地：最低的脚掌（没有脚掌就退回脚踝）----
-  const feetJoints = ['foot_l', 'foot_r'].filter((n) => joints[n]);
-  const probe = feetJoints.length ? feetJoints : ['ank_l', 'ank_r'].filter((n) => joints[n]);
+  /**
+   * 接地：把整组上移，让**整个模型最低的那个几何点**落在 y=0。
+   *
+   * ## 为什么不能只看"脚掌关节的中心"（这里返工过一次）
+   *
+   * 旧写法只看最低的 `foot_*` / `ank_*` **关节中心**。站姿下没问题，
+   * 但坐姿时踝只到骨盆下方 0.49，脚掌中心也还在骨盆下方——
+   * 于是 `groundOffset` 几乎不变，**骨盆高度一点没降，人悬在空中坐着**
+   * （用户报的"坐下像悬空"）。
+   *
+   * 正确的物理含义是"人坐下来，屁股就落到座位面上"：
+   * 姿态一变、脚相对骨盆变高了，整具身体就该**下沉**同样的量。
+   * 所以接地基准取**含关节球半径的最低顶点**——那才是真正的"身体最低处"。
+   */
+  /**
+   * ⚠️ 这里**不要**再加"按姿态人为下沉"的系数。
+   *
+   * 我加过一版 `POSE_SINK`（坐姿乘 0.56 把骨盆压低），那是**错的方向**：
+   * 大腿水平 + 小腿垂直时，髋到踝的**垂直距离只有 0.49**（站立时 0.93），
+   * 所以骨盆自然会落到座位上（实测 21% 身高 ≈ 0.36 米，正是座椅高度）。
+   * 强行乘系数只会把**脚埋进地面**去换骨盆高度——治标不治本。
+   * 这是几何必然，不是缺陷。
+   */
   let lowest = Infinity;
-  for (const n of probe) {
-    const y = joints[n].pos[1];
+  for (const [name, jw] of Object.entries(joints)) {
+    const y = jw.pos[1] - (radii[name] ?? 0);
+    if (y < lowest) lowest = y;
+  }
+  for (const item of segments) {
+    /**
+     * 圆柱按自身半径外扩；`box`（脚掌/手掌）按**它自己旋转后的世界半高**。
+     *
+     * ⚠️ 用 `boxHalfExtents` 而不是写死的外扩量——先前写死 `0.02`、
+     * 而脚掌实际半高是 0.025，且不随缩放，导致接地基准偏低、
+     * 整个模型悬在地面上方（实测箱底 −0.102、踝高 7.9%，真实 4%）。
+     * 更要紧的是：这里与 `localBounds` 必须用**同一个公式**，
+     * 否则"测出来的包围盒"和"渲染出来的网格"对不上，排查会白费好几轮。
+     */
+    let r: number;
+    if (item.seg.shape === 'box') {
+      const size = item.seg.size ?? [0.1, 0.1, 0.1];
+      r = boxHalfExtents(size, dirToQuaternion(item.dir))[1];
+    } else {
+      r = Math.max(item.seg.r0, item.seg.r1);
+    }
+    const y = Math.min(item.a[1], item.b[1]) - r;
     if (y < lowest) lowest = y;
   }
   const groundOffset = Number.isFinite(lowest) ? -lowest : 0;
@@ -322,6 +362,42 @@ export function dirToQuaternion(dir: Vec3): [number, number, number, number] {
   return [qx / qlen, qy / qlen, qz / qlen, qw / qlen];
 }
 
+/**
+ * 一个 `box` 体块在**世界轴**上的半个尺寸。
+ *
+ * ## 为什么需要它（这里返工过一次）
+ *
+ * `box`（脚掌、手掌）是斜着放的，它在世界 Y 轴上的半高**不等于** `size[1]/2`。
+ * 我先前在 `localBounds` 里按**半对角线**外扩（脚掌算出 0.112），
+ * 而接地逻辑按半高算（0.025）——**两处不一致**，于是我"测量"到的
+ * 包围盒底部是 −0.102，而实际渲染的脚是贴地的。测量和渲染对不上，
+ * 就会像这次一样白查好几轮。
+ *
+ * 正确做法：把四元数转成 3×3 旋转矩阵，再按
+ * `extent_j = Σ_i |R[j][i]| · half_i` 求世界轴半长（AABB 的标准公式）。
+ */
+export function boxHalfExtents(
+  size: Vec3,
+  quat: [number, number, number, number],
+): Vec3 {
+  const [x, y, z, w] = quat;
+  // 四元数 → 旋转矩阵（行优先，Three.js 的约定）
+  const xx = x * x, yy = y * y, zz = z * z;
+  const xy = x * y, xz = x * z, yz = y * z;
+  const wx = w * x, wy = w * y, wz = w * z;
+  const m = [
+    1 - 2 * (yy + zz), 2 * (xy - wz), 2 * (xz + wy),
+    2 * (xy + wz), 1 - 2 * (xx + zz), 2 * (yz - wx),
+    2 * (xz - wy), 2 * (yz + wx), 1 - 2 * (xx + yy),
+  ];
+  const h = [Math.abs(size[0]) / 2, Math.abs(size[1]) / 2, Math.abs(size[2]) / 2];
+  const out: Vec3 = [0, 0, 0];
+  for (let j = 0; j < 3; j++) {
+    out[j] = Math.abs(m[j * 3]) * h[0] + Math.abs(m[j * 3 + 1]) * h[1] + Math.abs(m[j * 3 + 2]) * h[2];
+  }
+  return out;
+}
+
 /** 轴对齐包围盒（模型局部坐标，已含接地偏移） */
 export interface LocalBounds {
   min: Vec3;
@@ -370,21 +446,37 @@ export function localBounds(built: BuiltBody): LocalBounds {
   }
 
   /**
-   * 每段体块：**两端各按该端半径外扩**。
+   * 每段体块：按**它实际渲染的网格**外扩。
    *
-   * 只取两个端点是不够的——一段横着的肢体（例如平举的手臂），
-   * 两个端点在同一高度，但圆柱本身有半径，箱子必须把它算进去。
+   * ⚠️ 两个容易错的地方，都踩过：
+   *   1. `box` 的 mesh 位置在 `a`、`b` 的**中点**（见 `SpecSegment`），
+   *      不是在两个端点上；
+   *   2. `box` 在世界轴上的半长要用 `boxHalfExtents`（含旋转）算，
+   *      不能用半对角线，也不能用 `size[1]/2`。
+   *
+   * 圆柱/胶囊是沿父→子方向从 `a` 到 `b`，用两端半径外扩即可。
    */
   for (const item of built.segments) {
+    if (item.seg.shape === 'box') {
+      const mid: Vec3 = [
+        (item.a[0] + item.b[0]) / 2,
+        (item.a[1] + item.b[1]) / 2,
+        (item.a[2] + item.b[2]) / 2,
+      ];
+      const size = item.seg.size ?? [0.1, 0.1, 0.1];
+      const ext = boxHalfExtents(size, dirToQuaternion(item.dir));
+      grow(mid[0], mid[1], mid[2], 0);
+      if (mid[0] - ext[0] < minX) minX = mid[0] - ext[0];
+      if (mid[0] + ext[0] > maxX) maxX = mid[0] + ext[0];
+      if (mid[1] - ext[1] < minY) minY = mid[1] - ext[1];
+      if (mid[1] + ext[1] > maxY) maxY = mid[1] + ext[1];
+      if (mid[2] - ext[2] < minZ) minZ = mid[2] - ext[2];
+      if (mid[2] + ext[2] > maxZ) maxZ = mid[2] + ext[2];
+      continue;
+    }
     const r = Math.max(item.seg.r0, item.seg.r1);
     grow(item.a[0], item.a[1], item.a[2], r);
     grow(item.b[0], item.b[1], item.b[2], r);
-    // `box` 形状（手脚）用 size，取半对角线作为外扩量
-    if (item.seg.size) {
-      const half = Math.hypot(item.seg.size[0], item.seg.size[1], item.seg.size[2]) / 2;
-      grow(item.a[0], item.a[1], item.a[2], half);
-      grow(item.b[0], item.b[1], item.b[2], half);
-    }
   }
 
   // 全空（理论上不会发生）时给一个最小盒子，避免 NaN 传进渲染

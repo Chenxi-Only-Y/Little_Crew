@@ -172,14 +172,14 @@ DEFAULT_ROTATIONS: dict[str, list[float]] = {
 #: 默认段长（米）。以骨盆为原点，**父→子的竖直距离**。
 #: 与旋转一起完全决定关节位置——这就是 v2 "位置不可直写"的落实。
 DEFAULT_LENGTHS: dict[str, float] = {
-    "spine": 0.20,
-    "chest": 0.20,
-    "neck": 0.11,
-    "head": 0.08,
-    "elb_l": 0.25, "wri_l": 0.23,
-    "elb_r": 0.25, "wri_r": 0.23,
-    "kne_l": 0.43, "ank_l": 0.43, "foot_l": 0.09,
-    "kne_r": 0.43, "ank_r": 0.43, "foot_r": 0.09,
+    "spine": 0.287,
+    "chest": 0.277,
+    "neck": 0.071,
+    "head": 0.059,
+    "elb_l": 0.31, "wri_l": 0.26,
+    "elb_r": 0.31, "wri_r": 0.26,
+    "kne_l": 0.436, "ank_l": 0.436, "foot_l": 0.077,
+    "kne_r": 0.436, "ank_r": 0.436, "foot_r": 0.077,
 }
 
 #: 关节球默认半径（米）。要比相接的肢体略细，否则会鼓出疙瘩。
@@ -211,8 +211,8 @@ DEFAULT_SEGMENTS: list[dict] = [
     {"joint": "ank_l", "shape": "taperedCylinder", "r0": 0.062, "r1": 0.048},
     {"joint": "kne_r", "shape": "taperedCylinder", "r0": 0.088, "r1": 0.062},
     {"joint": "ank_r", "shape": "taperedCylinder", "r0": 0.062, "r1": 0.048},
-    {"joint": "foot_l", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.09, 0.05, 0.20]},
-    {"joint": "foot_r", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.09, 0.05, 0.20]},
+    {"joint": "foot_l", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.085, 0.048, 0.145]},
+    {"joint": "foot_r", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.085, 0.048, 0.145]},
 ]
 
 #: 允许的姿态预设（只影响 `rotations` 的初始值，不再决定几何结构）

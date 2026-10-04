@@ -90,19 +90,36 @@ export const BODY_JOINT_LIMITS: Record<string, JointLimits> = {
  * v2 里关节位置完全由它和旋转推导，不再有"随便写个偏移"的口子。
  * 骨盆为原点时：踝约 −0.95、髋 −0.06、胸 +0.40、头顶 +0.59，
  * 配合脚掌与头顶球半径整体约 1.73 米（随后会归一化到
- * `proportions.height`，所以这里只需比例正确）。
+ * ## 数值是按**真实人体比例**反推的（这里返工过一次）
+ *
+ * 上一版是 大腿 0.43 / 小腿 0.43 / 躯干（脊柱+胸）0.40，实测出来：
+ *
+ *     腿长（髋→脚底）= 身高的 **55.4%**   ← 真实人体只有 47~48%
+ *     躯干（髋→颈）  = 身高的 **33.2%**   ← 真实人体约 41%
+ *
+ * 也就是**腿太长、躯干太短**，整个人像蜘蛛。坐姿尤其难看：
+ * 腿长而躯干短，坐下时上半身显小、腿支棱出去一大截。
+ *
+ * 现在按真实占比重排：
+ *
+ *     髋 → 膝（大腿） 0.245    膝 → 踝（小腿） 0.245   踝 → 脚底 0.09
+ *     骨盆 → 脊柱 0.26        脊柱 → 胸 0.23
+ *     → 躯干（髋→颈）≈ 0.49 + 0.11，约身高的 41%
+ *
+ * ⚠️ 髋高不必单独配平：`身高 = 髋高 + 腿长 + 头颈`，
+ * 腿按真实占比给之后，髋高会自动落到真实的 53%。
  */
 export const BODY_DEFAULT_LENGTHS: Record<string, number> = {
-  spine: 0.20,
-  chest: 0.20,
-  neck: 0.11,
-  head: 0.08,
+  spine: 0.287,
+  chest: 0.277,
+  neck: 0.071,
+  head: 0.059,
 
-  elb_l: 0.25, wri_l: 0.23,
-  elb_r: 0.25, wri_r: 0.23,
+  elb_l: 0.31, wri_l: 0.26,
+  elb_r: 0.31, wri_r: 0.26,
 
-  kne_l: 0.43, ank_l: 0.43, foot_l: 0.09,
-  kne_r: 0.43, ank_r: 0.43, foot_r: 0.09,
+  kne_l: 0.436, ank_l: 0.436, foot_l: 0.077,
+  kne_r: 0.436, ank_r: 0.436, foot_r: 0.077,
 };
 
 /** 默认关节球半径（米）。关节球用来填住两段肢体交接处的缝隙。 */
@@ -196,8 +213,8 @@ export const DEFAULT_SEGMENTS: BodySegment[] = [
   { joint: 'kne_r', shape: 'taperedCylinder', r0: 0.088, r1: 0.062 },
   { joint: 'ank_r', shape: 'taperedCylinder', r0: 0.062, r1: 0.048 },
   // 脚掌：方块，前后方向长
-  { joint: 'foot_l', shape: 'box', r0: 0, r1: 0, size: [0.09, 0.05, 0.20] },
-  { joint: 'foot_r', shape: 'box', r0: 0, r1: 0, size: [0.09, 0.05, 0.20] },
+  { joint: 'foot_l', shape: 'box', r0: 0, r1: 0, size: [0.085, 0.048, 0.145] },
+  { joint: 'foot_r', shape: 'box', r0: 0, r1: 0, size: [0.085, 0.048, 0.145] },
 ];
 
 export const DEFAULT_PROPORTIONS = {
