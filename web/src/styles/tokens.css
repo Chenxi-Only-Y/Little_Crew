@@ -561,54 +561,65 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  height: 34px;
-  padding: 0 var(--sp-4);
+  height: 32px;
+  padding: 0 var(--sp-3);
   border-radius: var(--r-pill);
   border: 1px solid transparent;
-  /* 药丸自己带一层毛玻璃底：这样"没有栏"也仍然看得清——
-     滚动时内容会从药丸后面穿过，没这层底色文字会糊在一起。 */
-  background: rgba(19, 19, 23, 0.72);
-  backdrop-filter: blur(10px);
-  color: var(--text-faint);
+  /* ⚠️ 用户明确要求：**透明，直接覆盖在背景上**。
+     早先这里给每个药丸一层 `rgba(19,19,23,.72)` 毛玻璃底（为了滚动时可读），
+     但一排带底色的色块并排放，视觉上仍然读成**一条导航栏**——
+     这是用户第三次指出"为什么还有导航栏"。
+
+     现在完全透明：没有底、没有毛玻璃。为了让文字在滚动内容上仍看得清，
+     改用 `text-shadow` —— 它只给**文字本身**加深色描边，
+     不会形成任何块状，所以不会读成"条"。 */
+  background: none;
+  backdrop-filter: none;
+  color: var(--text-muted);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.6);
   font-family: inherit;
   font-size: var(--fs-body);
   cursor: pointer;
   white-space: nowrap;
   transition:
     color var(--t-hover) var(--ease),
-    border-color var(--t-hover) var(--ease),
-    background var(--t-hover) var(--ease);
+    border-color var(--t-hover) var(--ease);
 }
 .nav-pill:hover {
   color: var(--text);
-  background: var(--bg-elev);
-  border-color: var(--line);
+  /* hover 也只加描边、不加底 —— 加底就又出现色块了 */
+  border-color: var(--line-strong);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 14px rgba(0, 0, 0, 0.7);
 }
 
-/* 当前页：描边用光晕色、极淡填充。不用实心——实心在暗场里太重，
-   会把"聚光"的注意力从内容上抢走。 */
+/* 当前页：只靠颜色与描边区分，不用填充 */
 .nav-pill[aria-current='page'] {
   color: var(--text);
-  border-color: rgba(110, 123, 255, 0.5);
-  background: rgba(110, 123, 255, 0.14);
+  border-color: rgba(110, 123, 255, 0.75);
+  background: none;
 }
 
 .nav-pill-quiet {
-  background: transparent;
+  background: none;
   backdrop-filter: none;
   color: var(--text-faint);
 }
 .nav-pill-quiet:hover {
   color: var(--st-failed);
-  border-color: rgba(248, 81, 73, 0.4);
-  background: rgba(248, 81, 73, 0.08);
+  border-color: rgba(248, 81, 73, 0.5);
+  background: none;
 }
 
-.brand span {
-  color: var(--text-faint);
-  font-weight: 400;
-  margin-left: var(--sp-2);
-  font-size: 12px;
+/**
+ * 导航区里的"信息小片"（注册表状态、用户名）同样透明。
+ *
+ * 注意此规则**限定在 `.pill-dock` 内**：`.pill-chip` 在别处是通用的
+ * 信息标签（带底色），全局改透明会让那些地方失去边界。
+ */
+.pill-dock .pill-chip {
+  background: none;
+  border-color: transparent;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.6);
 }
 
 /* ══════════════════════════════════════════════════════════════
