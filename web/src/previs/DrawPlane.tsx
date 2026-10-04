@@ -13,6 +13,7 @@
  */
 
 import { usePrevis } from './store';
+import { PREVIS_COLOR } from './types';
 
 export function DrawPlane() {
   const drawing = usePrevis((s) => s.drawing);
@@ -37,7 +38,7 @@ export function DrawPlane() {
         而这里只是编辑期的拾取面，不参与渲染结果。
       */}
       <planeGeometry args={[400, 400]} />
-      <meshBasicMaterial color="#c8f04a" transparent opacity={0.06} depthWrite={false} />
+      <meshBasicMaterial color={PREVIS_COLOR.ACCENT} transparent opacity={0.06} depthWrite={false} />
     </mesh>
   );
 }

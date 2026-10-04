@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { NoToneMapping, SRGBColorSpace, type Camera, type Scene, type WebGLRenderer } from 'three';
 import { usePrevis } from './store';
-import { sampleCamera, type Vec3 } from './types';
+import { sampleCamera, type Vec3, PREVIS_COLOR } from './types';
 import {
   HUMAN_BONES,
   HUMAN_SKELETON,
@@ -78,9 +78,9 @@ function Ground({ size }: { size: [number, number] }) {
       {/* 地面本体：带 ground 标记，深度图里可选计入（见 GROUND 的说明） */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} userData={GROUND}>
         <planeGeometry args={[w, d]} />
-        <meshBasicMaterial color="#1b1730" />
+        <meshBasicMaterial color={PREVIS_COLOR.GROUND} />
       </mesh>
-      <gridHelper args={[span, cells, '#6a6398', '#3a3458']} userData={HELPER} />
+      <gridHelper args={[span, cells, '#3a3a44', '#26262e']} userData={HELPER} />
       {/* 坐标轴：只在编辑时帮助辨向 */}
       <axesHelper args={[1.2]} userData={HELPER} />
     </group>
@@ -141,12 +141,12 @@ function ActorMesh({ id }: { id: string }) {
       {/* 朝向指示：贴地四棱锥指向 -Z */}
       <mesh position={[0, 0.02, -0.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <coneGeometry args={[0.12, 0.3, 4]} />
-        <meshBasicMaterial color="#e8736a" />
+        <meshBasicMaterial color="#e0925f" />
       </mesh>
       {isSel && (
         <mesh position={[0, skeletonHeight() / 2, 0]} userData={HELPER}>
           <boxGeometry args={[0.72, skeletonHeight() * 1.08, 0.72]} />
-          <meshBasicMaterial color="#c8f04a" wireframe transparent opacity={0.3} />
+          <meshBasicMaterial color={PREVIS_COLOR.ACCENT} wireframe transparent opacity={0.3} />
         </mesh>
       )}
     </group>
@@ -202,7 +202,7 @@ function PropMesh({ id }: { id: string }) {
       {isSel && (
         <mesh userData={HELPER}>
           <boxGeometry args={[w * 1.18, h * 1.18, d * 1.18]} />
-          <meshBasicMaterial color="#c8f04a" wireframe />
+          <meshBasicMaterial color={PREVIS_COLOR.ACCENT} wireframe />
         </mesh>
       )}
     </group>
@@ -240,7 +240,13 @@ function CameraGizmos() {
         return track.keys.map((k) => {
           const isSel = selected?.kind === 'camera' && selected.id === k.id;
           const line = lines.find((l) => l.id === k.id);
-          const base = isSel ? '#c8f04a' : isActive ? '#61d6a0' : '#4a4370';
+          // 机位关键帧：选中 → 界面强调色；当前机位 → 完成色；其余 → 中性灰。
+          // 原先的 `#4a4370` 是旧品牌的紫调，新的明度层级里没有紫。
+          const base = isSel
+            ? PREVIS_COLOR.ACCENT
+            : isActive
+              ? '#3fb950'
+              : '#4a4a52';
           return (
             <group key={k.id}>
               <mesh
@@ -270,7 +276,7 @@ function CameraGizmos() {
                   <bufferGeometry>
                     <bufferAttribute attach="attributes-position" args={[line.positions, 3]} />
                   </bufferGeometry>
-                  <lineBasicMaterial color="#c8f04a" transparent opacity={0.6} />
+                  <lineBasicMaterial color={PREVIS_COLOR.ACCENT} transparent opacity={0.6} />
                 </lineSegments>
               )}
             </group>

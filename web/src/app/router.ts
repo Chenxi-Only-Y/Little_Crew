@@ -18,12 +18,19 @@ export interface PageMeta {
   key: PageKey;
   /** 导航栏标题 */
   label: string;
-  /** 页面说明（首页卡片用） */
+  /** 页面说明（首页入口卡片的 title） */
   desc: string;
   icon: string;
+  /**
+   * 不进悬浮导航（但路由仍可达）。
+   *
+   * 为什么需要：有些页是**开发/调试**用途（例如设计系统小样），
+   * 让它们出现在用户导航里会把界面变吵，而删掉又会让它们难以访问。
+   */
+  hidden?: boolean;
 }
 
-/** 站点结构 —— 就这五页 */
+/** 站点结构 —— 五页用户可见 + 隐藏页 */
 export const PAGES: PageMeta[] = [
   { key: 'home', label: '首页', icon: '⌂', desc: '最近创作、常用入口' },
   { key: 'director', label: '导演台', icon: '⚏', desc: '在画布上编排流程并运行' },

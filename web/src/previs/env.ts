@@ -34,7 +34,9 @@ export const ENV_PRESETS: EnvPresetMeta[] = [
 ];
 
 /** 环境块统一用暗色：它是背景体量，不该在编辑器里抢视线 */
-const ENV_COLOR = '#3a3458';
+// 环境块统一用中性暗灰：它是背景体量，不该在编辑器里抢视线，
+// 也不该带旧品牌的紫调（界面已改成纯中性明度层级）。
+const ENV_COLOR = '#2a2a30';
 
 interface Box {
   name: string;

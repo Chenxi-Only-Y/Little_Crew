@@ -37,6 +37,8 @@ export default function DirectorPage() {
 
   return (
     <ReactFlowProvider>
+      {/* `app-topbar` 只加在**容器**上（见下方 `.app-body`），
+          状态栏本身不再单独加内边距——两处都加会变成双重留白。 */}
       <div className="app-statusbar">
         <RunBar />
         {validation && (
@@ -78,7 +80,7 @@ export default function DirectorPage() {
 
       {error && <div className="issue-panel" style={{ color: 'var(--st-review)' }}>⚠ {error}</div>}
 
-      <div className="app-body">
+      <div className="app-body app-topbar">
         <NodeLibrary />
         <Canvas />
         <Inspector />

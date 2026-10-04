@@ -12,6 +12,7 @@ import {
   migrateShot,
   newId,
   sampleCamera,
+  PREVIS_COLOR,
   type Actor,
   type CameraAim,
   type CameraKeyframe,
@@ -161,7 +162,12 @@ export const usePrevis = create<PrevisState>((set) => ({
         poseSpeed: 1,
         // 相位错开，避免多人走路完全同步（那看起来像复制粘贴）
         posePhase: (st.scene.actors.length * 0.37) % 1,
-        color: ['#c8f04a', '#f0b23d', '#e8736a', '#61d6a0'][st.scene.actors.length % 4],
+        // 新增角色用的色：**近白系**（见 `PREVIS_COLOR` 的说明）。
+        // 轮换是为了在视口里区分多个角色，但都保持在"白模"的色域里——
+        // 不能再用荧光绿/橙/红那组，那会：
+        //   · 与"白模"的定义矛盾；
+        //   · 被导出进白模参考视频（导出的是真实渲染帧，不是强制白）。
+        color: PREVIS_COLOR.ACTOR_CYCLE[st.scene.actors.length % PREVIS_COLOR.ACTOR_CYCLE.length],
       };
       return {
         scene: { ...st.scene, actors: [...st.scene.actors, a] },
@@ -177,7 +183,7 @@ export const usePrevis = create<PrevisState>((set) => ({
         position: [0, 0, 0],
         yaw: 0,
         size: [1, 1, 1],
-        color: '#8b8bf0',
+        color: PREVIS_COLOR.PROP,
       };
       return {
         scene: { ...st.scene, props: [...st.scene.props, p] },

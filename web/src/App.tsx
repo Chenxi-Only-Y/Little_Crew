@@ -100,7 +100,7 @@ export default function App() {
     source === 'api' ? '后端注册表' : source === 'snapshot' ? '内置快照' : '未加载';
 
   const status = (
-    <span style={{ fontSize: 11, color: 'var(--s-muted)', whiteSpace: 'nowrap' }}>
+    <span className="pill-chip mono" title="注册表来源">
       {loading ? '加载中…' : sourceLabel}
       {registry && ` · ${registry.roles.length} 职业 / ${registry.nodes.length} 节点`}
     </span>

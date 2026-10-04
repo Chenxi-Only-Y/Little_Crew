@@ -148,6 +148,38 @@ export interface PrevisScene {
   shots: Shot[];
 }
 
+/**
+ * 3D 视口的语义色。
+ *
+ * ⚠️ 这里原先散落着旧品牌的两个强调色（荧光绿 `#c8f04a`、紫蓝 `#8b8bf0`），
+ * 而界面已改成**中性深色 + 唯一强调色（青）**。不统一的话，
+ * 3D 视口里的荧光绿会和界面的青色打架，整屏像两套皮肤拼在一起。
+ *
+ * 分配原则（与设计系统一致：**界面只有明度层级，彩色只来自内容本身**）：
+ *   · `MODEL`  角色/白模 —— **近白**。它就叫"白模"，白是它的定义；
+ *                近白在近黑底上对比最强，轮廓最清楚（白模的用途就是读轮廓）。
+ *   · `PROP`   道具 —— 冷灰。道具是配角，不该抢镜。
+ *   · `ACCENT` 选中框 / 线框 / 机位轨道 —— **光晕青**，与界面的交互色一致
+ *                （这些是"界面反馈"，不是"内容"，所以可以用强调色）。
+ *   · `GROUND` 地面 —— 中性近黑，去掉原来的紫调。
+ */
+export const PREVIS_COLOR = {
+  MODEL: '#dcdce2',
+  PROP: '#7c8698',
+  ACCENT: '#22d3ee',
+  GROUND: '#15151a',
+  /**
+   * 新增角色时轮换用的一组**近白系**颜色。
+   *
+   * 为什么还要"轮换"：视口里可能有多个角色，全同色就分不清谁是谁。
+   * 为什么必须是近白系而不是以前的荧光绿/橙/红：
+   *   · 它叫"白模"，白是它的定义；
+   *   · **导出白模参考视频用的是真实渲染帧**（不是强制白色），
+   *     所以编辑器的颜色会直接进到喂给视频模型的那段素材里。
+   */
+  ACTOR_CYCLE: ['#dcdce2', '#c3c3cb', '#eeeef2', '#b0b0ba'],
+} as const;
+
 export const DEFAULT_SCENE: PrevisScene = {
   ground: [12, 12],
   actors: [
@@ -160,7 +192,7 @@ export const DEFAULT_SCENE: PrevisScene = {
       pose: 'idle',
       poseSpeed: 1,
       posePhase: 0,
-      color: '#c8f04a',
+      color: PREVIS_COLOR.MODEL,
     },
   ],
   props: [
@@ -170,7 +202,7 @@ export const DEFAULT_SCENE: PrevisScene = {
       position: [1.8, 0, -0.6],
       yaw: 0,
       size: [1.2, 0.75, 0.7],
-      color: '#8b8bf0',
+      color: PREVIS_COLOR.PROP,
     },
   ],
   shots: [

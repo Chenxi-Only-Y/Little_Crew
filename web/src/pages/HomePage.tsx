@@ -1,9 +1,12 @@
 /**
- * 首页：最近创作 + 四个入口 + 环境概览。
+ * 首页：首屏（剧场感）+ 低密度的两段内容。
  *
- * 定位是"接着上次干活"——用户打开应用最想知道的通常是
- * "我上次做到哪了、现在能不能跑"。所以这里放会话历史与配置就绪状态，
- * 而不是放宣传文案。
+ * 设计决定（见 `styles/tokens.css` 顶部）：
+ *   首屏几乎不放高密度信息——只有眉题 + 一句大标题 + 一段说明 + 入口。
+ *   用户打开应用最想知道"上次做到哪了、现在能不能跑"，那些放在
+ *   **首屏之下**的第二、三段里，而不是塞进首屏。
+ *
+ * 所以这一页是：**一个大留白的首屏**，然后才是数据。
  */
 
 import { useEffect, useState } from 'react';
@@ -34,7 +37,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_COLOR: Record<string, string> = {
   done: 'var(--st-done)',
   review: 'var(--st-review)',
-  running: 'var(--st-running, var(--s-lime))',
+  running: 'var(--st-running)',
   failed: 'var(--st-failed)',
 };
 
@@ -43,6 +46,28 @@ const MODE_KEYS: Array<[string, string]> = [
   ['llm_provider_mode', '文字模型'],
   ['image_provider_mode', '图片生成'],
   ['video_provider_mode', '视频生成'],
+];
+
+/** 入口：首屏只放三个，且**不含**导航里已有的"用户" */
+const ENTRIES: Array<{ icon: string; title: string; desc: string; to: 'director' | 'previs' | 'settings' }> = [
+  {
+    icon: '⚏',
+    title: '导演台',
+    desc: '在画布上取用职业、连线、运行，并在 12 个确认点逐步决定。',
+    to: 'director',
+  },
+  {
+    icon: '◲',
+    title: '3D 预演',
+    desc: '摆白模走位、录机位，导出结构帧作为视频模型的空间依据。',
+    to: 'previs',
+  },
+  {
+    icon: '⚙',
+    title: '设置',
+    desc: '先决定云端还是本地，再填密钥。没有默认值，不会替你猜。',
+    to: 'settings',
+  },
 ];
 
 export default function HomePage() {
@@ -86,112 +111,174 @@ export default function HomePage() {
     return !v || v === 'unset';
   });
 
+  const username = getUsername();
+
   return (
     <div className="page">
-      <h2 className="page-title">开始创作</h2>
-      <p className="page-sub">
-        小剧组把一部漫剧拆成 16 个职业、18 个环节；在导演台上按需取用并串起来。
-      </p>
+      {/* ══════════ 首屏：只有眉题 / 大标题 / 说明 / 入口 ══════════ */}
+      <section style={{ paddingTop: 'var(--sp-8)', paddingBottom: 'var(--section-y)' }}>
+        <p className="eyebrow enter" style={{ '--i': 0 } as React.CSSProperties}>
+          AI 漫剧制作 · 多智能体
+        </p>
 
-      {err && (
-        <div className="card" style={{ borderColor: 'var(--st-review)', marginBottom: 14 }}>
-          <div style={{ fontSize: 12, color: 'var(--st-review)' }}>⚠ {err}</div>
-        </div>
-      )}
+        <h1 className="hero-title enter" style={{ '--i': 1 } as React.CSSProperties}>
+          一句话，
+          <br />
+          交给一个剧组。
+        </h1>
 
-      {!loading && unset.length > 0 && (
-        <div className="card" style={{ borderColor: 'var(--st-review)', marginBottom: 14 }}>
-          <div style={{ fontSize: 12, color: 'var(--st-review)', marginBottom: 6 }}>
-            ⚠ 还有 {unset.length} 项没选「云端 / 本地」，跑到对应环节会明确报错
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--s-muted)', marginBottom: 10 }}>
-            未选择：{unset.map(([, label]) => label).join('、')}
-          </div>
-          <button className="btn" onClick={() => navigate('settings')}>
-            去设置
+        <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
+          小剧组把一部漫剧拆成 16 个职业、18 个环节。你在导演台上按需取用、
+          连成一条线，然后在 12 个人工确认点决定留还是重做——
+          AI 干活，你掌镜。
+        </p>
+
+        <div
+          className="enter"
+          style={{
+            '--i': 3,
+            display: 'flex',
+            gap: 'var(--sp-3)',
+            flexWrap: 'wrap',
+          } as React.CSSProperties}
+        >
+          <button className="btn" onClick={() => navigate('director')}>
+            进入导演台
+          </button>
+          <button className="btn ghost" onClick={() => navigate('previs')}>
+            先搭白模预演
           </button>
         </div>
+      </section>
+
+      {/* ══════════ 环境就绪状态（有问题才出现） ══════════ */}
+      {(err || unset.length > 0) && (
+        <section className="section-tight" style={{ paddingTop: 0 }}>
+          {err && (
+            <div className="issue-panel error" style={{ margin: '0 0 var(--sp-4)' }}>
+              ✕ {err}
+            </div>
+          )}
+          {!loading && unset.length > 0 && (
+            <div className="issue-panel warn" style={{ margin: 0 }}>
+              <div style={{ marginBottom: 'var(--sp-2)' }}>
+                ⚠ 还有 {unset.length} 项没选「云端 / 本地」。跑到对应环节会明确报错，
+                而不是替你猜——猜本地会失败，猜云端会产生你没预期的费用。
+              </div>
+              <div style={{ color: 'var(--text-faint)', fontSize: 12, marginBottom: 'var(--sp-3)' }}>
+                未选择：{unset.map(([, label]) => label).join('、')}
+              </div>
+              <button className="btn" onClick={() => navigate('settings')}>
+                去设置
+              </button>
+            </div>
+          )}
+        </section>
       )}
 
-      <div className="grid-cards" style={{ marginBottom: 20 }}>
-        <button className="page-card" onClick={() => navigate('director')}>
-          <div style={{ fontSize: 22, marginBottom: 6 }}>⚏</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>导演台</div>
-          <div style={{ fontSize: 11, color: 'var(--s-muted)' }}>
-            在画布上取用职业、连线、运行并逐步确认
-          </div>
-        </button>
-        <button className="page-card" onClick={() => navigate('settings')}>
-          <div style={{ fontSize: 22, marginBottom: 6 }}>⚙</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>设置</div>
-          <div style={{ fontSize: 11, color: 'var(--s-muted)' }}>
-            选云端还是本地、填密钥、看费用提醒
-          </div>
-        </button>
-        <button className="page-card" onClick={() => navigate('user')}>
-          <div style={{ fontSize: 22, marginBottom: 6 }}>☺</div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>用户</div>
-          <div style={{ fontSize: 11, color: 'var(--s-muted)' }}>昵称、头像与账号信息</div>
-        </button>
-      </div>
+      {/* ══════════ 入口 ══════════ */}
+      <section className="section-tight">
+        <p className="eyebrow">从这里开始</p>
+        <div className="grid-entries">
+          {ENTRIES.map((e, i) => (
+            <button
+              key={e.to}
+              className="entry enter"
+              style={{ '--i': i } as React.CSSProperties}
+              onClick={() => navigate(e.to)}
+            >
+              <div style={{ fontSize: 24, marginBottom: 'var(--sp-4)', opacity: 0.9 }}>
+                {e.icon}
+              </div>
+              <h3>{e.title}</h3>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13, lineHeight: 'var(--lh-body)' }}>
+                {e.desc}
+              </p>
+            </button>
+          ))}
+        </div>
+      </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <div className="card">
-          <div className="card-title">📁 我的工程（{projects.length}）</div>
-          {projects.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--s-muted)' }}>
-              还没有工程。去导演台搭一张图，点「保存」即可。
+      {/* ══════════ 工程与创作记录 ══════════ */}
+      <section className="section-tight" style={{ paddingBottom: 'var(--sp-7)' }}>
+        <p className="eyebrow">接着上次</p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--sp-4)' }}>
+          <div className="card">
+            <div className="card-title" style={{ fontSize: 15, marginBottom: 'var(--sp-4)' }}>
+              我的工程
+              <span className="pill-chip">{projects.length}</span>
             </div>
-          ) : (
-            projects.slice(0, 6).map((p) => (
-              <div
-                key={p.project_id}
-                style={{ fontSize: 12, padding: '4px 0', display: 'flex', gap: 8 }}
-              >
-                <span style={{ flex: '1 1 auto' }}>{p.name}</span>
-                <span style={{ color: 'var(--s-violet-mid)', fontSize: 11 }}>
-                  {p.node_count} 节点 · {p.updated.slice(5, 16)}
-                </span>
+            {projects.length === 0 ? (
+              <div className="empty-hint" style={{ padding: 'var(--sp-5) 0' }}>
+                还没有工程。
+                <br />
+                去导演台搭一张图，点「保存」即可。
               </div>
-            ))
-          )}
+            ) : (
+              <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+                {projects.slice(0, 6).map((p) => (
+                  <div
+                    key={p.project_id}
+                    style={{ display: 'flex', gap: 'var(--sp-3)', fontSize: 13, alignItems: 'baseline' }}
+                  >
+                    <span style={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {p.name}
+                    </span>
+                    <span className="mono" style={{ color: 'var(--text-faint)', fontSize: 11, whiteSpace: 'nowrap' }}>
+                      {p.node_count} 节点 · {p.updated.slice(5, 16)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="card-title" style={{ fontSize: 15, marginBottom: 'var(--sp-4)' }}>
+              最近创作
+              <span className="pill-chip">{history.length}</span>
+            </div>
+            {history.length === 0 ? (
+              <div className="empty-hint" style={{ padding: 'var(--sp-5) 0' }}>
+                还没有创作记录。
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+                {history.slice(0, 6).map((h) => (
+                  <div
+                    key={h.session_id}
+                    style={{ display: 'flex', gap: 'var(--sp-3)', fontSize: 13, alignItems: 'baseline' }}
+                  >
+                    <span
+                      style={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      title={h.user_input}
+                    >
+                      {h.user_input || '(无描述)'}
+                    </span>
+                    <span
+                      style={{
+                        color: STATUS_COLOR[h.status] ?? 'var(--text-faint)',
+                        fontSize: 11,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {STATUS_LABEL[h.status] ?? h.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="card">
-          <div className="card-title">🕘 最近创作（{history.length}）</div>
-          {history.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--s-muted)' }}>还没有创作记录。</div>
-          ) : (
-            history.slice(0, 6).map((h) => (
-              <div
-                key={h.session_id}
-                style={{ fontSize: 12, padding: '4px 0', display: 'flex', gap: 8 }}
-              >
-                <span
-                  style={{
-                    flex: '1 1 auto',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title={h.user_input}
-                >
-                  {h.user_input || '(无描述)'}
-                </span>
-                <span
-                  style={{
-                    color: STATUS_COLOR[h.status] ?? 'var(--s-violet-mid)',
-                    fontSize: 11,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {STATUS_LABEL[h.status] ?? h.status}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+        {username && (
+          <dl className="kv" style={{ marginTop: 'var(--sp-6)' }}>
+            <dt>当前账号</dt>
+            <dd>{username}</dd>
+          </dl>
+        )}
+      </section>
     </div>
   );
 }
