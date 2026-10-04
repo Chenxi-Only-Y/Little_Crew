@@ -812,6 +812,170 @@ h3 {
    卡片
    ══════════════════════════════════════════════════════════════ */
 
+/**
+ * 磨砂玻璃卡片（用户要求：登录卡片与首页各卡片统一用这套）。
+ *
+ * 做法是三层叠加，缺一层都不像玻璃：
+ *   1. **半透明底**（`rgba` 而不是实色）—— 透出后面的内容；
+ *   2. **`backdrop-filter: blur()`** —— 把透过来的东西糊掉，
+ *      这才是"磨砂"而非"半透明"的关键；
+ *   3. **1px 高光描边** —— 玻璃边缘的那圈亮线。
+ *
+ * ⚠️ 为什么不用 `background: rgba(255,255,255,.06)` 那种纯白叠加：
+ * 在近黑底上、又叠在**视频**之上时，纯白叠加会把画面洗灰，
+ * 而 `rgba(19,19,23,·)` 是"更暗的玻璃"，透出来的是**变暗的画面**，
+ * 与整体近黑基调一致，文字对比度也更容易保住。
+ */
+.card-frost {
+  position: relative;
+  background: rgba(19, 19, 23, 0.62);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--r-card);
+  /* 顶部一道更亮的边：模拟玻璃上沿受光 */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+/**
+ * 叠加用法：`class="card card-frost"`。
+ *
+ * `.card` 有自己的 `background`/`border`，会与上面那组属性冲突，
+ * 所以这里显式覆盖一次。写成两条规则（独立用 / 叠加用）是为了
+ * **两种写法都能拿到同样的玻璃效果**——省得以后有人只加一个类
+ * 却发现没生效，再去排查半天。
+ */
+.card.card-frost {
+  background: rgba(19, 19, 23, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* 不支持 backdrop-filter 时（老浏览器）退回不透明底，保证可读。
+   ⚠️ 两条都要写：`.card.card-frost` 比 `.card-frost` 更具体，
+   只写后者的话，叠加用法下回退会被盖掉、文字压在乱背景上读不出。 */
+@supports not (backdrop-filter: blur(2px)) {
+  .card-frost,
+  .card.card-frost {
+    background: var(--bg-elev);
+  }
+}
+
+/*: 登录弹层里的卡片尺寸 */
+.auth-card {
+  width: 340px;
+  padding: 26px 26px 22px;
+}
+
+/* ── 登录弹层（AuthGate）── */
+
+/**
+ * 遮罩层：铺满视口 + 压暗。
+ *
+ * 用 `rgba(6,6,8,.66)` 而不是纯黑：纯黑会把背后的首屏视频完全切断，
+ * 而这层应该"压暗但不遮死"——用户要能看见自己还在首页上。
+ * 再叠一点 `blur`，让背景彻底退到后面去。
+ */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+  background: rgba(6, 6, 8, 0.66);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: auth-fade var(--t-enter) var(--ease) both;
+}
+
+@keyframes auth-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*: 品牌名：中英同级（与首屏大标题同一读法） */
+.auth-brand {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: var(--ls-hero);
+  margin-bottom: 2px;
+}
+.auth-brand-en {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.auth-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 12px 0 4px;
+}
+.auth-label:first-of-type {
+  margin-top: 0;
+}
+
+/*: 输入框也用玻璃：底色比卡片更透一点，聚焦时描边用光晕色 */
+.auth-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--r-inset);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.auth-input:focus {
+  outline: none;
+  border-color: var(--glow-cool);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.auth-error {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--st-failed);
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+.auth-switch {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.auth-switch-btn {
+  background: none;
+  border: none;
+  color: var(--glow-cool);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 0 4px;
+}
+.auth-switch-btn:hover {
+  color: var(--text);
+}
+
 .card {
   position: relative;
   background: var(--bg-elev);
@@ -825,9 +989,22 @@ h3 {
   display: block;
   position: relative;
   padding: var(--sp-5);
-  background: var(--bg-elev);
-  border: 1px solid var(--line);
+  /**
+   * 入口卡片也用**磨砂玻璃**（用户要求："将首屏的几个卡片也是换成"）。
+   *
+   * 与 `.card-frost` 同一套观感：半透明底 + backdrop blur + 高光描边。
+   * 之所以不直接复用 `.card-frost` 类：`.entry` 是 `<button>`，
+   * 自己的 `hover` 只改描边、不做位移（见下），玻璃那层属性写在这里
+   * 更省事，也避免两类名在同一个元素上互相覆盖。
+   */
+  background: rgba(19, 19, 23, 0.62);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: var(--r-card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 20px 60px rgba(0, 0, 0, 0.45);
   color: inherit;
   cursor: pointer;
   text-align: left;

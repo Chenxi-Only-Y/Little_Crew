@@ -7,10 +7,12 @@
  *   分成两块，而剧场感要的是内容直接落在暗场里。
  *   改成**悬浮药丸**后：导航仍可点、可键盘聚焦、可读屏，但**不占内容高度**。
  *
- * 登录门禁在 `App.tsx`：未登录时这里根本不会渲染。
+ * 登录是**按需**的（见 `App.tsx`）：未登录也能看到外壳与首页，
+ * 只有点进导演台/预演/设置时才弹登录卡片。
  */
 
 import { PAGES, navigate, type PageKey } from './router';
+import { getToken, requireAuth } from '../api/auth';
 
 interface Props {
   page: PageKey;
@@ -20,6 +22,23 @@ interface Props {
   status?: React.ReactNode;
   onLogout: () => void;
   children: React.ReactNode;
+}
+
+/**
+ * 带登录门禁的跳转。
+ *
+ * 需要在**跳转之前**判断，而不是跳过去之后再拦：后者会先渲染目标页、
+ * 再被弹层盖住，用户会看到一瞬的画布空转（而且目标页在未登录时
+ * 会发出一串 401 请求）。
+ *
+ * 未登录时把"进入该页"记成待执行动作，登录成功后自动继续（见 `App.tsx`）。
+ */
+function go(page: PageKey) {
+  if (!getToken()) {
+    requireAuth(() => navigate(page));
+    return;
+  }
+  navigate(page);
 }
 
 export default function Shell({ page, username, actions, status, onLogout, children }: Props) {
@@ -43,7 +62,7 @@ export default function Shell({ page, username, actions, status, onLogout, child
               type="button"
               className="nav-pill"
               aria-current={p.key === page ? 'page' : undefined}
-              onClick={() => navigate(p.key)}
+              onClick={() => go(p.key)}
               title={p.desc}
             >
               <span aria-hidden="true" className="nav-pill-icon">{p.icon}</span>

@@ -101,3 +101,50 @@ export async function verifyToken(token: string): Promise<boolean> {
     return true;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   登录门禁（按需触发）
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * 什么时候需要登录：**开始使用某个功能时**，不是打开网页时。
+ *
+ * 用户要求："不用进网页就登录，是开始使用功能弹出卡片
+ * （进入导演台或者预演或者设置的时候）"。
+ *
+ * 为什么用**自定义事件**而不是 React Context：
+ * 触发点在 `router.navigate` 里（一个普通模块，不是组件），
+ * 而监听点在 `AuthGate` 组件里。用事件能让两者解耦——
+ * navigate 不需要知道有没有 Provider，也不需要把 auth 状态
+ * 沿着组件树往下传。
+ */
+export const REQUIRE_AUTH_EVENT = 'lc:require-auth';
+
+/** 需要登录才能进入的页面。`home` 与 `user` 不需要。 */
+const GATED_PAGES = new Set(['director', 'previs', 'settings']);
+
+export function pageNeedsAuth(page: string): boolean {
+  return GATED_PAGES.has(page);
+}
+
+/**
+ * 请求登录：弹出登录卡片。
+ *
+ * `onSuccess` 会在登录成功后调用（用来继续用户原本想做的事，
+ * 例如"登录完自动进入导演台"）。只有**最近一次**请求的回调会被记住——
+ * 用户连点两次入口时，应该继续最后一次意图。
+ */
+let pending: (() => void) | null = null;
+
+export function requireAuth(onSuccess?: () => void): void {
+  pending = onSuccess ?? null;
+  window.dispatchEvent(new CustomEvent(REQUIRE_AUTH_EVENT));
+}
+
+/** 供 `AuthGate` 在登录成功后取走并清空待执行动作。 */
+export function consumePendingIntent(): (() => void) | null {
+  const fn = pending;
+  pending = null;
+  return fn;
+}
+

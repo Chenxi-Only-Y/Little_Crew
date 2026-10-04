@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import { navigate } from '../app/router';
-import { getToken } from '../api/auth';
+import { getToken, requireAuth } from '../api/auth';
 import { getUsername } from '../api/auth';
 import { fetchSettings } from '../api/settings';
 import { listProjects, type ProjectSummary } from '../api/projects';
@@ -201,7 +201,16 @@ export default function HomePage() {
               key={e.to}
               className="entry enter"
               style={{ '--i': i } as React.CSSProperties}
-              onClick={() => navigate(e.to)}
+              onClick={() => {
+                // 入口卡片同样要过登录门禁（进导演台/预演/设置需要身份）。
+                // 未登录时弹登录卡片，并把"进入该页"记成待执行动作，
+                // 登录成功后自动继续（见 `App.tsx` 的 onLoginSuccess）。
+                if (!getToken()) {
+                  requireAuth(() => navigate(e.to));
+                  return;
+                }
+                navigate(e.to);
+              }}
             >
               <div style={{ fontSize: 24, marginBottom: 'var(--sp-4)', opacity: 0.9 }}>
                 {e.icon}
@@ -220,7 +229,7 @@ export default function HomePage() {
         <p className="eyebrow">接着上次</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--sp-4)' }}>
-          <div className="card">
+          <div className="card card-frost">
             <div className="card-title" style={{ fontSize: 15, marginBottom: 'var(--sp-4)' }}>
               我的工程
               <span className="pill-chip">{projects.length}</span>
@@ -250,7 +259,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="card">
+          <div className="card card-frost">
             <div className="card-title" style={{ fontSize: 15, marginBottom: 'var(--sp-4)' }}>
               最近创作
               <span className="pill-chip">{history.length}</span>
