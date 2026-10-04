@@ -415,8 +415,21 @@ export const usePrevis = create<PrevisState>((set) => ({
       scene: withShot(st.scene, st.shotIndex, (s) => ({ ...s, ...patch })),
     })),
 
+  /**
+   * 设置某个关节的某一轴偏移。
+   *
+   * ⚠️ **顺便暂停播放**（`playing: false`）。
+   *
+   * 为什么：播放时 `playback` 每帧推进 `playhead`，那会让属性面板
+   * 整体重渲染；用户正拖着滑杆时，DOM 节点被重建 → **滑杆丢焦点**，
+   * 手一松就断了。表现为"关节调不动"，实际是调一下就掉。
+   *
+   * 而且从语义上说也更对：逐关节微调是**编辑动作**，编辑时不该在播放。
+   * 用户想继续播放，点一下「▶ 播放」即可。
+   */
   setJointOffset: (id, joint, axis, value) =>
     set((st) => ({
+      playing: false,
       scene: {
         ...st.scene,
         actors: st.scene.actors.map((a) => {

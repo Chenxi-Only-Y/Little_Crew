@@ -925,17 +925,24 @@ export default function PrevisPage() {
               </>
             )}
 
-            {/* 逐关节微调：叠加在预设之上，所以"行走"不会因调角而定格 */}
-            <details style={{ marginTop: 10 }}>
+            {/* 逐关节微调。
+            
+                ⚠️ 这里曾经默认收起，用起来像"关节调不了"——功能一直是好的，
+                但入口藏在**三层折叠**里（本节 → 部位 → 滑杆），找不到。
+                现在 `open`：点开「人物」这一节就能直接看到五个部位。
+
+                另外 `setJointOffset` 会顺便暂停播放（见 store 的说明）：
+                播放时每帧重渲染会让正在拖的滑杆丢焦点，表现为"调一下就断"。 */}
+            <details open style={{ marginTop: 10 }}>
               <summary style={{ cursor: 'pointer', fontSize: 11, color: 'var(--s-white)' }}>
                 逐关节微调
-                <span style={{ color: 'var(--s-violet-mid)', marginLeft: 6 }}>
+                <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontWeight: 400 }}>
                   {Object.keys(selActor.poseOverride ?? {}).length} 处已改
                 </span>
               </summary>
               <div className="hint" style={{ marginTop: 4 }}>
                 角度是**叠加偏移**，加在「{selActor.pose}」预设之上——
-                所以微调不会让循环动作定格。单位：度。
+                所以微调不会让循环动作定格。单位：度。拖动时会自动暂停播放。
               </div>
               {Object.keys(selActor.poseOverride ?? {}).length > 0 && (
                 <button
