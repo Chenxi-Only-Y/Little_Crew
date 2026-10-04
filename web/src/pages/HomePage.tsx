@@ -121,16 +121,17 @@ export default function HomePage() {
           AI 漫剧制作 · 多智能体
         </p>
 
-        <h1 className="hero-title enter" style={{ '--i': 1 } as React.CSSProperties}>
-          一句话，
-          <br />
-          交给一个剧组。
+        {/* 首屏用**产品名**当大标题，并给它一层光晕——
+            这是全站唯一的"被聚光打亮"的文字，也是剧场感的落点。
+            中英用 `·` 连接（与导航里的品牌字同一读法）。 */}
+        <h1 className="hero-title hero-glow enter" style={{ '--i': 1 } as React.CSSProperties}>
+          小剧组<span className="hero-title-en">·Little Crew</span>
         </h1>
 
         <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
-          小剧组把一部漫剧拆成 16 个职业、18 个环节。你在导演台上按需取用、
-          连成一条线，然后在 12 个人工确认点决定留还是重做——
-          AI 干活，你掌镜。
+          一句话，交给一个剧组。把一部漫剧拆成 16 个职业、18 个环节——
+          你在导演台上按需取用、连成一条线，然后在 12 个人工确认点
+          决定留还是重做。AI 干活，你掌镜。
         </p>
 
         <div

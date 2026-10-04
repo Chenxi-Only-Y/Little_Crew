@@ -229,8 +229,9 @@ export interface WorkflowDoc {
 }
 ```
 字体沿用 `Rubik`（UI）+ `Monaco`（代码/提示词）。
-仓库根目录已有 `DESIGN.md`（551 行的 Sentri 风格设计分析，含完整色板/字号/组件规范），
-**可作为画布节点与面板的样式依据**，比 `_styles.py` 更完整。
+> 注：当时参考的 `DESIGN.md`（Sentri 风格设计分析）**已在 UI 重做时删除** ——
+> 那套紫罗兰/荧光绿的语言与本项目的导演台形态不匹配，现用 `web/src/styles/tokens.css`
+> 里从零定义的设计系统（近黑 + 唯一强调色 + 光晕纵深）。本节余下内容属于当时的规划记录。
 
 现状 CSS 里大量 `!important` 覆盖 Streamlit 内部 `data-testid` 的写法**全部丢弃**——
 那是框架对抗，新前端不再需要。

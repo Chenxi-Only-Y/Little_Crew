@@ -172,7 +172,7 @@ v2 的链路更长（含 LoRA 训练、白模、配音、时间线），**重试
 | **端点语义变更** | 新的 `/api/sessions/{id}/panel/{role}` 与旧的 `/api/crew/status/{id}` 返回**不同粒度的 payload**，旧前端要能继续用 |
 | **认证切换** | 旧前端用 `streamlit-cookies-manager`（JS 可读 cookie），新前端要 HttpOnly/服务端会话 → **过渡期要双读** |
 | **状态字段并存** | 旧 `status='review'` 与新状态机（`waiting_review` + checkpoint 校验）要能互认，否则旧前端显示错 |
-| **设计 token 双份** | `_styles.py` 的 CSS 与 `DESIGN.md` 的设计系统，新前端搬过去后旧前端仍在用旧版——**改一处要改两处** |
+| ~~**设计 token 双份**~~ | **已消解**：旧前端与 `DESIGN.md` 都已删除，现在只有一份 `web/src/styles/tokens.css` |
 
 ### 建议
 给迁移期定**明确的"双写/双读"清单**和**下线判据**（什么条件下可以删旧前端），

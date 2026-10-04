@@ -104,7 +104,7 @@ little_crew/
 ├── requirements.lock            # 环境锁定（pip freeze）
 ├── Dockerfile / docker-compose.yml  # 后端 + 导演台（web/Dockerfile 多阶段 + nginx）
 ├── .env.example / requirements.txt / LICENSE / README.md
-└── DESIGN.md                    # 导演台的品牌设计令牌（配色/字体）
+├── web/src/styles/tokens.css    # 设计系统（近黑 + 唯一强调色 + 光晕纵深）
 ```
 
 ---

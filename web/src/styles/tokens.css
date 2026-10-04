@@ -12,7 +12,7 @@
  *
  * ⚠️ 与旧版的关系：这一份**完全取代**旧的 `tokens.css`（那份借自 Sentri：
  * 紫罗兰底 + 荧光绿 + 粉三色 + 贴纸式卡片）。旧的品牌文档 `DESIGN.md`
- * 已不再适用，应一并删除。文件末尾保留了一小段 `--s-*` 别名，
+ * 已一并删除。文件末尾保留了一小段 `--s-*` 别名，
  * 仅为让尚未改完的组件不至于取到空值——**迁完即删**。
  */
 
@@ -275,6 +275,62 @@ a:hover {
   font-weight: 700;
   line-height: var(--lh-hero);
   letter-spacing: var(--ls-hero);
+  /* 中英混排：中文舒展、英文收紧，所以英文部分单独收紧字距并压小字号 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.1em;
+}
+
+/** 大标题里的英文（Little Crew）：比中文略小、字距收紧，整体读起来是一行 */
+.hero-title-en {
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: var(--ls-en);
+  color: var(--text-muted);
+}
+
+/**
+ * 标题发光。
+ *
+ * 设计约束：**不加粗、不换色**——标题已经是最亮的白，
+ * 再亮就不是"被光照到"而是"自己发光"，会破坏"聚光"的物理感。
+ *
+ * 分两层，缺一不可：
+ *   1. `::before` 在文字**后面**铺一层大半径径向光（负 z-index）——
+ *      这是"聚光打在这块区域"的氛围；
+ *   2. `text-shadow` 贴身的两圈极淡光晕 —— 让字从背景里"浮"出来。
+ * 只有第 1 层会显得字与光脱节；只有第 2 层会像廉价的霓虹字。
+ *
+ * 颜色用 `--glow-cool`（与首屏主光同色），所以标题像被那束光照亮。
+ */
+.hero-glow {
+  position: relative;
+  isolation: isolate;          /* 让 ::before 的负 z-index 只在本元素内生效 */
+  text-shadow:
+    0 0 22px rgba(110, 123, 255, 0.45),
+    0 0 60px rgba(110, 123, 255, 0.22);
+}
+
+.hero-glow::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /* 比文字范围大一圈，光才有"溢出"感 */
+  left: -8%;
+  right: -8%;
+  top: -30%;
+  bottom: -30%;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 68% at 30% 50%,
+    rgba(110, 123, 255, 0.34) 0,
+    rgba(110, 123, 255, 0.12) 42%,
+    transparent 72%
+  );
+  filter: blur(18px);
+  /* 与首屏主光同步呼吸（同一条 --breath），否则两束光会各闪各的 */
+  animation: glow-breath var(--breath) ease-in-out infinite;
 }
 
 .lead {
@@ -1139,6 +1195,12 @@ h3 {
     scroll-behavior: auto !important;
   }
   .glow-stage {
+    animation: none;
+  }
+  /* 标题背后的光晕同理：它是**无限循环**的呼吸，对前庭敏感的用户最不友好。
+     注意这里用 `animation: none` 是安全的——这层光靠背景渐变本身就在，
+     不像 `.enter` 那样依赖动画填充（那个用 none 会变成 opacity:0 内容消失）。 */
+  .hero-glow::before {
     animation: none;
   }
   .enter {
