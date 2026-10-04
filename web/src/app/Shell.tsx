@@ -29,14 +29,10 @@ export default function Shell({ page, username, actions, status, onLogout, child
       <div className="glow-stage" aria-hidden="true" />
 
       <nav className="pill-dock" aria-label="主导航">
-        <span className="brand en">
-          小剧组<span>DIRECTOR CONSOLE</span>
-        </span>
-
-        {/* 药丸放在一个**绝对居中**的容器里，而不是靠 flex 顺序排。
-            为什么：flex 里居中要两侧等宽才成立，而左侧是品牌字、右侧是
-            状态+退出，宽度天然不等，药丸会被挤偏。
-            用绝对定位 + translate 才能做到"真居中"，且不受两侧内容影响。 */}
+        {/* ⚠️ 这里**不放品牌字**了。
+            原先左上角有"小剧组 · DIRECTOR CONSOLE"，但它既挤在居中的药丸
+            旁边、又在每个页面重复出现；用户要求把它移到首屏左下角当铭牌。
+            导航因此只剩"药丸 + 右侧控制"，更干净。 */}
         <div className="dock-center">
           {PAGES.filter((p) => !p.hidden).map((p) => (
             <button

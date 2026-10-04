@@ -233,13 +233,6 @@ a:hover {
   animation: glow-breath var(--breath) ease-in-out infinite;
 }
 
-/* 抬升：1px 描边 + 淡光晕。**不用 box-shadow 做纵深**。 */
-.elevated {
-  position: relative;
-  background: var(--bg-elev);
-  border: 1px solid var(--line);
-  border-radius: var(--r-card);
-}
 .elevated::after {
   content: '';
   position: absolute;
@@ -282,12 +275,41 @@ a:hover {
   gap: 0 0.1em;
 }
 
-/** 大标题里的英文（Little Crew）：比中文略小、字距收紧，整体读起来是一行 */
+/** 大标题里的英文（·Little Crew）：略小、收紧字距、二级字色。
+    这样中英同排但层级分明：中文是主标题，英文是它的定语。 */
 .hero-title-en {
-  font-size: 0.6em;
+  font-size: 0.55em;
   font-weight: 600;
   letter-spacing: var(--ls-en);
   color: var(--text-muted);
+}
+
+/**
+ * 首屏左下角的英文铭牌（DIRECTOR CONSOLE）。
+ *
+ * 原先这行在导航栏左上角（`小剧组 · DIRECTOR CONSOLE`），用户要求挪到首屏。
+ * 样式上是"被刻上去"的感觉，不是"被强调"：三级字色 + 宽字距 +
+ * 前面一条短横线。**不加光晕**——发光只属于大标题，
+ * 多一个发光元素就不叫"聚光"了。
+ */
+.hero-latin {
+  margin: var(--sp-8) 0 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;      /* 比眉题更宽：铭牌感靠字距，不靠字号 */
+  color: var(--text-faint);
+}
+
+/* 起头的短横线：跟着文字走，所以用 flex + 伪元素而不是下边框 */
+.hero-latin::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--line-strong);
+  flex: 0 0 28px;
 }
 
 /**
@@ -316,19 +338,25 @@ a:hover {
   content: '';
   position: absolute;
   z-index: -1;
-  /* 比文字范围大一圈，光才有"溢出"感 */
-  left: -8%;
-  right: -8%;
-  top: -30%;
-  bottom: -30%;
+  /* 比文字范围大一圈，光才有"溢出"感。
+     往左多留一些（光心偏左）——聚光通常不是正打在字正中的。 */
+  left: -24%;
+  right: -16%;
+  top: -55%;
+  bottom: -55%;
   pointer-events: none;
   background: radial-gradient(
-    58% 68% at 30% 50%,
-    rgba(110, 123, 255, 0.34) 0,
-    rgba(110, 123, 255, 0.12) 42%,
-    transparent 72%
+    /* 光源靠左、椭圆、边缘留足透明区：
+       早先用 58%×68% 的椭圆 + blur(18px)，边界能看出一个矩形亮块，
+       像给标题垫了一张卡片。现在把透明区拉到 90% 再加大模糊，
+       光才会"散"进背景里而不是"贴"在字后面。 */
+    46% 58% at 26% 48%,
+    rgba(110, 123, 255, 0.30) 0,
+    rgba(110, 123, 255, 0.13) 34%,
+    rgba(110, 123, 255, 0.04) 58%,
+    transparent 90%
   );
-  filter: blur(18px);
+  filter: blur(30px);
   /* 与首屏主光同步呼吸（同一条 --breath），否则两束光会各闪各的 */
   animation: glow-breath var(--breath) ease-in-out infinite;
 }
@@ -339,14 +367,6 @@ a:hover {
   font-size: var(--fs-lead);
   line-height: var(--lh-loose);
   color: var(--text-muted);
-}
-
-h2.section-title {
-  margin: 0 0 var(--sp-3);
-  font-size: var(--fs-h2);
-  font-weight: 700;
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-hero);
 }
 
 h3 {
@@ -405,15 +425,6 @@ h3 {
   font-size: 0.92em;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   章节节奏
-   ══════════════════════════════════════════════════════════════ */
-
-.section {
-  padding-block: var(--section-y);
-  position: relative;
-  z-index: 1;               /* 压在光晕之上 */
-}
 .section-tight {
   padding-block: calc(var(--section-y) / 2);
 }
@@ -588,13 +599,6 @@ h3 {
   background: rgba(248, 81, 73, 0.08);
 }
 
-.brand {
-  font-size: var(--fs-body);
-  font-weight: 600;
-  letter-spacing: var(--ls-en);
-  color: var(--text);
-  padding-right: var(--sp-3);
-}
 .brand span {
   color: var(--text-faint);
   font-weight: 400;
@@ -813,12 +817,6 @@ h3 {
   background: var(--bg-elev);
   border-color: var(--line-strong);
   color: var(--text);
-}
-.btn.danger {
-  background: transparent;
-  border-color: rgba(248, 81, 73, 0.4);
-  color: var(--st-failed);
-  font-weight: 400;
 }
 .btn.danger:hover {
   background: rgba(248, 81, 73, 0.08);

@@ -121,11 +121,9 @@ export default function HomePage() {
           AI 漫剧制作 · 多智能体
         </p>
 
-        {/* 首屏用**产品名**当大标题，并给它一层光晕——
-            这是全站唯一的"被聚光打亮"的文字，也是剧场感的落点。
-            中英用 `·` 连接（与导航里的品牌字同一读法）。 */}
-        <h1 className="hero-title hero-glow enter" style={{ '--i': 1 } as React.CSSProperties}>
-          小剧组<span className="hero-title-en">·Little Crew</span>
+        <h1 className="hero-title enter" style={{ '--i': 1 } as React.CSSProperties}>
+          <span className="hero-glow">小剧组</span>
+          <span className="hero-title-en">·Little Crew</span>
         </h1>
 
         <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
@@ -150,6 +148,14 @@ export default function HomePage() {
             先搭白模预演
           </button>
         </div>
+
+        {/* 首屏左下角的铭牌。
+            原先这行在导航栏左上角（`小剧组 · DIRECTOR CONSOLE`），
+            用户要求挪到这里：导航只留药丸与右侧控制，品牌落到首屏。
+            英文不发音、不发光——它是**铭牌**，不是第二个标题。 */}
+        <p className="hero-latin enter" style={{ '--i': 4 } as React.CSSProperties}>
+          DIRECTOR CONSOLE
+        </p>
       </section>
 
       {/* ══════════ 环境就绪状态（有问题才出现） ══════════ */}
