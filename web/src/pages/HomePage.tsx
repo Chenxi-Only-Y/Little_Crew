@@ -121,9 +121,11 @@ export default function HomePage() {
           AI 漫剧制作 · 多智能体
         </p>
 
-        <h1 className="hero-title enter" style={{ '--i': 1 } as React.CSSProperties}>
-          <span className="hero-glow">小剧组</span>
-          <span className="hero-title-en">·Little Crew</span>
+        {/* 大标题：中英**同级**（用户要求"和中文一样"），
+            所以 `hero-glow` 加在整行 `<h1>` 上而不是只圈住中文——
+            否则只有中文发光，英文会像被落下的。 */}
+        <h1 className="hero-title hero-glow enter" style={{ '--i': 1 } as React.CSSProperties}>
+          小剧组<span className="hero-title-en">·Little Crew</span>
         </h1>
 
         <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
