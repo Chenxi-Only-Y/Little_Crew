@@ -600,39 +600,29 @@ h3 {
 }
 
 /**
- * 滚动后给药丸**一小块**底。
+ * 导航在**任何滚动位置都完全透明**。
  *
- * 为什么需要：药丸完全透明地浮在内容上。页面在顶部时没问题（下面是空暗场），
- * 但**滚动后内容会从药丸底下穿过**——实测下滚 120px 时大标题升到 top=98，
- * 正好压在药丸后面，字与字糊在一起。
+ * 记一下这里反复改过的原因，免得后人再走一遍：
+ * 药丸透明地浮在内容上，滚动时内容会从它底下穿过（大标题升到 top≈98 时
+ * 正好压在药丸后面、字和字糊在一起）。我为此加过一块
+ * "滚动后出现的小面板"（半透明底 + 毛玻璃）—— 但用户要的是**透明**，
+ * 那块底让导航在滚动后又读成了不透明色块，所以他要求去掉。
  *
- * 为什么是"一小块"而不是整宽：整宽的底色正是用户反复指出
- * "怎么还有导航栏"的原因。这里只在**药丸自身范围**内加底 + 圆角，
- * 宽度随药丸内容走，永远不成条。
- *
- * 加在 `.dock-center`（药丸的居中容器）而不是 `.pill-dock` 上：
- * 后者是 `left:0; right:0` 的整宽元素，给它加底就又变成一条栏了。
+ * 结论：**不加任何底**。可读性只靠 `text-shadow`（只描文字，不形成块）
+ * 与药丸自身的 1px 描边。日后若真出现"看不清"，正确解法是
+ * 让导航**自动隐藏**（下滚淡出、上滚淡入），而不是加底——
+ * 加底等于把"透明"这个要求作废。
  */
-.dock-center {
-  transition: background var(--t-med) var(--ease), padding var(--t-med) var(--ease);
-}
-.pill-dock.is-scrolled .dock-center,
-.pill-dock.is-scrolled .dock-right {
-  background: rgba(11, 11, 13, 0.82);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  padding: 4px;
-  gap: var(--sp-1);
-}
-
-/** 右侧控制组：横向排列，布局上与药丸组一致 */
+.dock-center,
 .dock-right {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+}
+
+/*: 右侧控制组推到最右（左侧品牌字已移除，靠它占住右端） */
+.dock-right {
   margin-left: auto;
-  transition: background var(--t-med) var(--ease), padding var(--t-med) var(--ease);
 }
 
 .nav-pill-quiet {
