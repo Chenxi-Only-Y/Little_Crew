@@ -70,6 +70,22 @@
   /*: 悬浮导航的高度（内容要让出这么多，见 `.pill-dock` 的说明） */
   --dock-h: 56px;
 
+  /* ── 磨砂玻璃（用户要求：卡片都换成这种）──
+     抽成变量而不是到处写数值，理由有两条：
+       1. 现在有三档厚度（大卡片 / 面板 / 内嵌小片）用的是**同一块材料**，
+          写成变量才能一眼看出它们的比例关系；
+       2. 调玻璃质感时只改这几个数，不会漏掉某一处——先前 `.entry` 与
+          `.card-frost` 各写了一份，是我手工同步的，迟早会忘。 */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-bg-lite: rgba(255, 255, 255, 0.06); /* 内嵌小片 / 次级面板 */
+  --glass-bg-strong: rgba(255, 255, 255, 0.14); /* 输入框聚焦等 */
+  --glass-blur: blur(24px) saturate(1.3);
+  --glass-blur-lite: blur(14px) saturate(1.2);
+  --glass-line: rgba(255, 255, 255, 0.18);
+  --glass-line-lite: rgba(255, 255, 255, 0.12);
+  --glass-top: inset 0 1px 0 rgba(255, 255, 255, 0.17);
+  --glass-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+
   /*: 内容页的宽度上限。超宽屏上再宽也读不动，所以到 1920 封顶；
       但这个值远大于常见的 1440/1688 视口，等于"平时不生效"。 */
   --page-max: 1920px;
@@ -832,14 +848,14 @@ h3 {
  */
 .card-frost {
   position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.17),
-    0 24px 70px rgba(0, 0, 0, 0.5);
+    var(--glass-top),
+    var(--glass-shadow);
 }
 
 /**
@@ -851,8 +867,8 @@ h3 {
  * 却发现没生效，再去排查半天。
  */
 .card.card-frost {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
 }
 
 /* 不支持 backdrop-filter 时（老浏览器）退回不透明底，保证可读。
@@ -861,7 +877,7 @@ h3 {
 @supports not (backdrop-filter: blur(2px)) {
   .card-frost,
   .card.card-frost {
-    background: var(--bg-elev);
+    background: var(--glass-bg-lite);
   }
 }
 
@@ -936,9 +952,9 @@ h3 {
 /*: 输入框也用玻璃：比卡片再亮一点，聚焦时描边用光晕色 */
 .auth-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg);
   color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-line);
   border-radius: var(--r-inset);
   padding: 8px 10px;
   font-size: 13px;
@@ -950,7 +966,7 @@ h3 {
 .auth-input:focus {
   outline: none;
   border-color: var(--glow-cool);
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--glass-bg-strong);
 }
 
 .auth-error {
@@ -986,7 +1002,7 @@ h3 {
 
 .card {
   position: relative;
-  background: var(--bg-elev);
+  background: var(--glass-bg-lite);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   padding: var(--sp-5);
@@ -1008,14 +1024,14 @@ h3 {
    * 用**浅色玻璃**（白色低透明度）而不是深色：深色叠在近黑底上
    * 与实心无异，看不出透明（第一版就是这么错的）。
    */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.17),
-    0 24px 70px rgba(0, 0, 0, 0.5);
+    var(--glass-top),
+    var(--glass-shadow);
   color: inherit;
   cursor: pointer;
   text-align: left;
@@ -1121,7 +1137,7 @@ h3 {
   width: 100%;
   height: 36px;
   padding: 0 var(--sp-3);
-  background: var(--bg-nest);
+  background: var(--glass-bg-lite);
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: var(--r-inset);
@@ -1149,7 +1165,7 @@ h3 {
   outline: none;
   border-color: rgba(110, 123, 255, 0.7);
   /* 焦点用光晕而非描边加粗：与整体手法一致 */
-  background: var(--bg-elev);
+  background: var(--glass-bg-lite);
 }
 .field input::placeholder,
 .field textarea::placeholder {
@@ -1204,7 +1220,7 @@ h3 {
   font-weight: 400;
 }
 .btn.ghost:hover {
-  background: var(--bg-elev);
+  background: var(--glass-bg-lite);
   border-color: var(--line-strong);
   color: var(--text);
 }
@@ -1236,15 +1252,20 @@ h3 {
   width: 240px;
   flex: 0 0 240px;
   overflow-y: auto;
-  background: var(--bg-elev);
+  /* 侧栏也用磨砂玻璃（用户："所以卡片都换成这种"）。
+     与卡片同一块材料，只是**不做圆角**——它们是贴着窗口边缘的面板，
+     圆角会露出后面的底色、看着像浮起来的卡片而不是侧栏。 */
+  background: var(--glass-bg-lite);
+  backdrop-filter: var(--glass-blur-lite);
+  -webkit-backdrop-filter: var(--glass-blur-lite);
 }
 .node-library {
-  border-right: 1px solid var(--line);
+  border-right: 1px solid var(--glass-line-lite);
 }
 .inspector {
   width: 300px;
   flex: 0 0 300px;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--glass-line-lite);
 }
 
 .canvas-wrap {
@@ -1259,8 +1280,12 @@ h3 {
   top: 0;
   z-index: 1;
   padding: var(--sp-3) var(--sp-4);
-  background: var(--bg-elev);
-  border-bottom: 1px solid var(--line);
+  /* sticky 标题要**半透明**：实色会在玻璃侧栏上切出一条硬边，
+     而且滚动时看到的是"标题下面压着另一块板" */
+  background: var(--glass-bg-lite);
+  backdrop-filter: var(--glass-blur-lite);
+  -webkit-backdrop-filter: var(--glass-blur-lite);
+  border-bottom: 1px solid var(--glass-line-lite);
   font-size: var(--fs-eyebrow);
   font-weight: 500;
   letter-spacing: var(--ls-eyebrow);
@@ -1278,7 +1303,7 @@ h3 {
   transition: background var(--t-hover) var(--ease);
 }
 .lib-item:hover {
-  background: var(--bg-nest);
+  background: var(--glass-bg-lite);
 }
 .lib-item:active {
   cursor: grabbing;
@@ -1300,8 +1325,12 @@ h3 {
 /* ── 节点卡片 ── */
 .node-card {
   width: 200px;
-  background: var(--bg-elev);
-  border: 1px solid var(--line-strong);
+  /* 画布节点卡片：同一块玻璃。模糊值取小档——画布上节点多，
+     大半径模糊会明显吃 GPU（每个节点都是一层合成）。 */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-lite);
+  -webkit-backdrop-filter: var(--glass-blur-lite);
+  border: 1px solid var(--glass-line);
   border-radius: var(--r-inset);
   border-left: 3px solid var(--st-pending);
   transition: border-color var(--t-hover) var(--ease);
@@ -1368,8 +1397,8 @@ h3 {
   height: 17px;
   padding: 0 var(--sp-2);
   border-radius: var(--r-pill);
-  background: var(--bg-nest);
-  border: 1px solid var(--line);
+  background: var(--glass-bg-lite);
+  border: 1px solid var(--glass-line-lite);
   color: var(--text-muted);
   font-size: 10px;
   font-family: var(--font-mono);
@@ -1397,8 +1426,8 @@ h3 {
   height: 20px;
   padding: 0 var(--sp-3);
   border-radius: var(--r-pill);
-  background: var(--bg-nest);
-  border: 1px solid var(--line);
+  background: var(--glass-bg-lite);
+  border: 1px solid var(--glass-line-lite);
   color: var(--text-muted);
   font-size: 11px;
 }
@@ -1459,8 +1488,10 @@ h3 {
   margin: var(--sp-3) var(--sp-4);
   padding: var(--sp-4);
   border-radius: var(--r-inset);
-  border: 1px solid var(--line);
-  background: var(--bg-nest);
+  border: 1px solid var(--glass-line-lite);
+  background: var(--glass-bg-lite);
+  backdrop-filter: var(--glass-blur-lite);
+  -webkit-backdrop-filter: var(--glass-blur-lite);
   font-size: 13px;
   line-height: var(--lh-body);
 }
@@ -1504,18 +1535,18 @@ h3 {
   display: none;
 }
 .react-flow__controls button {
-  background: var(--bg-elev);
+  background: var(--glass-bg-lite);
   border-bottom: 1px solid var(--line);
   color: var(--text-muted);
   fill: var(--text-muted);
 }
 .react-flow__controls button:hover {
-  background: var(--bg-nest);
+  background: var(--glass-bg-lite);
   color: var(--text);
   fill: var(--text);
 }
 .react-flow__minimap {
-  background: var(--bg-elev);
+  background: var(--glass-bg-lite);
   border: 1px solid var(--line);
   border-radius: var(--r-inset);
 }
