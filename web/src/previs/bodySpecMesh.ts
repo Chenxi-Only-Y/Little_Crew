@@ -300,25 +300,79 @@ export function buildBody(
   const groundOffset = Number.isFinite(lowest) ? -lowest : 0;
 
   /**
-   * 身高归一化。
+   * 身高归一化 —— **只用站姿量，其他姿态共用同一个比例**。
    *
-   * 实测踩过：规格写 `height: 1.70`，量出来是 **1.773**——因为
-   * `height` 原先只是"整体缩放系数"，没有任何一步保证最终高度等于它。
-   * 用户拖滑杆写 1.70 却得到 1.77，是明确的欺骗。
+   * ## 为什么不能按"当前姿态"量（这里返工过）
    *
-   * 这里量出实际最高的顶点（关节位置 + 关节球半径），除以目标身高，
-   * 得到统一缩放。渲染时乘到 group 上，于是"写多少就是多少"。
+   * 规格写 `height: 1.70`，量出来曾是 1.773——`height` 原先只是"整体
+   * 缩放系数"，没有一步保证最终高度等于它。用户拖滑杆写 1.70 得到 1.77
+   * 是明确的欺骗，所以加了归一化。
+   *
+   * 但我第一版是**按当前姿态**量的：
+   *
+   *     heightScale = 设定身高 / 该姿态实际高度
+   *
+   * 后果是**每个姿态都被拉到同一身高 1.7 米**。坐姿本来矮一大截，
+   * 被拉高 34% 之后骨盆顶到 **0.707 米**（真实座椅只要 0.45 米）——
+   * 人像悬在半空坐着。蹲、躺、爬同样会被拉变形。
+   *
+   * 正确的语义是：`proportions.height` 是**这个角色的身高**，
+   * 与它当前摆什么姿势无关。所以归一化必须拿**站姿**当参考，
+   * 所有姿态共用同一个比例。坐姿自然就矮了，这才是对的。
+   *
+   * ⚠️ 代价：坐着时"模型高度"不再等于 `height`（那本来就该如此）。
+   * 真正需要"高度=170cm"的地方是站立与走位，那里仍然精确。
    */
-  let topY = -Infinity;
-  for (const [name, jw] of Object.entries(joints)) {
-    const r = radii[name] ?? 0;
-    const y = jw.pos[1] + groundOffset + r;
-    if (y > topY) topY = y;
-  }
-  const rawHeight = Number.isFinite(topY) && topY > 1e-6 ? topY : safe.proportions.height;
-  const heightScale = safe.proportions.height / rawHeight;
+  const refScale = referenceHeightScale(safe, radii);
+  const heightScale = refScale;
 
   return { joints, radii, segments, groundOffset, heightScale };
+}
+
+/**
+ * 量出**站姿**的高度，返回"设定身高 ÷ 站姿实际高度"。
+ *
+ * 只在非 `idle` 姿态时需要（那时 `buildBody` 会拿它当固定参考）；
+ * 结果按 `spec` 的对象引用缓存，避免每帧重算一遍站姿骨架。
+ */
+const _refScaleCache = new WeakMap<WhiteModelSpec, number>();
+
+function referenceHeightScale(
+  spec: WhiteModelSpec,
+  radii: Record<string, number>,
+): number {
+  const cached = _refScaleCache.get(spec);
+  if (cached !== undefined) return cached;
+
+  /**
+   * 用 `idle` 骨架量。这里刻意**不复用** `specForwardKinematics` 的姿态参数
+   * ——站姿的关节旋转由规格的 `rotations` 决定（见 `DEFAULT_ROTATIONS`），
+   * 正好就是"这个角色的标准站立"。
+   */
+  const joints = specForwardKinematics(spec, {}, false);
+  let lo = Infinity;
+  let hi = -Infinity;
+  // 接地：与 `buildBody` 同一套算法（含关节球半径）
+  for (const [name, jw] of Object.entries(joints)) {
+    const r = radii[name] ?? 0;
+    lo = Math.min(lo, jw.pos[1] - r);
+    hi = Math.max(hi, jw.pos[1] + r);
+  }
+  for (const seg of spec.segments) {
+    const parent = BODY_JOINT_PARENT[seg.joint];
+    if (!parent) continue;
+    const a = joints[parent]?.pos;
+    const b = joints[seg.joint]?.pos;
+    if (!a || !b) continue;
+    const r = seg.shape === 'box' ? 0.02 : Math.max(seg.r0, seg.r1);
+    lo = Math.min(lo, a[1] - r, b[1] - r);
+    hi = Math.max(hi, a[1] + r, b[1] + r);
+  }
+
+  const rawH = Number.isFinite(hi - lo) && hi - lo > 1e-6 ? hi - lo : spec.proportions.height;
+  const scale = spec.proportions.height / rawH;
+  _refScaleCache.set(spec, scale);
+  return scale;
 }
 
 /**
