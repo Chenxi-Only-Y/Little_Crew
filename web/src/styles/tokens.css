@@ -768,11 +768,26 @@ h3 {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 14px rgba(0, 0, 0, 0.7);
 }
 
-/* 当前页：只靠颜色与描边区分，不用填充 */
+/**
+ * 当前页：**白底黑字**（用户要求："点到谁 谁就是白底黑字"）。
+ *
+ * 与「进入导演台」那个主按钮用同一套反转（白底 + 深色字），
+ * 所以"哪个是当前项"不需要学第二遍。
+ *
+ * ⚠️ 这里**必须把 `text-shadow` 清掉**：先前所有药丸都带一层深色描边
+ * （为了在透明状态下压在视频上也读得清）。白底上再叠深色投影，
+ * 字会显得脏、发糊。
+ */
 .nav-pill[aria-current='page'] {
-  color: var(--text);
-  border-color: rgba(110, 123, 255, 0.75);
-  background: none;
+  color: var(--bg);
+  background: #fff;
+  border-color: #fff;
+  text-shadow: none;
+  font-weight: 600;
+}
+/* 图标跟着一起反色，否则白底上的图标还是浅灰、看不见 */
+.nav-pill[aria-current='page'] .nav-pill-icon {
+  opacity: 0.75;
 }
 
 /**
