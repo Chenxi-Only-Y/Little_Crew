@@ -13,6 +13,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { NoToneMapping, SRGBColorSpace, type Camera, type Scene, type WebGLRenderer } from 'three';
+/**
+ * 轨道控制取自 `three` 自带的 examples（**不引 drei**，项目刻意压依赖面）。
+ * 用静态 import：这是 ESM 构建，`require` 在浏览器里不存在。
+ */
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { usePrevis } from './store';
 import { sampleCamera, type Vec3, PREVIS_COLOR } from './types';
 import {
@@ -287,14 +292,30 @@ function CameraGizmos() {
   );
 }
 
-/** 相机由当前生效机位驱动（多机位按时间分派 + 锁定跟随） */
+/**
+ * 相机：**两种模式**。
+ *
+ * `shot` —— 由当前生效机位驱动（多机位按时间分派 + 锁定跟随）。
+ *   每帧重新解析，所以角色走动时"锁定跟随"会自然生效。
+ *
+ * `free` —— 由鼠标轨道控制，`CameraRig` **完全不碰相机**。
+ *
+ * ⚠️ 为什么必须分模式，而不是"让轨道控制和关键帧共用一台相机"：
+ * 两者都要写 `position` / `quaternion`。若 `useFrame` 里继续写，
+ * 鼠标刚转过去就被立刻覆写回去（用户看到的是"转了但弹回原位"）；
+ * 若轨道控制也每帧写，那预览与导出的构图就不再由关键帧决定。
+ * **谁写相机必须是排他的**，所以用模式切，而不是让两者协商。
+ */
 function CameraRig() {
   const camRef = useRef<import('three').PerspectiveCamera>(null);
   const scene = usePrevis((s) => s.scene);
   const shotIndex = usePrevis((s) => s.shotIndex);
+  const viewMode = usePrevis((s) => s.viewMode);
   const set = useThree((s) => s.set);
 
   useFrame(() => {
+    // 自由视角：交给 OrbitControls，这里一个字都不写
+    if (usePrevis.getState().viewMode !== 'shot') return;
     const cam = camRef.current;
     const shot = scene.shots[shotIndex];
     if (!cam || !shot) return;
@@ -311,7 +332,70 @@ function CameraRig() {
     if (camRef.current) set({ camera: camRef.current });
   }, [set]);
 
-  return <perspectiveCamera ref={camRef} fov={40} near={0.05} far={300} position={[0, 1.6, 4.2]} />;
+  /**
+   * 从自由视角切回机位视角时，把相机**立刻**摆回关键帧构图。
+   *
+   * 不做这一步的话：`useFrame` 虽然会写回正确位置，但 `useFrame`
+   * 依赖 R3F 的渲染循环；切换那一帧可能出现"停在自由视角的构图"
+   * 的闪烁。这里同步写一次，消除那一下。
+   */
+  useEffect(() => {
+    if (viewMode !== 'shot') return;
+    const cam = camRef.current;
+    const shot = scene.shots[shotIndex];
+    if (!cam || !shot) return;
+    const pose = sampleCamera(scene, shot, usePrevis.getState().playhead);
+    cam.position.set(pose.position[0], pose.position[1], pose.position[2]);
+    cam.lookAt(pose.target[0], pose.target[1], pose.target[2]);
+    cam.fov = pose.fov;
+    cam.updateProjectionMatrix();
+  }, [viewMode, scene, shotIndex]);
+
+  return (
+    <>
+      <perspectiveCamera ref={camRef} fov={40} near={0.05} far={300} position={[0, 1.6, 4.2]} />
+      {/* 只在自由视角下挂载：它自己会接管鼠标事件，
+          若一直挂着，机位视角下拖角色就会被它抢走（这正是当初
+          "不实现视口导航"想回避的冲突，现在用模式隔离解决）。 */}
+      {viewMode === 'free' && <FreeOrbit target={camRef.current} />}
+    </>
+  );
+}
+
+/** 自由视角的鼠标轨道控制（旋转 / 平移 / 缩放）。 */
+function FreeOrbit({ target }: { target: import('three').PerspectiveCamera | null }) {
+  const gl = useThree((s) => s.gl);
+
+  /**
+   * `three` 自带 `examples/jsm/controls/OrbitControls.js`，直接用它，
+   * 不引 `@react-three/drei` —— 项目刻意压依赖面，而这里只需要一个轨道控制。
+   *
+   * ⚠️ 用**静态 import**（文件顶部），不要 `require`：
+   * 这是 ESM 构建（Vite），`require` 在浏览器里根本不存在。
+   */
+  const controls = useMemo(() => {
+    if (!target) return null;
+    const c = new OrbitControls(target, gl.domElement);
+    c.enableDamping = true;
+    c.dampingFactor = 0.08;
+    c.screenSpacePanning = true;   // 平移跟着屏幕走，比默认的"贴地面"直观
+    c.minDistance = 0.5;
+    c.maxDistance = 80;
+    // 允许俯视到接近正上方，但不允许转到地面以下（穿地观看很迷惑）
+    c.maxPolarAngle = Math.PI * 0.495;
+    return c;
+  }, [target, gl]);
+
+  useEffect(() => {
+    if (!controls) return;
+    return () => controls.dispose();
+  }, [controls]);
+
+  useFrame(() => {
+    controls?.update();   // 开了 damping 就必须每帧 update
+  });
+
+  return null;
 }
 
 /**

@@ -116,6 +116,7 @@ export default function PrevisPage() {
   const playhead = usePrevis((s) => s.playhead);
   const playing = usePrevis((s) => s.playing);
   const showHelpers = usePrevis((s) => s.showHelpers);
+  const viewMode = usePrevis((s) => s.viewMode);
 
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -596,6 +597,27 @@ export default function PrevisPage() {
           >
             尾帧 ⏭
           </button>
+          {/* 视角模式：机位视角 = 成片构图（关键帧驱动）；自由视角 = 鼠标转。
+              放在视口自己的工具条上，因为它是"怎么看这个视口"的设置。 */}
+          <div className="seg">
+            <button
+              type="button"
+              className={`seg-btn${viewMode === 'shot' ? ' is-on' : ''}`}
+              onClick={() => usePrevis.getState().setViewMode('shot')}
+              title="相机由当前机位的关键帧驱动——这是录制与导出的构图"
+            >
+              机位视角
+            </button>
+            <button
+              type="button"
+              className={`seg-btn${viewMode === 'free' ? ' is-on' : ''}`}
+              onClick={() => usePrevis.getState().setViewMode('free')}
+              title="左键旋转 · 右键平移 · 滚轮缩放。用于摆走位时看场景，不影响关键帧"
+            >
+              自由视角
+            </button>
+          </div>
+
           <label className="pill" style={{ gap: 4, cursor: 'pointer' }}>
             <input
               type="checkbox"
@@ -651,8 +673,14 @@ export default function PrevisPage() {
               lineHeight: 1.6,
             }}
           >
-            相机由关键帧驱动、不受鼠标控制。导出时辅助线会被隐藏，
-            画面只剩白模本体（网格线若留在画面里会被视频模型当成真实结构）。
+            {/* 这句提示要跟着视角模式走：说"不受鼠标控制"在自由视角下是错的，
+                而说"可自由旋转"在机位视角下又是错的（那时鼠标确实改不了相机）。 */}
+            {viewMode === 'shot'
+              ? '机位视角：相机由关键帧驱动，鼠标改不了构图——这是录制与导出的画面。想换个角度看场景，切到「自由视角」。'
+              : '自由视角：左键旋转 · 右键平移 · 滚轮缩放。此处只影响你看到的画面，不会改动任何关键帧。'}
+            <br />
+            导出时辅助线会被隐藏，画面只剩白模本体
+            （网格线若留在画面里会被视频模型当成真实结构）。
           </div>
         </div>
 

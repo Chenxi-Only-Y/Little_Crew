@@ -1447,6 +1447,42 @@ h3 {
   font-size: 11px;
 }
 
+/**
+ * 分段选择（segmented control）：预演页的「机位视角 / 自由视角」用它。
+ *
+ * 与导航药丸**刻意不同**：导航的当前项是"白底黑字"（那是全站主导航，
+ * 需要一眼可辨）；分段选择是**同一控件内的两个互斥选项**，
+ * 用同尺寸的浅色高亮即可——两者都用白底会让人以为有两个主按钮。
+ */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: var(--r-pill);
+  background: var(--glass-bg-lite);
+  border: 1px solid var(--glass-line-lite);
+}
+.seg-btn {
+  height: 22px;
+  padding: 0 var(--sp-3);
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-hover) var(--ease), color var(--t-hover) var(--ease);
+}
+.seg-btn:hover {
+  color: var(--text);
+}
+.seg-btn.is-on {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+}
+
 /* ── 底部条 ── */
 .runbar {
   display: flex;

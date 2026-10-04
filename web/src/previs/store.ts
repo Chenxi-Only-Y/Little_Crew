@@ -93,6 +93,20 @@ interface PrevisState {
   activeTrackId: string | null;
   setActiveTrack: (id: string | null) => void;
 
+  /**
+   * 视角模式。
+   *
+   * `'shot'` —— 相机由当前机位的关键帧驱动（**预览/录制/导出的样子**）。
+   * `'free'` —— 相机由鼠标轨道控制（**摆走位时看场景的角度**）。
+   *
+   * 为什么要有 `'free'`：先前只有 `'shot'`，`CameraRig` 每帧强制写入
+   * 相机位置，于是**用户任何鼠标操作都改不了视角**——想从侧面看一眼
+   * 角色与道具的相对位置都做不到，只能盲摆再播放验证。
+   * 这是我当初为"省掉右键拖拽与拖人物的事件冲突"付出的代价，得不偿失。
+   */
+  viewMode: 'shot' | 'free';
+  setViewMode: (m: 'shot' | 'free') => void;
+
   /** 绘制轨道模式：在视口里点地面生成关键帧 */
   drawing: boolean;
   setDrawing: (v: boolean) => void;
@@ -322,6 +336,23 @@ export const usePrevis = create<PrevisState>((set) => ({
 
   activeTrackId: null,
   setActiveTrack: (id) => set({ activeTrackId: id }),
+
+  viewMode: 'shot',
+  /**
+   * 切视角模式。
+   *
+   * 两个附带行为是有意的，不是顺手写的：
+   *   · 切到**自由视角时暂停播放** —— 播放中相机归位会与鼠标争夺控制权，
+   *     用户会看到"刚转过去又被拽回来"；
+   *   · 切回**机位视角时退出绘制轨道** —— 绘制依赖"看的是成片构图"，
+   *     自由视角下点地面放的关键帧位置毫无意义。
+   */
+  setViewMode: (m) =>
+    set((st) =>
+      m === 'free'
+        ? { viewMode: m, playing: false }
+        : { viewMode: m, drawing: false, playhead: st.playhead },
+    ),
 
   drawing: false,
   setDrawing: (v) => set({ drawing: v }),
