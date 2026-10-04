@@ -230,12 +230,38 @@ export function buildBody(
   return { joints, radii, segments, groundOffset, heightScale };
 }
 
-/** 计算一段体块的朝向所需的欧拉角（把局部 +Y 转到 `dir`） */
+/**
+ * 把"局部 +Y 轴要指向的方向"转成 Three.js 的欧拉角 `[rx, 0, -rz]`。
+ *
+ * ## ⚠️ 这里有个曾经让整具模型散架的坑
+ *
+ * Three.js 的欧拉顺序是 `R = Rx(rx) · Ry(0) · Rz(-rz)`。
+ * 把 +Y 代进去，方向是：
+ *
+ *     R · (0,1,0) = (sin(-rz)·cos(rx),  cos(rx)·cos(rz),  −sin(rx))
+ *
+ * 反解出：
+ *
+ *     rx = −asin(dir.y)
+ *     rz = −atan2(dir.x, dir.z)
+ *
+ * 我先前写的是 `pitch = acos(dir.y)` + `rz = atan2(dir.x, dir.z)`，
+ * 两处都错，而 `acos` 丢掉符号是**最致命**的那处：
+ * 朝下的向量（dir.y = −1）会得到 `pitch = π`，于是 `Rx(π)` 把 +Y
+ * 轴转成了 **−Y 的反方向**——所有朝下的肢体（大腿、小腿、上臂、前臂）
+ * **全部被翻成朝上**，画面上就是"四肢呈 V 形往外撇、关节错位断开"。
+ *
+ * 而几何数据一直是**正确**的（实测大腿 `dir = [0.03, −1, 0]`，
+ * 几乎垂直向下）。所以这个 bug 只能在渲染这一步找，查数据是查不出来的。
+ */
 export function dirToEuler(dir: Vec3): Vec3 {
   const y = Math.max(-1, Math.min(1, dir[1]));
-  const pitch = Math.acos(y);
-  const yaw = Math.atan2(dir[0], dir[2]);
-  return [pitch, 0, -yaw];
+  const rx = -Math.asin(y);
+  // 完全竖直时 atan2(0,0) 无意义，此时 yaw 取 0 即可
+  const rz = Math.abs(dir[0]) < 1e-9 && Math.abs(dir[2]) < 1e-9
+    ? 0
+    : -Math.atan2(dir[0], dir[2]);
+  return [rx, 0, rz];
 }
 
 /** 规格里所有 segment 引用到的关节名（用于 C 模式的"物体树"展示） */

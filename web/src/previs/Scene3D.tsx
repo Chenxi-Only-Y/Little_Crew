@@ -32,7 +32,7 @@ import * as typesNs from './types';
 import * as bodySpecNs from './bodySpec';
 import * as bodyMeshNs from './bodySpecMesh';
 import { DrawPlane } from './DrawPlane';
-import { buildBody } from './bodySpecMesh';
+import { buildBody, dirToEuler } from './bodySpecMesh';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -158,7 +158,7 @@ function ActorMesh({ id }: { id: string }) {
       {Object.entries(joints).map(([name, p]) => (
         <mesh key={name} position={p}>
           <sphereGeometry args={[HUMAN_SKELETON[name].radius, 12, 8]} />
-          <meshBasicMaterial color={actor.color} />
+          <meshLambertMaterial color={actor.color} />
         </mesh>
       ))}
       {/* 朝向指示：贴地四棱锥指向 -Z */}
@@ -214,7 +214,7 @@ function BodySpecActor({ id }: { id: string }) {
         return (
           <mesh key={name} position={jw.pos}>
             <sphereGeometry args={[r, 12, 8]} />
-            <meshBasicMaterial color={actor.color} />
+            <meshLambertMaterial color={actor.color} />
           </mesh>
         );
       })}
@@ -233,7 +233,14 @@ function BodySpecActor({ id }: { id: string }) {
   );
 }
 
-/** 画一个体块。四种形状各自用最合适的 Three.js 内置几何。 */
+/**
+ * 画一个体块。四种形状各自用最合适的 Three.js 内置几何。
+ *
+ * ⚠️ 朝向**必须**统一用 `dirToEuler`。先前这里手写了一套
+ * `atan2(√(dx²+dz²), dy)` + `atan2(dx, dz)` 的旋转，与 `dirToEuler`
+ * 的约定不一致（且 `acos`/`atan2` 都丢符号），结果朝下的肢体被翻成朝上，
+ * 画面上四肢呈 V 形外撇、关节错位。**一处算错，整具模型散架。**
+ */
 function SpecSegment({
   item,
   color,
@@ -247,22 +254,18 @@ function SpecSegment({
   };
   color: string;
 }) {
-  const { seg, a, b, length } = item;
+  const { seg, a, b, length, dir } = item;
   const mid: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
   const mat = seg.color ?? color;
+  const rot = dirToEuler(dir);
 
-  // `box`（手掌/脚掌）单独处理：它不是"从父到子"的锥体，而是一块有长宽高的板，
-  // 所以用中点定位、按盒子的实际尺寸画，并继承父→子方向的旋转。
   if (seg.shape === 'box') {
+    // 手掌/脚掌：一块有长宽高的板，按盒子尺寸画，朝向同段
     const size = seg.size ?? [0.1, 0.1, 0.1];
-    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
-    // 方块默认沿 +Y 长，所以把 +Y 转到父→子方向
-    const rx = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy);
-    const rz = Math.atan2(dx, dz);
     return (
-      <mesh position={mid} rotation={[rx, 0, -rz]}>
+      <mesh position={mid} rotation={rot}>
         <boxGeometry args={[size[0], size[1], size[2]]} />
-        <meshBasicMaterial color={mat} />
+        <meshLambertMaterial color={mat} />
       </mesh>
     );
   }
@@ -271,43 +274,33 @@ function SpecSegment({
     const r = Math.max(seg.r0, seg.r1);
     return (
       <mesh position={mid}>
-        <sphereGeometry args={[r, 16, 12]} />
-        <meshBasicMaterial color={mat} />
+        <sphereGeometry args={[r, 20, 14]} />
+        <meshLambertMaterial color={mat} />
       </mesh>
     );
   }
 
   if (length < 1e-6) return null;
-  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
-  const rx = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy);
-  const rz = Math.atan2(dx, dz);
 
   if (seg.shape === 'taperedCylinder') {
     return (
-      <mesh position={mid} rotation={[rx, 0, -rz]}>
-        <cylinderGeometry args={[seg.r1, seg.r0, length, 12]} />
-        <meshBasicMaterial color={mat} />
+      <mesh position={mid} rotation={rot}>
+        <cylinderGeometry args={[seg.r1, seg.r0, length, 16]} />
+        <meshLambertMaterial color={mat} />
       </mesh>
     );
   }
 
-  // capsule：Three.js 没有内置胶囊，用「圆柱 + 两端球」拼。
-  // 注意圆柱长度要减掉两个端球半径，否则胶囊会比关节间距长、看起来脱节。
-  const r = Math.min(seg.r0, seg.r1);
-  const cylLen = Math.max(0.001, length - r * 2);
-  const localA: Vec3 = [a[0], a[1], a[2]];
-  const localB: Vec3 = [b[0], b[1], b[2]];
-  const dirUnit: Vec3 = [dx / length, dy / length, dz / length];
-  const capA: Vec3 = [
-    localA[0] + dirUnit[0] * r,
-    localA[1] + dirUnit[1] * r,
-    localA[2] + dirUnit[2] * r,
-  ];
-  const capB: Vec3 = [
-    localB[0] - dirUnit[0] * r,
-    localB[1] - dirUnit[1] * r,
-    localB[2] - dirUnit[2] * r,
-  ];
+  /**
+   * capsule：Three.js 没有内置胶囊，用「圆柱 + 两端球」拼。
+   *
+   * ⚠️ 端球的半径要用**各自那一端**的半径（r0 在父端、r1 在子端）。
+   * 先前两端都用 `Math.min(r0, r1)`，于是锥度大的段（例如大腿
+   * 0.088→0.062）在父端会露出圆柱的平口、看起来像"断开"。
+   */
+  const cylLen = Math.max(0.001, length - (seg.r0 + seg.r1) / 2);
+  const capA: Vec3 = [a[0] + dir[0] * seg.r0, a[1] + dir[1] * seg.r0, a[2] + dir[2] * seg.r0];
+  const capB: Vec3 = [b[0] - dir[0] * seg.r1, b[1] - dir[1] * seg.r1, b[2] - dir[2] * seg.r1];
   const capMid: Vec3 = [
     (capA[0] + capB[0]) / 2,
     (capA[1] + capB[1]) / 2,
@@ -315,17 +308,17 @@ function SpecSegment({
   ];
   return (
     <group>
-      <mesh position={capMid} rotation={[rx, 0, -rz]}>
-        <cylinderGeometry args={[r, r, cylLen, 12]} />
-        <meshBasicMaterial color={mat} />
+      <mesh position={capMid} rotation={rot}>
+        <cylinderGeometry args={[seg.r1, seg.r0, cylLen, 16]} />
+        <meshLambertMaterial color={mat} />
       </mesh>
-      <mesh position={localA}>
-        <sphereGeometry args={[seg.r0, 12, 8]} />
-        <meshBasicMaterial color={mat} />
+      <mesh position={a}>
+        <sphereGeometry args={[seg.r0, 16, 12]} />
+        <meshLambertMaterial color={mat} />
       </mesh>
-      <mesh position={localB}>
-        <sphereGeometry args={[seg.r1, 12, 8]} />
-        <meshBasicMaterial color={mat} />
+      <mesh position={b}>
+        <sphereGeometry args={[seg.r1, 16, 12]} />
+        <meshLambertMaterial color={mat} />
       </mesh>
     </group>
   );
@@ -355,7 +348,7 @@ function LimbCylinder({
   return (
     <mesh position={mid} rotation={[rx, 0, -rz]}>
       <cylinderGeometry args={[radius, radius, len, 10]} />
-      <meshBasicMaterial color={color} />
+      <meshLambertMaterial color={color} />
     </mesh>
   );
 }
@@ -375,7 +368,7 @@ function PropMesh({ id }: { id: string }) {
     >
       <mesh>
         <boxGeometry args={[w, h, d]} />
-        <meshBasicMaterial color={prop.color} />
+        <meshLambertMaterial color={prop.color} />
       </mesh>
       {isSel && (
         <mesh userData={HELPER}>
@@ -462,6 +455,44 @@ function CameraGizmos() {
         });
       })}
     </group>
+  );
+}
+
+/**
+ * 白模的灯光（用户要求："改光源和着色，针对看不清立体感"）。
+ *
+ * ## 为什么这里要偏离"无光照"的原始原则
+ *
+ * `Scene3D.tsx` 开头写的原则是"**纯白模，无材质、无光照着色**"，
+ * 理由是"让视频模型看到形状与位置，而不是材质与光影"。
+ *
+ * 但实测下来，**完全没有明暗时人眼读不出立体感**——白模是一团纯白剪影，
+ * 前后重叠的肢体分不开，用户看不出"手在前面还是后面"。这对"摆走位"
+ * 是致命的：**看得清比原则重要**。
+ *
+ * 折中做法：
+ *   · 材质改成受光的 `meshLambertMaterial`（保留纯白色，不加贴图）；
+ *   · 灯光用**很平的三点光**——主光弱、补光弱、环境光强，
+ *     目的是"让法线朝向不同的面有轻微差异"，而不是营造戏剧性光影；
+ *   · 仍然**不做阴影**（`castShadow` 全关）：影子会让白模变脏，
+ *     而视频模型需要的是干净的体块。
+ *
+ * ⚠️ 导出用的 `renderer` 是同一个，所以导出的帧**也带这层明暗**。
+ * 这是有意的一致（所见即所得）；若将来需要"纯色导出"，应当在这里
+ * 按导出开关切换材质，而不是把灯光去掉。
+ */
+function StageLights() {
+  return (
+    <>
+      {/* 环境光给底，让暗面不至于全黑 */}
+      <ambientLight intensity={1.15} color="#ffffff" />
+      {/* 主光：右上前方。强度不高，只负责把"朝向不同"区分开 */}
+      <directionalLight position={[3.2, 5.0, 4.2]} intensity={0.85} color="#ffffff" />
+      {/* 补光：左下后方，补掉主光的死角，避免背光面成为一块死白 */}
+      <directionalLight position={[-3.5, 1.6, -2.6]} intensity={0.45} color="#dfe4ff" />
+      {/* 顶光：极弱，只用来给头顶/肩部一点层次 */}
+      <directionalLight position={[0, 6.0, 0]} intensity={0.3} color="#ffffff" />
+    </>
   );
 }
 
@@ -642,6 +673,7 @@ export default function Scene3D() {
       onPointerMissed={() => usePrevis.getState().select(null)}
     >
       <Bridge />
+      <StageLights />
       <CameraRig />
       <Playback />
       <Ground size={scene.ground} />
