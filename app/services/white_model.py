@@ -326,8 +326,11 @@ def normalize_spec(raw: Any) -> dict:
         item: dict[str, Any] = {
             "joint": joint,
             "shape": shape,
-            "r0": round(_num(seg.get("r0"), 0.06, 0.005, 0.6), 4),
-            "r1": round(_num(seg.get("r1"), 0.05, 0.005, 0.6), 4),
+            # ⚠️ box 的半径必须允许为 0：它用 size 描述尺寸。
+            # 若给下限，下游"取最细相邻肢体算关节球半径"会拿到 0.005，
+            # 把关节球算成约 0.006——球被缩没，手腕/脚踝看起来是断的。
+            "r0": 0.0 if shape == "box" else round(_num(seg.get("r0"), 0.06, 0.005, 0.6), 4),
+            "r1": 0.0 if shape == "box" else round(_num(seg.get("r1"), 0.05, 0.005, 0.6), 4),
         }
         if isinstance(seg.get("size"), (list, tuple)) and len(seg["size"]) == 3:
             item["size"] = [round(_num(x, 0.1, 0.005, 1.5), 4) for x in seg["size"]]

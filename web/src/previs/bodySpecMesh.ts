@@ -23,7 +23,7 @@
  * 不用固定常量：AI 生成的角色腿长各不相同，固定值会让长腿陷地、短腿悬空。
  */
 
-import type { BodySegment, PosePreset, Vec3, WhiteModelSpec } from './types';
+import type { BodySegment, Vec3, WhiteModelSpec } from './types';
 import {
   BODY_JOINT_PARENT,
   normalizeBodySpec,
@@ -40,31 +40,51 @@ export interface BodyJointWorld {
 }
 
 /** 姿态预设只驱动**旋转**（位置由规格的段长决定），所以这里只取旋转 */
-function poseRotations(preset: PosePreset, time: number): Record<string, Vec3> {
-  const p = samplePose(preset, time, 1, 0) as Record<string, Vec3>;
-  return p;
-}
-
 /**
  * 按规格做前向运动学。
  *
- * 与 `humanoid.forwardKinematics` 同一套公式，只是：
- *   · 偏移来自 `resolvedOffset`（父旋转 × 段长 + 比例推出的横向偏移）；
- *   · 关节自身旋转 = 规格旋转 + 姿态叠加。
+ * ## ⚠️ 姿态的两种语义，混用会把姿势彻底搞坏
+ *
+ * `humanoid.ts` 的姿态预设（`poseWalk` / `poseRun` / …）给的是
+ * **绝对关节角**——"跑步时肩膀应转到 −1.05 弧度"，那是一个完整的姿势描述，
+ * 不是"在静止姿态上再摆多少"。
+ *
+ * 而 `idle` 是特例：它几乎就是零值（只有几度的自然下垂），
+ * 所以它适合当**偏移量**叠在规格的静止旋转之上。
+ *
+ * 我先前一律相加，于是跑步时肩被算成 `0.04 + (−1.05)` 之外还要再被
+ * 规格的其它角度干扰，画面上四肢翻折、畸形（用户报的"姿势还是有问题"）。
+ *
+ * 现在的规则：
+ *   · `usePoseDirectly = true`（非 idle 预设）→ **预设值直接用**，
+ *     规格的 rotations 不参与。这样跑步就是跑步，不管规格把肩调成几度。
+ *   · `usePoseDirectly = false`（idle）→ `规格旋转 + 姿态偏移`，
+ *     这正是"静止姿态 + 用户微调"的正确语义。
+ *
+ * 无论哪种，用户的逐关节微调（`poseOverride`）始终是**叠加**——
+ * 它本来就是偏移量（见 `Actor.poseOverride` 的说明）。
  */
 export function specForwardKinematics(
   spec: WhiteModelSpec,
   pose: Record<string, Vec3>,
+  usePoseDirectly = false,
 ): Record<string, BodyJointWorld> {
   const out: Record<string, BodyJointWorld> = {};
   for (const name of Object.keys(BODY_JOINT_PARENT)) {
     const parent = BODY_JOINT_PARENT[name];
 
     const base = resolvedRotation(spec, name);
-    const add = pose[name] ?? ([0, 0, 0] as Vec3);
-    // 姿态是**叠加偏移**（与 v1 的 poseOverride 同一语义）：预设驱动动作，
-    // 规格给的是"静止"基准，两者相加。这样"行走"不会因规格而定格。
-    const [rx, ry, rz] = [base[0] + add[0], base[1] + add[1], base[2] + add[2]];
+    const poseVal = pose[name];
+    let rx: number;
+    let ry: number;
+    let rz: number;
+    if (usePoseDirectly && poseVal) {
+      // 预设给的是绝对角度：直接采用，规格的静止旋转不参与
+      [rx, ry, rz] = poseVal;
+    } else {
+      const add = poseVal ?? ([0, 0, 0] as Vec3);
+      [rx, ry, rz] = [base[0] + add[0], base[1] + add[1], base[2] + add[2]];
+    }
     const local = mm(rotZ(rz), mm(rotY(ry), rotX(rx)));
 
     if (parent === null) {
@@ -115,11 +135,18 @@ export interface BuiltBody {
 }
 
 /**
- * 关节球半径：**不许超过相接肢体最细处的 0.92 倍**。
+ * 关节球半径：**比相接肢体略粗**，让交接处真正连上。
  *
- * 为什么夹这一刀：关节球是用来填缝的，给大了会在肘/膝/踝上鼓出疙瘩——
- * 模型看起来像"一串珠子"就是这个原因。夹一刀之后，无论规格（或用户
- * 手改的 JSON）把半径写成多少，都不会长出瘤子。
+ * ## 这里的目标改过一次，方向是反的
+ *
+ * 我先前把它夹在"不超过最细肢体的 0.92 倍"，理由是"给大了会在肘/膝
+ * 鼓出疙瘩、像一串珠子"。那个顾虑本身没错，但**夹过头了**：
+ * 球比肢体细 → 两段肢体之间出现可见的细腰，视觉上就是**一节一节断开**。
+ * 用户看到的"关节断开"正是这个。
+ *
+ * 正确的做法是**略粗一点点**（1.05 倍）：球稍微鼓出，交接处被包住，
+ * 读起来是"一根连续的肢体、关节处略粗"——那正是白模需要的形态。
+ * 真正要防的不是"略粗"，而是"粗很多"（那才会成串珠），所以上限留在 1.25 倍。
  */
 function clampJointRadii(
   radii: Record<string, number>,
@@ -127,17 +154,31 @@ function clampJointRadii(
 ): Record<string, number> {
   const thinnest: Record<string, number> = {};
   for (const { seg } of segments) {
-    const parent = BODY_JOINT_PARENT[seg.joint];
+    /**
+     * ⚠️ **必须跳过 `r0/r1` 为 0 的段**（`box` 形状：手掌、脚掌）。
+     *
+     * 它们按设计不用半径、只用 `size`；若把 0 当成"最细半径"，
+     * 与它相接的关节球会被算成 `0 × 1.05 ≈ 0` ——球直接缩没，
+     * 手腕/脚踝处**看起来是断的**。实测 `wri_l` 的球半径被算成 0.0061，
+     * 而相邻前臂半径是 0.045，差了 7 倍。
+     */
     const r = Math.min(seg.r0, seg.r1);
-    if (parent && r > 0) thinnest[parent] = Math.min(thinnest[parent] ?? Infinity, r);
-    if (r > 0) thinnest[seg.joint] = Math.min(thinnest[seg.joint] ?? Infinity, r);
+    if (!(r > 0)) continue;
+    const parent = BODY_JOINT_PARENT[seg.joint];
+    if (parent) thinnest[parent] = Math.min(thinnest[parent] ?? Infinity, r);
+    thinnest[seg.joint] = Math.min(thinnest[seg.joint] ?? Infinity, r);
   }
   const out: Record<string, number> = {};
   for (const [name, r] of Object.entries(radii)) {
-    const cap = thinnest[name];
-    // 躯干/头这些"本身就是主体"的关节不夹
+    const thinnestAdj = thinnest[name];
+    // 躯干/头这些"本身就是主体"的关节不按肢体推，直接用规格给的半径
     const isTorso = ['pelvis', 'spine', 'chest', 'head'].includes(name);
-    out[name] = cap !== undefined && !isTorso ? Math.min(r, cap * 0.92) : r;
+    if (thinnestAdj === undefined || isTorso) {
+      out[name] = r;
+      continue;
+    }
+    // 取"规格值"与"相邻肢体 ×1.05"里较大的那个，再用 1.25 倍封顶
+    out[name] = Math.min(Math.max(r, thinnestAdj * 1.05), thinnestAdj * 1.25);
   }
   return out;
 }
@@ -165,16 +206,18 @@ export function buildBody(
   const safe = normalizeBodySpec(spec);
 
   /**
-   * 姿态：`idle` 时**不叠加**任何预设旋转——规格自带的 `rotations`
-   * 就是静止姿态（那才是"标准站姿"的定义处）。其余预设叠加在规格之上。
+   * 姿态处理（见 `specForwardKinematics` 的说明）：
+   *   · `idle`      → 规格的 rotations 就是静止姿态，不叠加任何预设；
+   *   · 其余预设     → 预设给的是**绝对角度**，直接采用、不叠加规格旋转；
+   *   · 用户的逐关节微调（`poseOverride`）永远**叠加**在最上层。
    */
-  const poseAdd =
-    safe.pose === 'idle'
-      ? ({} as Record<string, Vec3>)
-      : applyPoseOverride(poseRotations(safe.pose, opts.time ?? 0), undefined);
-  const pose = applyPoseOverride(poseAdd, opts.poseOverride);
+  const isIdle = safe.pose === 'idle';
+  const poseBase = isIdle
+    ? ({} as Record<string, Vec3>)
+    : (samplePose(safe.pose, opts.time ?? 0, 1, 0) as Record<string, Vec3>);
+  const pose = applyPoseOverride(poseBase, opts.poseOverride);
 
-  const joints = specForwardKinematics(safe, pose);
+  const joints = specForwardKinematics(safe, pose, !isIdle);
 
   const segments = safe.segments
     .map((s) => resolvedSegment(safe, s))

@@ -309,6 +309,7 @@ export function normalizeBodySpec(raw: unknown): WhiteModelSpec {
       // 未知关节 / 根关节 → 跳过这一段（少一段好过整页白屏）
       if (!(joint in BODY_JOINT_PARENT) || BODY_JOINT_PARENT[joint] === null) continue;
       const shape = String(seg.shape ?? 'capsule');
+      const isBox = shape === 'box';
       const item: BodySegment = {
         joint,
         shape: (['capsule', 'taperedCylinder', 'box', 'sphere'] as const).includes(
@@ -316,8 +317,16 @@ export function normalizeBodySpec(raw: unknown): WhiteModelSpec {
         )
           ? (shape as BodySegment['shape'])
           : 'capsule',
-        r0: num(seg.r0, 0.06, 0.005, 0.6),
-        r1: num(seg.r1, 0.05, 0.005, 0.6),
+        /**
+         * ⚠️ `box` 的半径**必须允许为 0**。
+         *
+         * `box`（手掌、脚掌）用 `size` 描述尺寸，`r0/r1` 按约定是 0。
+         * 若给它们套上 `0.005` 的下限，下游"取最细相邻肢体算关节球半径"
+         * 就会拿到 0.005，把该关节的球算成 `0.005 × 1.05 ≈ 0.006`
+         * ——球被缩没，**手腕与脚踝看起来是断的**（实测踩过）。
+         */
+        r0: isBox ? 0 : num(seg.r0, 0.06, 0.005, 0.6),
+        r1: isBox ? 0 : num(seg.r1, 0.05, 0.005, 0.6),
       };
       if (Array.isArray(seg.size) && seg.size.length === 3) {
         item.size = [
