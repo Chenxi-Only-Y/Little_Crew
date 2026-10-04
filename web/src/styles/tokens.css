@@ -67,6 +67,9 @@
   --sp-7: 48px;
   --sp-8: 64px;
 
+  /*: 悬浮导航的高度（内容要让出这么多，见 `.pill-dock` 的说明） */
+  --dock-h: 56px;
+
   /*: 内容页的宽度上限。超宽屏上再宽也读不动，所以到 1920 封顶；
       但这个值远大于常见的 1440/1688 视口，等于"平时不生效"。 */
   --page-max: 1920px;
@@ -396,26 +399,32 @@ h3 {
 }
 
 /**
- * 悬浮药丸导航（**不是**导航栏）。
+ * 悬浮药丸导航（**不是**导航栏，也不占内容高度）。
  *
  * 为什么去掉常规导航栏：一条通栏会在首屏切掉一整条"聚光"的高度，
  * 剧场感直接没了；也逼着每页把内容往下让、浪费竖向空间。
- * 改成悬浮药丸后，导航仍可点、可键盘聚焦、可读屏，但不占内容高度。
  *
- * 定位手法：它是 flex 容器里的**普通成员**（因此能被键盘 Tab 到、
- * 不脱离文档流），靠 `margin-bottom: -高度` 把下面的内容"提"上来。
- * 这样满高页面（导演台/预演）不会被它挤矮，内容页也不会被它压住。
+ * ⚠️ 定位方式改过两次，这里记下取舍：
+ *   第一版用"flex 成员 + `margin-bottom: -高度`"把内容提上来。
+ *   它有个**难发现**的副作用：负边距只影响**它后面**的兄弟元素，
+ *   而满高页面（导演台/预演）的第一个子元素紧贴 y=0，
+ *   于是顶部工具条被药丸盖住 —— 我一开始只在其中一个容器上打补丁，
+ *   结果导演台好了、预演页没好（或反之），来回两次。
+ *   现在改成 `position: absolute`：**它彻底脱离文档流、不占任何空间**，
+ *   再用下面那条"统一给内容子元素留高度"的规则兜底。
+ *   这样不管页面是"单根容器"还是"状态栏 + 主体"结构，都不会漏。
  */
 .pill-dock {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   height: 56px;
-  flex: 0 0 56px;
   padding: 0 var(--sp-6);
-  margin-bottom: -56px;      /* 关键：不让它占内容高度 */
   pointer-events: none;      /* 只有药丸可点，空隙不挡下方内容 */
   background: linear-gradient(
     to bottom,
@@ -426,6 +435,26 @@ h3 {
 }
 .pill-dock > * {
   pointer-events: auto;
+}
+
+/**
+ * 给外壳里**每一个内容子元素**让出导航高度。
+ *
+ * 为什么用 `> *` 而不是逐个指定类名：页面结构不统一——
+ * 纵向滚动的页面是单个 `.page`；导演台是 `.app-statusbar` + `.app-body`；
+ * 预演页是单个无类名的 flex 容器。逐个指定就会漏（我漏过两次）。
+ *
+ * ⚠️ 必须用 `margin-top` 而**不是** `padding-top`：全局 `box-sizing: border-box`
+ * 加上 `.app-statusbar` 的 `flex: 0 0 44px`（固定高），会把内边距**整个吃掉**
+ * ——实测 `padding-top: 56px` 后它的高度仍是 56，按钮反而被压到药丸底下。
+ * 外边距不受 box-sizing 影响，一定能把它推下去。
+ * 它也不改变 flex 分配（容器高度已由 shell 定死），所以不会撑破布局。
+ *
+ * 排除：`position: fixed` 的 `.glow-stage`（铺满视口，推它会偏），
+ * 以及导航自身 `.pill-dock`。
+ */
+.app-shell > *:not(.glow-stage):not(.pill-dock) {
+  margin-top: var(--dock-h);
 }
 
 .dock-spacer {
@@ -723,7 +752,7 @@ h3 {
 
 /**
  * 主体工作区（导演台）。
- * `padding-top: 56px` 是给悬浮导航让出的高度（见 `.app-statusbar.app-topbar` 的说明）。
+ * 导航留白由 `.app-shell > *` 统一负责，这里不重复加。
  */
 .app-body {
   display: flex;
@@ -920,9 +949,11 @@ h3 {
  *
  * ⚠️ `.app-statusbar` 这个类名**被复用了**：导演台拿它当整页顶栏，
  * 而预演页拿它当内部的 4 条行内工具条（播放控制 / 工程名 / 导出 …）。
- * 所以**不能**在基类上加"让出导航高度"的内边距——那会给预演页
- * 中间那些条也加上 56px，出现一堆莫名其妙的空白。
- * 需要让位的只有"紧贴页面顶端"的那一条，用修饰类 `.app-topbar` 显式声明。
+ * 所以**不能**在基类上加"让出导航高度"的留白——那会给预演页
+ * 中间那些条也加上，出现一堆莫名其妙的空白。
+ *
+ * 留白统一由 `.app-shell > *`（见 `.pill-dock` 附近）负责，
+ * 这里只描述工具条本身长什么样。
  */
 .app-statusbar {
   display: flex;
@@ -934,23 +965,19 @@ h3 {
   background: transparent;
   position: relative;
   z-index: 1;
+  /* 放不下时**横向滚动**，而不是把控件压扁。
+     工具条里的控件被压到折行（"深度极性"变成竖排）比出现滚动条难看得多，
+     而且"含地面"这种复选框被压窄后就点不准了。 */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;          /* 44px 高的条上出现滚动条太占地方 */
 }
-
-/*: 顶部工具条本身不需要额外内边距——留白交给外侧的 `.app-topbar` 容器统一处理，
-    否则"容器 + 工具条"各加一次会变成双重留白。 */
-.app-statusbar.app-topbar {
-  padding-top: 0;
+.app-statusbar::-webkit-scrollbar {
+  display: none;
 }
-
-/**
- * 满高页面的根容器：让出悬浮导航的高度。
- *
- * 哪些需要它：**内容紧贴 y=0 的满高 flex 布局**（导演台、预演）。
- * 哪些不需要：纵向滚动的页面（首页/设置/用户）——它们自己就有
- * `--sp-8` 的上内边距，再加一层会白多 56px。
- */
-.app-topbar {
-  padding-top: 56px;
+/* 工具条里的每个控件都保持自身宽度（按钮/输入/标签不该被压缩） */
+.app-statusbar > * {
+  flex-shrink: 0;
 }
 
 /* ── 空态与提示 ── */

@@ -423,10 +423,9 @@ export default function PrevisPage() {
   };
 
   return (
-    // `app-topbar`：这是**满高**布局（内容紧贴 y=0），而导航是悬浮的，
-    // 不留出高度的话左栏的场景/镜头列表会钻到药丸底下（实测截图确认过）。
-    // 纵向滚动的页面不需要这个类——它们自身有上内边距。
-    <div className="app-topbar" style={{ flex: '1 1 auto', minHeight: 0, display: 'flex' }}>
+    // 导航留白由 `styles/tokens.css` 的 `.app-shell > *` 统一负责，
+    // 这里不用（也不该）自己加——各自加会漏，也会双重留白。
+    <div style={{ flex: '1 1 auto', minHeight: 0, display: 'flex' }}>
       {/* ---------------- 左栏：场景与镜头 ---------------- */}
       <aside
         style={{
