@@ -51,3 +51,9 @@ logs/
 .mypy_cache/
 htmlcov/
 .coverage
+
+# 首屏背景视频（体积大，属于本地素材，不入库）
+# 生成方式：ffmpeg 从 4K 原片裁 10s / 1080p / 30fps / 无声 / faststart
+# 放在 web/public/ 下，Vite 会原样托管到 /hero-bg.mp4
+web/public/hero-bg.mp4
+web/public/hero-bg.jpg

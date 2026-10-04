@@ -15,6 +15,7 @@ import { getToken } from '../api/auth';
 import { getUsername } from '../api/auth';
 import { fetchSettings } from '../api/settings';
 import { listProjects, type ProjectSummary } from '../api/projects';
+import HeroVideo from './HeroVideo';
 
 interface HistoryItem {
   session_id: string;
@@ -115,49 +116,55 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      {/* ══════════ 首屏：只有眉题 / 大标题 / 说明 / 入口 ══════════ */}
-      <section style={{ paddingTop: 'var(--sp-8)', paddingBottom: 'var(--section-y)' }}>
-        <p className="eyebrow enter" style={{ '--i': 0 } as React.CSSProperties}>
-          AI 漫剧制作 · 多智能体
-        </p>
+      {/* 首屏 MP4 背景：绝对定位铺满 **首屏区域**（不是整页）。
+          没有素材时它会自行淡出，露出 glow-stage 光晕，不留空白。 */}
+      <section className="hero">
+        <HeroVideo />
 
-        {/* 大标题：中英**同级**（用户要求"和中文一样"），
-            所以 `hero-glow` 加在整行 `<h1>` 上而不是只圈住中文——
-            否则只有中文发光，英文会像被落下的。 */}
-        <h1 className="hero-title hero-glow enter" style={{ '--i': 1 } as React.CSSProperties}>
-          小剧组<span className="hero-title-en">·Little Crew</span>
-        </h1>
+        <div className="hero-inner">
+          {/* ══════════ 首屏：只有眉题 / 大标题 / 说明 / 入口 ══════════ */}
+          <p className="eyebrow enter" style={{ '--i': 0 } as React.CSSProperties}>
+            AI 漫剧制作 · 多智能体
+          </p>
 
-        <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
-          一句话，交给一个剧组。把一部漫剧拆成 16 个职业、18 个环节——
-          你在导演台上按需取用、连成一条线，然后在 12 个人工确认点
-          决定留还是重做。AI 干活，你掌镜。
-        </p>
+          {/* 大标题：中英**同级**（用户要求"和中文一样"），
+              所以 `hero-glow` 加在整行 `<h1>` 上而不是只圈住中文——
+              否则只有中文发光，英文会像被落下的。 */}
+          <h1 className="hero-title hero-glow enter" style={{ '--i': 1 } as React.CSSProperties}>
+            小剧组<span className="hero-title-en">·Little Crew</span>
+          </h1>
 
-        <div
-          className="enter"
-          style={{
-            '--i': 3,
-            display: 'flex',
-            gap: 'var(--sp-3)',
-            flexWrap: 'wrap',
-          } as React.CSSProperties}
-        >
-          <button className="btn" onClick={() => navigate('director')}>
-            进入导演台
-          </button>
-          <button className="btn ghost" onClick={() => navigate('previs')}>
-            先搭白模预演
-          </button>
+          <p className="lead enter" style={{ '--i': 2 } as React.CSSProperties}>
+            一句话，交给一个剧组。把一部漫剧拆成 16 个职业、18 个环节——
+            你在导演台上按需取用、连成一条线，然后在 12 个人工确认点
+            决定留还是重做。AI 干活，你掌镜。
+          </p>
+
+          <div
+            className="enter"
+            style={{
+              '--i': 3,
+              display: 'flex',
+              gap: 'var(--sp-3)',
+              flexWrap: 'wrap',
+            } as React.CSSProperties}
+          >
+            <button className="btn" onClick={() => navigate('director')}>
+              进入导演台
+            </button>
+            <button className="btn ghost" onClick={() => navigate('previs')}>
+              先搭白模预演
+            </button>
+          </div>
+
+          {/* 首屏左下角的铭牌。
+              原先这行在导航栏左上角（`小剧组 · DIRECTOR CONSOLE`），
+              用户要求挪到这里：导航只留药丸与右侧控制，品牌落到首屏。
+              英文不发音、不发光——它是**铭牌**，不是第二个标题。 */}
+          <p className="hero-latin enter" style={{ '--i': 4 } as React.CSSProperties}>
+            DIRECTOR CONSOLE
+          </p>
         </div>
-
-        {/* 首屏左下角的铭牌。
-            原先这行在导航栏左上角（`小剧组 · DIRECTOR CONSOLE`），
-            用户要求挪到这里：导航只留药丸与右侧控制，品牌落到首屏。
-            英文不发音、不发光——它是**铭牌**，不是第二个标题。 */}
-        <p className="hero-latin enter" style={{ '--i': 4 } as React.CSSProperties}>
-          DIRECTOR CONSOLE
-        </p>
       </section>
 
       {/* ══════════ 环境就绪状态（有问题才出现） ══════════ */}

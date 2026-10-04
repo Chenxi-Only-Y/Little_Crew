@@ -207,14 +207,24 @@ a:hover {
  *   2. **整体强度下调**（0.16 → 0.13）。近黑底的价值在于"暗"，
  *      光晕过强会把暗场冲淡，剧场感反而没了。
  */
+/**
+ * 舞台光：三层错开色相的径向光，制造"从上方洒下来"的聚光。
+ *
+ * ⚠️ 这里曾经多一层 `linear-gradient(to bottom, var(--bg) 0%, transparent 12%)`
+ * —— 目的是"避免顶部形成亮边"。但 `--bg` 是**不透明的 `#0b0b0d`**，
+ * 于是它在视口最上方压出一条**固定的深色横带**（12% 高度，约 40~70px）。
+ * 用户为这条带子提了三次"导航栏还是不透明"，而我一直在查导航元素，
+ * **完全没想到是这层光晕**——它的计算样式在 `.glow-stage` 上，不在导航上。
+ *
+ * 现在去掉那层：聚光靠下面三层径向光本身，不再额外压暗。
+ * `--glow-a` 已经从 0.16 下调到 0.13，顶部不会过亮，不需要"压暗"来平衡。
+ */
 .glow-stage {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   background:
-    /* 顶部先压一层暗，避免形成亮边 */
-    linear-gradient(to bottom, var(--bg) 0%, rgba(11, 11, 13, 0) 12%),
     radial-gradient(
       58vw 46vh at 24% 18%,
       rgba(110, 123, 255, var(--glow-a)) 0,
@@ -244,6 +254,86 @@ a:hover {
     rgba(110, 123, 255, var(--glow-c)) 0,
     transparent 70%
   );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   首屏（含 MP4 背景）
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * 首屏容器：视频与内容叠在同一块区域。
+ * `isolation: isolate` 建一个层叠上下文，把视频层关在里面，
+ * 免得它的 z-index 跑出去盖到导航。
+ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-top: var(--sp-8);
+  padding-bottom: var(--section-y);
+}
+
+/*: 内容层：压在视频之上 */
+.hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/**
+ * 视频层：**只覆盖首屏区域**，不铺整页。
+ * 铺整页会让下面那些数据卡片也压在视频上，读不清。
+ */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  /* 圆角与卡片一致，避免视频四角是硬的直角 */
+  border-radius: var(--r-card);
+  transition: opacity var(--t-med) var(--ease);
+}
+
+/**
+ * 素材缺失时**整个淡出**，露出下面的 `glow-stage` 光晕。
+ *
+ * 这样这个组件是"可选增强"：没放视频也能正常用，
+ * 不会留一块黑或一个破图图标。
+ */
+.hero-video[data-failed] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-video-el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* 铺满并裁切，不拉伸变形 */
+  object-position: center;
+  display: block;
+}
+
+/**
+ * 压暗层：视频亮度不可控，不加这层标题会与画面打架、读不出来。
+ * 用**渐变**（上深下更深）而不是均匀半透明——
+ * 均匀压暗会把整个视频压灰，渐变能保住画面中部的亮度。
+ */
+.hero-video-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(11, 11, 13, 0.82) 0%,
+      rgba(11, 11, 13, 0.55) 42%,
+      rgba(11, 11, 13, 0.88) 100%
+    );
+}
+
+/*: 减少动效时：视频隐藏，只留 poster 的静态帧（由组件传 poster 实现） */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video-el {
+    opacity: 0.85;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
