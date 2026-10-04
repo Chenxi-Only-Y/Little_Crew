@@ -254,20 +254,26 @@ export function applyPoseOverride(
 
 /* ---------------- 前向运动学 ---------------- */
 
-function rotX(a: number): number[] {
+/**
+ * 矩阵工具**导出**出去了：白模规格渲染器（`bodySpecMesh.ts`）要用同一套。
+ *
+ * 为什么不让它自己写一份：旋转合成顺序（`rotZ @ rotY @ rotX`）是有约定的，
+ * 两套实现迟早会不一致，而那种"看起来差不多、其实镜像了"的偏差极难查。
+ */
+export function rotX(a: number): number[] {
   const c = Math.cos(a), s = Math.sin(a);
   return [1, 0, 0, 0, c, -s, 0, s, c];
 }
-function rotY(a: number): number[] {
+export function rotY(a: number): number[] {
   const c = Math.cos(a), s = Math.sin(a);
   return [c, 0, s, 0, 1, 0, -s, 0, c];
 }
-function rotZ(a: number): number[] {
+export function rotZ(a: number): number[] {
   const c = Math.cos(a), s = Math.sin(a);
   return [c, -s, 0, s, c, 0, 0, 0, 1];
 }
 /** 3x3 行主序矩阵乘 */
-function mm(a: number[], b: number[]): number[] {
+export function mm(a: number[], b: number[]): number[] {
   const o = new Array(9).fill(0);
   for (let r = 0; r < 3; r += 1) {
     for (let c = 0; c < 3; c += 1) {
@@ -276,7 +282,7 @@ function mm(a: number[], b: number[]): number[] {
   }
   return o;
 }
-function mv(m: number[], v: Vec3): Vec3 {
+export function mv(m: number[], v: Vec3): Vec3 {
   return [
     m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
     m[3] * v[0] + m[4] * v[1] + m[5] * v[2],

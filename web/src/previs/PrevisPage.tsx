@@ -19,6 +19,7 @@ import Scene3D, { three } from './Scene3D';
 import { usePrevis } from './store';
 import { exportShot, exportDepth, dataUrlToBlob, type DepthPolarity } from './exporter';
 import { sampleCamera, activeTrack as activeTrackAt, migrateShot, type PrevisScene, type Vec3 } from './types';
+import WhiteModelPanel from './WhiteModelPanel';
 import { POSE_PRESETS, JOINT_GROUPS, JOINT_LABELS, AXIS_LABELS } from './humanoid';
 import { ENV_PRESETS } from './env';
 import { getToken } from '../api/auth';
@@ -855,12 +856,38 @@ export default function PrevisPage() {
 
         {selActor && (
           <Section title={`人物 · ${selActor.name}`}>
-            <label style={{ fontSize: 11, color: 'var(--s-violet-mid)' }}>名称</label>
+            <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>名称</label>
             <input
               value={selActor.name}
               onChange={(e) => usePrevis.getState().updateActor(selActor.id, { name: e.target.value })}
               style={{ width: '100%', marginBottom: 8 }}
             />
+
+            {/* 白模本体：AI 生成规格 → 三档编辑（预览/参数/进阶） */}
+            <details open style={{ marginTop: 4 }}>
+              <summary style={{ cursor: 'pointer', fontSize: 11, color: 'var(--text)' }}>
+                白模本体
+                <span style={{ color: 'var(--text-muted)', marginLeft: 6, fontWeight: 400 }}>
+                  {selActor.bodySpec
+                    ? `${selActor.bodySpec.name} · ${selActor.bodySpec.segments.length} 段体块`
+                    : '未生成（当前是代码骨架）'}
+                </span>
+              </summary>
+              <WhiteModelPanel
+                actor={selActor}
+                onApply={(spec) => usePrevis.getState().updateActor(selActor.id, { bodySpec: spec })}
+              />
+              {selActor.bodySpec && (
+                <button
+                  className="btn ghost"
+                  style={{ width: '100%', marginTop: 8, fontSize: 11 }}
+                  onClick={() => usePrevis.getState().updateActor(selActor.id, { bodySpec: undefined })}
+                  title="丢弃 AI 规格，回到代码拼的骨架"
+                >
+                  用回代码骨架
+                </button>
+              )}
+            </details>
             <Vec3Field
               label="位置（脚底）"
               value={selActor.position}

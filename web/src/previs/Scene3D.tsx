@@ -29,7 +29,10 @@ import {
 } from './humanoid';
 import * as humanoidNs from './humanoid';
 import * as typesNs from './types';
+import * as bodySpecNs from './bodySpec';
+import * as bodyMeshNs from './bodySpecMesh';
 import { DrawPlane } from './DrawPlane';
+import { buildBody } from './bodySpecMesh';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -50,12 +53,17 @@ declare global {
     __previsThree?: typeof three;
     __previsHumanoid?: typeof humanoidNs;
     __previsTypes?: typeof typesNs;
+    /** 白模规格模块。做几何自查时不必再靠截图猜。 */
+    __previsBodySpec?: typeof bodySpecNs;
+    __previsBodyMesh?: typeof bodyMeshNs;
   }
 }
 if (typeof window !== 'undefined') {
   window.__previsThree = three;
   window.__previsHumanoid = humanoidNs;
   window.__previsTypes = typesNs;
+  window.__previsBodySpec = bodySpecNs;
+  window.__previsBodyMesh = bodyMeshNs;
 }
 
 /** 标记为"辅助对象"的东西，导出时会被隐藏（网格线留在画面里会被模型当成真实结构） */
@@ -105,7 +113,17 @@ function ActorMesh({ id }: { id: string }) {
   const actor = usePrevis((s) => s.scene.actors.find((a) => a.id === id));
   const selected = usePrevis((s) => s.selected);
   const playhead = usePrevis((s) => s.playhead);
+
+  /**
+   * 有白模规格 → 交给规格渲染器；没有 → 回退到写死的骨架。
+   *
+   * ⚠️ 这个判断必须放在**调用 `samplePose` 之前**，否则每次渲染都会白算一遍
+   * 写死骨架的姿态（有规格时那个结果根本不用）。而且 `if (!actor)` 也要在最前，
+   * 后面 `actor.color` 之类的取值依赖它。
+   */
+  const useSpec = Boolean(actor?.bodySpec);
   if (!actor) return null;
+  if (useSpec) return <BodySpecActor id={id} />;
 
   const isSel = selected?.kind === 'actor' && selected.id === id;
   const pose = samplePose(
@@ -154,6 +172,161 @@ function ActorMesh({ id }: { id: string }) {
           <meshBasicMaterial color={PREVIS_COLOR.ACCENT} wireframe transparent opacity={0.3} />
         </mesh>
       )}
+    </group>
+  );
+}
+
+/**
+ * 白模规格渲染：体块（胶囊/锥台/方块/球）。
+ *
+ * 与 `ActorMesh` 的分工：有 `bodySpec` 就走这里（AI 生成或人工改过的规格），
+ * 没有就回退到写死的骨架。两者都用同一个 `seed`（角色 id）派生随机相位，
+ * 保证切来切去时光照与相位不跳。
+ */
+function BodySpecActor({ id }: { id: string }) {
+  const actor = usePrevis((s) => s.scene.actors.find((a) => a.id === id));
+  const selected = usePrevis((s) => s.selected);
+  const playhead = usePrevis((s) => s.playhead);
+  if (!actor || !actor.bodySpec) return null;
+
+  const spec = actor.bodySpec;
+  const isSel = selected?.kind === 'actor' && selected.id === id;
+  const built = buildBody(spec, { time: playhead, poseOverride: actor.poseOverride });
+  /**
+   * 两个缩放叠加：
+   *   · `actor.scale`  —— 用户拖的"身高倍"
+   *   · `built.heightScale` —— 让模型实际高度**等于**规格里写的 `height`
+   *     （不乘这个，滑杆写 1.70 会得到 1.77，是明确的欺骗）
+   */
+  const s = actor.scale * built.heightScale;
+  /** 接地：把整组上移，让最低脚掌落在 y=0 */
+  const gy = actor.position[1] + built.groundOffset * s;
+
+  return (
+    <group position={[actor.position[0], gy, actor.position[2]]} rotation={[0, actor.yaw, 0]} scale={[s, s, s]}>
+      {built.segments.map((item, i) => (
+        <SpecSegment key={`${item.seg.joint}-${i}`} item={item} color={actor.color} />
+      ))}
+      {/* 关节球：填住两段肢体交接处的缝。半径为 0 的关节（脚掌等）不画 */}
+      {Object.entries(built.joints).map(([name, jw]) => {
+        const r = built.radii[name] ?? 0;
+        if (r <= 0.001) return null;
+        return (
+          <mesh key={name} position={jw.pos}>
+            <sphereGeometry args={[r, 12, 8]} />
+            <meshBasicMaterial color={actor.color} />
+          </mesh>
+        );
+      })}
+      {/* 朝向指示：贴地四棱锥指向 -Z */}
+      <mesh position={[0, 0.02, -0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.12, 0.3, 4]} />
+        <meshBasicMaterial color="#e0925f" />
+      </mesh>
+      {isSel && (
+        <mesh position={[0, spec.proportions.height / 2, 0]} userData={HELPER}>
+          <boxGeometry args={[0.8, spec.proportions.height * 1.08, 0.8]} />
+          <meshBasicMaterial color={PREVIS_COLOR.ACCENT} wireframe transparent opacity={0.3} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+/** 画一个体块。四种形状各自用最合适的 Three.js 内置几何。 */
+function SpecSegment({
+  item,
+  color,
+}: {
+  item: {
+    seg: import('./types').BodySegment;
+    a: Vec3;
+    b: Vec3;
+    dir: Vec3;
+    length: number;
+  };
+  color: string;
+}) {
+  const { seg, a, b, length } = item;
+  const mid: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+  const mat = seg.color ?? color;
+
+  // `box`（手掌/脚掌）单独处理：它不是"从父到子"的锥体，而是一块有长宽高的板，
+  // 所以用中点定位、按盒子的实际尺寸画，并继承父→子方向的旋转。
+  if (seg.shape === 'box') {
+    const size = seg.size ?? [0.1, 0.1, 0.1];
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    // 方块默认沿 +Y 长，所以把 +Y 转到父→子方向
+    const rx = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy);
+    const rz = Math.atan2(dx, dz);
+    return (
+      <mesh position={mid} rotation={[rx, 0, -rz]}>
+        <boxGeometry args={[size[0], size[1], size[2]]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
+    );
+  }
+
+  if (seg.shape === 'sphere') {
+    const r = Math.max(seg.r0, seg.r1);
+    return (
+      <mesh position={mid}>
+        <sphereGeometry args={[r, 16, 12]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
+    );
+  }
+
+  if (length < 1e-6) return null;
+  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+  const rx = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy);
+  const rz = Math.atan2(dx, dz);
+
+  if (seg.shape === 'taperedCylinder') {
+    return (
+      <mesh position={mid} rotation={[rx, 0, -rz]}>
+        <cylinderGeometry args={[seg.r1, seg.r0, length, 12]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
+    );
+  }
+
+  // capsule：Three.js 没有内置胶囊，用「圆柱 + 两端球」拼。
+  // 注意圆柱长度要减掉两个端球半径，否则胶囊会比关节间距长、看起来脱节。
+  const r = Math.min(seg.r0, seg.r1);
+  const cylLen = Math.max(0.001, length - r * 2);
+  const localA: Vec3 = [a[0], a[1], a[2]];
+  const localB: Vec3 = [b[0], b[1], b[2]];
+  const dirUnit: Vec3 = [dx / length, dy / length, dz / length];
+  const capA: Vec3 = [
+    localA[0] + dirUnit[0] * r,
+    localA[1] + dirUnit[1] * r,
+    localA[2] + dirUnit[2] * r,
+  ];
+  const capB: Vec3 = [
+    localB[0] - dirUnit[0] * r,
+    localB[1] - dirUnit[1] * r,
+    localB[2] - dirUnit[2] * r,
+  ];
+  const capMid: Vec3 = [
+    (capA[0] + capB[0]) / 2,
+    (capA[1] + capB[1]) / 2,
+    (capA[2] + capB[2]) / 2,
+  ];
+  return (
+    <group>
+      <mesh position={capMid} rotation={[rx, 0, -rz]}>
+        <cylinderGeometry args={[r, r, cylLen, 12]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
+      <mesh position={localA}>
+        <sphereGeometry args={[seg.r0, 12, 8]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
+      <mesh position={localB}>
+        <sphereGeometry args={[seg.r1, 12, 8]} />
+        <meshBasicMaterial color={mat} />
+      </mesh>
     </group>
   );
 }

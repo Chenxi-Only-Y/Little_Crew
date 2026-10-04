@@ -876,6 +876,56 @@ async def previs_plan(request: Request):
 
 
 # ------------------------------------------------------------------
+# 白模：由 LLM 生成规格（JSON），再由前端渲染成体块
+# ------------------------------------------------------------------
+@app.post("/api/previs/white-model")
+def generate_white_model(payload: dict, request: Request):
+    """按角色描述生成一份**白模规格**（JSON）。
+
+    为什么让 LLM 生成 JSON 而不是直接生成 Three.js 代码：见
+    `app/services/white_model.py` 开头的对照表（安全/可校验/可存/可复现/
+    可人工修改）。渲染那一步是前端写死的代码，所以不会因模型抽风而崩。
+
+    载荷：
+        description  必填，一句话角色描述
+        name         可选，角色名
+        pose         可选，idle/walk/run/sit/wave/point
+        heightHint   可选，体型提示（"矮胖""纤细"之类）
+
+    返回 `{status:"ok", spec, attempts}` 或 400 + 可读原因。
+    """
+    uid = _auth_user(request)
+    from app.services import runtime_settings as rs
+
+    desc = str((payload or {}).get("description") or "").strip()
+    if not desc:
+        raise HTTPException(status_code=400, detail="请先描述一下这个角色")
+    if len(desc) > 400:
+        desc = desc[:400]
+
+    name = str((payload or {}).get("name") or "").strip()[:40]
+    pose = str((payload or {}).get("pose") or "").strip()
+    height_hint = str((payload or {}).get("heightHint") or "").strip()[:80]
+
+    from app.services.white_model_prompt import generate_spec
+
+    rs.set_user(uid)
+    try:
+        result = generate_spec(desc, name=name, pose=pose, height_hint=height_hint)
+    finally:
+        rs.set_user(None)
+
+    if result.get("status") != "ok":
+        # 400 而不是 500：这是"模型没给出合规格的东西"，用户重试或改描述即可，
+        # 不是服务端故障。raw 一并返回，方便 C 模式里让用户自己改。
+        raise HTTPException(
+            status_code=400,
+            detail=redact(str(result.get("message") or "生成失败")),
+        )
+    return result
+
+
+# ------------------------------------------------------------------
 # 会话：启动 + 实时事件流（导演台用）
 # ------------------------------------------------------------------
 @app.post("/api/sessions")

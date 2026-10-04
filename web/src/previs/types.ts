@@ -47,8 +47,86 @@ export interface Actor {
    * 键为关节名，值为 [dx, dy, dz] 弧度增量。
    */
   poseOverride?: Record<string, Vec3>;
+  /**
+   * **AI 生成的白模规格**（可选）。
+   *
+   * 给了它就用规格渲染体块（胶囊/锥台/方块），没给就回退到
+   * `humanoid.ts` 那套写死的球+圆柱骨架。
+   *
+   * 为什么做成可选、而不是直接替换掉旧骨架：
+   *   · 旧工程里已有角色没有 spec，删掉会让它们渲染不出来；
+   *   · 生成失败（模型没配、网络不通）时也要能继续用手搭的白模。
+   * 也就是"AI 生成"是**增强**，不是唯一路径。
+   */
+  bodySpec?: WhiteModelSpec;
   /** 显示颜色（**仅编辑器内用于区分**，导出时一律渲染成纯白/灰度） */
   color: string;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   白模规格（与后端 `app/services/white_model.py` 一一对应）
+   ══════════════════════════════════════════════════════════════ */
+
+/** 体块形状。只有四种——都能用 Three.js 内置几何直接搭出来，且轮廓清晰。 */
+export type BodyShape = 'capsule' | 'taperedCylinder' | 'box' | 'sphere';
+
+/** 一个体块：从 `joint` 的**父关节**连到 `joint` 自身。 */
+export interface BodySegment {
+  joint: string;
+  shape: BodyShape;
+  /** 父端半径（米） */
+  r0: number;
+  /** 子端半径（米） */
+  r1: number;
+  /** 仅 `box` 用：长宽高（米）。给了就按它画方块（手掌、脚掌）。 */
+  size?: [number, number, number];
+  /** 相对父→子轴线的额外位移（米），微调体块位置用 */
+  offset?: Vec3;
+  color?: string;
+}
+
+export interface WhiteModelProportions {
+  height: number;
+  headRatio: number;
+  shoulderWidth: number;
+  limbRatio: number;
+  headScale: number;
+  chubbiness: number;
+  legRatio: number;
+}
+
+/**
+ * 一份白模规格（**v2**）。字段与后端归一化后的输出严格一致。
+ *
+ * ## v2 相对 v1 改了什么，为什么
+ *
+ * v1 让模型直接写 `joints`（各关节的任意偏移）。结果是**手臂撇成八字**：
+ * 横向偏移会被前向运动学**逐级累加**（肩 0.17 + 肘 0.02 + …，
+ * 到手腕就成了 0.40，而躯干只有 0.15）。让"位置可直写"就是这个 bug 的根源。
+ *
+ * v2 把职责拆开：
+ *
+ *   `rotations`  每关节的旋转弧度 —— **唯一的姿态来源**，受硬限位钳制
+ *   `lengths`    每段的长度（米）
+ *   `radii`      关节球半径
+ *
+ * 关节位置**完全由"父位置 + 父旋转后的 (0,−段长,0)"推导**，不可直写。
+ * 于是"手臂横撇"在结构上不可能出现：肩的横向位置由 `shoulderWidth` 决定，
+ * 手臂外张只能通过 `sho_*` 的 Z 旋转表达，且有上下限。
+ */
+export interface WhiteModelSpec {
+  version: 2;
+  name: string;
+  description?: string;
+  proportions: WhiteModelProportions;
+  /** 关节名 → 旋转弧度 [绕X, 绕Y, 绕Z]。缺省用 `BODY_DEFAULT_ROTATIONS`。 */
+  rotations: Record<string, Vec3>;
+  /** 关节名 → 该段长度（米）。缺省用 `BODY_DEFAULT_LENGTHS`。 */
+  lengths: Record<string, number>;
+  /** 关节球半径覆盖（米） */
+  radii: Record<string, number>;
+  segments: BodySegment[];
+  pose: PosePreset;
 }
 
 /** 道具块（桌子、门、树……白模阶段只要体量） */
