@@ -33,6 +33,7 @@ import * as bodySpecNs from './bodySpec';
 import * as bodyMeshNs from './bodySpecMesh';
 import { DrawPlane } from './DrawPlane';
 import { buildBody, dirToQuaternion, localBounds } from './bodySpecMesh';
+import { normalizeBodySpec } from './bodySpec';
 
 /**
  * 模块级注册表：把 Three.js 的 renderer/scene/camera 暴露给导出器。
@@ -109,21 +110,52 @@ function Ground({ size }: { size: [number, number] }) {
  * 姿态按镜头时间采样——所以"行走"在导出序列里会自然循环，
  * 用户不需要逐帧摆姿势。
  */
+/**
+ * 没有 `bodySpec` 的角色，**默认**长成规格白模，而不是旧骨架。
+ *
+ * ## 为什么要把默认换掉（一个代价很大的教训）
+ *
+ * 我先前把规格渲染做成了"有 bodySpec 才走"的分支。结果是：
+ *
+ *   · 后端没在跑、`DEEPSEEK_API_KEY` 也是空的 → AI 生成必然失败；
+ *   · 于是 `bodySpec` 一直是 undefined；
+ *   · 于是画面**永远渲染旧骨架**（`HUMAN_SKELETON` 那个"树干"形状）；
+ *   · 于是我在规格渲染器里改的一切，用户**一次都没看到**。
+ *
+ * 用户的原话是"变了吗"——确实没变，因为默认路径根本没走我改的代码。
+ * **把新实现放在一个默认不会走到的分支里，等于没做。**
+ *
+ * 旧骨架保留（`用回代码骨架`按钮仍可用），只是不再是默认。
+ * 要改回旧默认，把这个开关置 false 即可。
+ */
+const SPEC_IS_DEFAULT = true;
+
+/**
+ * 默认人形规格（模块级只算一次）。
+ *
+ * `normalizeBodySpec({})` 会把所有字段补成默认值，并铺上 `DEFAULT_SEGMENTS`
+ * 的 16 段体块——所以这就是"一个标准人"。
+ *
+ * ⚠️ 必须缓存成模块常量：若每次渲染都 `normalizeBodySpec({})` 新建对象，
+ * 引用每次变化会让下游（`BodySpecActor` 里 `buildBody` 的结果、
+ * React 的 key）白重建一遍几何。
+ */
+const DEFAULT_BODY_SPEC = normalizeBodySpec({ name: '默认人体' });
+
 function ActorMesh({ id }: { id: string }) {
   const actor = usePrevis((s) => s.scene.actors.find((a) => a.id === id));
   const selected = usePrevis((s) => s.selected);
   const playhead = usePrevis((s) => s.playhead);
 
-  /**
-   * 有白模规格 → 交给规格渲染器；没有 → 回退到写死的骨架。
-   *
-   * ⚠️ 这个判断必须放在**调用 `samplePose` 之前**，否则每次渲染都会白算一遍
-   * 写死骨架的姿态（有规格时那个结果根本不用）。而且 `if (!actor)` 也要在最前，
-   * 后面 `actor.color` 之类的取值依赖它。
-   */
-  const useSpec = Boolean(actor?.bodySpec);
   if (!actor) return null;
-  if (useSpec) return <BodySpecActor id={id} />;
+
+  /**
+   * 有规格 → 用规格；没规格且 `SPEC_IS_DEFAULT` → 用默认人类规格。
+   * 都没有（开关关掉且无规格）→ 回退到写死的旧骨架。
+   */
+  if (actor.bodySpec || SPEC_IS_DEFAULT) {
+    return <BodySpecActor id={id} />;
+  }
 
   const isSel = selected?.kind === 'actor' && selected.id === id;
   const pose = samplePose(
@@ -179,17 +211,21 @@ function ActorMesh({ id }: { id: string }) {
 /**
  * 白模规格渲染：体块（胶囊/锥台/方块/球）。
  *
- * 与 `ActorMesh` 的分工：有 `bodySpec` 就走这里（AI 生成或人工改过的规格），
- * 没有就回退到写死的骨架。两者都用同一个 `seed`（角色 id）派生随机相位，
- * 保证切来切去时光照与相位不跳。
+ * 与旧骨架（`ActorMesh` 的后半段）分工：
+ *   · 有 `bodySpec`（AI 生成或人工改过）→ 用它；
+ *   · 没有 → 用 `normalizeBodySpec({})` 出来的**默认人形**。
+ *
+ * ⚠️ 没有规格时**不能返回 null**：那样画面就空了。默认人形是一条
+ * 完整的规格（`DEFAULT_SEGMENTS` 16 段体块），渲染出来就是一具标准人体。
+ * 这也是"AI 没配好也能看到白模"的兜底。
  */
 function BodySpecActor({ id }: { id: string }) {
   const actor = usePrevis((s) => s.scene.actors.find((a) => a.id === id));
   const selected = usePrevis((s) => s.selected);
   const playhead = usePrevis((s) => s.playhead);
-  if (!actor || !actor.bodySpec) return null;
+  if (!actor) return null;
 
-  const spec = actor.bodySpec;
+  const spec = actor.bodySpec ?? DEFAULT_BODY_SPEC;
   const isSel = selected?.kind === 'actor' && selected.id === id;
   // ⚠️ 必须传 `actor.pose`：右栏「肢体动作」按钮改的就是它。
   // 只读 `spec.pose` 的话，有规格后那些按钮会完全失效。
