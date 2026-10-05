@@ -1144,6 +1144,50 @@ h3 {
   font-weight: 500;
 }
 
+/**
+ * ── 原生表单控件（下拉列表 / 滚动条 / 勾选框）──
+ *
+ * ⚠️ **必须声明 `color-scheme: dark`**，否则 Windows 上原生 `<select>` 的
+ * 弹出列表走**系统浅色配色**：白底 + 我们设的白字 = 白底白字，
+ * 整个下拉看不清（用户报的"设置的下滑全是白的"）。
+ *
+ * `color-scheme` 是浏览器用来决定原生控件（下拉弹层、滚动条、日期选择器、
+ * 勾选框、自动填充）配色的开关。只设 `background`/`color` 是**不够的**——
+ * 弹出列表是**独立的一层原生窗口**，不继承页面的 `background`。
+ *
+ * 两个作用域都要写：
+ *   · `:root` —— 让整个页面的原生控件都按深色渲染；
+ *   · `select` 本身 —— 个别浏览器以元素自身为准。
+ */
+:root {
+  color-scheme: dark;
+}
+
+.field select,
+.runbar select {
+  color-scheme: dark;
+}
+
+/**
+ * `<option>` 也要显式给色。
+ *
+ * 即使有了 `color-scheme`，某些平台（旧版 Chrome/Edge、部分 Linux 桌面）
+ * 仍会忽略它、按系统给 `<option>` 上白底。显式写死最稳：
+ * 底色用不透明的 `--bg-elev`（不能再用半透明玻璃——弹层背后是系统窗口，
+ * 半透明会露出白色）。
+ */
+.field select option,
+.runbar select option {
+  background-color: var(--bg-elev);
+  color: var(--text);
+}
+
+/* 禁用项（如"未接入"的通道）在弹层里也要能认出是灰的 */
+.field select option:disabled,
+.runbar select option:disabled {
+  color: var(--text-faint);
+}
+
 .field input,
 .field select,
 .field textarea,
@@ -1159,6 +1203,34 @@ h3 {
   font-family: inherit;
   font-size: var(--fs-body);
   transition: border-color var(--t-hover) var(--ease);
+}
+/**
+ * `select` 单独给**不透明**底色。
+ *
+ * 其余输入框用半透明玻璃没问题（它们就在页面上，底下的深色能透上来），
+ * 但 `select` 一打开就是一个深色的原生弹层——如果它自己是半透明的，
+ * 合上与打开之间会有明显的明暗差，看着像换了个控件。
+ */
+.field select,
+.runbar select {
+  background: var(--bg-elev);
+}
+
+/**
+ * 下拉的自绘箭头。
+ *
+ * 深色底下浏览器默认箭头是深灰的，几乎看不见。用一张内联 SVG 画一个
+ * 浅色 V 形，同时 `appearance: none` 关掉原生箭头避免叠两个。
+ * （`<select>` 的箭头无法用 CSS 单独着色，只能换掉整个外观。）
+ */
+.field select,
+.runbar select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%23a8a8b4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
 .field textarea {
   height: auto;
