@@ -143,44 +143,53 @@ export default function ConfigFieldEditor({
   /**
    * 外部值变化时同步到本地状态。
    *
-   * ## ⚠️ 这里修过一个"显示与实际不一致"的真 bug
+   * ## ⚠️ 这里修过两次，第二次是我自己引入的"时灵时不灵"
    *
-   * 原逻辑只在 **`field.key` 变了** 时才同步 `value`。但设置是**登录后
-   * 异步到**的 —— 首渲染时 `current` 还是 `undefined`，于是 `value` 被锁成
-   * `''`（下拉就显示"— 请选择 —"），**之后后端值到了也不会再同步**。
+   * **第一次**：原逻辑只在 `field.key` 变了时才同步 `value`。但设置是
+   * **登录后异步到**的 —— 首渲染时 `current` 还是 `undefined`，`value` 被
+   * 锁成 `''`（下拉显示"请选择"），后端值到了也不再同步。后果不止显示：
+   * "按模式过滤提供者"依赖这个值，读成 `unset` 就**不过滤**。
    *
-   * 后果不止是显示：
-   *   · 用户明明存了 `image_provider_mode = local`，界面却显示"请选择"；
-   *   · 而"按下拉的值过滤提供者"依赖这个值 —— 值是 `unset` 就**不过滤**，
-   *     于是本地与云端又混在一起（用户报的"啥情况"，就是这个的连锁反应）。
+   * **第二次（本次）**：我改成"用户动过这个字段就不再自动跟随"。
+   * 于是出现**时灵时不灵**：
+   *   · 刷新页面 → 组件重挂载、标记重置 → 值正确（"灵"）；
+   *   · 在同一页里改别的字段（比如切换云端/本地模式）→ 本组件没重挂载、
+   *     标记仍是"动过" → `value` **卡在旧值**，与新算出的选项不匹配
+   *     （"不灵"）。用户看到的就是"切了但第二项不变"。
    *
-   * 修法：把"组件内值"与"外部值"对齐，但**不能无条件覆盖** ——
-   * 否则用户正在输入时被外部更新打断（比如密钥框被清空、数字框被回填）。
-   * 所以只在**用户还没动过**这个字段时自动跟随；动过之后以用户的为准。
+   * 正确判据不是"用户动过没有"，而是"**这个外部变化是不是我自己写入的
+   * 回声**"：
+   *   · `current` 等于我们上次提交的值 → 是我们自己的回声，跳过（否则会和
+   *     用户的输入打架）；
+   *   · `current` 变了且不是我们写的 → 是**外部**改的（换设置、别的入口、
+   *     后端归一化），必须跟随 —— 否则界面显示的是过期值。
    *
    * 用 `useEffect` 而不是渲染期 setState：同步是副作用，写在渲染里会在
    * 并发渲染下重复执行。
    */
   const currentStr = isSecret ? '' : current === undefined || current === null ? '' : String(current);
-  /** 用户是否已经动过这个字段（提交过 / 手动改过）。动过就不再自动跟随外部值。 */
-  const touchedRef = useRef(false);
+  /** 我们最近一次提交的值。用来区分"自己的回声"与"外部改动"。 */
+  const lastSavedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!touchedRef.current) setValue(currentStr);
+    if (currentStr === lastSavedRef.current) return; // 自己的回声，别动
+    setValue(currentStr);
   }, [currentStr]);
 
   const [lastKey, setLastKey] = useState(field.key);
   if (lastKey !== field.key) {
-    // 换字段：重置为"未动过"，并立即采用新字段的外部值
+    // 换字段：重置跟踪状态，并立即采用新字段的外部值
     setLastKey(field.key);
-    touchedRef.current = false;
+    lastSavedRef.current = null;
     setValue(currentStr);
     setMsg(null);
   }
 
   const commit = async (raw: string) => {
-    // 用户动过了：此后不再自动跟随外部值，避免把他的操作覆盖掉
-    touchedRef.current = true;
+    // 记下"这是我自己写的值"：之后 `current` 变成它时就知道是自己的回声，
+    // 不该再覆盖用户输入；而**其它**外部改动仍会正常同步进来
+    // （见上面 useEffect 的说明 —— 用"动过没有"当判据会造成时灵时不灵）。
+    lastSavedRef.current = raw;
     setBusy(true);
     setMsg(null);
     // 空串 = 清除覆盖（后端语义），密钥留空也走这条
@@ -217,6 +226,8 @@ export default function ConfigFieldEditor({
     const trimmed = raw.trim();
 
     if (trimmed === '') {
+      // 走的是自己的分支（不经 commit），所以也要记下"这是我写的回声"
+      lastSavedRef.current = '';
       setBusy(true);
       setMsg(null);
       const res = await saveSettings({ [field.key]: '' }, getToken());
