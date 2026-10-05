@@ -26,6 +26,7 @@ import {
   AUDIO_LABELS,
   allowedOptionsFor,
   audioOptionsFor,
+  emptyReasonFor,
   allowedProviders,
   capabilityOf,
   modeKeyOf,
@@ -315,6 +316,61 @@ test('声音来源的显示名说人话（用户要求「模型原生」改「�
   assert.equal(AUDIO_LABELS.none, '不要声音');
   assert.ok(AUDIO_LABELS.auto.includes('自动'));
   assert.ok(AUDIO_LABELS.mix.includes('混音'));
+});
+
+test('本机用不了的本地提供者**直接不列**（用户：直接不列）', () => {
+  // `available` 是"代码里接没接"，`runtime_ready` 才是"本机跑不跑得起来"。
+  // 没有本地模型的用户不该看到「本地 Ollama」—— 选了要跑到那一步才失败，
+  // 报的还是技术性错误，他不知道"是你本机没装"。
+  const list: ProviderInfo[] = [
+    { ...P('ollama', '本地 Ollama', 'llm', true), runtime_ready: true },
+    { ...P('vllm', '本地 vLLM', 'llm', true), runtime_ready: false },
+    { ...P('deepseek', 'DeepSeek', 'llm', false), runtime_ready: true },
+  ];
+  const got = allowedProviders('llm', 'llm_provider_writer', {}, list);
+  assert.deepEqual(got.map((p) => p.key).sort(), ['deepseek', 'ollama']);
+
+  // 本地档：vllm 被滤掉，ollama 留下
+  const local = allowedProviders('llm', 'llm_provider_writer', { llm_provider_mode: 'local' }, list);
+  assert.deepEqual(local.map((p) => p.key), ['ollama']);
+
+  // 云端档：本地的两个都不该混进来
+  const cloud = allowedProviders('llm', 'llm_provider_writer', { llm_provider_mode: 'cloud' }, list);
+  assert.deepEqual(cloud.map((p) => p.key), ['deepseek']);
+});
+
+test('`runtime_ready` 缺失时当作可用（老后端不会把一切都滤掉）', () => {
+  // ⚠️ 关键：若按 `!p.runtime_ready` 过滤，字段缺失（undefined）会把
+  // **所有**提供者一起滤掉 —— 那是灾难性的，而不是"少列几个"。
+  const list: ProviderInfo[] = [
+    P('deepseek', 'DeepSeek', 'llm', false),
+    P('ollama', '本地 Ollama', 'llm', true),
+  ];
+  assert.equal(list.every((p) => p.runtime_ready === undefined), true);
+  const got = allowedProviders('llm', 'llm_provider_writer', {}, list);
+  assert.deepEqual(got.map((p) => p.key).sort(), ['deepseek', 'ollama']);
+});
+
+test('一档里一个可用提供者都没有时，要说明**为什么**和**怎么办**', () => {
+  // "直接不列"有个副作用：模式设成本地、而本机一个本地提供者都没有时，
+  // 那个下拉里只剩占位符 —— 用户看到一个空框，不知道是配错了还是坏了。
+  //
+  // 实测踩到：lora_train_provider_mode='local' 且 local-gen 没启动
+  // → lora_train_provider 的选项 = ["(按模式)"]，什么都没有。
+  const list: ProviderInfo[] = [
+    { ...P('local', '本地 · DiffSynth', 'lora_train', true), runtime_ready: false },
+    { ...P('dashscope', '阿里百炼', 'lora_train', false), runtime_ready: true },
+  ];
+
+  const reason = emptyReasonFor('lora', 'lora_train_provider', { lora_train_provider_mode: 'local' }, list);
+  assert.ok(reason, '应当给出原因');
+  assert.match(reason, /本地/, '要说清是哪一档');
+  assert.match(reason, /云端|启动/, '要给出可行动的做法');
+
+  // 有可选提供者时不提示
+  assert.equal(emptyReasonFor('lora', 'lora_train_provider', { lora_train_provider_mode: 'cloud' }, list), null);
+  // 没有字段键时不提示（模式字段等）
+  assert.equal(emptyReasonFor('lora', undefined, {}, list), null);
 });
 
 test('非 openai 协议的提供者永远不列（选了必然失败）', () => {

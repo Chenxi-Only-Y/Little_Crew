@@ -46,6 +46,7 @@ import {
   AUDIO_LABELS,
   allowedProviders as computeAllowedProviders,
   capabilityOf,
+  emptyReasonFor,
   modeOf as computeModeOf,
   optionLabelsFor as computeOptionLabels,
 } from '../settings/providerFilter';
@@ -223,6 +224,14 @@ export default function SettingsPage() {
       api_style: string;
       /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
       has_native_audio?: boolean;
+      /**
+       * **这台机器上现在能不能用**（后端本机能力探测的结果）。
+       *
+       * ⚠️ 与 `available` 不同：`available` 是"**代码里接没接**"，
+       * 这个是"**本机跑不跑得起来**"。`false` 的提供者直接不列
+       * —— 没有本地模型的用户不该看到「本地 Ollama」。
+       */
+      runtime_ready?: boolean;
       default_model?: string;
       known_models?: string[];
     }>
@@ -303,6 +312,8 @@ export default function SettingsPage() {
                 api_style: string;
                 /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
                 has_native_audio?: boolean;
+                /** 本机能力探测结果；false 的提供者直接不列 */
+                runtime_ready?: boolean;
                 default_model?: string;
                 known_models?: string[];
               }>,
@@ -641,17 +652,35 @@ export default function SettingsPage() {
   };
 
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
-  const renderField = (f: ConfigField, node: string, capPrefix: string) => (
-    <ConfigFieldEditor
-      key={`${node}:${f.key}`}
-      field={f}
-      current={settings?.[f.key]}
-      optionLabels={optionLabelsFor(capPrefix, f.key)}
-      allowedOptions={allowedOptionsFor(f, capPrefix)}
-      modelSource={modelSourceFor(f, capPrefix)}
-      onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
-    />
-  );
+  const renderField = (f: ConfigField, node: string, capPrefix: string) => {
+    // "本机用不了的本地提供者直接不列"有个副作用：如果模式设成本地而
+    // 这台机器上一个本地提供者都没有，这个下拉里就只剩占位符 ——
+    // 用户看到一个空框，不知道是配错了还是坏了。所以补一句能行动的说明。
+    const emptyReason = emptyReasonFor(capPrefix, f.key, settings, providers);
+    return (
+      <>
+        <ConfigFieldEditor
+          key={`${node}:${f.key}`}
+          field={f}
+          current={settings?.[f.key]}
+          optionLabels={optionLabelsFor(capPrefix, f.key)}
+          allowedOptions={allowedOptionsFor(f, capPrefix)}
+          modelSource={modelSourceFor(f, capPrefix)}
+          onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
+        />
+        {emptyReason ? (
+          <div
+            style={{
+              fontSize: 11, lineHeight: 1.6, marginTop: -6, marginBottom: 10,
+              color: 'var(--glow-amber, #FBBF24)',
+            }}
+          >
+            {emptyReason}
+          </div>
+        ) : null}
+      </>
+    );
+  };
 
   return (
     <div className="page">

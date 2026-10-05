@@ -40,6 +40,16 @@ export interface ProviderInfo {
    * 那个是"能不能**喂**音频当参考"（输入），这个是"产出里有没有声音"（输出）。
    */
   has_native_audio?: boolean;
+  /**
+   * **这台机器上现在能不能用**（后端本机能力探测的结果）。
+   *
+   * ⚠️ 与 `available` 完全不同：`available` 是"**代码里接没接**"
+   * （未接入的提供者它是 False），这个才是"**本机跑不跑得起来**"。
+   *
+   * `undefined` 当作**可用**（老后端没下发这个字段时不该把云端也滤掉；
+   * 而云端本来就恒为 true）。
+   */
+  runtime_ready?: boolean;
 }
 
 /** 值 → 该值属于哪一档。`unset` 表示"没有限制"（列全部）。 */
@@ -166,6 +176,15 @@ export function allowedProviders(
     if (p.capability !== cap) return false;
     // 协议对不上的（如 unverified）不列 —— 选了必然失败
     if (p.api_style !== 'openai') return false;
+    // **本机用不了的本地提供者直接不列**（用户："直接不列"）。
+    //
+    // 为什么必须滤掉而不是标灰：没有本地模型的用户照样能看到
+    // 「本地 Ollama」，选了要跑到那一步才失败，报的还是技术性错误 ——
+    // 他不知道"是你本机没装"。少列一个能用的只是让他手动找，
+    // 列一个用不了的会让他配半天然后失败。
+    //
+    // ⚠️ `undefined` 当作可用：老后端没下发该字段时**不能**把一切都滤掉。
+    if (p.runtime_ready === false) return false;
     if (r === 'local' && !p.is_local) return false;
     if (r === 'cloud' && p.is_local) return false;
     return true;
@@ -287,6 +306,53 @@ export function audioOptionsFor(
     if (o === 'native' || o === 'mix') return hasNative;
     return true; // tts / none 对任何提供者都适用
   });
+}
+
+/**
+ * 这个下拉**为什么没有可选的真提供者**（有的话返回 `null`）。
+ *
+ * ## 为什么需要它
+ *
+ * "本机用不了的本地提供者直接不列"会带来一个副作用：如果用户把
+ * 「云端 / 本地」模式设成了 `local`，而**这台机器上一个本地提供者都没有**
+ * （比如本地推理服务没启动），那个提供者下拉里就**只剩一个占位符**
+ * —— 用户看到一个空荡荡的框，不知道是自己配错了、还是坏了。
+ *
+ * 实测踩到过：
+ *
+ *     lora_train_provider_mode = 'local'  →  lora_train_provider 选项 = ["(按模式)"]
+ *
+ * 所以要给一句**能行动**的说明：不是"出错了"，而是"本机没检测到，
+ * 你可以启动它，或者把模式切到云端"。
+ */
+export function emptyReasonFor(
+  capPrefix: string,
+  fieldKey: string | undefined,
+  settings: Record<string, unknown> | null | undefined,
+  providers: readonly ProviderInfo[],
+): string | null {
+  if (!fieldKey) return null;
+  const cap = capabilityOf(capPrefix);
+  const got = allowedProviders(capPrefix, fieldKey, settings, providers);
+  if (got.length > 0) return null;
+
+  const mode = modeOf(capPrefix, settings);
+
+  // 这一档里注册表**本来有**提供者，只是本机都用不了 → 说清是哪一档、
+  // 以及怎么让它出现
+  const all = providers.filter((p) => p.capability === cap && p.api_style === 'openai');
+  const blocked = all.filter((p) => p.runtime_ready === false);
+
+  if (mode === 'local' && blocked.some((p) => p.is_local)) {
+    return (
+      '本机没有检测到可用的本地服务，暂无本地提供者可选。' +
+      '先启动它（例如本地推理服务 / Ollama），或把上面的模式改成「云端 API」。'
+    );
+  }
+  if (mode === 'cloud' && all.some((p) => !p.is_local)) {
+    return '这一档暂时没有可用的提供者，请把上面的模式改成「本地推理」或检查配置。';
+  }
+  return '本机没有检测到可用的提供者。请检查上面的模式设置，或运行 scripts\\setup_tools.ps1 安装本地工具。';
 }
 
 /**

@@ -761,8 +761,30 @@ def provider_payload(p: "ProviderSpec", *, credential_keys: list[str] | None = N
         "note": p.note,
         # 前端据此过滤「声音来源」的可选项（没原生音频就不该让人选它）
         "has_native_audio": p.has_native_audio,
+        # **这台机器上现在能不能用**（本机能力探测的结果）。
+        #
+        # ⚠️ 与上面的 `available` 完全不同：`available` 是"**代码里接没接**"
+        # （WaveSpeedAI 还没接 → False），这个是"**本机跑不跑得起来**"。
+        # 没有本地模型的用户不该在下拉里看到「本地 Ollama」——
+        # 选了要跑到那一步才失败，报的还是技术性错误。用户报过这个：
+        #     "直接不列，如果有你觉得怎么识别"
+        "runtime_ready": _runtime_ready(p),
         "credential_keys": list(credential_keys or []),
     }
+
+
+def _runtime_ready(p: "ProviderSpec") -> bool:
+    """本机能力探测（带缓存）。探测模块不可用时**保守返回 False**。
+
+    保守的理由：探测模块本身出问题（比如导入失败）时，宁可少列几个
+    本地选项，也不要把一堆用不了的选项摆给用户。
+    """
+    try:
+        from app.services import local_probe
+
+        return bool(local_probe.is_ready(p.capability, p.key, category=p.category))
+    except Exception:  # noqa: BLE001
+        return p.category not in ("local", "free")
 
 
 def to_payload() -> list[dict]:

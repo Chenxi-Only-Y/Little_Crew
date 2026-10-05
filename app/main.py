@@ -58,6 +58,24 @@ app = FastAPI(
 )
 
 
+@app.on_event("startup")
+async def _warm_up_local_probe() -> None:
+    """启动时**后台**预热一次"本机能力探测"。
+
+    这样用户第一次打开设置页时已经有结果，不必让那个请求等 2~3 秒
+    （探测是并行的，但要跑 ffmpeg `-version` 与几次 HTTP）。
+
+    为什么是后台线程而不是 await：探测会阻塞在子进程与 socket 上，
+    放在事件循环里会把启动拖住、也挡住其他请求。
+    """
+    try:
+        from app.services import local_probe
+
+        local_probe.warm_up()
+    except Exception as exc:  # noqa: BLE001  预热失败不影响启动
+        logging.getLogger("little_crew").debug("本机能力预热失败：%s", exc)
+
+
 # 免鉴权路径：**逐个精确列出**。
 #
 # ⚠️ 这里必须用**精确匹配**，不能用 `startswith` 前缀匹配。
