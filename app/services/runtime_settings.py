@@ -234,15 +234,36 @@ def set_user(user_id: str | None) -> None:
             pass
 
 
-def set_context(user_id: str | None, session_id: str | None = None) -> None:
-    """设置当前线程的运行上下文：用户 + 会话 ID（供生成/视频按此归类输出目录）。"""
+def set_context(
+    user_id: str | None,
+    session_id: str | None = None,
+    project: str | None = None,
+) -> None:
+    """设置当前线程的运行上下文：用户 + 会话 + **工程**。
+
+    供生成/视频按此归类输出目录（`app/services/asset_paths.py`）。
+
+    `project` 是**工程名**（人可读，直接当目录名用）。
+    用户要求的产出结构是「账号/项目名/部门/职业/会话/类型/文件」——
+    工程名就是其中的第一层分组依据，见 `asset_paths.asset_dir`。
+    """
     set_user(user_id)
     _local.session_id = session_id or ""
+    _local.project = project or ""
 
 
 def run_session() -> str:
     """当前线程正在运行的会话 ID（空串表示无）。"""
     return getattr(_local, "session_id", "")
+
+
+def run_project() -> str:
+    """当前线程所属的**工程名**（空串表示无）。
+
+    ⚠️ 与 `run_session()` 的区别：一个工程可以有多次运行（多个 session），
+    而产出要归到**工程**下，这样"把某个项目的资产打包"才成立。
+    """
+    return getattr(_local, "project", "")
 
 
 def user() -> str:
@@ -264,14 +285,14 @@ def user() -> str:
 
 def capture() -> dict:
     """抓取当前线程的上下文（供跨线程恢复）。"""
-    return {"user": user(), "session_id": run_session()}
+    return {"user": user(), "session_id": run_session(), "project": run_project()}
 
 
 def restore(ctx: dict | None) -> None:
     """在当前线程恢复由 `capture()` 抓取的上下文（None 则不动）。"""
     if not ctx:
         return
-    set_context(ctx.get("user"), ctx.get("session_id"))
+    set_context(ctx.get("user"), ctx.get("session_id"), ctx.get("project"))
 
 
 def get(name: str, default=None):

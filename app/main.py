@@ -952,7 +952,12 @@ async def create_session(payload: dict, request: Request):
         return claimed
     session_id = str(payload.get("session_id") or "").strip() or uuid.uuid4().hex[:8]
     get_hub().reset(session_id)          # 新一轮：清掉上一轮的事件历史
-    start_run(session_id, user_input, user_id, seed=payload.get("seed") or None)
+    # 工程名 → 产出路径的第二层（账号/项目名/部门/职业/会话/类型/文件）
+    start_run(
+        session_id, user_input, user_id,
+        seed=payload.get("seed") or None,
+        project=str(payload.get("project") or "").strip()[:80],
+    )
     return {"status": "accepted", "session_id": session_id, "user_id": user_id}
 
 
@@ -1034,7 +1039,12 @@ async def run_crew(payload: dict, request: Request):
     if claimed is not None:
         return claimed
     session_id = str(payload.get("session_id") or "").strip() or uuid.uuid4().hex[:8]
-    start_run(session_id, user_input, user_id, seed=payload.get("seed") or None)
+    # 工程名 → 产出路径的第二层（账号/项目名/部门/职业/会话/类型/文件）
+    start_run(
+        session_id, user_input, user_id,
+        seed=payload.get("seed") or None,
+        project=str(payload.get("project") or "").strip()[:80],
+    )
     return {"status": "accepted", "session_id": session_id, "user_id": user_id}
 
 

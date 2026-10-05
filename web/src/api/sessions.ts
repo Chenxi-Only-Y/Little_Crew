@@ -85,11 +85,21 @@ export async function resumeSession(
   }
 }
 
-/** 启动一次创作 */
+/**
+ * 启动一次创作。
+ *
+ * `project` 是**工程名**（导演台工程栏那个）。它决定产出资产落在哪：
+ *
+ *     账号 / 项目名 / 部门 / 职业 / 会话 / 类型 / 文件
+ *
+ * 不带的话后端会用「未命名工程」兜底——那也得有地方落盘，
+ * 而且统一叫这个名字，事后一眼能认出"这批没归到任何工程"。
+ */
 export async function startSession(
   userInput: string,
   token?: string | null,
   seed?: Record<string, unknown>,
+  project?: string | null,
 ): Promise<StartResult> {
   try {
     const res = await fetch('/api/sessions', {
@@ -98,7 +108,11 @@ export async function startSession(
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ user_input: userInput, ...(seed ? { seed } : {}) }),
+      body: JSON.stringify({
+        user_input: userInput,
+        ...(seed ? { seed } : {}),
+        ...(project ? { project } : {}),
+      }),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {

@@ -96,13 +96,13 @@ def _extract_review(data) -> dict:
     return out[0] if len(out) == 1 else out
 
 
-def _run_stream(job_input, session_id: str, user_id: str, user_input: str) -> None:
+def _run_stream(job_input, session_id: str, user_id: str, user_input: str, project: str = "") -> None:
     """在后台线程里跑图（stream 模式），逐节点更新进度和状态。"""
     from app.services.runtime_settings import set_context
 
     # 本线程的兜底绑定（供 stream 之外、节点之外的读取点使用）；
     # 每个工作流节点进入时还会用 State 里的 run_context 再绑定一次（见 app/core/context.py）。
-    set_context(user_id, session_id)
+    set_context(user_id, session_id, project)
     store = get_session_store()
     config = {"configurable": {"thread_id": session_id}}
     hub = get_hub()
@@ -264,7 +264,13 @@ def _sanitize_seed(seed: dict) -> dict:
     return allowed
 
 
-def start_run(session_id: str, user_input: str, user_id: str = "anon", seed: dict | None = None) -> None:
+def start_run(
+    session_id: str,
+    user_input: str,
+    user_id: str = "anon",
+    seed: dict | None = None,
+    project: str = "",
+) -> None:
     """异步启动一次创作（可带 seed：已有中间产物则跳过对应环节）。"""
     store = get_session_store()
     with _LOCK:
@@ -300,11 +306,40 @@ def start_run(session_id: str, user_input: str, user_id: str = "anon", seed: dic
     #   · 还能借 `images`/`character_reference_images` 等键影响流程。
     # 实测确认过这条链（产物确实落在了他人的 uid 目录下）。
     # 身份只能由服务端按**已认证用户**决定，任何"客户端可指定身份"的口子都要堵死。
-    state["run_context"] = RunContext(user_id=user_id, session_id=session_id).as_dict()
-    t = threading.Thread(target=_run_stream, args=(state, session_id, user_id, user_input), daemon=True)
+    state["run_context"] = RunContext(
+        user_id=user_id, project=project, session_id=session_id
+    ).as_dict()
+    t = threading.Thread(
+        target=_run_stream,
+        args=(state, session_id, user_id, user_input, project),
+        daemon=True,
+    )
     with _LOCK:
         _JOBS[session_id] = t
     t.start()
+
+
+def project_from_checkpoint(session_id: str) -> str:
+    """从图 checkpointer 的 State 里取回**工程名**。
+
+    为什么从这里取，而不是让前端在续跑时再传一次：
+
+      · 续跑是**新线程**，thread-local 不继承，所以不能靠 `capture()`；
+      · `start_run` 已经把 `run_context`（含 `project`）写进了 State，
+        而 `resume_run` 本来就要校验 checkpoint 存在——顺手读回来最稳，
+        不依赖前端记得带、也不给"改个参数就把资产写到别人项目下"留口子。
+      · 读不到就返回空串，由 `asset_paths.current_project()` 兜底成
+        「未命名工程」——绝不能因为工程名缺失而让落盘失败。
+    """
+    try:
+        snap = app_workflow.get_state({"configurable": {"thread_id": session_id}})
+        values = getattr(snap, "values", None) or {}
+        ctx = values.get("run_context") or {}
+        if isinstance(ctx, dict):
+            return str(ctx.get("project") or "")
+    except Exception:  # noqa: BLE001
+        pass
+    return ""
 
 
 def has_checkpoint(session_id: str) -> bool:
@@ -332,6 +367,10 @@ def resume_run(session_id: str, user_id: str, decision: str, feedback: dict, con
         (False, 原因)，避免静默重放整张图。
     """
     store = get_session_store()
+    # 工程名从 checkpoint 的 State 里取回（见 `project_from_checkpoint` 的说明）。
+    # 续跑是新线程，thread-local 不继承，所以不能靠 `capture()`；
+    # 读不到就空串，由 `asset_paths` 兜底成「未命名工程」，绝不因此让落盘失败。
+    project = project_from_checkpoint(session_id)
 
     # 关键：从"读会话状态"到"占用 _JOBS"必须**全程持同一把锁**。
     #
@@ -383,7 +422,10 @@ def resume_run(session_id: str, user_id: str, decision: str, feedback: dict, con
         command = Command(resume={"decision": decision, "feedback": feedback, "content": content})
         t = threading.Thread(
             target=_run_stream,
-            args=(command, session_id, user_id, existing.get("user_input", "")),
+            # ⚠️ 续跑必须把工程名一起带上：`_run_stream` 是新线程，
+            # thread-local 不继承；不带的话确认点之后产出的资产就会
+            # 掉进「未命名工程」目录，同一个项目的资产被劈成两半。
+            args=(command, session_id, user_id, existing.get("user_input", ""), project),
             daemon=True,
         )
         _JOBS[session_id] = t

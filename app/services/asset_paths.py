@@ -14,16 +14,20 @@
 
 现在统一成一条规则：
 
-    {output_dir}/{user}/{部门}/{职业}/{会话}/{类型}/{文件}
+    {output_dir}/{账号}/{项目名}/{部门}/{职业}/{会话}/{类型}/{文件}
 
-  · `user`   —— 账号 UID（重名/匿名不会撞在一起）
+  · `账号`   —— 账号 UID（重名/匿名不会撞在一起）
+  · `项目名` —— **当前工程名**（导演台工程栏那个）。
+                用户明确要求的分组依据："账号/项目名/部门/职业/会话/类型/文件"。
+                一个工程可以有多次运行（多个 session），产出要归到**工程**下，
+                这样"把某个项目的资产打包"才成立。
   · `部门`   —— 由职业反查（`app/core/org.py:dept_for_role`）
   · `职业`   —— 生成该资产的 role key
-  · `会话`   —— 一次运行/一个工程；没有会话时退化成 `no-session-<时间戳>`
+  · `会话`   —— 一次运行；没有会话时退化成按小时分桶的 `no-session-*`
   · `类型`   —— `images` / `videos` / `frames` / `audio` / `meta`
                 **图片与视频各占一个目录**，这是"独立放"的落点
 
-## 两个刻意的设计
+## 三个刻意的设计
 
 1. **类型目录用复数**（`images`/`videos`）。旧代码写的是单数 `video`，
    改齐之后老目录不会再被写入——这是有意的：宁可留一个空壳旧目录，
@@ -31,6 +35,9 @@
 
 2. **role 为空时用 `_unknown`**，不抛异常。产出落盘是"最后一公里"，
    因为它失败而丢掉已经花过钱的生成结果，代价远大于目录名不好看。
+
+3. **没有工程名时用 `未命名工程`**。用户可能没保存就直接跑——那也得有
+   地方落盘；统一叫这个名字，事后一眼能认出"这批没归到任何工程"。
 """
 
 from __future__ import annotations
@@ -105,6 +112,28 @@ def current_session() -> str:
     return f"no-session-{time.strftime('%Y%m%d-%H')}"
 
 
+def current_project() -> str:
+    """当前**工程名**（产出路径的第二层）。
+
+    用户指定的结构是「账号 / 项目名 / 部门 / 职业 / 会话 / 类型 / 文件」，
+    项目名就是这一层。
+
+    走 `runtime_settings.run_project()`——它在 `/api/crew/run` 时由前端传来的
+    工程名写入。没有工程（用户没保存就直接跑）时退化成 `未命名工程`：
+    那也得有地方落盘，而且统一叫这个名字，事后一眼能认出
+    "这批没归到任何工程"。
+    """
+    try:
+        from app.services.runtime_settings import run_project
+
+        p = run_project()
+        if p:
+            return safe_segment(p)
+    except Exception:  # noqa: BLE001
+        pass
+    return "未命名工程"
+
+
 def dept_for(role: str) -> str:
     """职业 → 部门。查不到时用 `_unknown`，不抛异常。"""
     try:
@@ -121,23 +150,25 @@ def asset_dir(
     kind: AssetKind,
     *,
     user: str | None = None,
+    project: str | None = None,
     session: str | None = None,
     create: bool = True,
 ) -> Path:
     """取（并按需创建）某职业某类资产的目录。
 
         asset_dir(settings.output_dir_path, "photographer", "images")
-        → {outputs}/{uid}/生图/photographer/2026.../images
+        → {outputs}/{账号}/小喵侦探-第1集/生图/photographer/2026.../images
 
     这是**唯一**的产出目录入口。任何新写的落盘代码都应当走它，
     不要再自己拼 `Path(out)/...`——那正是最初四处不一致的来源。
     """
     u = safe_segment(user) if user is not None else current_user()
+    proj = safe_segment(project, "未命名工程") if project is not None else current_project()
     sess = safe_segment(session) if session is not None else current_session()
     role_name = safe_segment(role, "_unknown")
     sub = _KIND_DIR.get(kind, kind)
 
-    d = Path(output_dir) / u / dept_for(role_name) / role_name / sess / sub
+    d = Path(output_dir) / u / proj / dept_for(role_name) / role_name / sess / sub
     if create:
         d.mkdir(parents=True, exist_ok=True)
     return d
@@ -150,6 +181,7 @@ def asset_path(
     filename: str,
     *,
     user: str | None = None,
+    project: str | None = None,
     session: str | None = None,
     create: bool = True,
 ) -> Path:
@@ -157,5 +189,6 @@ def asset_path(
     stem = safe_segment(Path(filename).stem, "out", limit=80)
     ext = _UNSAFE.sub("", Path(filename).suffix)[:12]
     return asset_dir(
-        output_dir, role, kind, user=user, session=session, create=create
+        output_dir, role, kind,
+        user=user, project=project, session=session, create=create,
     ) / f"{stem}{ext}"

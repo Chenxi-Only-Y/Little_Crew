@@ -26,6 +26,15 @@ export default function RunBar() {
   const beginRun = useCanvas((s) => s.beginRun);
   const applyEvent = useCanvas((s) => s.applyEvent);
   const endRun = useCanvas((s) => s.endRun);
+  /**
+   * 当前工程名 —— 它决定产出资产落在哪：
+   *
+   *     账号 / 项目名 / 部门 / 职业 / 会话 / 类型 / 文件
+   *
+   * 取自画布 store（工程栏那个输入框写的就是它）。没保存过工程时是
+   * 「未命名工程」，后端也用同一个兜底名，两边一致。
+   */
+  const projectName = useCanvas((s) => s.projectName);
 
   const [input, setInput] = useState('一只会说话的小猫想当侦探');
   const [busy, setBusy] = useState(false);
@@ -50,7 +59,7 @@ export default function RunBar() {
     for (const close of closers.current) close();
     closers.current = [];
 
-    const res = await startSession(text, getToken());
+    const res = await startSession(text, getToken(), undefined, projectName);
     if (!res.ok || !res.sessionId) {
       endRun(res.error ?? '启动失败');
       setBusy(false);

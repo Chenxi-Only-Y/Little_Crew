@@ -22,6 +22,8 @@ from typing import Iterator
 
 #: 会话 ID 的合法字符（与 `sessions.session_id` 的取值一致：短 hex）
 _MAX_ID_LEN = 64
+#: 工程名上限（人取的名字，比 id 宽一些；仍要截断防滥用）
+_MAX_PROJECT_LEN = 80
 
 
 @dataclass(frozen=True)
@@ -30,23 +32,33 @@ class RunContext:
 
     Attributes:
         user_id:    用户标识（UID 或用户名；空 = 匿名/local）
-        session_id: 会话标识（用于产物归档与状态查询）
+        project:    **工程名**（导演台工程栏那个）。产物路径的第二层分组依据：
+                    `账号/项目名/部门/职业/会话/类型/文件`。
+        session_id: 会话标识（一次运行；用于产物归档与状态查询）
         role:       当前职业 key（如 "photographer"），用于按职业读配置
     """
 
     user_id: str = ""
+    project: str = ""
     session_id: str = ""
     role: str = ""
 
     def as_dict(self) -> dict:
         """可放进 LangGraph State 的普通 dict（State 需可序列化）。"""
-        return {"user_id": self.user_id, "session_id": self.session_id, "role": self.role}
+        return {
+            "user_id": self.user_id,
+            "project": self.project,
+            "session_id": self.session_id,
+            "role": self.role,
+        }
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "RunContext":
         d = d or {}
         return cls(
             user_id=str(d.get("user_id") or "")[:_MAX_ID_LEN],
+            # 工程名是人取的名字，可以长一些，但仍要截断防滥用
+            project=str(d.get("project") or "")[:_MAX_PROJECT_LEN],
             session_id=str(d.get("session_id") or "")[:_MAX_ID_LEN],
             role=str(d.get("role") or "")[:_MAX_ID_LEN],
         )
@@ -74,6 +86,7 @@ class RunContext:
         current = rs.capture()
         if current.get("user") not in ("", "_global") or current.get("session_id"):
             return cls(user_id=current.get("user") or "",
+                       project=current.get("project") or "",
                        session_id=current.get("session_id") or "")
 
         return cls(user_id="", session_id=str(s.get("session_id") or ""))
@@ -96,7 +109,7 @@ def bind(ctx: RunContext | None) -> Iterator[RunContext]:
 
     prev = rs.capture()
     try:
-        rs.set_context(ctx.user_id or None, ctx.session_id or None)
+        rs.set_context(ctx.user_id or None, ctx.session_id or None, ctx.project or None)
         yield ctx
     finally:
         rs.restore(prev)
