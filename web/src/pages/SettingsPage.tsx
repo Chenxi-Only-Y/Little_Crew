@@ -434,6 +434,19 @@ export default function SettingsPage() {
   };
 
   /**
+   * 把 CAP_GROUPS 的**前缀**规范成 `/api/providers` 用的**能力名**。
+   *
+   * 两者大多相同（`llm` / `image` / `video` / `tts`），只有一处不同：
+   *   前端前缀 `image` → 能力 `image_gen`
+   *   前端前缀 `lora`  → 能力 `lora_train`
+   *
+   * 不规范化的话 `p.capability !== capPrefix` 永远成立，
+   * 白名单会变空 —— 表现就是那组下拉里**一个提供者都没有**。
+   */
+  const capabilityOf = (capPrefix: string): string =>
+    capPrefix === 'image' ? 'image_gen' : capPrefix === 'lora' ? 'lora_train' : capPrefix;
+
+  /**
    * 下拉选项：内部 provider key → 后端给的友好名。
    *
    * 只收**当前字段所属能力**的提供者，避免把图像提供者混进文字模型下拉。
@@ -465,8 +478,9 @@ export default function SettingsPage() {
   /** 某模式下该能力**可选**的提供者（模式过滤的单一判据）。 */
   const allowedProviders = (capPrefix: string) => {
     const mode = modeOf(capPrefix);
+    const cap = capabilityOf(capPrefix);
     return providers.filter((p) => {
-      if (p.capability !== capPrefix) return false;
+      if (p.capability !== cap) return false;
       // 协议对不上的（如 unverified）不列 —— 选了必然失败
       if (p.api_style !== 'openai') return false;
       if (mode === 'local' && !p.is_local) return false;
@@ -486,11 +500,47 @@ export default function SettingsPage() {
    *
    * 所以要把**选项本身**过滤掉。`"(自动)"` 不是提供者（表示"跟随默认"），
    * 必须保留，否则用户没法表达"不覆盖"。
+   *
+   * ⚠️ **判据不能写成 `includes('_provider_')`** —— 这个坑我踩了两次：
+   *
+   *   · `llm_provider_mode` **含** `_provider_`，但它是**模式**字段
+   *     （选项是 unset / cloud / local），套上白名单会被清空，
+   *     select 直接塌成一条缝（用户看到的就是这个）；
+   *   · `tts_provider` / `video_provider` / `lora_train_provider` **不含**
+   *     `_provider_`（结尾没有后续下划线），但它们是**真正的提供者**字段 ——
+   *     漏掉它们等于完全不过滤。
+   *
+   * 正确判据：**是 select、键里含 `provider`、且不以 `_provider_mode` 结尾**。
    */
-  const allowedOptionsFor = (capPrefix: string): string[] => [
-    '(自动)',
-    ...allowedProviders(capPrefix).map((p) => p.key),
-  ];
+  const allowedOptionsFor = (f: ConfigField, capPrefix: string): string[] | undefined => {
+    if (f.type !== 'select') return undefined;
+    if (!f.key.includes('provider')) return undefined;
+    if (f.key.endsWith('_provider_mode')) return undefined; // 模式字段不限制
+    return ['(自动)', ...allowedProviders(capPrefix).map((p) => p.key)];
+  };
+
+  /**
+   * 下拉的**分组标签**（值 → 组名）。
+   *
+   * 用户："api 里会出现 本地 我希望分开"。
+   *
+   * 模式选定后下拉本来就只剩一类，分组看不出来；但模式是 `unset`
+   * （"— 请选择 —"）时按设计要列全部，两档混在一起。这时用
+   * `<optgroup>` 把"本地 / 零成本"和"云端 / 网关"分成两块，
+   * 一眼就是两类 —— 且 optgroup 是纯标签、没有 value，
+   * 不会像插入占位项那样被回显成假选项。
+   */
+  const optionGroupsFor = (f: ConfigField, capPrefix: string): Record<string, string> | undefined => {
+    if (f.type !== 'select') return undefined;
+    if (!f.key.includes('provider') || f.key.endsWith('_provider_mode')) return undefined;
+    const cap = capabilityOf(capPrefix);
+    const out: Record<string, string> = {};
+    for (const p of providers) {
+      if (p.capability !== cap || p.api_style !== 'openai') continue;
+      out[p.key] = p.is_local ? '本地 / 零成本（不用填 Key）' : '云端 API / 网关（需要 Key）';
+    }
+    return out;
+  };
 
   /** 某能力在某模式下可选的提供者名（用于模式字段下方的提示文案）。 */
   const providerNamesForMode = (capPrefix: string): string[] =>
@@ -503,7 +553,8 @@ export default function SettingsPage() {
       field={f}
       current={settings?.[f.key]}
       optionLabels={optionLabelsFor(capPrefix)}
-      allowedOptions={allowedOptionsFor(capPrefix)}
+      allowedOptions={allowedOptionsFor(f, capPrefix)}
+      optionGroups={optionGroupsFor(f, capPrefix)}
       onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
     />
   );

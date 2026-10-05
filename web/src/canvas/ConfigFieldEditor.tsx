@@ -60,6 +60,18 @@ interface Props {
    * 缺省（不传）时保持原行为：用 `field.options` 全部。
    */
   allowedOptions?: readonly string[];
+  /**
+   * 把下拉选项**分组显示**（`值 → 组名`）。用于"本地 / 云端"分块。
+   *
+   * 为什么用 `<optgroup>` 而不是在列表里插一行"── 云端 ──"：
+   * 插入的占位项**本身是个 option**（有 value），一旦它的 value 等于
+   * 当前值就会被回显成选中项，用户会看到一个假的选项。`optgroup` 是
+   * 纯分组标签，没有 value，不会参与选中。
+   *
+   * 未提供分组的选项归入 `<optgroup label="">`（无标题），
+   * 否则它们会从列表里消失。
+   */
+  optionGroups?: Record<string, string>;
 }
 
 export default function ConfigFieldEditor({
@@ -68,6 +80,7 @@ export default function ConfigFieldEditor({
   onSaved,
   optionLabels,
   allowedOptions,
+  optionGroups,
 }: Props) {
   const isSecret = field.secret || field.type === 'password';
   // 密钥字段初始留空（不回显）；其余回显当前值
@@ -180,11 +193,43 @@ export default function ConfigFieldEditor({
               void commit(e.target.value);
             }}
           >
-            {opts.map((o) => (
-              <option key={o} value={o}>
-                {optionLabel(o)}
-              </option>
-            ))}
+            {(() => {
+              if (!optionGroups) {
+                return opts.map((o) => (
+                  <option key={o} value={o}>
+                    {optionLabel(o)}
+                  </option>
+                ));
+              }
+              // 按组名归并，保持 opts 原顺序（组按首次出现排序）
+              const order: string[] = [];
+              const buckets = new Map<string, string[]>();
+              for (const o of opts) {
+                const g = optionGroups[o] ?? '';
+                if (!buckets.has(g)) {
+                  buckets.set(g, []);
+                  order.push(g);
+                }
+                buckets.get(g)!.push(o);
+              }
+              return order.map((g) =>
+                g ? (
+                  <optgroup key={g} label={g}>
+                    {buckets.get(g)!.map((o) => (
+                      <option key={o} value={o}>
+                        {optionLabel(o)}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  buckets.get(g)!.map((o) => (
+                    <option key={o} value={o}>
+                      {optionLabel(o)}
+                    </option>
+                  ))
+                ),
+              );
+            })()}
           </select>
         );
       }
