@@ -127,7 +127,7 @@ def asset_dir(
     """取（并按需创建）某职业某类资产的目录。
 
         asset_dir(settings.output_dir_path, "photographer", "images")
-        → {outputs}/{uid}/技术制作部/photographer/2026.../images
+        → {outputs}/{uid}/生图/photographer/2026.../images
 
     这是**唯一**的产出目录入口。任何新写的落盘代码都应当走它，
     不要再自己拼 `Path(out)/...`——那正是最初四处不一致的来源。

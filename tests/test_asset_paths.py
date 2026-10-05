@@ -25,7 +25,8 @@ def test_layout_has_user_dept_role_session_kind(tmp_path):
                       user="tester", session="proj-1")
     parts = p.relative_to(tmp_path).parts
     assert parts[0] == "tester", "第一段必须是账号"
-    assert "技术制作部" in parts[1], f"第二段应为部门，实际 {parts[1]}"
+    # 部门名来自注册表（app/registry/roles.py），photographer 属「生图」
+    assert parts[1] == "生图", f"第二段应为部门，实际 {parts[1]}"
     assert parts[2] == "photographer", "第三段必须是职业"
     assert parts[3] == "proj-1", "第四段必须是会话"
     assert parts[4] == "images", "第五段必须是资产类型"

@@ -8,26 +8,56 @@
 > 历史上这里写过"与前端 frontend/_org.py 保持一致"——
 > 那个 Streamlit 前端以及 `_org.py` 都已删除（前端现为 `web/` 导演台，
 > 它从 `/api/registry` 取职业定义，不再有第二份清单）。
+
+## ⚠️ 这张表曾经和注册表**对不上**，导致资产归错部门
+
+之前 `ROLE_ORG` 的 key 是更早一版的职业名（`writer` / `critics` /
+`rhythm_director` / `continuity_checker` / `director`），而注册表已经改成
+`showrunner` / `script_editor` / `supervising_editor` / `continuity` 等。
+实测 16 个职业里有 **8 个查不到**，`dept_for_role()` 全部落到兜底「综合」：
+
+    showrunner · script_editor · previs_artist · continuity
+    voice_director · supervising_editor · workflow_architect · technical_director
+
+后果是这些职业的产出被归到「综合」目录，没法按部门找到——
+正是"资产要独立放"想解决的问题本身。
+
+`tests/test_org.py` 现在会**双向核对**这张表与注册表：
+   · 注册表里每个职业都必须能查到（否则资产归错部门）；
+   · 这张表里不能有注册表已删除的 key（僵尸条目）。
 """
 
 # 职业 -> (部门中文名, 职业中文名)
+#
+# ⚠️ 这张表的正确性由 `tests/test_org.py` 对着注册表双向校验。
+#    改动注册表后必须同步这里，否则测试会直接指出哪几个 key 对不上。
 ROLE_ORG = {
-    "writer": ("创作策划部", "策划总监"),
-    "critics": ("创作策划部", "文学策划"),
-    "screenwriter": ("创作策划部", "编剧"),
-    "character_designer": ("美术资产部", "角色设计师"),
-    "scene_designer": ("美术资产部", "场景设计师"),
-    "storyboarder": ("导演分镜部", "分镜师"),
-    "rhythm_director": ("导演分镜部", "剪辑指导"),
-    "continuity_checker": ("导演分镜部", "场记"),
-    "director": ("技术制作部", "技术指导"),
-    "photographer": ("技术制作部", "摄影师"),
-    "quality_assessor": ("技术制作部", "质检总监"),
-    "editor": ("后期合成分发部", "剪辑师"),
-    "distributor": ("后期合成分发部", "发行总监"),
+    # 基建
+    "workflow_architect": ("基建", "工作流架构师"),
+    "technical_director": ("基建", "技术指导"),
+    # 策划
+    "showrunner": ("策划", "策划总监"),
+    "script_editor": ("策划", "文学策划"),
+    "screenwriter": ("策划", "编剧"),
+    "storyboarder": ("策划", "分镜师"),
+    # 资产
+    "character_designer": ("资产", "角色设计师"),
+    "scene_designer": ("资产", "场景设计师"),
+    # 生图
+    "photographer": ("生图", "摄影师"),
+    "quality_assessor": ("生图", "质检总监"),
+    # 白膜
+    "previs_artist": ("白膜", "白模预演师"),
+    # 动态
+    "continuity": ("动态", "场记"),
+    "voice_director": ("动态", "配音指导"),
+    # 后期
+    "supervising_editor": ("后期", "剪辑指导"),
+    "editor": ("后期", "剪辑师"),
+    "distributor": ("后期", "发行总监"),
 }
 
-# 已知的职业 key 列表（用于兜底分类）
+# 兜底：注册表里新增了职业但这里忘了同步时用
 _DEFAULT = ("综合", "其他")
 
 
