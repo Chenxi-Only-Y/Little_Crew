@@ -13,7 +13,7 @@
 
 import { useState } from 'react';
 import { MASK_SENTINEL, saveSettings } from '../api/settings';
-import { getToken } from '../api/auth';
+import { getToken, handleUnauthorized } from '../api/auth';
 import type { ConfigField } from '../domain/registry';
 
 const MODE_HINT: Record<string, string> = {
@@ -158,6 +158,13 @@ export default function ConfigFieldEditor({
     if (res.ok) {
       setMsg({ ok: true, text: '已保存' });
       onSaved(field.key, raw);
+    } else if (res.status === 401) {
+      // 未登录 / 凭据失效：**不能只说"保存失败"** —— 用户会以为是后端
+      // 坏了或自己填错了，而真正该做的是重新登录。
+      // （用户报的"本地选择过后切换不了云端"正是这个：界面看着已登录，
+      //   每次保存都 401，却没有任何提示。）
+      setMsg({ ok: false, text: '登录已失效，请重新登录后重试' });
+      handleUnauthorized();
     } else {
       setMsg({ ok: false, text: res.error ?? '保存失败' });
     }

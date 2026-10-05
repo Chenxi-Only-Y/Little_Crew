@@ -37,6 +37,14 @@ export interface SaveResult {
   ok: boolean;
   settings?: SettingsMap;
   error?: string;
+  /**
+   * HTTP 状态码（网络错误时为 undefined）。
+   *
+   * 为什么需要它：调用方要区分"没权限/未登录(401)"与"参数被拒(4xx)"——
+   * 前者应引导用户重新登录，后者才该显示"保存失败"。
+   * 只回一句字符串的话，调用方只能靠**匹配错误文案**判断，很脆。
+   */
+  status?: number;
 }
 
 /**
@@ -58,7 +66,9 @@ export async function saveSettings(
       body: JSON.stringify(changes),
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) return { ok: false, error: body?.message || `接口 ${res.status}` };
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: body?.message || `接口 ${res.status}` };
+    }
     return { ok: true, settings: (body.settings ?? {}) as SettingsMap };
   } catch (err) {
     return { ok: false, error: (err as Error).message };

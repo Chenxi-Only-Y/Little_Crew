@@ -95,14 +95,38 @@ export default function App() {
     return () => window.removeEventListener(REQUIRE_AUTH_EVENT, onRequire);
   }, []);
 
-  // ---- 已登录后才拉注册表 ----
+  /**
+   * 拉注册表。
+   *
+   * ## ⚠️ 为什么**不能**只在 `authenticated` 时拉（用户报的 bug）
+   *
+   * 原先条件是 `if (auth !== 'authenticated') return;`。后果：
+   *
+   *   · `auth` 只在"有 token 且 token 有效"时才变成 `authenticated`；
+   *   · token 失效时 `verifyToken` 返回 false → `clearAuth()` → `anonymous`；
+   *   · 而 `anonymous` 在这里**直接 return，注册表永不加载**；
+   *   · 设置页开头就是 `if (!registry) return <p>注册表尚未加载…</p>` ——
+   *     于是整页空白、**什么都点不了，包括切换云端/本地**。
+   *
+   * 用户看到的正是这个（截图："注册表尚未加载，无法列出可配置项" +
+   * 状态条"加载中…"）。
+   *
+   * 而 `loadRegistry()` **本来就有内置快照兜底**（`api/registry.ts`，
+   * 未登录时回退到构建时从后端导出的快照）—— 那道兜底形同虚设，
+   * 因为请求根本没发出去。
+   *
+   * 所以现在：**只要不在 `checking` 就拉**。未登录时拿到快照即可正常渲染，
+   * 用户能看到界面、能被引导去登录，而不是面对一块白板。
+   */
   useEffect(() => {
-    if (auth !== 'authenticated') return;
+    if (auth === 'checking') return;
     let alive = true;
     void (async () => {
-      const { registry: reg, source: src, error: err } = await loadRegistry();
+      const { registry: reg, source: src, error: err } = await loadRegistry(getToken());
       if (!alive) return;
       if (reg) setRegistry(reg, src);
+      // 未登录时 "未登录，已使用内置快照" 不是错误，只是提示；
+      // 但仍要 setLoading(false)，否则状态条永远显示"加载中…"
       setError(err);
       setLoading(false);
     })();

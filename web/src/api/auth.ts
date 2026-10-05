@@ -141,6 +141,30 @@ export function requireAuth(onSuccess?: () => void): void {
   window.dispatchEvent(new CustomEvent(REQUIRE_AUTH_EVENT));
 }
 
+/**
+ * 任何请求收到 **401** 时调用：清掉失效凭据并请用户重新登录。
+ *
+ * ## 为什么需要（用户报的 bug）
+ *
+ * 原先 token 在**页面使用期间**失效时，前端是**静默失败**：
+ *
+ *   · 保存设置 → `PUT /api/settings` 401 → 只显示一句"保存失败"，
+ *     用户以为是后端坏了或自己填错了，**不会想到要重新登录**；
+ *   · 更迷惑的是：界面顶部仍显示 `director`、仍像是登录态，
+ *     而每个写操作都悄悄不生效（用户原话"本地选择过后切换不了云端"）。
+ *
+ * 后端把 token 有效期设成 90 天，所以这不是"每天都会遇到"，
+ * 而是"某一天突然全都保存不了"——**越罕见越难排查**，
+ * 因此必须给一个明确的出口。
+ *
+ * 做成"收到 401 就调"的通用函数，调用方只需传一次，
+ * 不必各自写一套判断。
+ */
+export function handleUnauthorized(): void {
+  clearAuth();
+  requireAuth();
+}
+
 /** 供 `AuthGate` 在登录成功后取走并清空待执行动作。 */
 export function consumePendingIntent(): (() => void) | null {
   const fn = pending;
