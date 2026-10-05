@@ -687,23 +687,59 @@ function FreeOrbit({ target }: { target: import('three').PerspectiveCamera | nul
     if (!controls) return;
     const cam = controls.object;
     const keys = new Set<string>();
+    /**
+     * `Shift` 不靠 `keys` 记录：它的 `e.key` 是 `'Shift'`，
+     * 而按住 Shift 再按别的键时，某些键盘布局/输入法会先丢 keyup。
+     * 直接读 `e.shiftKey` 最可靠。
+     */
+    let slowModifier = false;
     const down = (e: KeyboardEvent) => {
       // 焦点在输入框里时不要抢键（右栏有很多滑杆和文本框）
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      slowModifier = e.shiftKey;
       keys.add(e.key.toLowerCase());
     };
-    const up = (e: KeyboardEvent) => keys.delete(e.key.toLowerCase());
-    const blur = () => keys.clear();
+    const up = (e: KeyboardEvent) => {
+      slowModifier = e.shiftKey;
+      keys.delete(e.key.toLowerCase());
+    };
+    const blur = () => {
+      keys.clear();
+      slowModifier = false;
+    };
 
     const fwd = new Vector3();
     const right = new Vector3();
     const move = new Vector3();
 
-    const tick = () => {
+    /**
+     * ## 飞行速度（返工过一次："太快了"）
+     *
+     * 第一版是 `step = dist * 0.04`，**按帧算**：60fps 下等于每秒移动
+     * 2.4 倍距离——11 米外每秒跑 26 米，用户反馈"太快了"。
+     *
+     * 现在**按时间算**（不受帧率影响），基准压到人走路量级：
+     *
+     *     速度 = 到注视点的距离 × 0.22 米/秒
+     *     步长 = 速度 × 本帧耗时
+     *
+     * 于是 5 米处约 1.1 米/秒（接近步行）、15 米处 3.3 米/秒：
+     * 远处快速赶路、近处自然放慢。按住 `Shift` 再降一半，便于微调。
+     */
+    const SPEED_PER_METER = 0.22;
+    /** 单帧步长上限（米）：防掉帧时"跳一大步"直接穿过物体 */
+    const MAX_STEP = 0.2;
+    let last = performance.now();
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000);   // 卡顿时按 0.1 秒封顶
+      last = now;
       if (keys.size === 0) return;
+
       const dist = cam.position.distanceTo(controls.target);
-      const step = Math.max(0.02, dist * 0.04);   // 距离越远，步长越大
+      const slow = slowModifier ? 0.45 : 1;
+      const step = Math.min(MAX_STEP, dist * SPEED_PER_METER * dt * slow);
       // 相机的"前"用注视方向，保证 WASD 与视线一致
       fwd.subVectors(controls.target, cam.position).normalize();
       right.crossVectors(fwd, cam.up).normalize();
@@ -729,8 +765,8 @@ function FreeOrbit({ target }: { target: import('three').PerspectiveCamera | nul
     // 用 rAF 而不是 useFrame：`controls.update()` 已经在 useFrame 里跑，
     // 这里只负责根据按键改位置，频率不需要与渲染对齐。
     let raf = 0;
-    const loop = () => {
-      tick();
+    const loop = (now: number) => {
+      tick(now);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
