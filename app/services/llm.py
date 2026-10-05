@@ -41,6 +41,9 @@ _PRESETS = {
     "hunyuan": ("https://tokenhub.tencentmaas.com/v1", "hy3"),                          # 腾讯混元
     "stepfun": ("https://api.stepfun.com/v1", "step-5-preview"),                        # 阶跃 StepFun
     "baichuan": ("https://api.baichuan-ai.com/v1", "Baichuan4-Turbo"),                  # 百川
+    "minimax": ("https://api.minimax.io/v1", "MiniMax-M3"),                            # MiniMax 文本
+    "mistral": ("https://api.mistral.ai/v1", "mistral-large-latest"),                  # Mistral AI
+    "xai": ("https://api.x.ai/v1", "grok-4.7"),                                        # xAI Grok
     "ollama": ("http://localhost:11434/v1", "qwen2.5"),                                 # 本地部署
     "vllm": ("http://localhost:8000/v1", "Qwen/Qwen2.5-7B-Instruct"),                   # 本地 vLLM
     # ---- 聚合网关（OpenAI 兼容）：base_url 与各厂同一机制，key 用共同的 llm_api_key ----

@@ -261,6 +261,35 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                                "Baichuan-M3-Plus", "Baichuan-M3"),
                  note="OpenAI 兼容（https://api.baichuan-ai.com/v1）。"
                       "通用线为 Baichuan4 系；Baichuan-M3 系见医疗文档"),
+    # MiniMax 文本对话 —— 与已有的 image_gen / video_gen / tts 同 key、不同能力。
+    # ⚠️ 官方文档里 **abab 系列已完全消失**（Models 总览、model 枚举、
+    #    Release Notes 均无），但**未找到下线公告**，所以不写"已下线"，
+    #    只列当前在枚举里的型号。
+    #   https://platform.minimax.io/docs/api-reference/text-openai-api
+    ProviderSpec("minimax", "MiniMax 文本", "llm", "cn_cloud",
+                 default_model="MiniMax-M3",
+                 known_models=("MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed"),
+                 note="OpenAI 兼容（https://api.minimax.io/v1），官方同时提供 "
+                      "Anthropic 兼容端点。abab 系列已不在官方文档中。"
+                      "M3.1-Flash-Preview 目前公开 API 调不到，故未列"),
+    # Mistral AI
+    #   https://github.com/mistralai/platform-docs-public/blob/main/openapi.yaml
+    ProviderSpec("mistral", "Mistral AI", "llm", "overseas_cloud",
+                 default_model="mistral-large-latest", needs_proxy=True,
+                 known_models=("mistral-large-latest", "mistral-medium-latest",
+                               "mistral-small-latest"),
+                 note="OpenAI 风格 /v1/chat/completions；另有区域端点 "
+                      "api.eu.mistral.ai / api.us.mistral.ai"),
+    # xAI Grok
+    #   https://github.com/xai-org/xai-sdk-ts/blob/main/src/constants.ts
+    #   https://github.com/xai-org/xai-sdk-ts/blob/main/src/models.ts
+    ProviderSpec("xai", "xAI Grok", "llm", "overseas_cloud",
+                 default_model="grok-4.7", needs_proxy=True,
+                 known_models=("grok-4.7", "grok-4.6", "grok-4.5", "grok-4.20"),
+                 note="⚠️ 官方主线已是 Responses API，Chat Completions 被归入 "
+                      "文档 legacy 目录（据官方文档 URL 结构推断，未读到「OpenAI "
+                      "兼容」页面原文）；本项目的客户端走 chat completions，"
+                      "**若 legacy 端点下线则需改造**"),
     # ---- 下面三家：官网在本机网络下不可达，证据来自替代的官方来源（见上）----
     ProviderSpec("openai", "OpenAI", "llm", "overseas_cloud",
                  default_model="gpt-6.1-sol", needs_proxy=True,
