@@ -214,6 +214,15 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                                "doubao-seed-2-1-lite-260915", "doubao-seed-2-1-turbo-260628"),
                  note="doubao-pro-32k 等旧名已不在模型列表。"
                       "https://docs.volcengine.com/docs/ark/model-list"),
+    # 小米 MiMo —— 官方文档原文核对（2026-10）：
+    #   https://mimo.mi.com/docs/zh-CN/api/chat/openai-api  （请求地址与认证）
+    #   https://mimo.mi.com/docs/zh-CN/api/model/list-models （GET /v1/models 的响应原文）
+    ProviderSpec("mimo", "小米 MiMo", "llm", "cn_cloud",
+                 default_model="mimo-v2.6-pro",
+                 known_models=("mimo-v2.6-pro-ultraspeed", "mimo-v2.6-pro", "mimo-v2.6-flash",
+                               "mimo-v2.5-pro"),
+                 note="OpenAI 兼容（base_url https://api.xiaomimimo.com/v1）；"
+                      "认证头是 api-key 或 Bearer。同平台另有 ASR / TTS 模型"),
     ProviderSpec("ernie", "百度文心（千帆）", "llm", "cn_cloud",
                  default_model="ernie-5.1",
                  known_models=("ernie-5.1", "ernie-5.0", "ernie-5.0-thinking-latest",
