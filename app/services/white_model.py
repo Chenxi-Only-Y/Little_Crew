@@ -184,11 +184,11 @@ DEFAULT_LENGTHS: dict[str, float] = {
 
 #: 关节球默认半径（米）。要比相接的肢体略细，否则会鼓出疙瘩。
 DEFAULT_RADII: dict[str, float] = {
-    "pelvis": 0.062, "spine": 0.062, "chest": 0.068, "neck": 0.034, "head": 0.115,
+    "pelvis": 0.084, "spine": 0.087, "chest": 0.095, "neck": 0.045, "head": 0.129,
     "sho_l": 0.055, "elb_l": 0.048, "wri_l": 0.04,
     "sho_r": 0.055, "elb_r": 0.048, "wri_r": 0.04,
-    "hip_l": 0.08, "kne_l": 0.07, "ank_l": 0.052, "foot_l": 0.0,
-    "hip_r": 0.08, "kne_r": 0.07, "ank_r": 0.052, "foot_r": 0.0,
+    "hip_l": 0.088, "kne_l": 0.072, "ank_l": 0.053, "foot_l": 0.0,
+    "hip_r": 0.088, "kne_r": 0.072, "ank_r": 0.053, "foot_r": 0.0,
 }
 
 #: 默认体块表 —— 这是"一个完整的人"的定义。
@@ -197,22 +197,22 @@ DEFAULT_RADII: dict[str, float] = {
 #: 于是渲染出来仍是一具完整的人，而不是"缺零件的怪物"或直接失败。
 #: 与前端 `bodySpec.ts` 的 `DEFAULT_SEGMENTS` 必须一致。
 DEFAULT_SEGMENTS: list[dict] = [
-    {"joint": "spine", "shape": "capsule", "r0": 0.064, "r1": 0.06},
-    {"joint": "chest", "shape": "capsule", "r0": 0.07, "r1": 0.068},
-    {"joint": "neck", "shape": "taperedCylinder", "r0": 0.036, "r1": 0.036},
-    {"joint": "head", "shape": "sphere", "r0": 0.115, "r1": 0.115},
-    {"joint": "elb_l", "shape": "taperedCylinder", "r0": 0.055, "r1": 0.046},
+    {"joint": "spine", "shape": "capsule", "r0": 0.089, "r1": 0.083},
+    {"joint": "chest", "shape": "capsule", "r0": 0.097, "r1": 0.092},
+    {"joint": "neck", "shape": "taperedCylinder", "r0": 0.047, "r1": 0.047},
+    {"joint": "head", "shape": "sphere", "r0": 0.129, "r1": 0.129},
+    {"joint": "elb_l", "shape": "taperedCylinder", "r0": 0.061, "r1": 0.051},
     {"joint": "wri_l", "shape": "taperedCylinder", "r0": 0.046, "r1": 0.038},
-    {"joint": "elb_r", "shape": "taperedCylinder", "r0": 0.055, "r1": 0.046},
+    {"joint": "elb_r", "shape": "taperedCylinder", "r0": 0.061, "r1": 0.051},
     {"joint": "wri_r", "shape": "taperedCylinder", "r0": 0.046, "r1": 0.038},
     {"joint": "wri_l", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.075, 0.16, 0.03]},
     {"joint": "wri_r", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.075, 0.16, 0.03]},
-    {"joint": "kne_l", "shape": "taperedCylinder", "r0": 0.088, "r1": 0.062},
+    {"joint": "kne_l", "shape": "taperedCylinder", "r0": 0.097, "r1": 0.069},
     {"joint": "ank_l", "shape": "taperedCylinder", "r0": 0.062, "r1": 0.048},
-    {"joint": "kne_r", "shape": "taperedCylinder", "r0": 0.088, "r1": 0.062},
+    {"joint": "kne_r", "shape": "taperedCylinder", "r0": 0.097, "r1": 0.069},
     {"joint": "ank_r", "shape": "taperedCylinder", "r0": 0.062, "r1": 0.048},
-    {"joint": "foot_l", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.085, 0.048, 0.145]},
-    {"joint": "foot_r", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.085, 0.048, 0.145]},
+    {"joint": "foot_l", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.098, 0.05, 0.22]},
+    {"joint": "foot_r", "shape": "box", "r0": 0.0, "r1": 0.0, "size": [0.098, 0.05, 0.22]},
 ]
 
 #: 允许的姿态预设（只影响 `rotations` 的初始值，不再决定几何结构）

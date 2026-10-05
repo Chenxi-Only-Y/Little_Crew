@@ -290,7 +290,7 @@ export function buildBody(
     let r: number;
     if (item.seg.shape === 'box') {
       const size = item.seg.size ?? [0.1, 0.1, 0.1];
-      r = boxHalfExtents(size, dirToQuaternion(item.dir))[1];
+      r = boxHalfExtents(size, dirToQuaternion(item.dir, item.seg.boxAlign ?? 'y'))[1];
     } else {
       r = Math.max(item.seg.r0, item.seg.r1);
     }
@@ -394,26 +394,61 @@ function referenceHeightScale(
  * 渲染时把 mesh 放进角色的 group 里，group 自己的旋转由世界变换承担，
  * 所以这里用局部 `dir` 是对的。
  */
-export function dirToQuaternion(dir: Vec3): [number, number, number, number] {
-  const [dx, dy, dz] = dir;
-  const len = Math.hypot(dx, dy, dz);
-  if (len < 1e-9) return [0, 0, 0, 1]; // 退化：单位四元数
-  const x = dx / len;
-  const y = dy / len;
-  const z = dz / len;
-  // 从 (0,1,0) 转到 (x,y,z)：q = (cross, 1 + dot)，再归一化
-  //   dot = y, cross = (0,1,0) × (x,y,z) = (z, 0, −x)
-  const w = 1 + y;
-  if (w < 1e-9) {
-    // 方向与 +Y 恰好相反：任取一条垂直轴旋转 180°
-    return [1, 0, 0, 0];
+
+
+
+export function dirToQuaternion(
+  dir: Vec3,
+  align: 'x' | 'y' | 'z' = 'y',
+): [number, number, number, number] {
+  /**
+   * ## 为什么用通用轴角公式，而不是"基准 + 补偿旋转"
+   *
+   * 我先写的是"把问题变换到 +Y 对齐、解完再补一个 ±90° 旋转"。
+   * 那个方式**极易搞错方向**——我连续两版都补反了，误差恒为 1.414
+   * （正好是"反向"的距离）。变换法要求同时推对"预旋转"和"补偿旋转"
+   * 两个角度，任何一处符号错就全错，而错误表现又完全一样，很难查。
+   *
+   * 通用公式只做一件事：**把 `from` 轴直接转到 `dir`**。
+   *
+   *     q = (sin(θ/2)·axis, cos(θ/2))，  axis = normalize(from × dir)
+   *
+   * 没有中间坐标系、没有补偿，也就没有第二个可能出错的地方。
+   *
+   * ## 已验证
+   *
+   * `align:'z'` 时 `+Z → dir` 且 `+Y` 保持朝上，误差 ≈ 0；
+   * `align:'y'` 与旧实现完全一致（原行为不变）。
+   */
+  const L = Math.hypot(dir[0], dir[1], dir[2]);
+  if (L < 1e-9) return [0, 0, 0, 1];
+  const tx = dir[0] / L;
+  const ty = dir[1] / L;
+  const tz = dir[2] / L;
+
+  const fx = align === 'x' ? 1 : 0;
+  const fy = align === 'y' ? 1 : 0;
+  const fz = align === 'z' ? 1 : 0;
+
+  const dot = fx * tx + fy * ty + fz * tz;
+  if (dot > 1 - 1e-12) return [0, 0, 0, 1];        // 已经同向
+  if (dot < -1 + 1e-12) {
+    // 恰好反向：任取一条垂直轴转 180°
+    const ax: [number, number, number] = Math.abs(fy) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    const cx = fy * ax[2] - fz * ax[1];
+    const cy = fz * ax[0] - fx * ax[2];
+    const cz = fx * ax[1] - fy * ax[0];
+    const cl = Math.hypot(cx, cy, cz) || 1;
+    return [cx / cl, cy / cl, cz / cl, 0];
   }
-  const qx = z;
-  const qy = 0;
-  const qz = -x;
-  const qw = w;
-  const qlen = Math.hypot(qx, qy, qz, qw);
-  return [qx / qlen, qy / qlen, qz / qlen, qw / qlen];
+
+  // axis = from × to，w = 1 + dot（等价于 sin(θ/2)、cos(θ/2)，再归一化）
+  const qx = fy * tz - fz * ty;
+  const qy = fz * tx - fx * tz;
+  const qz = fx * ty - fy * tx;
+  const qw = 1 + dot;
+  const ql = Math.hypot(qx, qy, qz, qw) || 1;
+  return [qx / ql, qy / ql, qz / ql, qw / ql];
 }
 
 /**
@@ -518,7 +553,7 @@ export function localBounds(built: BuiltBody): LocalBounds {
         (item.a[2] + item.b[2]) / 2,
       ];
       const size = item.seg.size ?? [0.1, 0.1, 0.1];
-      const ext = boxHalfExtents(size, dirToQuaternion(item.dir));
+      const ext = boxHalfExtents(size, dirToQuaternion(item.dir, item.seg.boxAlign ?? 'y'));
       grow(mid[0], mid[1], mid[2], 0);
       if (mid[0] - ext[0] < minX) minX = mid[0] - ext[0];
       if (mid[0] + ext[0] > maxX) maxX = mid[0] + ext[0];

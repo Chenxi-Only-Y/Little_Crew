@@ -314,7 +314,11 @@ function SpecSegment({
    * 有耦合，实测残差 0.15 → 手脚横躺）。四元数误差是机器精度。
    * 而且它绕开了"欧拉顺序到底是 XYZ 还是 YXZ"这个我错了两次的地方。
    */
-  const quat = dirToQuaternion(dir);
+  /**
+   * 手掌/脚掌的朝向：**长边**要顺着骨方向。
+   * 脚掌用 `boxAlign:'z'`（长边是前后），手掌缺省 `'y'`。
+   */
+  const quat = dirToQuaternion(dir, seg.shape === 'box' ? (seg.boxAlign ?? 'y') : 'y');
 
   if (seg.shape === 'box') {
     // 手掌/脚掌：一块有长宽高的板，按盒子尺寸画，朝向同段

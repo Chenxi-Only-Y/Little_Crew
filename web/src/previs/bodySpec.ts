@@ -124,12 +124,12 @@ export const BODY_DEFAULT_LENGTHS: Record<string, number> = {
 
 /** 默认关节球半径（米）。关节球用来填住两段肢体交接处的缝隙。 */
 export const BODY_DEFAULT_RADII: Record<string, number> = {
-  pelvis: 0.062, spine: 0.062, chest: 0.068, neck: 0.034, head: 0.115,
+  pelvis: 0.084, spine: 0.087, chest: 0.095, neck: 0.045, head: 0.129,
   // 肘/腕/膝/踝的球要**略小于**相接的肢体半径，否则交接处会鼓出疙瘩
   sho_l: 0.055, elb_l: 0.048, wri_l: 0.04,
   sho_r: 0.055, elb_r: 0.048, wri_r: 0.04,
-  hip_l: 0.08, kne_l: 0.07, ank_l: 0.052, foot_l: 0.0,
-  hip_r: 0.08, kne_r: 0.07, ank_r: 0.052, foot_r: 0.0,
+  hip_l: 0.088, kne_l: 0.072, ank_l: 0.053, foot_l: 0.0,
+  hip_r: 0.088, kne_r: 0.072, ank_r: 0.053, foot_r: 0.0,
 };
 
 /**
@@ -193,28 +193,28 @@ export const BODY_ROOT_WIDTH = { hip: 0.055 };
 /** 默认体块表 —— 这是"一个完整的人"的定义，也是缺字段时的兜底。 */
 export const DEFAULT_SEGMENTS: BodySegment[] = [
   // 躯干：两段胶囊（不是三个球，那样会糊成一坨菱形）
-  { joint: 'spine', shape: 'capsule', r0: 0.064, r1: 0.06 },
-  { joint: 'chest', shape: 'capsule', r0: 0.07, r1: 0.068 },
-  { joint: 'neck', shape: 'taperedCylinder', r0: 0.036, r1: 0.036 },
-  { joint: 'head', shape: 'sphere', r0: 0.115, r1: 0.115 },
+  { joint: 'spine', shape: 'capsule', r0: 0.089, r1: 0.083 },
+  { joint: 'chest', shape: 'capsule', r0: 0.097, r1: 0.092 },
+  { joint: 'neck', shape: 'taperedCylinder', r0: 0.047, r1: 0.047 },
+  { joint: 'head', shape: 'sphere', r0: 0.129, r1: 0.129 },
 
   // 手臂：上臂略粗、前臂略细
-  { joint: 'elb_l', shape: 'taperedCylinder', r0: 0.055, r1: 0.046 },
+  { joint: 'elb_l', shape: 'taperedCylinder', r0: 0.061, r1: 0.051 },
   { joint: 'wri_l', shape: 'taperedCylinder', r0: 0.046, r1: 0.038 },
-  { joint: 'elb_r', shape: 'taperedCylinder', r0: 0.055, r1: 0.046 },
+  { joint: 'elb_r', shape: 'taperedCylinder', r0: 0.061, r1: 0.051 },
   { joint: 'wri_r', shape: 'taperedCylinder', r0: 0.046, r1: 0.038 },
   // 手掌：方块，扁而略长
   { joint: 'wri_l', shape: 'box', r0: 0, r1: 0, size: [0.075, 0.16, 0.03] },
   { joint: 'wri_r', shape: 'box', r0: 0, r1: 0, size: [0.075, 0.16, 0.03] },
 
   // 腿：大腿粗、小腿**明显更细**（先前 0.085→0.07 对比太小，像柱子）
-  { joint: 'kne_l', shape: 'taperedCylinder', r0: 0.088, r1: 0.062 },
+  { joint: 'kne_l', shape: 'taperedCylinder', r0: 0.097, r1: 0.069 },
   { joint: 'ank_l', shape: 'taperedCylinder', r0: 0.062, r1: 0.048 },
-  { joint: 'kne_r', shape: 'taperedCylinder', r0: 0.088, r1: 0.062 },
+  { joint: 'kne_r', shape: 'taperedCylinder', r0: 0.097, r1: 0.069 },
   { joint: 'ank_r', shape: 'taperedCylinder', r0: 0.062, r1: 0.048 },
   // 脚掌：方块，前后方向长
-  { joint: 'foot_l', shape: 'box', r0: 0, r1: 0, size: [0.085, 0.048, 0.145] },
-  { joint: 'foot_r', shape: 'box', r0: 0, r1: 0, size: [0.085, 0.048, 0.145] },
+  { joint: 'foot_l', shape: 'box', r0: 0, r1: 0, size: [0.098, 0.05, 0.22], boxAlign: 'z' },
+  { joint: 'foot_r', shape: 'box', r0: 0, r1: 0, size: [0.098, 0.05, 0.22], boxAlign: 'z' },
 ];
 
 export const DEFAULT_PROPORTIONS = {
@@ -437,11 +437,29 @@ export function resolvedOffset(spec: WhiteModelSpec, joint: string): Vec3 {
   const up = joint === 'spine' || joint === 'chest' || joint === 'neck' || joint === 'head';
   const vy = up ? len : -len;
 
-  // 肩/髋：横向分开 + 一点点下垂（不是一整根骨头）
+  /**
+   * 肩/髋：横向分开 + 一点点下垂（不是一整根骨头）。
+   *
+   * ## 手臂必须**贴着**躯干，横向量要减掉臂半径（这里返工过一次）
+   *
+   * `proportions.shoulderWidth` 的语义是**肩的横向位置**。
+   * 我一开始直接把它当肩关节的 x 用：
+   *
+   *     肩 x = 肩宽/2 = 0.187
+   *     → 手臂内侧 x = 0.187 − 臂半径 0.051 = 0.136
+   *     → 躯干侧面 x = 胸球半径 0.063
+   *     → **间隙 0.073 米**：手臂悬空飘在身体外面，根本没连上
+   *
+   * 人体上臂是**贴着胸廓**的（自然站立时几乎没有缝）。所以横向量要
+   * 从"躯干侧面"起算，再减掉臂半径，让手臂内侧**落在躯干表面之内**：
+   *
+   *     肩 x = 躯干侧面 + 臂半径 − 一点重叠
+   */
   if (joint.startsWith('sho_')) {
-    const lateral = (p.height * p.shoulderWidth) / 2;
     const drop = p.height * BODY_ROOT_DROP.shoulder;
-    return [joint.endsWith('_l') ? lateral : -lateral, -drop, 0];
+    const sign = joint.endsWith('_l') ? 1 : -1;
+    const lateral = shoulderLateral(spec, sign);
+    return [lateral, -drop, 0];
   }
   if (joint.startsWith('hip_')) {
     const lateral = p.height * BODY_ROOT_WIDTH.hip;
@@ -449,6 +467,45 @@ export function resolvedOffset(spec: WhiteModelSpec, joint: string): Vec3 {
     return [joint.endsWith('_l') ? lateral : -lateral, -drop, 0];
   }
   return [0, vy, 0];
+}
+
+/**
+ * 肩关节的横向位置（米，带符号）。
+ *
+ * `shoulderWidth` 是"肩距 ÷ 身高"，但它**不能直接当成肩关节的 x**：
+ * 那样手臂会悬在身体外面（实测间隙 0.073 米）。手臂要贴着躯干，
+ * 所以从躯干侧面起算并减掉臂半径：
+ *
+ *     肩 x = ±(肩宽/2 − 躯干半径 − 臂半径 + 重叠量)
+ *
+ * 重叠量取 0.012：刻意让手臂**略微嵌进**躯干一点点，
+ * 因为两段圆柱/胶囊在交接处必然有弧形缝隙，不重叠就会看到一道黑缝。
+ */
+function shoulderLateral(spec: WhiteModelSpec, sign: 1 | -1): number {
+  const p = spec.proportions;
+  const scaleAll = p.height / DEFAULT_PROPORTIONS.height;
+  const half = (p.height * p.shoulderWidth) / 2;
+  const torsoR = (BODY_DEFAULT_RADII.chest ?? 0.068) * scaleAll * p.chubbiness;
+  const armR = (BODY_DEFAULT_RADII.elb_l ?? 0.048) * scaleAll * p.limbRatio;
+
+  /**
+   * 关键：肩关节的 x 必须**大于**躯干半径，否则整条手臂插进躯干里。
+   *
+   * 我先前写了 `Math.max(half * 0.35, half − torsoR − armR + overlap)`
+   * 想表达"手臂贴住躯干"，但那个 `half*0.35` 的下限会在躯干变粗后
+   * **反而把肩拉回中轴**：肩 x 被钳到 0.060，而躯干半径已经 0.077 ——
+   * 手臂整个埋进身体（用户看到的"没有贴手臂"）。
+   *
+   * 正确做法：手臂内侧（肩 x − 臂半径）落在**躯干表面附近**：
+   *
+   *     肩 x = 躯干半径 + 臂半径 − 重叠
+   *
+   * 但也不能超过用户设的肩宽（那才是"肩有多宽"的定义），
+   * 所以取两者中**较小**的，并保证不小于躯干半径（不插进身体）。
+   */
+  const fromTorso = torsoR + armR - 0.012 * scaleAll;
+  const lateral = Math.min(Math.max(half, fromTorso), fromTorso + 0.03 * scaleAll);
+  return sign * lateral;
 }
 
 /** 把比例系数折算成各关节球的最终半径 */
