@@ -16,20 +16,22 @@
  *
  * 现在按能力收成一张张卡：**这张卡里就是这个能力的全部设置**。
  *
- * 为什么按"能力"而不是按"职业"分组：`image_provider_mode` 这类模式字段
- * 是**能力级**的（5 个），而 `image_provider_photographer` 这类覆盖是
- * **职业级**的。按职业分会把同一个模式下拉复制很多遍（或让人找不到它在哪）。
- * 按能力分组后，职业覆盖作为该能力的"细化"折叠在下面——
- * 既满足"按职业分"，又不重复。
+ * ## ⚠️ 职业后缀可能是**旧键名**（返工过的地方）
  *
- * ## 三条仍然成立的设计原则
+ * 注册表里这些字段的写法是：
  *
- *   1. **必选项要显眼**：云端/本地没选时后端会明确报错（不猜），
- *      所以未选的能力卡片会高亮，并在页面顶部汇总提示。
- *   2. **能改的一定存得下**：白名单由后端从注册表派生，本页只渲染
- *      注册表实际声明的配置字段，不自己造键。
- *   3. **费用只提醒不拦截**（用户 2026-10-02 的决定）：
- *      云端项标出单价与本次预估，但不阻止执行。
+ *     llm_provider_writer         （showrunner 的旧名）
+ *     llm_provider_critics        （script_editor 的旧名）
+ *     llm_provider_director       （technical_director 的旧名）
+ *     llm_provider_photographer   （这个才是当前 key）
+ *
+ * 我第一版只拿"当前职业 key"去匹配后缀，于是 `_writer` / `_critics` /
+ * `_director` 这些**匹配不上**，被当成"能力级全局字段"渲染到卡顶——
+ * 结果卡顶出现一排"文字模型来源 / 模型 / API Key"，而下面按职业展开里
+ * **又是同一批字段**。用户看到的就是"同一行重复两遍、还分不清哪个是哪个"。
+ *
+ * 现在改成通用的**后缀剥离**：收集所有可能的角色标识（节点 key、
+ * 职业 key、职业的旧键名），穷举匹配最长后缀。注册表再加旧名也不会漏。
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -90,16 +92,14 @@ function toConfigField(c: CredField): ConfigField {
  *
  * `cap` 与后端 `/api/providers/modes` 的 `capability` 对齐
  * （`image_edit` 归入"图像生成"——对用户来说都是"出图"，不该分成两卡）。
- * `prefix` 用来把注册表里的字段键归到本组
+ * `prefixes` 用来把注册表里的字段键归到本组
  * （字段形如 `llm_provider_writer` / `image_model_photographer`）。
  */
 interface CapGroup {
   cap: string;
   title: string;
   desc: string;
-  /** 把字段键归到本组的前缀（不含尾下划线） */
   prefixes: string[];
-  /** 本能力产出的资产类型，用于文案 */
   kinds: string;
 }
 
@@ -149,6 +149,34 @@ function groupOfKey(key: string): CapGroup | null {
   return null;
 }
 
+/**
+ * 把一个字段键拆成「能力前缀 + 种类 + 角色后缀」。
+ *
+ * `roleIds` 是**所有可能的角色标识**（节点 key、职业 key、职业的旧键名），
+ * 由调用方从注册表收集。用穷举最长后缀匹配而不是"查当前职业列表"，
+ * 因为注册表里实际写的后缀是**旧键名**，只匹配当前 key 会漏掉它们，
+ * 把角色覆盖项误当成能力级全局项（这正是"同一行重复两遍"的成因）。
+ */
+function splitKey(
+  key: string,
+  prefixes: string[],
+  roleIds: Set<string>,
+): { global: boolean; roleKey: string | null } {
+  let rest = key;
+  for (const p of prefixes) {
+    if (key.startsWith(`${p}_`)) {
+      rest = key.slice(p.length + 1);
+      break;
+    }
+  }
+  // 取**最长**匹配：避免 `director` 命中 `technical_director` 的尾段
+  const sorted = [...roleIds].sort((a, b) => b.length - a.length);
+  for (const rid of sorted) {
+    if (rest.endsWith(`_${rid}`)) return { global: false, roleKey: rid };
+  }
+  return { global: true, roleKey: null };
+}
+
 export default function SettingsPage() {
   const registry = useCanvas((s) => s.registry);
   const [settings, setSettings] = useState<SettingsMap | null>(null);
@@ -161,7 +189,6 @@ export default function SettingsPage() {
    * 为什么需要它：注册表里有 5 个"云端/本地"模式字段，但 `lora_train` 与
    * `tts` 目前**没有任何调用点**——只是声明。原先前端把它们一起标成
    * "（必选）"并警告"未选择会报错"，**那是假的**：不选也不会报错。
-   * 用户于是被推着去配两个不影响任何行为的模式。
    * 这里按后端下发的 `implemented` 只对真会用到的提示必选。
    * 拉不到时**保守地全部视为必选**（宁可多提示，也不要漏提示真需要的）。
    */
@@ -245,38 +272,53 @@ export default function SettingsPage() {
   }, []);
 
   /**
-   * 把注册表里所有配置字段**按能力分组**，组内再分"模式 / 全局 / 按职业"。
+   * 把注册表里所有配置字段**按能力分组**，组内再分"模式 / 能力级 / 按职业"。
    *
    * 一个字段可能被多个节点声明（`image_provider_mode` 在角色设计师、
-   * 场景设计师、摄影师三处都有）——按 key 去重，否则同一个下拉会渲染三遍
-   * （原来"① 用云端还是本地"里就出现过重复的"图片生成"）。
+   * 场景设计师、摄影师三处都有）——按 key 去重，否则同一个下拉会渲染三遍。
    */
   const grouped = useMemo(() => {
     type Entry = { node: string; nodeLabel: string; field: ConfigField };
-    const map = new Map<
-      string,
-      { mode: Entry | null; global: Entry[]; byRole: Map<string, { label: string; fields: ConfigField[] }>; others: Entry[] }
-    >();
-    for (const g of CAP_GROUPS) {
-      map.set(g.cap, { mode: null, global: [], byRole: new Map(), others: [] });
-    }
+    type RoleBucket = { label: string; fields: ConfigField[] };
+    const empty = () => ({ mode: null as Entry | null, global: [] as Entry[], byRole: new Map<string, RoleBucket>() });
+    const map = new Map<string, ReturnType<typeof empty>>();
+    for (const g of CAP_GROUPS) map.set(g.cap, empty());
     if (!registry) return { groups: map, ungrouped: [] as Entry[] };
+
+    /**
+     * 收集**所有可能的角色标识**。三类都要收，缺一类就会把角色覆盖项
+     * 误判成能力级全局项：
+     *   · 节点 key（`continuity_checker`）——注册表字段实际用的后缀；
+     *   · 职业 key（`continuity`）；
+     *   · 职业的旧键名（`writer` / `critics` / `director` …）。
+     */
+    const roleIds = new Set<string>();
+    const roleLabels = new Map<string, string>();
+    for (const r of registry.roles) {
+      // `Role.legacy_keys` 前端类型里已声明，后端 `/api/registry` 也下发
+      const legacy = r.legacy_keys ?? [];
+      roleIds.add(r.key);
+      roleLabels.set(r.key, r.label);
+      for (const lk of legacy) {
+        roleIds.add(lk);
+        roleLabels.set(lk, r.label);
+      }
+    }
+    for (const n of registry.nodes) roleIds.add(n.key);
 
     const seen = new Set<string>();
     const ungrouped: Entry[] = [];
 
     for (const n of registry.nodes) {
       for (const f of n.config) {
+        if (seen.has(f.key)) continue;
         const g = groupOfKey(f.key);
         if (!g) {
+          seen.add(f.key);
           // 与选模型无关的字段（阈值、时长上限等）单独收在页尾，不能丢
-          if (!seen.has(f.key)) {
-            seen.add(f.key);
-            ungrouped.push({ node: n.key, nodeLabel: n.label, field: f });
-          }
+          ungrouped.push({ node: n.key, nodeLabel: n.label, field: f });
           continue;
         }
-        if (seen.has(f.key)) continue;
         seen.add(f.key);
 
         const bucket = map.get(g.cap)!;
@@ -285,32 +327,27 @@ export default function SettingsPage() {
           bucket.mode = entry;
           continue;
         }
-        /**
-         * 带职业后缀的字段（`image_provider_photographer`）归到"按职业"，
-         * 其余是能力级全局项（`video_model`、`video_max_duration`）。
-         *
-         * 判据用"后缀是否是某个注册表职业 key"，而不是"有没有下划线"——
-         * `video_max_duration` 也有下划线，但它是全局项。
-         */
-        const roleKeys = new Set(registry.roles.map((r) => r.key));
-        const suffix = f.key.split('_').slice(-1)[0];
-        // 职业 key 可能是下划线连接的（character_designer），所以做长后缀匹配
-        const matchedRole = [...roleKeys]
-          .sort((a, b) => b.length - a.length)
-          .find((rk) => f.key.endsWith(`_${rk}`));
-        if (matchedRole) {
-          const cur = bucket.byRole.get(matchedRole) ?? {
-            label: registry.roles.find((r) => r.key === matchedRole)?.label ?? matchedRole,
+        const sp = splitKey(f.key, g.prefixes, roleIds);
+        if (sp.global || !sp.roleKey) {
+          bucket.global.push(entry);
+        } else {
+          const cur = bucket.byRole.get(sp.roleKey) ?? {
+            label: roleLabels.get(sp.roleKey) ?? n.label,
             fields: [],
           };
           cur.fields.push(f);
-          bucket.byRole.set(matchedRole, cur);
-        } else {
-          void suffix;
-          bucket.global.push(entry);
+          bucket.byRole.set(sp.roleKey, cur);
         }
       }
     }
+
+    /**
+     * ⚠️ 卡顶**只放能力级全局项**。角色覆盖**只在按职业里出现**。
+     *
+     * 曾经把角色覆盖项也渲染一份在卡顶（因为没识别出旧键名后缀），
+     * 于是在卡顶看到"文字模型来源 / 模型 / API Key"一排、下面按职业展开里
+     * 又是同一批——同一行重复两遍且分不清哪个是哪个。
+     */
     return { groups: map, ungrouped };
   }, [registry]);
 
@@ -318,10 +355,6 @@ export default function SettingsPage() {
    * 未选择的模式，分成两拨：
    *   · blocked —— 已接入的能力（不选真的会在跑到那一步时报错）；
    *   · optional —— 仅注册表声明、当前无调用点（不选不影响任何行为）。
-   *
-   * 分开的原因是原先只有一拨：把 `lora_train` / `tts` 也算作"必选"，
-   * 于是用户被告知"还有 2 项未选择，会报错"——而它们根本没人调用。
-   * 误导性的必选提示比不提示更糟：用户会去填一堆无用的配置。
    */
   const { blockedModes, optionalModes } = useMemo(() => {
     const blocked: CapGroup[] = [];
@@ -331,9 +364,7 @@ export default function SettingsPage() {
       const entry = grouped.groups.get(g.cap)?.mode;
       if (!entry) continue;
       const v = settings[entry.field.key];
-      const unset = !v || v === 'unset';
-      if (!unset) continue;
-      // 字段名形如 `llm_provider_mode` / `lora_train_provider_mode`
+      if (v && v !== 'unset') continue;
       const cap = entry.field.key.replace(/_provider_mode$/, '');
       (implementedCaps === null || implementedCaps.has(cap) ? blocked : optional).push(g);
     }
@@ -397,13 +428,12 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* ── 每个能力一张卡：模式 + 该能力的职业覆盖 + 该能力的凭据 ── */}
+      {/* ── 每个能力一张卡 ── */}
       {CAP_GROUPS.map((g) => {
         const bucket = grouped.groups.get(g.cap);
         if (!bucket) return null;
-        const hasAnything =
-          bucket.mode || bucket.global.length || bucket.byRole.size || g.cap === 'video';
-        if (!hasAnything) return null;
+        const hasCreds = g.cap === 'video' && (creds?.video?.keys?.length ?? 0) > 0;
+        if (!bucket.mode && !bucket.global.length && !bucket.byRole.size && !hasCreds) return null;
 
         const needsPick =
           bucket.mode != null &&
@@ -429,7 +459,9 @@ export default function SettingsPage() {
                 {g.kinds}
               </span>
               {needsPick && implemented && (
-                <span style={{ color: 'var(--st-review)', fontSize: 12, fontWeight: 400 }}>（必选）</span>
+                <span style={{ color: 'var(--st-review)', fontSize: 12, fontWeight: 400 }}>
+                  （必选）
+                </span>
               )}
               {!implemented && (
                 <span style={{ color: 'var(--text-faint)', fontSize: 12, fontWeight: 400 }}>
@@ -437,31 +469,26 @@ export default function SettingsPage() {
                 </span>
               )}
             </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: 'var(--text-muted)',
-                lineHeight: 1.7,
-                marginBottom: 12,
-              }}
-            >
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 12 }}>
               {g.desc}
             </div>
 
-            {/* 模式（云端 / 本地）—— 与它的模型字段并排，标签对齐 */}
-            <div className="settings-grid">
-              {bucket.mode && (
-                <div className="settings-cell">{renderField(bucket.mode.field, bucket.mode.node)}</div>
-              )}
-              {bucket.global.map((e) => (
-                <div className="settings-cell" key={e.field.key}>
-                  {renderField(e.field, e.node)}
-                </div>
-              ))}
-            </div>
+            {/* 能力级：模式 + 该能力的全局参数。标签对齐靠 .settings-grid */}
+            {(bucket.mode || bucket.global.length > 0) && (
+              <div className="settings-grid">
+                {bucket.mode && (
+                  <div className="settings-cell">{renderField(bucket.mode.field, bucket.mode.node)}</div>
+                )}
+                {bucket.global.map((e) => (
+                  <div className="settings-cell" key={e.field.key}>
+                    {renderField(e.field, e.node)}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* 该能力的提供者凭据（目前只有视频有提供者级密钥） */}
-            {g.cap === 'video' && creds?.video?.keys?.length ? (
+            {hasCreds && creds?.video ? (
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.7 }}>
                   视频的密钥是<strong>提供者级</strong>的，与按职业的密钥不是同一个键。
@@ -482,43 +509,46 @@ export default function SettingsPage() {
               </div>
             ) : null}
 
-            {/* 按职业细化：默认收起，避免一屏铺满 */}
+            {/*
+              按职业覆盖：**默认展开**。
+              收起时用户会以为"要配的只有卡顶那个模式"，而真正要配的是
+              每个职业的来源/模型/Key（注册表里这些字段都是**职业级**的，
+              没有能力级默认值）。展开并标清职业名才不会困惑。
+            */}
             {bucket.byRole.size > 0 && (
-              <details style={{ marginTop: 12 }}>
-                <summary
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    color: 'var(--text-muted)',
-                    padding: '4px 0',
-                  }}
-                >
-                  按职业单独指定（{bucket.byRole.size} 个职业）—— 不填就跟随上面的选择
-                </summary>
-                <div style={{ marginTop: 10 }}>
-                  {[...bucket.byRole.entries()].map(([roleKey, v]) => (
-                    <details key={roleKey} style={{ marginBottom: 6, paddingLeft: 8 }}>
-                      <summary
-                        style={{ cursor: 'pointer', fontSize: 12, color: 'var(--text)', padding: '4px 0' }}
-                      >
-                        {v.label}
-                        <span
-                          style={{ color: 'var(--text-faint)', marginLeft: 6, fontSize: 11 }}
-                        >
-                          {roleKey}
-                        </span>
-                      </summary>
-                      <div className="settings-grid" style={{ paddingTop: 8, paddingLeft: 8 }}>
-                        {v.fields.map((f) => (
-                          <div className="settings-cell" key={f.key}>
-                            {renderField(f, roleKey)}
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  ))}
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.7 }}>
+                  按职业单独指定（{bucket.byRole.size} 个）—— 不填就跟随上面的
+                  「云端 / 本地」选择与后端默认模型。
                 </div>
-              </details>
+                {[...bucket.byRole.entries()].map(([roleKey, v]) => (
+                  <div
+                    key={roleKey}
+                    style={{ borderTop: '1px solid var(--line)', paddingTop: 10, marginTop: 10 }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12.5,
+                        color: 'var(--text)',
+                        marginBottom: 8,
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 6,
+                      }}
+                    >
+                      <strong>{v.label}</strong>
+                      <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>{roleKey}</span>
+                    </div>
+                    <div className="settings-grid">
+                      {v.fields.map((f) => (
+                        <div className="settings-cell" key={f.key}>
+                          {renderField(f, roleKey)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         );
