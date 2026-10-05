@@ -19,8 +19,14 @@ from app.services import asset_paths as ap
 # 1) 目录结构
 # ------------------------------------------------------------------
 
-def test_layout_is_account_project_dept_role_session_kind(tmp_path):
-    """七段结构：账号/项目名/部门/职业/会话/类型/文件（用户指定的顺序）。"""
+def test_layout_is_account_project_dept_role_session_file(tmp_path):
+    """六段结构：账号/项目名/部门/职业/会话/文件。
+
+    ⚠️ **没有"类型"层**——用户指出"职业和类型重复了吧"：实测 16 个职业里
+    只有 `previs_artist` 会产两种资产（frames + videos），其余都只产一种。
+    为这个特例给所有路径多挂一层不划算，而且 `.png`/`.mp4` 扩展名本来
+    就分得开。
+    """
     p = ap.asset_path(tmp_path, "photographer", "images", "shot_01.png",
                       user="tester", project="小喵侦探", session="run-1")
     parts = p.relative_to(tmp_path).parts
@@ -30,8 +36,8 @@ def test_layout_is_account_project_dept_role_session_kind(tmp_path):
     assert parts[2] == "生图", f"第三段应为部门，实际 {parts[2]}"
     assert parts[3] == "photographer", "第四段必须是职业"
     assert parts[4] == "run-1", "第五段必须是会话"
-    assert parts[5] == "images", "第六段必须是资产类型"
-    assert parts[6] == "shot_01.png"
+    assert parts[5] == "shot_01.png", "第六段必须是文件"
+    assert len(parts) == 6, f"应为六段，实际 {len(parts)}：{parts}"
 
 
 def test_missing_project_falls_back_to_unnamed(tmp_path):
@@ -72,15 +78,53 @@ def test_different_roles_do_not_share_dirs(tmp_path):
     assert a.relative_to(tmp_path) != b.relative_to(tmp_path)
 
 
-def test_images_and_videos_are_separate(tmp_path):
-    """同一个职业的图片与视频必须分开存放。"""
+def test_roles_are_separate(tmp_path):
+    """不同职业的产出必须分开。
+
+    路径里不再有"类型"目录（见上），所以"图片与视频分开"是靠
+    **职业不同**实现的：摄影师产图、剪辑师产片，各自一个目录。
+    唯一同时产两种的是 `previs_artist`，它靠**扩展名**区分
+    （`.png` 帧 vs `.mp4` 成片）。
+    """
     img = ap.asset_dir(tmp_path, "photographer", "images", user="t", project="p", session="s")
-    vid = ap.asset_dir(tmp_path, "photographer", "videos", user="t", project="p", session="s")
+    vid = ap.asset_dir(tmp_path, "editor", "videos", user="t", project="p", session="s")
     assert img != vid
-    assert img.name == "images"
-    assert vid.name == "videos"
-    # 同一棵树里，只有最后一段不同
-    assert img.parent == vid.parent
+    # 目录最后一段是会话，职业在它上面一层
+    assert img.parent.name == "photographer"
+    assert vid.parent.name == "editor"
+    # 同一棵树、同一会话，只有职业那一段不同
+    assert img.parent.parent.parent == vid.parent.parent.parent
+
+
+def test_same_role_two_kinds_share_dir(tmp_path):
+    """`previs_artist` 的帧与成片同目录，靠扩展名区分。"""
+    fr = ap.asset_path(tmp_path, "previs_artist", "frames",
+                       "whitebox-ab12/00000.png", user="t", project="p", session="s")
+    vid = ap.asset_path(tmp_path, "previs_artist", "videos",
+                        "whitebox-ab12.mp4", user="t", project="p", session="s")
+    assert fr.parent.name == "whitebox-ab12", "帧按批次分子目录，避免多批同名覆盖"
+    assert vid.parent == fr.parent.parent, "成片与帧批次目录同级"
+    assert fr.suffix == ".png" and vid.suffix == ".mp4"
+
+
+def test_missing_extension_filled_from_kind(tmp_path):
+    """文件名没带后缀时按 kind 补——扩展名是区分帧与成片的最后一道。"""
+    p = ap.asset_path(tmp_path, "previs_artist", "videos",
+                      "whitebox-ab12", user="t", project="p", session="s")
+    assert p.suffix == ".mp4"
+
+
+def test_subdir_cannot_escape_output_root(tmp_path):
+    """`..` 段不能把文件写出产出根目录。
+
+    白模帧要按批次分子目录（`whitebox-{id}/00000.png`），所以
+    `filename` 允许带子目录——那就必须挡住路径穿越。
+    """
+    for bad in ["../../../etc/passwd", "..\\..\\win\\x.dll", "a/../../b.png"]:
+        q = ap.asset_path(tmp_path, "photographer", "images", bad,
+                          user="t", project="p", session="s")
+        assert tmp_path in q.resolve().parents, f"逃出根目录了：{bad} → {q}"
+        assert ".." not in q.parts, f"路径里不该残留 ..：{q}"
 
 
 def test_different_sessions_are_separate(tmp_path):
@@ -140,7 +184,7 @@ def test_unknown_role_does_not_raise(tmp_path):
     """
     d = ap.asset_dir(tmp_path, "no_such_role_xyz", "images", user="t", project="p", session="s")
     assert d.is_dir()
-    assert d.name == "images"
+    assert d.name == "s", "最后一段是会话目录（路径里已无类型目录）"
     # 职业名仍然被保留（方便事后知道是谁产的），部门用兜底值
     assert "no_such_role_xyz" in d.parts
 

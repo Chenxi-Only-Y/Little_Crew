@@ -1201,22 +1201,20 @@ async def upload_whitebox_video(request: Request):
     #
     # 现在走统一规则（`app/services/asset_paths.py`）：
     #
-    #     {outputs}/{uid}/{部门}/{职业}/{会话}/videos/whitebox-{id}.mp4
-    #     {outputs}/{uid}/{部门}/{职业}/{会话}/frames/{id}/00000.png...
+    #     {outputs}/{账号}/{项目名}/{部门}/{职业}/{会话}/whitebox-{id}.mp4
+    #     {outputs}/{账号}/{项目名}/{部门}/{职业}/{会话}/whitebox-{id}/00000.png...
     #
-    # 归属职业取 `previs_artist`（预演师）——这就是它的产出者。
+    # 归属职业取 `previs_artist`（白模预演师）——这就是它的产出者。
+    # 帧与成片放同一层：`.png` 与 `.mp4` 靠扩展名区分，
+    # 而帧用一个以成片同名的子目录隔开，避免多批次互相覆盖。
     from app.services import asset_paths
 
     role = "previs_artist"
     token = uuid.uuid4().hex[:12]
-    frames_dir = asset_paths.asset_dir(
-        settings.output_dir_path, role, "frames"
-    ) / token
+    work = asset_paths.asset_dir(settings.output_dir_path, role, "frames")
+    frames_dir = work / f"whitebox-{token}"
     frames_dir.mkdir(parents=True, exist_ok=True)
-    work = frames_dir.parent
-    box_mp4 = asset_paths.asset_path(
-        settings.output_dir_path, role, "videos", f"whitebox-{token}.mp4"
-    )
+    box_mp4 = work / f"whitebox-{token}.mp4"
 
     saved: list[pathlib.Path] = []
     try:
