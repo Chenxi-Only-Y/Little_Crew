@@ -215,19 +215,52 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="doubao-pro-32k 等旧名已不在模型列表。"
                       "https://docs.volcengine.com/docs/ark/model-list"),
     # 小米 MiMo —— 官方文档原文核对（2026-10）：
-    #   https://mimo.mi.com/docs/zh-CN/api/chat/openai-api  （请求地址与认证）
-    #   https://mimo.mi.com/docs/zh-CN/api/model/list-models （GET /v1/models 的响应原文）
+    #   https://mimo.mi.com/docs/zh-CN/api/chat/openai-api   （请求地址与认证）
+    #   https://mimo.mi.com/docs/zh-CN/api/model/list-models （GET /v1/models 响应原文）
+    #   https://mimo.mi.com/docs/zh-CN/updates/deprecate     （下线公告）
     ProviderSpec("mimo", "小米 MiMo", "llm", "cn_cloud",
                  default_model="mimo-v2.6-pro",
-                 known_models=("mimo-v2.6-pro-ultraspeed", "mimo-v2.6-pro", "mimo-v2.6-flash",
-                               "mimo-v2.5-pro"),
-                 note="OpenAI 兼容（base_url https://api.xiaomimimo.com/v1）；"
-                      "认证头是 api-key 或 Bearer。同平台另有 ASR / TTS 模型"),
+                 # ⚠️ **只列 v2.6 三款**：v2.5 / v2.5-pro 官方公告将于
+                 # 2026-10-21 10:00 直接下线，且"无系统替换模型"——
+                 # 列出来等于给用户一个几天后必失效的选项。
+                 known_models=("mimo-v2.6-pro", "mimo-v2.6-pro-ultraspeed", "mimo-v2.6-flash"),
+                 note="OpenAI 兼容（https://api.xiaomimimo.com/v1），认证头 api-key 或 Bearer。"
+                      "v2.5 系列将于 2026-10-21 下线，故未列出"),
     ProviderSpec("ernie", "百度文心（千帆）", "llm", "cn_cloud",
                  default_model="ernie-5.1",
                  known_models=("ernie-5.1", "ernie-5.0", "ernie-5.0-thinking-latest",
                                "ernie-4.5-turbo-128k"),
                  note="https://cloud.baidu.com/doc/qianfan/s/rmh4stp0j"),
+    # 腾讯混元 —— ⚠️ **必须用 TokenHub**：旧平台（api.hunyuan.cloud.tencent.com）
+    # 官方公告于 2026-09-30 00:00 全面停服下线，控制台与 API 同步关停。
+    #   公告 https://cloud.tencent.com/announce/detail/2287
+    #   模型列表 https://cloud.tencent.cn/document/product/1823/130051
+    # ⚠️ 官方**未标注**哪个是默认；`hy3` 是正式版（256k 上下文 / 128k 输出），
+    #    `hy4-preview` 是更新的旗舰但仍为 preview。取正式版作默认更稳。
+    ProviderSpec("hunyuan", "腾讯混元（TokenHub）", "llm", "cn_cloud",
+                 default_model="hy3",
+                 known_models=("hy3", "hy4-preview", "hy-mt2-pro", "hunyuan-role-latest"),
+                 note="旧混元域名已 2026-09-30 停服，此处用的是新平台 "
+                      "https://tokenhub.tencentmaas.com/v1；"
+                      "hunyuan-* 老模型名（t1/a13b/turbos/lite 等）TokenHub 已不支持"),
+    # 阶跃星辰 StepFun
+    #   https://platform.stepfun.com/docs/zh/guides/developer/openai.md
+    ProviderSpec("stepfun", "阶跃星辰 StepFun", "llm", "cn_cloud",
+                 default_model="step-5-preview",
+                 known_models=("step-5-preview", "step-3.7-flash", "step-3.5-flash",
+                               "step-3.5-flash-2603"),
+                 note="OpenAI 兼容（https://api.stepfun.com/v1）"),
+    # 百川智能 Baichuan
+    #   https://platform.baichuan-ai.com/docs-v2/api  （明写"兼容 OpenAI 接口格式"）
+    # ⚠️ 官方两个文档的模型清单**不一致**：通用对话页的 api.yaml 只枚举
+    #    Baichuan4/3/2 系，而 quickstart 示例与医疗页用 Baichuan-M3 系。
+    #    这里两组都列，默认取通用线文档标 default 的 Baichuan4-Turbo。
+    ProviderSpec("baichuan", "百川智能 Baichuan", "llm", "cn_cloud",
+                 default_model="Baichuan4-Turbo",
+                 known_models=("Baichuan4-Turbo", "Baichuan4-Air", "Baichuan4",
+                               "Baichuan-M3-Plus", "Baichuan-M3"),
+                 note="OpenAI 兼容（https://api.baichuan-ai.com/v1）。"
+                      "通用线为 Baichuan4 系；Baichuan-M3 系见医疗文档"),
     # ---- 下面三家：官网在本机网络下不可达，证据来自替代的官方来源（见上）----
     ProviderSpec("openai", "OpenAI", "llm", "overseas_cloud",
                  default_model="gpt-6.1-sol", needs_proxy=True,

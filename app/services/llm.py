@@ -36,6 +36,11 @@ _PRESETS = {
     "doubao": ("https://ark.cn-beijing.volces.com/api/v3", "doubao-seed-evolving"),           # 字节豆包(火山方舟)
     "ernie": ("https://qianfan.baidubce.com/v2", "ernie-5.1"),                       # 百度文心(千帆)
     "mimo": ("https://api.xiaomimimo.com/v1", "mimo-v2.6-pro"),                        # 小米 MiMo
+    # ⚠️ 腾讯混元必须用新平台 TokenHub：旧域名 api.hunyuan.cloud.tencent.com
+    #    官方公告已于 2026-09-30 全面停服（控制台与 API 同步关停）。
+    "hunyuan": ("https://tokenhub.tencentmaas.com/v1", "hy3"),                          # 腾讯混元
+    "stepfun": ("https://api.stepfun.com/v1", "step-5-preview"),                        # 阶跃 StepFun
+    "baichuan": ("https://api.baichuan-ai.com/v1", "Baichuan4-Turbo"),                  # 百川
     "ollama": ("http://localhost:11434/v1", "qwen2.5"),                                 # 本地部署
     "vllm": ("http://localhost:8000/v1", "Qwen/Qwen2.5-7B-Instruct"),                   # 本地 vLLM
     # ---- 聚合网关（OpenAI 兼容）：base_url 与各厂同一机制，key 用共同的 llm_api_key ----
