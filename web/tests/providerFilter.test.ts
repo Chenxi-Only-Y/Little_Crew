@@ -204,6 +204,34 @@ test('`tts_provider` / `video_provider` 这类**不含** `_provider_` 的也要�
   assert.deepEqual(opts, ['(自动)', 'dashscope']);
 });
 
+test('`(按模式)` 占位符必须留在白名单里（用户报的"切了第二项不变"）', () => {
+  // 我漏过这一次：白名单写成 ['(自动)', ...提供者]，于是 video/tts 的
+  // "(按模式)" 被滤掉 → 用户**没法把覆盖清回跟随模式**，
+  // 一旦显式选过就被钉死；而原生 select 在当前值不在选项里时会
+  // 退回显示第一个选项，界面显示的值与后端存的完全不是一回事。
+  const st = { video_provider_mode: 'cloud', video_provider: '(按模式)' };
+  const opts = allowedOptionsFor(
+    { type: 'select', key: 'video_provider', options: ['(按模式)', 'local', 'minimax'] },
+    'video',
+    st,
+    PROVIDERS,
+  );
+  assert.ok(opts, '应当给出白名单');
+  assert.ok(opts.includes('(按模式)'), `(按模式) 必须可选，实际 ${JSON.stringify(opts)}`);
+  // 模式=cloud → 只列云端，且带占位符
+  assert.deepEqual(opts, ['(按模式)', 'minimax', 'seedance'], JSON.stringify(opts));
+});
+
+test('`(自动)` 字段同样保留 `(自动)`', () => {
+  const opts = allowedOptionsFor(
+    { type: 'select', key: 'llm_provider_writer', options: ['(自动)', 'deepseek', 'ollama'] },
+    'llm',
+    { llm_provider_mode: 'local' },
+    PROVIDERS,
+  );
+  assert.deepEqual(opts, ['(自动)', 'ollama', 'vllm'], JSON.stringify(opts));
+});
+
 test('非 openai 协议的提供者永远不列（选了必然失败）', () => {
   const list: ProviderInfo[] = [
     { ...P('claude', 'Anthropic Claude', 'llm', false), api_style: 'unverified' },

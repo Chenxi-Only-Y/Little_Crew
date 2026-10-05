@@ -206,14 +206,24 @@ export function optionLabelsFor(
  * 派生 —— 那是在"用户还没选模式"的前提下算出来的，两种模式的提供者都在
  * 里面。所以必须**把选项本身收窄**，否则用户照样能选到另一档。
  *
+ * ⚠️ **必须保留该字段自己的"跟随模式"占位符**。我漏过这一次，后果是：
+ *   · 用户**没法把覆盖清回"跟随模式"** —— 一旦显式选过某个提供者，
+ *     就永远被钉在那一档，切模式时这个下拉当然不动（用户报的
+ *     "为啥我切了，第二项却不变"）；
+ *   · 而原生 select 在"当前值不在选项里"时会**退回显示第一个选项**，
+ *     于是界面上显示的值与后端存的**完全不是一回事**。
+ *
+ * 占位符有两种写法（`(自动)` / `(按模式)`），取该字段自己的那个，
+ * 不要写死 —— 注册表里两种都在用。
+ *
  * 返回 `undefined` 表示"不限制"（模式字段、密钥字段、数值字段等一律不限制）。
- * 注意判据是"**是 select 且键里含 `provider` 且不以 `_provider_mode` 结尾**" ——
+ * 判据是"**是 select 且键里含 `provider` 且不以 `_provider_mode` 结尾**" ——
  * 不能写成 `includes('_provider_')`：`llm_provider_mode` 含它但它是模式字段
  * （套上白名单会被清空、下拉塌成一条缝），而 `tts_provider` / `video_provider`
  * **不含**它却正是提供者字段。
  */
 export function allowedOptionsFor(
-  field: { type: string; key: string },
+  field: { type: string; key: string; options?: readonly string[] },
   capPrefix: string,
   settings: Record<string, unknown> | null | undefined,
   providers: readonly ProviderInfo[],
@@ -221,5 +231,10 @@ export function allowedOptionsFor(
   if (field.type !== 'select') return undefined;
   if (!field.key.includes('provider')) return undefined;
   if (field.key.endsWith('_provider_mode')) return undefined;
-  return ['(自动)', ...allowedProviders(capPrefix, field.key, settings, providers).map((p) => p.key)];
+
+  // 该字段的"跟随模式"占位符（`(自动)` 或 `(按模式)`；两者都有则都留）
+  const placeholders = (field.options ?? []).filter((o) => PLACEHOLDERS.has(o) && o !== '');
+  const keep = placeholders.length ? placeholders : ['(自动)'];
+
+  return [...keep, ...allowedProviders(capPrefix, field.key, settings, providers).map((p) => p.key)];
 }
