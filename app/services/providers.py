@@ -303,18 +303,13 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="⚠️ 官网不可达，模型名经 OpenAI 官方 OpenAPI spec + "
                       "Microsoft Foundry / AWS Bedrock 官方文档交叉验证；"
                       "gpt-6.1-sol 作为默认是**推断**（未见官方『默认』声明）"),
-    ProviderSpec("claude", "Anthropic Claude", "llm", "overseas_cloud",
-                 default_model="claude-sonnet-5-5", needs_proxy=True,
-                 known_models=("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"),
-                 note="⚠️ 官网对本区域封锁；模型 ID 经 Microsoft Foundry + "
-                      "AWS Bedrock 模型卡 + 官方 SDK 三处交叉验证。"
-                      "是否存在 -latest 别名**未能验证**。"
-                      "⚠️ 本条目 base_url 是 Anthropic 原生风格（api.anthropic.com/v1），"
-                      "而客户端请求的是 {base_url}/chat/completions——"
-                      "本机对 api.anthropic.com 一律 403（两个端点都一样），"
-                      "**无法验证它是否支持 OpenAI Chat Completions**，"
-                      "故标为 unverified；用之前请先确认，或改用 openrouter 调 Claude",
-                 api_style="unverified"),
+    # 注：**Anthropic Claude 已删除**（用户 2026-10-05 决定）。
+    #   原因：清单里配的 `https://api.anthropic.com/v1` 是 Anthropic **原生**
+    #   风格地址，而客户端（langchain `ChatOpenAI`）请求的是
+    #   `{base_url}/chat/completions` —— 协议很可能对不上。
+    #   且本机对 api.anthropic.com 一律 403（`/v1/chat/completions` 与
+    #   `/v1/messages` 返回完全一样），**无法验证**它是否有兼容端点。
+    #   要调 Claude 请用 `openrouter`（那个网关能调）。
     ProviderSpec("gemini", "Google Gemini", "llm", "overseas_cloud",
                  default_model="gemini-3.8-flash", needs_proxy=True,
                  known_models=("gemini-3.8-flash", "gemini-3.1-pro-preview",

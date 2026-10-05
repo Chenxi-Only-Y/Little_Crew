@@ -31,7 +31,6 @@ _PRESETS = {
     "openai": ("https://api.openai.com/v1", "gpt-6.1-sol"),
     "qwen": ("https://dashscope.aliyuncs.com/compatible-mode/v1", "qwen3.7-plus"),        # 阿里通义
     "moonshot": ("https://api.moonshot.cn/v1", "kimi-k3"),                       # 月之暗面 Kimi
-    "claude": ("https://api.anthropic.com/v1", "claude-sonnet-5-5"),             # Anthropic
     "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai", "gemini-3.8-flash"),  # Google
     "doubao": ("https://ark.cn-beijing.volces.com/api/v3", "doubao-seed-evolving"),           # 字节豆包(火山方舟)
     "ernie": ("https://qianfan.baidubce.com/v2", "ernie-5.1"),                       # 百度文心(千帆)
