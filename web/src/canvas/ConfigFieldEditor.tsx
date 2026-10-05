@@ -27,9 +27,22 @@ interface Props {
   /** 后端返回的当前值（密钥为掩码或 undefined） */
   current: unknown;
   onSaved: (key: string, value: unknown) => void;
+  /**
+   * 下拉选项的**显示名**（值 → 友好名）。
+   *
+   * 注册表给的 `options` 是内部标识（`deepseek` / `zhipu` / `vllm`），
+   * 直接显示对用户没有意义。后端 `/api/providers` 早就有友好名
+   * （`DeepSeek` / `智谱 GLM` / `本地 vLLM`），只是下拉没用上。
+   *
+   * 用**可选 prop** 而不是改注册表加字段：注册表是后端派生的事实来源，
+   * 为显示名再给它加一列会多一处需要同步的地方；而"值→名"的映射
+   * 本来就在 provider 清单里，由调用方传入最直接。
+   * 缺省时退回显示原值——不传也不会坏。
+   */
+  optionLabels?: Record<string, string>;
 }
 
-export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
+export default function ConfigFieldEditor({ field, current, onSaved, optionLabels }: Props) {
   const isSecret = field.secret || field.type === 'password';
   // 密钥字段初始留空（不回显）；其余回显当前值
   const [value, setValue] = useState<string>(
@@ -112,9 +125,17 @@ export default function ConfigFieldEditor({ field, current, onSaved }: Props) {
     await commit(String(num));
   };
 
+  /**
+   * 下拉选项显示什么。
+   *
+   * 三种来源按优先级：
+   *   1. `*_provider_mode` 用内置的 MODE_HINT（云端 API / 本地推理 / 未选择）；
+   *   2. 调用方传入的 `optionLabels`（provider 友好名）；
+   *   3. 都没有就显示原值——**绝不显示空白**，否则用户会以为下拉坏了。
+   */
   const optionLabel = (o: string) => {
     if (field.key.endsWith('_provider_mode')) return MODE_HINT[o] ?? o;
-    return o;
+    return optionLabels?.[o] ?? o;
   };
 
   const control = (() => {

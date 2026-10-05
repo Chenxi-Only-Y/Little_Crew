@@ -184,6 +184,16 @@ export default function SettingsPage() {
   const [cost, setCost] = useState<CostItem[] | null>(null);
   const [creds, setCreds] = useState<CredentialSpec | null>(null);
   /**
+   * 提供者清单（`/api/providers`）：用来把下拉里的**内部标识**换成友好名。
+   *
+   * 注册表给的 `options` 是 `deepseek` / `zhipu` / `vllm` 这种内部 key，
+   * 直接显示对用户没有意义；后端清单里本来就有
+   * `DeepSeek` / `智谱 GLM` / `本地 vLLM`。
+   */
+  const [providers, setProviders] = useState<
+    Array<{ key: string; label: string; capability: string; default_model?: string }>
+  >([]);
+  /**
    * 后端已**真正接入**的能力集合（如 `llm` / `image_gen` / `video_gen`）。
    *
    * 为什么需要它：注册表里有 5 个"云端/本地"模式字段，但 `lora_train` 与
@@ -235,8 +245,18 @@ export default function SettingsPage() {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         const body = await r.json().catch(() => ({}));
-        if (alive && r.ok && body?.credential_spec) {
-          setCreds(body.credential_spec as CredentialSpec);
+        if (alive && r.ok) {
+          if (body?.credential_spec) setCreds(body.credential_spec as CredentialSpec);
+          if (Array.isArray(body?.providers)) {
+            setProviders(
+              body.providers as Array<{
+                key: string;
+                label: string;
+                capability: string;
+                default_model?: string;
+              }>,
+            );
+          }
         }
       } catch {
         /* 凭据清单拉不到不影响本页其余部分 */
@@ -383,12 +403,29 @@ export default function SettingsPage() {
     );
   }
 
+  /**
+   * 下拉选项的显示名：内部 provider key → 后端给的友好名。
+   *
+   * 只收**当前字段所属能力**的提供者，避免把图像提供者混进文字模型下拉
+   * （键名本身不冲突，但混在一起以后如果出现同名 key 就会串）。
+   */
+  const optionLabelsFor = (fieldKey: string): Record<string, string> => {
+    const cap =
+      CAP_GROUPS.find((g) => g.prefixes.some((p) => fieldKey.startsWith(`${p}_`)))?.cap ?? '';
+    const out: Record<string, string> = {};
+    for (const p of providers) {
+      if (!cap || p.capability === cap) out[p.key] = p.label;
+    }
+    return out;
+  };
+
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
   const renderField = (f: ConfigField, node: string) => (
     <ConfigFieldEditor
       key={`${node}:${f.key}`}
       field={f}
       current={settings?.[f.key]}
+      optionLabels={optionLabelsFor(f.key)}
       onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
     />
   );
