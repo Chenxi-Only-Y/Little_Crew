@@ -40,9 +40,35 @@ interface Props {
    * 缺省时退回显示原值——不传也不会坏。
    */
   optionLabels?: Record<string, string>;
+  /**
+   * **限制**下拉能选哪些值（白名单）。
+   *
+   * ## 为什么光有 `optionLabels` 不够（这里返工过一次）
+   *
+   * `field.options` 来自**注册表**，而注册表是后端在**应用启动时**算好的
+   * 静态快照——那会儿用户还没选"云端 / 本地"模式，所以它把两种模式的
+   * 提供者都列进去了。
+   *
+   * 我第一版只按模式过滤了 `optionLabels`（显示名），于是：
+   *   · 选项**还在**（用户照样能选中云端提供者 → 就是用户报的那个问题）；
+   *   · 被滤掉显示名的那些，在列表里退化显示成内部 key（`deepseek`），
+   *     比原来**更难看懂**。
+   *
+   * 所以真正要过滤的是**选项本身**：这个 prop 给出的值才进下拉，
+   * `field.options` 只当"全集"用。
+   *
+   * 缺省（不传）时保持原行为：用 `field.options` 全部。
+   */
+  allowedOptions?: readonly string[];
 }
 
-export default function ConfigFieldEditor({ field, current, onSaved, optionLabels }: Props) {
+export default function ConfigFieldEditor({
+  field,
+  current,
+  onSaved,
+  optionLabels,
+  allowedOptions,
+}: Props) {
   const isSecret = field.secret || field.type === 'password';
   // 密钥字段初始留空（不回显）；其余回显当前值
   const [value, setValue] = useState<string>(
@@ -141,7 +167,10 @@ export default function ConfigFieldEditor({ field, current, onSaved, optionLabel
   const control = (() => {
     switch (field.type) {
       case 'select': {
-        const opts = field.options.length ? field.options : [];
+        const all = field.options.length ? field.options : [];
+        // allowedOptions 是白名单：不传=全集；传了就只留其中的
+        // （"(自动)" 等非提供者项由调用方一并放进白名单）
+        const opts = allowedOptions ? all.filter((o) => allowedOptions.includes(o)) : all;
         return (
           <select
             value={value}

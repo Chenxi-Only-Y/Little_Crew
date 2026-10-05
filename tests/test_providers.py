@@ -225,13 +225,68 @@ def test_mode_local_picks_local_default(clean_settings):
     assert p4 == "ollama"
 
 
-def test_explicit_provider_beats_mode(clean_settings):
-    """显式指定具体提供者时，优先于模式默认。"""
+def test_mode_conflict_is_rejected(clean_settings):
+    """模式与提供者矛盾时**明确报错**，而不是按提供者静默跑。
+
+    这条测试原名 `test_explicit_provider_beats_mode`，锁的是"显式提供者
+    压过模式"的旧行为。2026-10-05 用户报了那个行为的后果：
+
+        "把下滑时的本地模型和云端模型选项分开，不要杂在一起，
+         不然会出现上面选的本地，然后下面填 api 情况"
+
+    —— 模式选「本地」、提供者却是云端（`minimax`），于是界面引导用户
+    去填 API Key，组合自相矛盾。
+
+    现在语义改为：`mode` 明确为 local/cloud 时，提供者必须与之一致；
+    矛盾则返回 `None` 并说明怎么改。**最糟的不是报错，是静默按另一条路跑**
+    （用户以为在跑本地零成本、实际发了云端请求花钱）。
+    """
     clean_settings.set_many("_global", {"image_provider_mode": "local",
                                         "image_provider": "minimax"})
     p, why = prov.resolve_provider("image_gen")
-    assert p == "minimax", f"显式提供者应优先，实际 {p}"
+    assert p is None, f"矛盾配置应拒绝，实际返回 {p}"
+    # 文案用**友好名**（MiniMax）而非内部 key（minimax）——给用户看的
+    assert "矛盾" in why and "MiniMax" in why, why
+    # 报错文案要告诉用户怎么改
+    assert "本地推理" in why or "云端 API" in why, why
+
+
+def test_consistent_mode_and_provider_still_resolves(clean_settings):
+    """模式与提供者一致时照常解析（别把正常路径也挡了）。"""
+    clean_settings.set_many("_global", {"image_provider_mode": "cloud",
+                                        "image_provider": "minimax"})
+    p, why = prov.resolve_provider("image_gen")
+    assert p == "minimax", f"云端模式 + 云端提供者应通过，实际 {p}"
     assert "全局设置" in why
+
+    clean_settings.set_many("_global", {"image_provider_mode": "local",
+                                        "image_provider": "local"})
+    p2, _ = prov.resolve_provider("image_gen")
+    assert p2 == "local", f"本地模式 + 本地提供者应通过，实际 {p2}"
+
+
+def test_unset_mode_does_not_constrain_provider(clean_settings):
+    """模式未选时不校验（用户没表达意图，以显式提供者为准）。"""
+    clean_settings.set_many("_global", {"image_provider_mode": "unset",
+                                        "image_provider": "minimax"})
+    p, _ = prov.resolve_provider("image_gen")
+    assert p == "minimax"
+
+
+def test_providers_for_mode_splits_local_and_cloud(clean_settings):
+    """按模式筛选提供者：local 只给本地/零成本、cloud 只给云端。"""
+    local = {s.key for s in prov.providers_for_mode("llm", "local")}
+    cloud = {s.key for s in prov.providers_for_mode("llm", "cloud")}
+    allp = {s.key for s in prov.providers_for_mode("llm", "unset")}
+
+    assert local == {"ollama", "vllm"}, local
+    assert not (local & cloud), f"本地与云端不该有交集：{local & cloud}"
+    assert allp == local | cloud, "unset 应给出全部"
+    # 云端那侧要含几家已知的云端提供者
+    assert {"deepseek", "openai", "openrouter"} <= cloud, cloud
+    # 视频的 ffmpeg 与 tts 的 edge 都算"本地/零成本"
+    assert "ffmpeg" in {s.key for s in prov.providers_for_mode("video_gen", "local")}
+    assert "edge" in {s.key for s in prov.providers_for_mode("tts", "local")}
 
 
 def test_role_provider_beats_global(clean_settings):

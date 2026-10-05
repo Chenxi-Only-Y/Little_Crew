@@ -810,7 +810,7 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
                     lora_train / tts / music / render_2d）
         include_unavailable: 是否包含"已登记未接入"的提供者
     """
-    from app.services.providers import CONDITIONING_LABELS, PROVIDERS
+    from app.services.providers import CONDITIONING_LABELS, PROVIDERS, provider_payload
 
     # 提供者 → 需要的凭据字段（设置项 key）。
     # 为什么要下发这个：视频的密钥是**提供者级**的（`minimax_api_key` 等），
@@ -826,17 +826,20 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
 
     items = [
         {
-            "key": p.key, "label": p.label, "capability": p.capability,
-            "category": p.category, "available": p.available,
-            "default_model": p.default_model, "known_models": list(p.known_models),
-            "needs_api_key": p.needs_api_key, "needs_proxy": p.needs_proxy,
-            "max_concurrency": p.max_concurrency, "note": p.note,
+            # ⚠️ 字段集由 `providers.provider_payload()` **唯一**决定。
+            # 端点这里只补它不知道的东西：`conditioning_labels`（要把
+            # ConditioningKind 翻成中文）与 `credential_keys`（视频密钥名
+            # 只有 video_adapters 知道）。
+            #
+            # 曾经这里把 ProviderSpec 的字段**另抄一遍**，于是
+            # `is_local` / `api_style` 只加在了 `to_payload()` 里、
+            # 没加到端点里 —— 前端读到的 /api/providers 缺这两个字段，
+            # 按模式分组的逻辑完全不生效。两份手写清单必然漂移。
+            **provider_payload(p, credential_keys=cred_by_provider.get(p.key, [])),
             # 该提供者能接受的**结构条件**（仅 video_gen 有意义）。
             # 白模据此决定产出什么——见 providers.previs_plan()。
             "conditioning": list(p.conditioning),
             "conditioning_labels": [CONDITIONING_LABELS.get(c, c) for c in p.conditioning],
-            # 需要在设置页填写的凭据键（供前端渲染输入框）
-            "credential_keys": cred_by_provider.get(p.key, []),
         }
         for p in PROVIDERS
         if (not capability or p.capability == capability)

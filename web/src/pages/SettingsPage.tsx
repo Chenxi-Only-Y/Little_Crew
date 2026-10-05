@@ -191,7 +191,17 @@ export default function SettingsPage() {
    * `DeepSeek` / `智谱 GLM` / `本地 vLLM`。
    */
   const [providers, setProviders] = useState<
-    Array<{ key: string; label: string; capability: string; default_model?: string }>
+    Array<{
+      key: string;
+      label: string;
+      capability: string;
+      /** 是否"本地 / 零成本"类（后端 `category` 为 local/free） */
+      is_local: boolean;
+      /** 协议风格；非 `openai` 的客户端调不了，不列进下拉 */
+      api_style: string;
+      default_model?: string;
+      known_models?: string[];
+    }>
   >([]);
   /**
    * 后端已**真正接入**的能力集合（如 `llm` / `image_gen` / `video_gen`）。
@@ -253,7 +263,10 @@ export default function SettingsPage() {
                 key: string;
                 label: string;
                 capability: string;
+                is_local: boolean;
+                api_style: string;
                 default_model?: string;
+                known_models?: string[];
               }>,
             );
           }
@@ -404,28 +417,93 @@ export default function SettingsPage() {
   }
 
   /**
-   * 下拉选项的显示名：内部 provider key → 后端给的友好名。
+   * 取某能力当前的模式（`cloud` / `local` / `unset`）。
    *
-   * 只收**当前字段所属能力**的提供者，避免把图像提供者混进文字模型下拉
-   * （键名本身不冲突，但混在一起以后如果出现同名 key 就会串）。
+   * 键名规则见后端 `MODE_KEY_BY_CAPABILITY`：
+   *   `llm_provider_mode` / `image_provider_mode` / `video_provider_mode` /
+   *   `lora_train_provider_mode` / `tts_provider_mode`。
+   *
+   * 注意 `image_edit` 与 `image_gen` **共用** `image_provider_mode`，
+   * 所以按 CAP_GROUPS 的 `cap`（`image_gen` / `image_edit` 是两个 cap）
+   * 去拼键名会漏掉一个 —— 这里统一按**前缀**推。
    */
-  const optionLabelsFor = (fieldKey: string): Record<string, string> => {
-    const cap =
-      CAP_GROUPS.find((g) => g.prefixes.some((p) => fieldKey.startsWith(`${p}_`)))?.cap ?? '';
+  const modeOf = (capPrefix: string): string => {
+    const key =
+      capPrefix === 'lora' ? 'lora_train_provider_mode' : `${capPrefix}_provider_mode`;
+    return String(settings?.[key] ?? 'unset');
+  };
+
+  /**
+   * 下拉选项：内部 provider key → 后端给的友好名。
+   *
+   * 只收**当前字段所属能力**的提供者，避免把图像提供者混进文字模型下拉。
+   *
+   * ## 按模式过滤（用户报的问题）
+   *
+   * 用户原话："把下滑时的本地模型和云端模型选项分开，不要杂在一起，
+   * 不然会出现上面选的本地，然后下面填 api 情况"。
+   *
+   * 原先这个下拉把 `ollama` / `vllm`（本地）与 `deepseek` / `openai`（云端）
+   * **混在一个列表里**，而模式字段就在它上方 —— 选「本地」却挑到云端
+   * 提供者、再去填 API Key，是个自相矛盾的组合。
+   *
+   * 现在：
+   *   · 模式 = `local` → 只列本地 / 零成本提供者；
+   *   · 模式 = `cloud` → 只列云端与网关；
+   *   · 模式 = `unset` → 列全部（用户还没选，不该限制他先看什么）。
+   *
+   * 后端 `resolve_provider` 里还有一层兜底校验：万一存过的旧值或直接调
+   * 接口绕过了这里，也会**明确报错**，而不是默默按提供者跑
+   * （最糟的不是报错，是用户以为在跑本地零成本、实际发了云端请求花钱）。
+   */
+  const optionLabelsFor = (capPrefix: string): Record<string, string> => {
     const out: Record<string, string> = {};
-    for (const p of providers) {
-      if (!cap || p.capability === cap) out[p.key] = p.label;
-    }
+    for (const p of allowedProviders(capPrefix)) out[p.key] = p.label;
     return out;
   };
 
+  /** 某模式下该能力**可选**的提供者（模式过滤的单一判据）。 */
+  const allowedProviders = (capPrefix: string) => {
+    const mode = modeOf(capPrefix);
+    return providers.filter((p) => {
+      if (p.capability !== capPrefix) return false;
+      // 协议对不上的（如 unverified）不列 —— 选了必然失败
+      if (p.api_style !== 'openai') return false;
+      if (mode === 'local' && !p.is_local) return false;
+      if (mode === 'cloud' && p.is_local) return false;
+      return true;
+    });
+  };
+
+  /**
+   * 下拉的**白名单**：只允许这些值出现在选项里。
+   *
+   * ⚠️ 这里修过一次返工：`field.options` 来自**注册表**，而注册表是后端在
+   * 应用启动时算好的**静态**快照 —— 那时用户还没选模式，所以云端与本地的
+   * 提供者**都在里面**。只过滤 `optionLabels`（显示名）是不够的：
+   * 选项仍然可选，用户照样能选到云端提供者；而被滤掉显示名的那些还会
+   * 退化成内部 key（`deepseek`），比原来更难懂。
+   *
+   * 所以要把**选项本身**过滤掉。`"(自动)"` 不是提供者（表示"跟随默认"），
+   * 必须保留，否则用户没法表达"不覆盖"。
+   */
+  const allowedOptionsFor = (capPrefix: string): string[] => [
+    '(自动)',
+    ...allowedProviders(capPrefix).map((p) => p.key),
+  ];
+
+  /** 某能力在某模式下可选的提供者名（用于模式字段下方的提示文案）。 */
+  const providerNamesForMode = (capPrefix: string): string[] =>
+    allowedProviders(capPrefix).map((p) => p.label);
+
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
-  const renderField = (f: ConfigField, node: string) => (
+  const renderField = (f: ConfigField, node: string, capPrefix: string) => (
     <ConfigFieldEditor
       key={`${node}:${f.key}`}
       field={f}
       current={settings?.[f.key]}
-      optionLabels={optionLabelsFor(f.key)}
+      optionLabels={optionLabelsFor(capPrefix)}
+      allowedOptions={allowedOptionsFor(capPrefix)}
       onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
     />
   );
@@ -514,11 +592,36 @@ export default function SettingsPage() {
             {(bucket.mode || bucket.global.length > 0) && (
               <div className="settings-grid">
                 {bucket.mode && (
-                  <div className="settings-cell">{renderField(bucket.mode.field, bucket.mode.node)}</div>
+                  <div className="settings-cell">
+                    {renderField(bucket.mode.field, bucket.mode.node, g.cap)}
+                    {/*
+                      在模式字段下方列出**该模式下可选**的提供者。
+                      用户要的是"本地和云端分开"——这样一眼能看出
+                      选「本地」之后下面能挑什么，不用先点开下拉试探。
+                    */}
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--text-faint)',
+                        marginTop: 6,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {(() => {
+                        const names = providerNamesForMode(g.cap);
+                        const mode = modeOf(g.cap);
+                        if (mode === 'unset') return `未选择时下面会列出全部 ${names.length} 家`;
+                        const which = mode === 'local' ? '本地 / 零成本' : '云端';
+                        return names.length
+                          ? `「${which}」模式下可选：${names.join(' · ')}`
+                          : `「${which}」模式下没有可用提供者`;
+                      })()}
+                    </div>
+                  </div>
                 )}
                 {bucket.global.map((e) => (
                   <div className="settings-cell" key={e.field.key}>
-                    {renderField(e.field, e.node)}
+                    {renderField(e.field, e.node, g.cap)}
                   </div>
                 ))}
               </div>
@@ -534,7 +637,7 @@ export default function SettingsPage() {
                 <div className="settings-grid">
                   {creds.video.keys.map((c) => (
                     <div className="settings-cell" key={c.key}>
-                      {renderField(toConfigField(c), 'video-cred')}
+                      {renderField(toConfigField(c), 'video-cred', g.cap)}
                       {c.verified === false && (
                         <div style={{ fontSize: 11, color: 'var(--st-review)', marginTop: 4 }}>
                           ⚠ 该提供者按公开文档实现，尚未用真实 key 跑通；首次使用请核对返回的报错
@@ -579,7 +682,7 @@ export default function SettingsPage() {
                     <div className="settings-grid">
                       {v.fields.map((f) => (
                         <div className="settings-cell" key={f.key}>
-                          {renderField(f, roleKey)}
+                          {renderField(f, roleKey, g.cap)}
                         </div>
                       ))}
                     </div>
@@ -601,7 +704,7 @@ export default function SettingsPage() {
           <div className="settings-grid">
             {grouped.ungrouped.map((e) => (
               <div className="settings-cell" key={e.field.key}>
-                {renderField(e.field, e.node)}
+                {renderField(e.field, e.node, '')}
               </div>
             ))}
           </div>

@@ -608,6 +608,52 @@ def get(capability: str, provider_key: str) -> ProviderSpec | None:
     return _BY_CAP_KEY.get((capability, (provider_key or "").strip().lower()))
 
 
+#: 属于"本地 / 零成本"的类别。
+#:
+#: 为什么把 `free` 也算本地：`edge`（Edge TTS）与 `ffmpeg`（本地拼接）
+#: 都跑在本机或免费服务上、**不需要 API Key**，与用户理解的"本地"一致；
+#: 而 `local`（local-gen）才是自建推理服务。三者都是"零成本、不用填 Key"。
+LOCAL_CATEGORIES: frozenset[str] = frozenset({"local", "free"})
+
+
+def is_local_provider(capability: str, provider_key: str) -> bool:
+    """该提供者是否属于"本地 / 零成本"那一档。
+
+    未知提供者返回 False（当作云端）——**宁可多提示一次密钥，
+    也不要让用户以为不用填**。
+    """
+    spec = get(capability, provider_key)
+    return bool(spec and spec.category in LOCAL_CATEGORIES)
+
+
+def providers_for_mode(capability: str, mode: str) -> list[ProviderSpec]:
+    """按「云端 / 本地」模式筛选该能力的提供者。
+
+    ## 为什么需要这道筛选（用户报的问题）
+
+    用户原话："把下滑时的本地模型和云端模型选项分开，不要杂在一起，
+    不然会出现上面选的本地，然后下面填 api 情况"。
+
+    原先 `llm_provider_*` 的下拉把 `ollama` / `vllm`（本地）与
+    `deepseek` / `openai`（云端）**混在一个列表里**，而模式字段
+    （`llm_provider_mode`）就在它上方 —— 选「本地」却挑到云端提供者，
+    再去填 API Key，是个**自相矛盾的组合**。
+
+    `mode` 取值（见 `MODE_KEY_BY_CAPABILITY`）：
+        "local"  → 只返回本地 / 零成本（`LOCAL_CATEGORIES`）
+        "cloud"  → 只返回云端与网关
+        其它（"unset" / 空）→ **返回全部**，因为用户还没选，
+                              这时不该限制他先看什么
+    """
+    items = for_capability(capability)
+    m = (mode or "").strip().lower()
+    if m == "local":
+        return [p for p in items if p.category in LOCAL_CATEGORIES]
+    if m == "cloud":
+        return [p for p in items if p.category not in LOCAL_CATEGORIES]
+    return items
+
+
 def for_capability(capability: str, *, include_unavailable: bool = False) -> list[ProviderSpec]:
     """某能力下的 provider 列表（默认只返回已接入的）。"""
     items = [p for p in PROVIDERS if p.capability == capability]
@@ -641,20 +687,59 @@ def needs_proxy(capability: str, provider_key: str) -> bool:
     return bool(spec and spec.needs_proxy)
 
 
+def provider_payload(p: "ProviderSpec", *, credential_keys: list[str] | None = None) -> dict:
+    """**唯一的** ProviderSpec → dict 序列化实现。
+
+    ## 为什么必须只有一份（这里修过一次真漂移）
+
+    原先有**两处**各自把 `ProviderSpec` 摊成字典：
+
+      · `providers.to_payload()`               —— 我给设置页加字段时改的是这里
+      · `app/main.py` 的 `/api/providers` 端点 —— 前端实际读的是**这个**
+
+    于是我给 `to_payload` 加了 `is_local` / `api_style`，
+    但前端的 `/api/providers` 里**根本没有这两个字段**，前端读到的
+    `undefined`，按模式分组的逻辑完全不生效。实测才发现。
+
+    这正是本项目屡次吃亏的"两份手写清单漂移"。现在两处都调本函数，
+    字段集只有一处可改。
+
+    Args:
+        p: 提供者规格。
+        credential_keys: 该提供者需要在设置页填的凭据键。
+            视频的密钥是**提供者级**的（`minimax_api_key` 等），
+            与 LLM/图像的 `*_api_key_{角色}` 命名不同，所以由调用方传入
+            （只有 video_adapters 知道自己的 key 名）。
+    """
+    return {
+        "key": p.key, "label": p.label, "capability": p.capability,
+        "category": p.category, "available": p.available,
+        # 前端据此把"本地 / 零成本"与"云端"**分开**渲染。
+        # 用户 2026-10-05："把下滑时的本地模型和云端模型选项分开，
+        # 不要杂在一起，不然会出现上面选的本地，然后下面填 api 情况"。
+        "is_local": p.category in LOCAL_CATEGORIES,
+        # 协议风格：非 openai 的客户端（langchain ChatOpenAI，请求
+        # {base_url}/chat/completions）调不了，前端不该列出来。
+        "api_style": p.api_style,
+        "default_model": p.default_model, "known_models": list(p.known_models),
+        "needs_api_key": p.needs_api_key, "needs_proxy": p.needs_proxy,
+        "max_concurrency": p.max_concurrency,
+        "presets": {k: list(v) for k, v in p.presets.items()},
+        "note": p.note,
+        "credential_keys": list(credential_keys or []),
+    }
+
+
 def to_payload() -> list[dict]:
-    """供接口下发（前端据此渲染下拉，不再自带清单）。"""
-    return [
-        {
-            "key": p.key, "label": p.label, "capability": p.capability,
-            "category": p.category, "available": p.available,
-            "default_model": p.default_model, "known_models": list(p.known_models),
-            "needs_api_key": p.needs_api_key, "needs_proxy": p.needs_proxy,
-            "max_concurrency": p.max_concurrency,
-            "presets": {k: list(v) for k, v in p.presets.items()},
-            "note": p.note,
-        }
-        for p in PROVIDERS
-    ]
+    """供接口下发（前端据此渲染下拉，不再自带清单）。
+
+    ⚠️ 只是 `provider_payload()` 的薄封装——**不要再在这里另写字段**，
+    否则又会与 `/api/providers` 漂移（见 `provider_payload` 的说明）。
+    这里不传 `credential_keys`：视频的密钥名只有 video_adapters 知道，
+    端点会自己补上。
+    """
+    return [provider_payload(p) for p in PROVIDERS]
+
 
 
 def video_parameter_options() -> dict:
@@ -770,16 +855,19 @@ def resolve_provider(capability: str, role: str = "") -> tuple[str | None, str]:
     if not pkey:
         return None, f"未知能力：{capability}"
 
+    mode = str(rs_get(mkey) or "unset").strip().lower()
+
     if role:
         v = rs_get(f"{pkey}_{role}")
         if v:
-            return str(v), f"来自「{role}」的职业级设置"
+            return _check_mode_consistency(
+                capability, str(v), mode, f"来自「{role}」的职业级设置"
+            )
 
     v = rs_get(pkey)
     if v:
-        return str(v), "来自全局设置"
+        return _check_mode_consistency(capability, str(v), mode, "来自全局设置")
 
-    mode = str(rs_get(mkey) or "unset").strip().lower()
     default = mode_default_provider(capability, mode)
     if default:
         return default, f"来自「{MODE_LABELS.get(mode, mode)}」模式"
@@ -788,6 +876,58 @@ def resolve_provider(capability: str, role: str = "") -> tuple[str | None, str]:
         f"未选择「{capability}」的提供者。请先在设置里选择 **云端 API** 或 **本地推理**"
         f"（对应设置项：{mkey}），这样系统才知道该走哪条路，避免猜错产生意外费用或直接失败。"
     )
+
+
+def _check_mode_consistency(
+    capability: str, provider: str, mode: str, why: str
+) -> tuple[str | None, str]:
+    """校验「模式」与「提供者」是否自相矛盾。
+
+    ## 为什么要在后端也挡一层（前端已经按模式筛选了下拉）
+
+    用户报的问题是"上面选的本地，然后下面填 api"。前端把两个下拉按模式分开
+    能防住大多数情况，但**存过的旧值**、**直接调接口**、**以后新加的入口**
+    都可能绕过前端。配置矛盾时最糟的后果不是报错，而是**静默按另一条路跑**：
+    用户以为在用本地（零成本），实际发了云端请求（花钱）。
+
+    所以这里做兜底：模式与实际提供者冲突时**明确报错并说清怎么改**，
+    而不是默默按提供者跑。
+
+    只在 `mode` 明确为 "local" / "cloud" 时校验；"unset" 不校验
+    （用户没表达意图，此时以显式提供者为准）。
+    """
+    m = (mode or "").strip().lower()
+    if m not in ("local", "cloud"):
+        return provider, why
+
+    spec = get(capability, provider)
+    if spec is None:
+        # 未知提供者不在这里拦（可能是 custom 之类），交给下游解析
+        return provider, why
+
+    is_local = spec.category in LOCAL_CATEGORIES
+    if m == "local" and not is_local:
+        return None, (
+            f"配置矛盾：模式选了「本地推理」，但提供者是「{spec.label}」（云端）。"
+            f"本地模式只能用零成本、免密钥的提供者。"
+            f"请把「{MODE_KEY_BY_CAPABILITY.get(capability)}」改成「云端 API」，"
+            f"或把提供者改成 {_local_names(capability)}。"
+            f"（不替你猜：猜本地会失败，猜云端会产生你没预期的费用）"
+        )
+    if m == "cloud" and is_local:
+        return None, (
+            f"配置矛盾：模式选了「云端 API」，但提供者是「{spec.label}」（本地/零成本）。"
+            f"云端模式下不会调用本地服务。"
+            f"请把「{MODE_KEY_BY_CAPABILITY.get(capability)}」改成「本地推理」，"
+            f"或把提供者改成云端提供者。"
+        )
+    return provider, why
+
+
+def _local_names(capability: str) -> str:
+    """该能力下本地提供者的可读名，用于报错引导。"""
+    names = [p.label for p in for_capability(capability) if p.category in LOCAL_CATEGORIES]
+    return " / ".join(names) if names else "本地提供者"
 
 
 def video_conditioning(provider: str | None = None) -> tuple[str, ...]:
