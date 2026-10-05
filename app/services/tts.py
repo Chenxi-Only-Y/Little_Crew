@@ -150,7 +150,7 @@ def synthesize(
         cmd = [py, "-m", "edge_tts", "--file", str(txt), "--voice", v,
                "--rate", rate, "--write-media", str(dst)]
         try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
         except subprocess.TimeoutExpired as exc:
             raise TTSUnavailable(
                 f"配音超时（{timeout:.0f} 秒）。台词可能过长，或网络不通。" + _hint()
@@ -258,7 +258,7 @@ def mux_audio(
                "-map", "0:v", "-map", "1:a",
                "-c:v", "copy", "-c:a", "aac", "-shortest", str(dst)]
 
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900)
     if r.returncode != 0 or not dst.is_file():
         raise TTSUnavailable(
             f"混流出错（ffmpeg 返回 {r.returncode}）：\n{(r.stderr or '')[-600:]}"
@@ -284,7 +284,7 @@ def _has_audio_stream(ffmpeg: str, video: pathlib.Path) -> bool:
     try:
         r = subprocess.run(
             [ffmpeg, "-hide_banner", "-i", str(video)],
-            capture_output=True, text=True, timeout=60,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
         )
     except Exception:  # noqa: BLE001  探测失败时**保守**当作没有音轨
         return False

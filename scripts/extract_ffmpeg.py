@@ -46,7 +46,7 @@ def main() -> int:
         r = subprocess.run(
             [args.python, "-m", "pip", "install", "--quiet", "--target", tmp,
              "imageio-ffmpeg"],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if r.returncode != 0:
             print("  [ERROR] 下载 imageio-ffmpeg 失败：", file=sys.stderr)

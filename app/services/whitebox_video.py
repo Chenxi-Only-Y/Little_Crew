@@ -222,7 +222,7 @@ def encode_frames_to_mp4(
         str(out_path),
     ]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
     finally:
         list_path.unlink(missing_ok=True)
 
@@ -248,7 +248,7 @@ def probe_duration(mp4: pathlib.Path, ffmpeg: str = "") -> Optional[float]:
     try:
         proc = subprocess.run(
             [exe, "-hide_banner", "-i", str(mp4)],
-            capture_output=True, text=True, timeout=120,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
         )
     except Exception:  # noqa: BLE001
         return None

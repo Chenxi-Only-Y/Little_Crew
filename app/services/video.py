@@ -53,6 +53,44 @@ def _video_dir(out_dir: str, session_id: str, role: str = "editor") -> pathlib.P
     )
 
 
+def _ffconcat_escape(p) -> str:
+    """ffmpeg concat 清单里的路径转义。
+
+    concat 语法用单引号包裹路径，所以：
+      · 反斜杠要写成 `\\\\\\\\`（Windows 路径里全是反斜杠）
+      · 单引号要写成 `'\\''`（结束引号 → 转义单引号 → 重新开引号）
+      · 换行直接去掉（清单是**按行**解析的，留一个换行会把一条记录劈成两条）
+    """
+    return (
+        str(pathlib.Path(p).resolve())
+        .replace("\\", "\\\\")
+        .replace("'", "'\\''")
+        .replace("\n", "")
+    )
+
+
+def _write_concat(path, img_paths, *, seconds_per_shot: float = 4.0) -> None:
+    """写 ffmpeg 的 concat 清单（幻灯片用）。
+
+    抽成独立函数是为了能**单独测**"清单里是绝对路径"这一条 ——
+    它踩过一次坑，而且错法很隐蔽：写清单时不会报错，要等 ffmpeg
+    跑起来才报 "Error opening input file ...: No such file or directory"。
+
+    ⚠️ 必须写**绝对路径**。concat demuxer 里的相对路径是相对
+    **ffmpeg 的工作目录**解析的，而 Python 的 cwd 与调用处的预期
+    不一定一致（跨线程 / 跨进程时更明显）。实测：相对路径直接失败；
+    换绝对路径后，连**中文目录**（项目名默认是「未命名工程」）
+    也能正常处理。
+
+    ⚠️ 末尾要**重复一次最后一帧**：否则 ffmpeg 会把最后一张的
+    `duration` 截断，成片比预期短一截。
+    """
+    with open(path, "w", encoding="utf-8") as f:
+        for p in img_paths:
+            f.write(f"file '{_ffconcat_escape(p)}'\nduration {seconds_per_shot:g}\n")
+        f.write(f"file '{_ffconcat_escape(img_paths[-1])}'\n")
+
+
 class VideoService:
     # ---- mock 开关：每次实时解析，不做快照（原先 __init__ 里快照导致改配置不生效）----
     @property
@@ -101,24 +139,123 @@ class VideoService:
         if not provider:
             raise RuntimeError(why)
         provider = provider.lower()
+
         if provider == "minimax":
-            return self._real_minimax(images, dialogue, out_dir, session_id,
-                                      video_count=video_count,
-                                      reference_video=reference_video)
-        if provider == "dashscope_video":
-            return self._real_dashscope(images, dialogue, out_dir, session_id,
+            out, n = self._real_minimax(images, dialogue, out_dir, session_id,
                                         video_count=video_count,
-                                        text_prompt=text_prompt,
                                         reference_video=reference_video)
-        if provider == "seedance":
-            return self._real_seedance(images, dialogue, out_dir, session_id,
-                                       video_count=video_count,
-                                       text_prompt=text_prompt,
-                                       reference_video=reference_video)
-        if provider == "local":
-            return self._real_local(images, dialogue, out_dir, session_id,
-                                    video_count=video_count, text_prompt=text_prompt)
-        return self._real(images, dialogue, out_dir, session_id)
+        elif provider == "dashscope_video":
+            out, n = self._real_dashscope(images, dialogue, out_dir, session_id,
+                                          video_count=video_count,
+                                          text_prompt=text_prompt,
+                                          reference_video=reference_video)
+        elif provider == "seedance":
+            out, n = self._real_seedance(images, dialogue, out_dir, session_id,
+                                         video_count=video_count,
+                                         text_prompt=text_prompt,
+                                         reference_video=reference_video)
+        elif provider == "local":
+            out, n = self._real_local(images, dialogue, out_dir, session_id,
+                                      video_count=video_count, text_prompt=text_prompt)
+        else:
+            out, n = self._real(images, dialogue, out_dir, session_id)
+
+        # 声音策略在**顶层**统一收口 —— 各提供者的产出方法只管出画面。
+        # 放这里而不放各方法里，是因为"要不要配音"是**产物级**决定，
+        # 与"画面怎么来"无关；分散写会在每个提供者里重复一遍、也容易漏。
+        out = self._apply_audio_plan(provider, out, dialogue, out_dir, session_id)
+        return out, n
+
+    # ---------------------------------------------------------------
+    # 声音：视频模型原生 / TTS 配音 / 混音 / 不要声音
+    # ---------------------------------------------------------------
+    def _apply_audio_plan(self, provider: str, video_path: str, dialogue: str,
+                          out_dir: str, session_id: str) -> str:
+        """按设置项 `video_audio` 给产物配音（或保持原样）。
+
+        取值与语义（见 `app/registry/roles.py` 的 `video_audio` 字段）：
+
+            auto    不指定，按提供者有没有原生音频决定（默认）
+            native  用视频模型原生音频 —— 本函数**什么都不做**
+            tts     用 TTS 配音（替换原声）
+            mix     两者混音（配音为主，原声降为背景）
+            none    不要声音（把原声也去掉）
+
+        Returns:
+            最终视频路径。无法配音时**原样返回**（并记 warning）——
+            画面已经生成好了，因为配音失败就整个丢掉，对用户是净损失。
+        """
+        from app.core.config import settings as cfg
+        from app.services import providers as prov
+        from app.services.runtime_settings import get as rs_get
+
+        # 注册表字段（界面里那个）优先，`.env` 的 `VIDEO_AUDIO` 兜底。
+        # 注意 `rs_get` 来自 `runtime_settings`，**不是** `providers` 模块 ——
+        # `providers` 内部也只是 import 它，并没有导出。
+        mode = str(rs_get("video_audio") or cfg.video_audio or "auto").strip().lower()
+        spec = prov.get("video_gen", provider)
+        has_native = bool(spec and spec.has_native_audio)
+
+        # `auto`：模型自带声音就用它的，否则有台词就配音。
+        # 这个默认值很关键 —— 用户不指定时，**万相**该保留它的原生对白，
+        # 而 **Seedance** 该靠配音补上声音。
+        if mode == "auto":
+            mode = "native" if has_native else ("tts" if dialogue else "none")
+
+        if mode == "native":
+            if not has_native:
+                logger.warning(
+                    "声音来源选了「视频模型原生」，但 %s 没有原生音频 —— 产物会无声。"
+                    "请改成「TTS 配音」或换用带音频的模型。", provider)
+            return video_path
+
+        if mode == "none":
+            # 明确要"不要声音"：把原声也去掉，否则用户以为静音了却还有声
+            return self._strip_audio(video_path, out_dir, session_id) or video_path
+
+        # ---- 需要 TTS ----
+        if not dialogue:
+            logger.warning("声音来源选了 TTS，但剧本里没有台词 —— 跳过配音。")
+            return video_path
+
+        try:
+            from app.services import tts
+            d = _video_dir(out_dir, session_id)
+            voice = str(rs_get("tts_voice") or "")
+            try:
+                speed = float(rs_get("tts_speed") or 1.0)
+            except (TypeError, ValueError):
+                speed = 1.0
+            mp3 = d / "voice.mp3"
+            res = tts.synthesize(dialogue, mp3, voice=voice, speed=speed)
+            final = d / ("out_mixed.mp4" if mode == "mix" else "out_tts.mp4")
+            return tts.mux_audio(video_path, res.audio_path, final,
+                                 mix_with_original=(mode == "mix"))
+        except Exception as exc:  # noqa: BLE001
+            # 配音失败不该让整次生成作废：画面已经在磁盘上了。
+            logger.warning("配音失败（画面已保留）：%s", exc)
+            return video_path
+
+    def _strip_audio(self, video_path: str, out_dir: str, session_id: str) -> str | None:
+        """去掉视频里的音轨（`-an`）。失败返回 None（调用方保留原样）。"""
+        from app.services.tts import find_ffmpeg_or_none
+
+        ff = find_ffmpeg_or_none()
+        if not ff:
+            return None
+        d = _video_dir(out_dir, session_id)
+        dst = d / "out_silent.mp4"
+        try:
+            r = subprocess.run(
+                [ff, "-y", "-i", str(video_path), "-an", "-c:v", "copy", str(dst)],
+                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900,
+            )
+            if r.returncode == 0 and dst.is_file():
+                return str(dst)
+            logger.warning("去音轨失败：%s", (r.stderr or "")[-300:])
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("去音轨异常：%s", exc)
+        return None
 
     def _mock(self, images: List[dict], dialogue: str, out_dir: str, session_id: str) -> Tuple[str, int]:
         """占位：写 manifest，返回目录（不产出真视频）。"""
@@ -134,41 +271,61 @@ class VideoService:
         return str(d), 0
 
     def _real(self, images: List[dict], dialogue: str, out_dir: str, session_id: str) -> Tuple[str, int]:
-        """真实合成：FFmpeg 幻灯片 + Edge TTS 配音。"""
-        if shutil.which("ffmpeg") is None:
-            raise RuntimeError("未安装 FFmpeg，无法合成视频。请安装 FFmpeg 并设 MOCK_VIDEO=0。")
+        """真实合成：FFmpeg 幻灯片。配音由顶层的 `_apply_audio_plan` 统一处理。"""
+        # ⚠️ 必须用 `find_ffmpeg()` 而不是 `shutil.which("ffmpeg")`。
+        # ffmpeg 现在装在**项目外面**的工具目录里（见 scripts/setup_tools.ps1），
+        # 它**不在 PATH 上** —— 用 which 判断会误报"未安装"，而且下面
+        # 写死 `"ffmpeg"` 当命令也会直接失败。
+        from app.services.tts import find_ffmpeg_or_none
+
+        ff = find_ffmpeg_or_none()
+        if not ff:
+            from app.services.whitebox_video import FFmpegNotFound, find_ffmpeg
+
+            try:
+                find_ffmpeg()          # 借它抛出的**带修复步骤**的错误
+            except FFmpegNotFound as exc:
+                raise RuntimeError(str(exc)) from exc
+            raise RuntimeError("找不到 ffmpeg，无法合成视频。")
 
         img_paths = [im.get("local_path") for im in images if im.get("local_path")]
         if not img_paths:
             raise RuntimeError("没有可用图片，无法合成视频。")
-        d = _video_dir(out_dir, session_id)
+        # 目录与所有路径都取**绝对路径**。
+        #
+        # ⚠️ 实测踩到：相对路径会让 ffmpeg 直接报
+        #     "Error opening input file data\_vtcn\...\list.txt: No such file or directory"
+        # concat demuxer 里的相对路径是相对 **ffmpeg 的工作目录** 解析的，
+        # 而 Python 的 cwd 与调用处的预期不一定一致（跨线程/跨进程时更明显）。
+        # 换绝对路径后，连**中文目录**（项目名默认就是"未命名工程"！）
+        # 也能正常处理 —— 这点单独验证过。
+        d = _video_dir(out_dir, session_id).resolve()
         out_mp4 = d / "out.mp4"
 
         # 1) 图片幻灯片（每镜固定时长，含淡入淡出）。TODO: 按镜头 duration_s 精确控制。
         concat = d / "list.txt"
-
-        def _ffconcat_escape(p):  # FFmpeg concat 转义单引号/反斜杠/换行
-            return str(p).replace("\\", "\\\\").replace("'", "'\\''").replace("\n", "")
-
-        with open(concat, "w", encoding="utf-8") as f:
-            for p in img_paths:
-                f.write(f"file '{_ffconcat_escape(p)}'\nduration 4\n")
-            # 重复最后一张避免 FFmpeg 末尾截断
-            f.write(f"file '{_ffconcat_escape(img_paths[-1])}'\n")
+        _write_concat(concat, img_paths)
         try:
             subprocess.run(
-                ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat),
+                [ff, "-y", "-f", "concat", "-safe", "0", "-i", str(concat),
                  "-vf", "fade=t=in:st=0:d=0.4,fade=t=out:st=3.6:d=0.4", "-pix_fmt", "yuv420p", str(out_mp4)],
-                check=True, capture_output=True, timeout=600,
+                check=True, capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=600,
             )
         except subprocess.TimeoutExpired as exc:
-            raise RuntimeError(f"FFmpeg 视频合成超时（>600s）：{exc}")
+            raise RuntimeError(f"FFmpeg 视频合成超时（>600s）：{exc}") from exc
+        except subprocess.CalledProcessError as exc:
+            # ⚠️ 原先只捕超时，`CalledProcessError` 会直接冒到用户面前，
+            # 而 ffmpeg 的**真正原因**（编码器缺失 / 路径不对 / 图片损坏）
+            # 全在 stderr 里、被丢掉了 —— 用户只看到一句
+            # "returned non-zero exit status"，无从下手。
+            tail = (exc.stderr or "").strip().splitlines()[-6:]
+            raise RuntimeError(
+                f"FFmpeg 合成幻灯片失败（返回码 {exc.returncode}）：\n" + "\n".join(tail)
+            ) from exc
 
-        # 2) 可选 TTS 配音（Edge TTS 免费）。TODO: 需安装 edge-tts 并在此合成音频、mux 进视频。
-        if dialogue:
-            # 预留：edge-tts 生成 audio.mp3 后 `ffmpeg -i out.mp4 -i audio.mp3 -shortest out_final.mp4`
-            pass  # 见 TODO，避免在未装 edge-tts 时报错
-
+        # 配音**不在这里做** —— 由顶层 `synthesize` 的 `_apply_audio_plan`
+        # 统一收口（"要不要配音"是产物级决定，与画面怎么来无关）。
         return str(out_mp4), 1
 
     # ---------------------------------------------------------------

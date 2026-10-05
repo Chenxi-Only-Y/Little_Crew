@@ -100,6 +100,11 @@ class Settings(BaseSettings):
     # 详见 app/services/providers.py 的 allowed_durations / resolve_duration。
     video_max_duration: int = 7
     video_resolution: str = "768P"    # 视频最高分辨率（MiniMax-H3 支持 768P | 2K）
+    # 声音从哪来（`.env` 兜底；界面里那个 `video_audio` 字段优先）：
+    #   auto   不指定，按视频模型有没有原生音频决定（默认）
+    #   native 视频模型原生 / tts TTS 配音 / mix 两者混音 / none 不要声音
+    # 详见 app/services/video.py 的 _apply_audio_plan。
+    video_audio: str = "auto"
 
     # ------------------- IP-Adapter（角色一致性方案B 参考图生成） -------------------
     ip_adapter_provider: str = "mock"    # replicate | comfyui | mock
