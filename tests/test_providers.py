@@ -251,6 +251,51 @@ def test_mode_conflict_is_rejected(clean_settings):
     assert "本地推理" in why or "云端 API" in why, why
 
 
+def test_placeholder_follows_mode_instead_of_being_a_provider(clean_settings):
+    """占位符 `(自动)` / `(按模式)` 表示"不覆盖、跟随模式"，**不是提供者**。
+
+    这是一个**存在已久的静默 bug**：`resolve_provider` 原先写 `if v:`
+    判断"有没有设过覆盖"，而 `"(自动)"` 是**非空字符串**，于是它被当成
+    一个真提供者名返回。实测：
+
+        没设覆盖   → ('deepseek', '来自「云端 API」模式')      ✅
+        设了 (自动) → ('(自动)',  '来自「writer」的职业级设置') ❌
+
+    也就是「(自动)」这个选项一直是坏的 —— 界面看着正常，
+    真跑起来会拿 `(自动)` 当 provider 去调，必然失败。
+    """
+    clean_settings.set_many("_global", {"llm_provider_mode": "cloud"})
+    base, _ = prov.resolve_provider("llm", "writer")
+
+    for ph in ("(自动)", "(按模式)"):
+        clean_settings.set_many("_global", {"llm_provider_writer": ph})
+        got, why = prov.resolve_provider("llm", "writer")
+        assert got == base, f"{ph} 应跟随模式得到 {base!r}，实际 {got!r}（{why}）"
+        assert not prov.is_placeholder(got)
+
+    # 视频的占位符同样
+    clean_settings.set_many("_global", {"video_provider_mode": "local",
+                                        "video_provider": "(按模式)"})
+    got, _ = prov.resolve_provider("video_gen")
+    assert got == "local", f"(按模式) 应跟随本地模式，实际 {got!r}"
+
+    # 但**真提供者**仍然压过模式
+    clean_settings.set_many("_global", {"llm_provider_mode": "cloud",
+                                        "llm_provider_writer": "ollama"})
+    got, why = prov.resolve_provider("llm", "writer")
+    assert got is None, "模式=cloud 而显式选本地提供者 → 应报配置矛盾"
+    assert "矛盾" in why
+
+
+def test_is_placeholder_only_matches_placeholders():
+    assert prov.is_placeholder("(自动)")
+    assert prov.is_placeholder("(按模式)")
+    assert prov.is_placeholder("  (自动)  ")  # 容忍空白
+    assert not prov.is_placeholder("deepseek")
+    assert not prov.is_placeholder("")
+    assert not prov.is_placeholder(None)
+
+
 def test_consistent_mode_and_provider_still_resolves(clean_settings):
     """模式与提供者一致时照常解析（别把正常路径也挡了）。"""
     clean_settings.set_many("_global", {"image_provider_mode": "cloud",

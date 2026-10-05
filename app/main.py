@@ -847,7 +847,12 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
                     lora_train / tts / music / render_2d）
         include_unavailable: 是否包含"已登记未接入"的提供者
     """
-    from app.services.providers import CONDITIONING_LABELS, PROVIDERS, provider_payload
+    from app.services.providers import (
+        _MODE_DEFAULT,
+        CONDITIONING_LABELS,
+        PROVIDERS,
+        provider_payload,
+    )
 
     # 提供者 → 需要的凭据字段（设置项 key）。
     # 为什么要下发这个：视频的密钥是**提供者级**的（`minimax_api_key` 等），
@@ -888,6 +893,16 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
         "providers": items,
         # 设置页渲染"提供者凭据"区域用；键名与 PUT /api/settings 完全一致
         "credential_spec": provider_credential_spec(),
+        # 「云端 / 本地」各模式**默认会用哪个提供者**。
+        #
+        # 前端需要它来判断"声音来源"里哪些选项有意义：`视频模型原生` 只对
+        # 自带音频的提供者成立，而"实际会用哪个提供者"由
+        # 字段覆盖 > 全局字段 > 模式默认 三级决定 —— 模式默认这一档
+        # 只有后端知道（`_MODE_DEFAULT`）。不下发的话前端只能猜，
+        # 猜错就会出现"万相明明支持原生音频，却说没有"。
+        "mode_defaults": {
+            cap: dict(modes) for cap, modes in _MODE_DEFAULT.items()
+        },
     }
 
 

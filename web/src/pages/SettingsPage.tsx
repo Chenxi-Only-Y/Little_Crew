@@ -42,6 +42,8 @@ import { useCanvas } from '../store/canvas';
 import type { ConfigField } from '../domain/registry';
 import {
   allowedOptionsFor as computeAllowedOptions,
+  audioOptionsFor,
+  AUDIO_LABELS,
   allowedProviders as computeAllowedProviders,
   capabilityOf,
   modeOf as computeModeOf,
@@ -219,6 +221,8 @@ export default function SettingsPage() {
       is_local: boolean;
       /** 协议风格；非 `openai` 的客户端调不了，不列进下拉 */
       api_style: string;
+      /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
+      has_native_audio?: boolean;
       default_model?: string;
       known_models?: string[];
     }>
@@ -233,6 +237,15 @@ export default function SettingsPage() {
    * 拉不到时**保守地全部视为必选**（宁可多提示，也不要漏提示真需要的）。
    */
   const [implementedCaps, setImplementedCaps] = useState<Set<string> | null>(null);
+  /**
+   * 各能力"云端 / 本地"模式下**默认会用哪个提供者**（后端下发）。
+   *
+   * 前端判断「声音来源」里哪些选项有意义要靠它 —— 而模式默认这一档
+   * 只有后端知道（`_MODE_DEFAULT`）。
+   */
+  const [modeDefaults, setModeDefaults] = useState<Record<string, Record<string, string>> | null>(
+    null,
+  );
 
   useEffect(() => {
     let alive = true;
@@ -277,6 +290,9 @@ export default function SettingsPage() {
         const body = await r.json().catch(() => ({}));
         if (alive && r.ok) {
           if (body?.credential_spec) setCreds(body.credential_spec as CredentialSpec);
+          if (body?.mode_defaults) {
+            setModeDefaults(body.mode_defaults as Record<string, Record<string, string>>);
+          }
           if (Array.isArray(body?.providers)) {
             setProviders(
               body.providers as Array<{
@@ -285,6 +301,8 @@ export default function SettingsPage() {
                 capability: string;
                 is_local: boolean;
                 api_style: string;
+                /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
+                has_native_audio?: boolean;
                 default_model?: string;
                 known_models?: string[];
               }>,
@@ -544,10 +562,21 @@ export default function SettingsPage() {
   const modeOf = (capPrefix: string) => computeModeOf(capPrefix, settings);
   const allowedProviders = (capPrefix: string, fieldKey?: string) =>
     computeAllowedProviders(capPrefix, fieldKey, settings, providers);
-  const optionLabelsFor = (capPrefix: string, fieldKey?: string) =>
-    computeOptionLabels(capPrefix, fieldKey, settings, providers);
-  const allowedOptionsFor = (f: ConfigField, capPrefix: string) =>
-    computeAllowedOptions(f, capPrefix, settings, providers);
+  const optionLabelsFor = (capPrefix: string, fieldKey?: string) => ({
+    // 声音来源的显示名（`video_audio`）与提供者显示名合并 ——
+    // 两者不会撞键（一个是 auto/native/…，一个是提供者 key）
+    ...AUDIO_LABELS,
+    ...computeOptionLabels(capPrefix, fieldKey, settings, providers),
+  });
+  const allowedOptionsFor = (f: ConfigField, capPrefix: string) => {
+    // 「声音来源」按当前视频提供者**有没有原生音频**过滤可选项
+    if (f.key === 'video_audio') {
+      return audioOptionsFor(
+        providers, capPrefix, 'video_provider', settings, f.options, modeDefaults,
+      );
+    }
+    return computeAllowedOptions(f, capPrefix, settings, providers);
+  };
 
   /**
    * 下拉的**分组标签**（值 → 组名）。

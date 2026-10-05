@@ -321,6 +321,11 @@ class VideoProvider:
         build_body:    构造请求体
         conditioning:  支持的条件维度
         durations:     时长范围（含端点）
+        has_native_audio: **产出的视频里带不带声音**。
+                        ⚠️ 与 `conditioning` 里的 `reference_audio` **不是一回事**：
+                        那个说的是"能不能**喂**一段音频当参考"（输入），
+                        这个是"产出里**有没有**声音"（输出）。混用会让界面
+                        给出错误选项 —— 用户问过"配音不是某些视频模型自带吗"。
         note:          展示给用户的说明
         verified:      **是否用真实 key 跑通过**。
                        False 表示"按公开文档实现、行为可能需按实际调整"——
@@ -336,6 +341,8 @@ class VideoProvider:
     api_key_setting: str
     build_body: Callable[[str, VideoRequest, dict], dict]
     conditioning: tuple[str, ...]
+    #: 产出的视频里**有没有声音**（见类文档里的说明：与 reference_audio 不同）
+    has_native_audio: bool = False
     durations: tuple[int, int] = (2, 15)
     note: str = ""
     verified: bool = False
@@ -365,6 +372,11 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         build_body=_build_minimax_body,
         conditioning=("text", "first_frame", "last_frame",
                       "reference_image", "reference_video", "reference_audio"),
+        # ⚠️ 我们**只确认了它能收参考音频**（输入），
+        #    没有确认产出里是否自带配乐/对白 —— 官方文档没写清。
+        #    所以标 False（不宣称有），避免界面给出"用视频模型原生音频"
+        #    却发现产物是无声的。要改这个必须先去官方文档核实。
+        has_native_audio=False,
         durations=(4, 15),
         note="H3: 768P/2K，4~15s；H3-Max 更快但无 2K、5~15s。"
              "**支持参考视频**（白模录像走这里）。首尾帧与参考视频互斥。"
@@ -400,6 +412,9 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         build_body=_build_dashscope_body,
         conditioning=("text", "first_frame", "last_frame",
                       "reference_image", "reference_video", "reference_audio"),
+        # 官方备注明确写了 wan3.0「30fps、**原生带音频**」——这是产出带声音，
+        # 所以置 True。（用户："配音不是某些视频模型自带吗"）
+        has_native_audio=True,
         durations=(2, 30),
         note="**一个 key 覆盖多家模型**。wan3.0 时长 2~30s、30fps、原生带音频；"
              "参考视频总长 ≤15s。vidu/*_start-end2video 只收首尾帧两张图。"

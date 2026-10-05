@@ -134,6 +134,15 @@ MODEL_MODE_FIELDS: dict[str, ConfigField] = {
 def _provider_options(capability: str) -> tuple[str, ...]:
     """某能力的提供者下拉选项，**从 provider 注册表派生**。
 
+    ⚠️ 第一项是**占位符** `"(自动)"`，语义是"**不覆盖、跟随模式**"
+    （视频的 `video_provider` 用的写法是 `"(按模式)"`，含义相同）。
+    界面上它显示成「**跟随模式**」（映射在前端 `optionLabel` 里）——
+    用户看不懂"自动/按模式"的区别（其实没有区别，只是历史写法）。
+
+    这两个字符串是**存储值**，后端 `providers.resolve_provider` 靠它们判断
+    "用户没设覆盖"；`providers.PLACEHOLDER_PROVIDERS` 是唯一定义处。
+    **不要**为了好看把存储值也改掉。
+
     ## 为什么要派生而不是硬编码（这里修过一次真缺陷）
 
     原先两个函数各自写死一份列表：
@@ -514,6 +523,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         + _image_fields("character_designer") + (
             # LoRA 训练的具体提供者（模式已在上方选定，这里可覆盖）
             ConfigField("lora_train_provider", "LoRA 训练来源（覆盖模式）", "select", "global",
+                        # 占位符：表示"不覆盖、跟随上面的模式"（界面显示「跟随模式」）
                         ("(按模式)",),
                         help="留空/按模式即用上方的模式默认；也可强制指定",
                         default="", options_from="lora_train"),
@@ -617,6 +627,30 @@ ROLE_NODE_SPECS: dict[str, dict] = {
                         options=("5", "7", "9", "12", "15"), default="7",
                         help="本地仅 5/7/9（8GB 显存超过 10s 必 OOM）；云端可到 15"),
             ConfigField("video_count", "视频段数（0=跟图片数）", "number", "global", default=0),
+            # ---- 声音从哪来 ----
+            #
+            # 为什么要这一项：**音频有两条来源，而它们会打架**。
+            # 阿里百炼的万相 wan3.0 官方写明「原生带音频」（产出里就有
+            # 对白/环境音），而 TTS 也会生成一条配音轨 —— 两条同时存在，
+            # 要么互相盖掉，要么糊在一起。用户问过
+            # "配音不是某些视频模型自带吗"，指的就是这个。
+            #
+            # 取值（**存储值用英文 key**，界面显示名由前端给，见
+            # `ConfigFieldEditor` 的 `optionLabel`）：
+            #   auto    —— 不指定，按提供者能力自动决定（默认）
+            #   native  —— 用**视频模型原生**音频
+            #   tts     —— 用 TTS 配音（覆盖原生）
+            #   mix     —— 两者混音（TTS 为主，原生降为背景）
+            #   none    —— 不要声音
+            #
+            # ⚠️ `native` / `mix` 只对**声明了 `has_native_audio`** 的提供者
+            #    有意义（见 `video_adapters.VideoProvider`）。前端会按当前
+            #    提供者过滤掉不可选项 —— 否则用户选了"原生音频"，
+            #    产物却是无声的，比不给选更糟。
+            ConfigField("video_audio", "声音来源", "select", "global",
+                        options=("auto", "native", "tts", "mix", "none"),
+                        default="auto",
+                        help="万相 wan3.0 原生带音频；Seedance / 图片拼接没有声音，只能靠配音"),
         ),
         legacy_keys=("aggregator",),
         agent_class="",

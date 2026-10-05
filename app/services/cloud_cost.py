@@ -277,7 +277,12 @@ LOCAL_PROVIDERS = {"local", "ffmpeg", "edge", "ollama", "vllm", "mock", "diffsyn
 def is_cloud(provider: str) -> bool:
     """该 provider 是否会产生云端费用。"""
     p = (provider or "").strip().lower()
-    if not p or p == "(自动)":
+    # 占位符（`(自动)` / `(按模式)`）表示"跟随模式"，本身不是提供者，
+    # 不能算云端。原先只比 `"(自动)"`，漏了视频用的 `"(按模式)"` ——
+    # 于是视频那个"跟随模式"会被误判成"会产生云端费用"。
+    from app.services.providers import is_placeholder
+
+    if not p or is_placeholder(provider):
         return False
     if p in LOCAL_PROVIDERS:
         return False

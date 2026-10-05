@@ -1739,6 +1739,22 @@
           "default": 0,
           "secret": false,
           "help": ""
+        },
+        {
+          "key": "video_audio",
+          "label": "声音来源",
+          "type": "select",
+          "scope": "global",
+          "options": [
+            "auto",
+            "native",
+            "tts",
+            "mix",
+            "none"
+          ],
+          "default": "auto",
+          "secret": false,
+          "help": "万相 wan3.0 原生带音频；Seedance / 图片拼接没有声音，只能靠配音"
         }
       ]
     },

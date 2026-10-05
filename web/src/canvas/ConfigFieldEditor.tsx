@@ -264,6 +264,15 @@ export default function ConfigFieldEditor({
    */
   const optionLabel = (o: string) => {
     if (field.key.endsWith('_provider_mode')) return MODE_HINT[o] ?? o;
+    // 占位符说人话。
+    //
+    // 注册表里存的值是 `(自动)` / `(按模式)` —— 都是"**不覆盖、跟随模式**"
+    // 的意思，但用户看不懂这两个词有什么区别（其实没有区别，只是历史写法）。
+    // 它们都是"不指定来源"：真正决定用哪家的是上面那个"云端 / 本地"。
+    //
+    // ⚠️ 值本身必须保持不变：后端 `providers.resolve_provider` 靠它判断
+    //    "用户没设覆盖"（而它会跳过占位符继续用模式默认）。只改显示。
+    if (o === '(自动)' || o === '(按模式)') return '跟随模式';
     return optionLabels?.[o] ?? o;
   };
 

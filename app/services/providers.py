@@ -133,6 +133,13 @@ class ProviderSpec:
     max_concurrency: int = 4
     presets: dict[str, tuple] = field(default_factory=dict)
     conditioning: tuple[ConditioningKind, ...] = ()
+    #: 产出里**有没有声音**（仅 video_gen 有意义）。
+    #:
+    #: ⚠️ 与 `conditioning` 里的 `reference_audio` **不是一回事**：
+    #:    那个是"能不能**喂**音频当参考"（输入），这个是"产出**有没有**声音"
+    #:    （输出）。用户问的"配音不是某些视频模型自带吗"说的就是这个，
+    #:    设置页据它决定"声音来源"里哪些选项可选。
+    has_native_audio: bool = False
     note: str = ""
     #: **协议风格** —— 决定这个提供者能不能被现有客户端直接调用。
     #:
@@ -518,6 +525,7 @@ def _sync_video_providers() -> None:
                 presets={"duration": tuple(range(lo, hi + 1)),
                          "resolution": ("480P", "720P", "1080P")},
                 conditioning=vp.conditioning,  # type: ignore[arg-type]
+                has_native_audio=vp.has_native_audio,
                 note=vp.note + ("" if vp.verified else "（按公开文档实现，尚未用真实 key 跑通）"),
             )
         )
@@ -627,6 +635,30 @@ def is_local_provider(capability: str, provider_key: str) -> bool:
     return bool(spec and spec.category in LOCAL_CATEGORIES)
 
 
+#: 提供者字段里表示"**不指定、跟随模式**"的占位值。
+#:
+#: 注册表里用过两种写法，含义**完全相同**：
+#:   · `(自动)`   —— LLM / 图像 / TTS / LoRA 的提供者字段
+#:   · `(按模式)` —— 视频的 `video_provider`
+#:
+#: ⚠️ 这必须是**唯一**的一份定义。原先 `resolve_provider` 用 `if v:`
+#:    判断"有没有设过覆盖"，而 `"(自动)"` 是**非空字符串**，于是占位符被
+#:    当成了一个**真正的提供者名**送去解析。实测：
+#:
+#:        resolve_provider("llm", "writer")
+#:          没设覆盖   → ('deepseek', '来自「云端 API」模式')      ✅
+#:          设了 (自动) → ('(自动)',  '来自「writer」的职业级设置') ❌
+#:
+#:    也就是说「(自动)」这个选项**一直是坏的** —— 选了它界面看着没问题，
+#:    真跑起来会拿 `(自动)` 当模型提供者去调，必然失败。
+PLACEHOLDER_PROVIDERS: frozenset[str] = frozenset({"(自动)", "(按模式)"})
+
+
+def is_placeholder(provider_key: object) -> bool:
+    """该值是不是"不指定、跟随模式"的占位符（而不是一个真提供者）。"""
+    return str(provider_key or "").strip() in PLACEHOLDER_PROVIDERS
+
+
 def providers_for_mode(capability: str, mode: str) -> list[ProviderSpec]:
     """按「云端 / 本地」模式筛选该能力的提供者。
 
@@ -727,6 +759,8 @@ def provider_payload(p: "ProviderSpec", *, credential_keys: list[str] | None = N
         "max_concurrency": p.max_concurrency,
         "presets": {k: list(v) for k, v in p.presets.items()},
         "note": p.note,
+        # 前端据此过滤「声音来源」的可选项（没原生音频就不该让人选它）
+        "has_native_audio": p.has_native_audio,
         "credential_keys": list(credential_keys or []),
     }
 
@@ -858,15 +892,24 @@ def resolve_provider(capability: str, role: str = "") -> tuple[str | None, str]:
 
     mode = str(rs_get(mkey) or "unset").strip().lower()
 
+    # ⚠️ 占位符（`(自动)` / `(按模式)`）表示"**不指定、跟随模式**"，
+    #    必须**跳过**、继续往下走落到模式默认。
+    #
+    #    原先写的是 `if v:` —— 而 `"(自动)"` 是非空字符串，于是它被当成
+    #    一个真提供者名返回。实测：
+    #        resolve_provider("llm", "writer")
+    #          没设覆盖   → ('deepseek', '来自「云端 API」模式')      ✅
+    #          设了 (自动) → ('(自动)',  '来自「writer」的职业级设置') ❌
+    #    选了「(自动)」的用户，实际会拿 `(自动)` 当 provider 去调，必然失败。
     if role:
         v = rs_get(f"{pkey}_{role}")
-        if v:
+        if v and not is_placeholder(v):
             return _check_mode_consistency(
                 capability, str(v), mode, f"来自「{role}」的职业级设置"
             )
 
     v = rs_get(pkey)
-    if v:
+    if v and not is_placeholder(v):
         return _check_mode_consistency(capability, str(v), mode, "来自全局设置")
 
     default = mode_default_provider(capability, mode)
@@ -897,6 +940,10 @@ def _check_mode_consistency(
     只在 `mode` 明确为 "local" / "cloud" 时校验；"unset" 不校验
     （用户没表达意图，此时以显式提供者为准）。
     """
+    # 占位符不是提供者，交给上层继续解析（见 resolve_provider）
+    if is_placeholder(provider):
+        return None, f"「{provider}」不是提供者（它表示跟随模式）"
+
     m = (mode or "").strip().lower()
     if m not in ("local", "cloud"):
         return provider, why

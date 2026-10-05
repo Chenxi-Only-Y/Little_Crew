@@ -23,7 +23,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  AUDIO_LABELS,
   allowedOptionsFor,
+  audioOptionsFor,
   allowedProviders,
   capabilityOf,
   modeKeyOf,
@@ -245,6 +247,74 @@ test('label 自带来源前缀时不再叠加（避免 `本地 · 本地 · X`�
   // 只有一档时同样不叠加
   const one = optionLabelsFor('image', 'image_provider_photographer', { image_provider_mode: 'local' }, list);
   assert.equal(one.local, '本地 · Z-Image');
+});
+
+test('声音来源：按「实际会用的提供者」决定给不给「视频模型原生」', () => {
+  // 用户："配音不是某些视频模型自带吗" —— 万相 wan3.0 官方写明原生带音频，
+  // 而 Seedance / 图片拼接 / 本机 H3 都没有。让用户对后者选「原生」，
+  // 他会以为配好了，产物却是无声的 —— 比不给选更糟。
+  const ALL = ['auto', 'native', 'tts', 'mix', 'none'];
+  // 后端 `_MODE_DEFAULT` 的形状（由 /api/providers 下发）
+  const DEFAULTS = { video_gen: { cloud: 'minimax', local: 'local' } };
+
+  const list: ProviderInfo[] = [
+    P('local', '本地 MiniMax H3', 'video_gen', true),
+    P('ffmpeg', '本地 图片拼接', 'video_gen', true),
+    { ...P('dashscope_video', '阿里百炼（万相 / Vidu）', 'video_gen', false), has_native_audio: true },
+    { ...P('seedance', 'Seedance（火山方舟）', 'video_gen', false), has_native_audio: false },
+    { ...P('minimax', 'MiniMax（Hailuo）', 'video_gen', false), has_native_audio: false },
+  ];
+
+  // 1) 显式选了带原生音频的提供者 -> 给 native / mix
+  const a1 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: 'dashscope_video' }, ALL, DEFAULTS,
+  );
+  assert.deepEqual(a1, ['auto', 'native', 'tts', 'mix', 'none'], JSON.stringify(a1));
+
+  // 2) 显式选了没原生音频的 -> 不给
+  const a2 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: 'seedance' }, ALL, DEFAULTS,
+  );
+  assert.deepEqual(a2, ['auto', 'tts', 'none'], JSON.stringify(a2));
+
+  // 3) 没显式选 -> 用**模式默认**（cloud -> minimax，它没有原生音频）
+  const a3 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: '' }, ALL, DEFAULTS,
+  );
+  assert.deepEqual(a3, ['auto', 'tts', 'none'], `模式默认 minimax 无原生音频: ${JSON.stringify(a3)}`);
+
+  // 4) 模式默认换成带原生音频的（模拟后端把 cloud 默认改成万相）
+  const D2 = { video_gen: { cloud: 'dashscope_video', local: 'local' } };
+  const a4 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: '' }, ALL, D2,
+  );
+  assert.ok(a4.includes('native'), `模式默认是万相，应给 native: ${JSON.stringify(a4)}`);
+
+  // 5) 占位符（跟随模式）也走模式默认，不能把占位符当提供者名去找
+  const a5 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: '(按模式)' }, ALL, D2,
+  );
+  assert.ok(a5.includes('native'), `跟随模式应走模式默认: ${JSON.stringify(a5)}`);
+
+  // 6) 拿不到 mode_defaults 时**保守**只给通用选项（不确定就别让人配错）
+  const a6 = audioOptionsFor(
+    list, 'video', 'video_provider',
+    { video_provider_mode: 'cloud', video_provider: '' }, ALL, null,
+  );
+  assert.deepEqual(a6, ['auto', 'tts', 'none'], JSON.stringify(a6));
+});
+
+test('声音来源的显示名说人话（用户要求「模型原生」改「视频模型原生」）', () => {
+  assert.equal(AUDIO_LABELS.native, '视频模型原生');
+  assert.equal(AUDIO_LABELS.tts, 'TTS 配音');
+  assert.equal(AUDIO_LABELS.none, '不要声音');
+  assert.ok(AUDIO_LABELS.auto.includes('自动'));
+  assert.ok(AUDIO_LABELS.mix.includes('混音'));
 });
 
 test('非 openai 协议的提供者永远不列（选了必然失败）', () => {

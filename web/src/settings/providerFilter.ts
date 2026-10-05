@@ -33,6 +33,13 @@ export interface ProviderInfo {
   is_local: boolean;
   /** 协议风格；非 `openai` 的客户端调不了，不该列出来 */
   api_style: string;
+  /**
+   * 产出的视频里**有没有声音**（仅 video_gen 有意义）。
+   *
+   * ⚠️ 与 `conditioning` 里的 `reference_audio` 不是一回事：
+   * 那个是"能不能**喂**音频当参考"（输入），这个是"产出里有没有声音"（输出）。
+   */
+  has_native_audio?: boolean;
 }
 
 /** 值 → 该值属于哪一档。`unset` 表示"没有限制"（列全部）。 */
@@ -207,6 +214,79 @@ export function optionLabelsFor(
         : `云端 · ${p.label}`;
   }
   return out;
+}
+
+/**
+ * 「声音来源」的存储值 → 界面显示名。
+ *
+ * 存储值保持英文 key（后端据此判断），显示名说人话。
+ *
+ * ⚠️ `native` 用的是「**视频模型原生**」这个措辞（用户明确要求）：
+ *    声音是**视频模型自己产出的**，不是我们另外配的。
+ */
+export const AUDIO_LABELS: Record<string, string> = {
+  auto: '自动（按视频模型能力决定）',
+  native: '视频模型原生',
+  tts: 'TTS 配音',
+  mix: '两者混音（配音为主，原生降为背景）',
+  none: '不要声音',
+};
+
+/**
+ * 哪些「声音来源」选项对当前视频提供者**有意义**。
+ *
+ * ## 为什么必须过滤（用户："配音不是某些视频模型自带吗"）
+ *
+ * 音频有**两条来源**，而它们会打架：
+ *   · 阿里百炼的万相 wan3.0 官方写明「原生带音频」—— 产出里就有对白/环境音；
+ *   · TTS 会另外生成一条配音轨。
+ *
+ * 于是：
+ *   · 提供者**没有**原生音频（Seedance / 图片拼接 / 本机 H3）时，
+ *     `视频模型原生` 与 `两者混音` **是无意义的选项** —— 选了也拿不到声音。
+ *     让它可选比不给选更糟：用户以为配好了，产物却是无声的。
+ *   · 提供者**有**原生音频时，`TTS 配音` 仍有意义（想用固定音色念台词），
+ *     但要提醒它会盖掉模型生成的声音。
+ *
+ * `auto` 永远保留：表示"不指定，按提供者能力自动决定"，由后端解析。
+ */
+export function audioOptionsFor(
+  providers: readonly ProviderInfo[],
+  capPrefix: string,
+  fieldKey: string | undefined,
+  settings: Record<string, unknown> | null | undefined,
+  all: readonly string[],
+  modeDefaults?: Record<string, Record<string, string>> | null,
+): string[] {
+  const cap = capabilityOf(capPrefix);
+  const mode = modeOf(capPrefix, settings);
+  const own = fieldKey ? String(settings?.[fieldKey] ?? '') : '';
+
+  /**
+   * 解析"**实际会用哪个提供者**"，与后端 `resolve_provider` 的优先级一致：
+   *
+   *     字段覆盖 > 模式默认
+   *
+   * ⚠️ 我第一版漏了"模式默认"这一档，退而用"这一档里**全部**提供者都
+   *    支持原生音频"来近似 —— 结果是**万相明明支持，界面却说没有**
+   *    （因为云端档里还并列着 Seedance）。模式默认只有后端知道，
+   *    所以由 `/api/providers` 下发 `mode_defaults`。
+   */
+  const explicitKey = !PLACEHOLDERS.has(own) && own ? own : '';
+  const key = explicitKey || modeDefaults?.[cap]?.[mode] || '';
+  const target = key
+    ? providers.find((p) => p.key === key && p.capability === cap)
+    : undefined;
+
+  // 找不到目标（配置不全 / 还没选模式）时**保守地只给通用选项**：
+  // 宁可少给一个可选，也不要在不确定时让用户配出一个无声的产物
+  const hasNative = Boolean(target?.has_native_audio);
+
+  return all.filter((o) => {
+    if (o === 'auto') return true;
+    if (o === 'native' || o === 'mix') return hasNative;
+    return true; // tts / none 对任何提供者都适用
+  });
 }
 
 /**
