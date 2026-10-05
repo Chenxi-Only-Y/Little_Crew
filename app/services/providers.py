@@ -134,6 +134,21 @@ class ProviderSpec:
     presets: dict[str, tuple] = field(default_factory=dict)
     conditioning: tuple[ConditioningKind, ...] = ()
     note: str = ""
+    #: **协议风格** —— 决定这个提供者能不能被现有客户端直接调用。
+    #:
+    #: 本项目 LLM 侧用 langchain `ChatOpenAI`，它固定请求
+    #: `{base_url}/chat/completions`。所以只有 `"openai"` 风格能直接跑。
+    #:
+    #: ⚠️ 为什么要把它变成**数据**而不是写在 note 里：
+    #:    清单里混进过协议不同的条目却标着可用（如 xAI 主线已转 Responses、
+    #:    Perplexity 的 chat.completions 只在私有预览里），用户选中后必然失败，
+    #:    而界面上只看得到一句风险提示。做成字段后"能不能用"是可查询的。
+    #:
+    #:   "openai"     —— OpenAI Chat Completions 兼容，**可直接用**
+    #:   "responses"  —— 只有 OpenAI Responses API（/v1/responses）
+    #:   "messages"   —— Anthropic Messages 协议（/v1/messages）
+    #:   "unverified" —— 无法验证（网络不可达 / 官方文档未说明）
+    api_style: str = "openai"
 
 
 # ------------------------------------------------------------------
@@ -280,17 +295,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                                "mistral-small-latest"),
                  note="OpenAI 风格 /v1/chat/completions；另有区域端点 "
                       "api.eu.mistral.ai / api.us.mistral.ai"),
-    # xAI Grok
-    #   https://github.com/xai-org/xai-sdk-ts/blob/main/src/constants.ts
-    #   https://github.com/xai-org/xai-sdk-ts/blob/main/src/models.ts
-    ProviderSpec("xai", "xAI Grok", "llm", "overseas_cloud",
-                 default_model="grok-4.7", needs_proxy=True,
-                 known_models=("grok-4.7", "grok-4.6", "grok-4.5", "grok-4.20"),
-                 note="⚠️ 官方主线已是 Responses API，Chat Completions 被归入 "
-                      "文档 legacy 目录（据官方文档 URL 结构推断，未读到「OpenAI "
-                      "兼容」页面原文）；本项目的客户端走 chat completions，"
-                      "**若 legacy 端点下线则需改造**"),
-    # ---- 下面三家：官网在本机网络下不可达，证据来自替代的官方来源（见上）----
+    # ---- 下面几家：官网在本机网络下不可达，证据来自替代的官方来源（见上）----
     ProviderSpec("openai", "OpenAI", "llm", "overseas_cloud",
                  default_model="gpt-6.1-sol", needs_proxy=True,
                  known_models=("gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna",
@@ -303,7 +308,13 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  known_models=("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"),
                  note="⚠️ 官网对本区域封锁；模型 ID 经 Microsoft Foundry + "
                       "AWS Bedrock 模型卡 + 官方 SDK 三处交叉验证。"
-                      "是否存在 -latest 别名**未能验证**"),
+                      "是否存在 -latest 别名**未能验证**。"
+                      "⚠️ 本条目 base_url 是 Anthropic 原生风格（api.anthropic.com/v1），"
+                      "而客户端请求的是 {base_url}/chat/completions——"
+                      "本机对 api.anthropic.com 一律 403（两个端点都一样），"
+                      "**无法验证它是否支持 OpenAI Chat Completions**，"
+                      "故标为 unverified；用之前请先确认，或改用 openrouter 调 Claude",
+                 api_style="unverified"),
     ProviderSpec("gemini", "Google Gemini", "llm", "overseas_cloud",
                  default_model="gemini-3.8-flash", needs_proxy=True,
                  known_models=("gemini-3.8-flash", "gemini-3.1-pro-preview",

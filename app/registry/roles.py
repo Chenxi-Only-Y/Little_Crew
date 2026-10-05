@@ -152,6 +152,14 @@ def _provider_options(capability: str) -> tuple[str, ...]:
     `available=False` 的（仅登记未接入）**不列入**——列出来会让用户
     选到一个必然报错的选项。
 
+    **协议不是 `openai` 的也不列入**（`ProviderSpec.api_style`）：本项目
+    LLM 客户端是 langchain `ChatOpenAI`，固定请求 `{base_url}/chat/completions`。
+    协议对不上的（Responses / Anthropic Messages / 无法验证）选中后必然失败，
+    而界面上一句 note 挡不住用户去点。
+
+    这是用户"下线或不兼容的就不要了"的落地：**能选 = 能用**。
+    不在能选列表里的条目仍留在注册表里备查（附原因），只是不给选。
+
     ⚠️ 用**惰性 import**：`app.registry` 是被大量模块早期导入的包，
     在模块顶层引入 `app.services.providers` 会把服务层拖进 registry 的
     导入链（providers 自身又 import video_adapters / runtime_settings），
@@ -161,7 +169,12 @@ def _provider_options(capability: str) -> tuple[str, ...]:
 
     keys = ["(自动)"]
     for p in PROVIDERS:
-        if p.capability == capability and p.available and p.key not in keys:
+        if p.capability != capability or not p.available:
+            continue
+        # 只有 openai 风格能被现有客户端直接调用；其余（含 unverified）不列
+        if getattr(p, "api_style", "openai") != "openai":
+            continue
+        if p.key not in keys:
             keys.append(p.key)
     return tuple(keys)
 
