@@ -655,6 +655,26 @@ function FreeOrbit({ target }: { target: import('three').PerspectiveCamera | nul
     c.maxDistance = 500;
 
     /**
+     * ## 转动/缩放速度（用户："视角转动的也好快"）
+     *
+     * `OrbitControls` 三个速度默认都是 **1.0**——鼠标每移动一个像素就转
+     * 固定角度，在 1300px 宽的视口上轻轻一拖就转过去大半圈，
+     * 很难停在想看的角度上。
+     *
+     * 调成：
+     *   · `rotateSpeed = 0.35` —— 转动降到三分之一，能稳稳停住；
+     *   · `zoomSpeed = 0.6`    —— 滚轮缩放也放缓，避免一格滚过头；
+     *   · `panSpeed = 0.5`     —— 平移同步放缓，三者手感一致。
+     *
+     * ⚠️ 这三个是**乘在鼠标位移上**的比例，与 `dampingFactor`（惯性衰减）
+     * 是两回事：把 speed 调小手感变"重"，把 damping 调小则是变"滑"。
+     * 用户要的是前者。
+     */
+    c.rotateSpeed = 0.35;
+    c.zoomSpeed = 0.6;
+    c.panSpeed = 0.5;
+
+    /**
      * ## 去掉垂直锁定（用户报："不是全方位视角"）
      *
      * 我先前写了 `maxPolarAngle = Math.PI * 0.495`，理由是不让相机钻到
