@@ -37,6 +37,32 @@ export function getUsername(): string | null {
   }
 }
 
+/**
+ * 凭据发生变化（登录 / 退出 / 失效清除）时派发。
+ *
+ * ## 为什么需要（用户报的"啥情况"+过滤时灵时不灵）
+ *
+ * 设置页的设置在**组件挂载时只拉一次**（`useEffect(..., [])`）。若那一刻
+ * token 还没就绪（或刚被清掉），`GET /api/settings` 会 401，页面就停在
+ * "没有任何设置"的状态：所有字段用默认值。
+ *
+ * 后果不只是显示 —— 提供者下拉的过滤依赖"云端/本地"模式的值，
+ * 模式读成 `unset` 就**不过滤**，于是本地与云端又混在一起。
+ * 这类 bug 表现为**时灵时不灵**（取决于登录与挂载的先后），最难查。
+ *
+ * 有了这个事件，任何关心凭据的功能都可以在登录/退出后重新拉数据，
+ * 而不用去猜"我挂载时 token 到底在不在"。
+ */
+export const AUTH_CHANGED_EVENT = 'lc:auth-changed';
+
+function emitAuthChanged() {
+  try {
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+  } catch {
+    /* 非浏览器环境（测试）忽略 */
+  }
+}
+
 function persist(token: string, username: string) {
   try {
     window.localStorage.setItem(TOKEN_KEY, token);
@@ -44,6 +70,7 @@ function persist(token: string, username: string) {
   } catch {
     /* localStorage 不可用（隐私模式）时静默降级为「本次会话有效」 */
   }
+  emitAuthChanged();
 }
 
 export function clearAuth() {
@@ -53,6 +80,7 @@ export function clearAuth() {
   } catch {
     /* 同上 */
   }
+  emitAuthChanged();
 }
 
 export interface AuthResult {

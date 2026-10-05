@@ -37,9 +37,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import ConfigFieldEditor from '../canvas/ConfigFieldEditor';
 import { fetchSettings, type SettingsMap } from '../api/settings';
-import { getToken } from '../api/auth';
+import { AUTH_CHANGED_EVENT, getToken, requireAuth } from '../api/auth';
 import { useCanvas } from '../store/canvas';
 import type { ConfigField } from '../domain/registry';
+import {
+  allowedOptionsFor as computeAllowedOptions,
+  allowedProviders as computeAllowedProviders,
+  capabilityOf,
+  modeOf as computeModeOf,
+  optionLabelsFor as computeOptionLabels,
+} from '../settings/providerFilter';
 
 /** 费用审计返回的单项 */
 interface CostItem {
@@ -280,14 +287,45 @@ export default function SettingsPage() {
     };
   }, []);
 
+  /**
+   * 拉设置。
+   *
+   * ## ⚠️ 为什么要订阅凭据变更（用户报的"啥情况"）
+   *
+   * 原先是 `useEffect(..., [])` —— **只在挂载时拉一次**。若那一刻 token
+   * 还没就绪（或刚被清掉），`GET /api/settings` 401，页面就停在
+   * "没有任何设置"的状态：所有字段回落到默认值。
+   *
+   * 后果不只是显示：提供者下拉的过滤依赖"云端/本地"模式的值，
+   * 模式读成 `unset` 就**不过滤** —— 本地和云端又混在一起。
+   * 这类 bug 表现为**时灵时不灵**（取决于登录与挂载的先后），最难查。
+   *
+   * 现在登录/退出/凭据失效都会触发重拉，不必再猜"挂载时 token 在不在"。
+   *
+   * ⚠️ 但**光靠事件还不够**（实测踩到）：`AUTH_CHANGED_EVENT` 是"派发过去、
+   * 错过了就没了"的广播。如果本组件的监听器在事件派发**之后**才挂上
+   * （用户先登录、再导航到设置页），那一次就永远收不到 —— 页面照样停在
+   * `settings === null`。所以这里再加一层**不依赖时序的兜底**：
+   * 拿不到（没 token / 401）就隔一会儿重试几次，直到成功。
+   */
   useEffect(() => {
     let alive = true;
-    void (async () => {
+    let timer: number | undefined;
+
+    const load = async (attempt = 0) => {
       const token = getToken();
       const res = await fetchSettings(token);
       if (!alive) return;
-      if (res.ok) setSettings(res.settings);
-      else setError(res.error ?? '读取设置失败');
+      if (res.ok) {
+        setSettings(res.settings);
+        setError(null);
+      } else {
+        setError(res.error ?? '读取设置失败');
+        // 未登录/凭据未就绪：稍后重试（最多 5 次，约 4 秒）
+        if (attempt < 5) {
+          timer = window.setTimeout(() => void load(attempt + 1), 800);
+        }
+      }
 
       try {
         const r = await fetch('/api/cost/audit', {
@@ -298,9 +336,15 @@ export default function SettingsPage() {
       } catch {
         /* 费用审计失败不影响设置本身 */
       }
-    })();
+    };
+    void load();
+    // 凭据变化（登录成功 / 退出 / 失效清除）后立刻重拉
+    const onAuth = () => void load();
+    window.addEventListener(AUTH_CHANGED_EVENT, onAuth);
     return () => {
       alive = false;
+      if (timer !== undefined) window.clearTimeout(timer);
+      window.removeEventListener(AUTH_CHANGED_EVENT, onAuth);
     };
   }, []);
 
@@ -417,107 +461,70 @@ export default function SettingsPage() {
   }
 
   /**
-   * 取某能力当前的模式（`cloud` / `local` / `unset`）。
+   * ⚠️ **设置还没拉到就先不要渲染这些字段**。
    *
-   * 键名规则见后端 `MODE_KEY_BY_CAPABILITY`：
-   *   `llm_provider_mode` / `image_provider_mode` / `video_provider_mode` /
-   *   `lora_train_provider_mode` / `tts_provider_mode`。
+   * ## 为什么（用户报的"啥情况"+ 过滤时灵时不灵，根因在这里）
    *
-   * 注意 `image_edit` 与 `image_gen` **共用** `image_provider_mode`，
-   * 所以按 CAP_GROUPS 的 `cap`（`image_gen` / `image_edit` 是两个 cap）
-   * 去拼键名会漏掉一个 —— 这里统一按**前缀**推。
+   * 设置的读取是**异步**的，而注册表是同步就有的。原先两者都到齐才开始用，
+   * 结果在 `settings === null` 的那段时间里：
+   *
+   *   · "云端 / 本地"模式一律读成 `unset`（因为 `settings?.[key]` 取不到）；
+   *   · 提供者下拉的过滤条件于是退化成"**不过滤**" → 本地与云端混在一起；
+   *   · 更糟的是**之后没有重渲染对齐**：`ConfigFieldEditor` 用 `useState`
+   *     初始化 `value`，只认首次的 `current`，于是界面会停在"没有覆盖"这个
+   *     **假状态**上（用户明明存了 `local`，界面显示"— 请选择 —"）。
+   *
+   * 所以宁可不渲染：显示"正在读取设置…"，等真实值到了再画。
+   * **显示假状态比显示空白更误导** —— 用户会照着假状态去改配置。
+   *
+   * ⚠️ 条件里**不能带 `&& !error`**（我犯过）：设置拉取失败（如凭据失效
+   * 401）时 `error` 会被设上，这个分支就被跳过，于是**又回到"用空默认值
+   * 渲染"的误导状态** —— 用户看到"所有配置都没了"，比一句报错吓人得多。
+   * 所以：只要 `settings` 为空就挡住，并把原因和可做的动作说清楚。
    */
-  const modeOf = (capPrefix: string): string => {
-    const key =
-      capPrefix === 'lora' ? 'lora_train_provider_mode' : `${capPrefix}_provider_mode`;
-    return String(settings?.[key] ?? 'unset');
-  };
+  if (settings === null) {
+    const needLogin = Boolean(error && /未登录|登录|401|Unauthorized/i.test(error));
+    return (
+      <div className="page">
+        <h2 className="page-title">设置</h2>
+        <p className="page-sub">
+          {needLogin ? '登录已失效，无法读取你的设置。' : '正在读取你的设置…'}
+        </p>
+        {error && (
+          <div className="card" style={{ borderColor: 'var(--st-review)' }}>
+            <div style={{ fontSize: 12, color: 'var(--st-review)' }}>⚠ {error}</div>
+            {needLogin && (
+              <button
+                type="button"
+                className="btn"
+                style={{ marginTop: 10 }}
+                onClick={() => requireAuth()}
+              >
+                重新登录
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   /**
-   * 把 CAP_GROUPS 的**前缀**规范成 `/api/providers` 用的**能力名**。
+   * 过滤与分组逻辑**统一放在 `settings/providerFilter.ts`**，这里只做薄封装。
    *
-   * 两者大多相同（`llm` / `image` / `video` / `tts`），只有一处不同：
-   *   前端前缀 `image` → 能力 `image_gen`
-   *   前端前缀 `lora`  → 能力 `lora_train`
-   *
-   * 不规范化的话 `p.capability !== capPrefix` 永远成立，
-   * 白名单会变空 —— 表现就是那组下拉里**一个提供者都没有**。
+   * 为什么不写在组件里：这段逻辑出过三次语义错误（模式键拼错、
+   * 只过滤显示名没过过滤选项、字段覆盖落在模式之外导致当前值消失），
+   * 而它**很难靠肉眼看界面验证** —— 设置异步加载、下拉是原生控件、
+   * 过滤结果还依赖"模式"与"字段级覆盖"两套优先级。
+   * 抽成纯函数后能用 `node --test` 断言守住（见同目录的 .test.ts）。
    */
-  const capabilityOf = (capPrefix: string): string =>
-    capPrefix === 'image' ? 'image_gen' : capPrefix === 'lora' ? 'lora_train' : capPrefix;
-
-  /**
-   * 下拉选项：内部 provider key → 后端给的友好名。
-   *
-   * 只收**当前字段所属能力**的提供者，避免把图像提供者混进文字模型下拉。
-   *
-   * ## 按模式过滤（用户报的问题）
-   *
-   * 用户原话："把下滑时的本地模型和云端模型选项分开，不要杂在一起，
-   * 不然会出现上面选的本地，然后下面填 api 情况"。
-   *
-   * 原先这个下拉把 `ollama` / `vllm`（本地）与 `deepseek` / `openai`（云端）
-   * **混在一个列表里**，而模式字段就在它上方 —— 选「本地」却挑到云端
-   * 提供者、再去填 API Key，是个自相矛盾的组合。
-   *
-   * 现在：
-   *   · 模式 = `local` → 只列本地 / 零成本提供者；
-   *   · 模式 = `cloud` → 只列云端与网关；
-   *   · 模式 = `unset` → 列全部（用户还没选，不该限制他先看什么）。
-   *
-   * 后端 `resolve_provider` 里还有一层兜底校验：万一存过的旧值或直接调
-   * 接口绕过了这里，也会**明确报错**，而不是默默按提供者跑
-   * （最糟的不是报错，是用户以为在跑本地零成本、实际发了云端请求花钱）。
-   */
-  const optionLabelsFor = (capPrefix: string): Record<string, string> => {
-    const out: Record<string, string> = {};
-    for (const p of allowedProviders(capPrefix)) out[p.key] = p.label;
-    return out;
-  };
-
-  /** 某模式下该能力**可选**的提供者（模式过滤的单一判据）。 */
-  const allowedProviders = (capPrefix: string) => {
-    const mode = modeOf(capPrefix);
-    const cap = capabilityOf(capPrefix);
-    return providers.filter((p) => {
-      if (p.capability !== cap) return false;
-      // 协议对不上的（如 unverified）不列 —— 选了必然失败
-      if (p.api_style !== 'openai') return false;
-      if (mode === 'local' && !p.is_local) return false;
-      if (mode === 'cloud' && p.is_local) return false;
-      return true;
-    });
-  };
-
-  /**
-   * 下拉的**白名单**：只允许这些值出现在选项里。
-   *
-   * ⚠️ 这里修过一次返工：`field.options` 来自**注册表**，而注册表是后端在
-   * 应用启动时算好的**静态**快照 —— 那时用户还没选模式，所以云端与本地的
-   * 提供者**都在里面**。只过滤 `optionLabels`（显示名）是不够的：
-   * 选项仍然可选，用户照样能选到云端提供者；而被滤掉显示名的那些还会
-   * 退化成内部 key（`deepseek`），比原来更难懂。
-   *
-   * 所以要把**选项本身**过滤掉。`"(自动)"` 不是提供者（表示"跟随默认"），
-   * 必须保留，否则用户没法表达"不覆盖"。
-   *
-   * ⚠️ **判据不能写成 `includes('_provider_')`** —— 这个坑我踩了两次：
-   *
-   *   · `llm_provider_mode` **含** `_provider_`，但它是**模式**字段
-   *     （选项是 unset / cloud / local），套上白名单会被清空，
-   *     select 直接塌成一条缝（用户看到的就是这个）；
-   *   · `tts_provider` / `video_provider` / `lora_train_provider` **不含**
-   *     `_provider_`（结尾没有后续下划线），但它们是**真正的提供者**字段 ——
-   *     漏掉它们等于完全不过滤。
-   *
-   * 正确判据：**是 select、键里含 `provider`、且不以 `_provider_mode` 结尾**。
-   */
-  const allowedOptionsFor = (f: ConfigField, capPrefix: string): string[] | undefined => {
-    if (f.type !== 'select') return undefined;
-    if (!f.key.includes('provider')) return undefined;
-    if (f.key.endsWith('_provider_mode')) return undefined; // 模式字段不限制
-    return ['(自动)', ...allowedProviders(capPrefix).map((p) => p.key)];
-  };
+  const modeOf = (capPrefix: string) => computeModeOf(capPrefix, settings);
+  const allowedProviders = (capPrefix: string, fieldKey?: string) =>
+    computeAllowedProviders(capPrefix, fieldKey, settings, providers);
+  const optionLabelsFor = (capPrefix: string, fieldKey?: string) =>
+    computeOptionLabels(capPrefix, fieldKey, settings, providers);
+  const allowedOptionsFor = (f: ConfigField, capPrefix: string) =>
+    computeAllowedOptions(f, capPrefix, settings, providers);
 
   /**
    * 下拉的**分组标签**（值 → 组名）。
@@ -530,17 +537,7 @@ export default function SettingsPage() {
    * 一眼就是两类 —— 且 optgroup 是纯标签、没有 value，
    * 不会像插入占位项那样被回显成假选项。
    */
-  const optionGroupsFor = (f: ConfigField, capPrefix: string): Record<string, string> | undefined => {
-    if (f.type !== 'select') return undefined;
-    if (!f.key.includes('provider') || f.key.endsWith('_provider_mode')) return undefined;
-    const cap = capabilityOf(capPrefix);
-    const out: Record<string, string> = {};
-    for (const p of providers) {
-      if (p.capability !== cap || p.api_style !== 'openai') continue;
-      out[p.key] = p.is_local ? '本地 / 零成本（不用填 Key）' : '云端 API / 网关（需要 Key）';
-    }
-    return out;
-  };
+
 
   /** 某能力在某模式下可选的提供者名（用于模式字段下方的提示文案）。 */
   const providerNamesForMode = (capPrefix: string): string[] =>
@@ -597,9 +594,8 @@ export default function SettingsPage() {
       key={`${node}:${f.key}`}
       field={f}
       current={settings?.[f.key]}
-      optionLabels={optionLabelsFor(capPrefix)}
+      optionLabels={optionLabelsFor(capPrefix, f.key)}
       allowedOptions={allowedOptionsFor(f, capPrefix)}
-      optionGroups={optionGroupsFor(f, capPrefix)}
       modelSource={modelSourceFor(f, capPrefix)}
       onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
     />

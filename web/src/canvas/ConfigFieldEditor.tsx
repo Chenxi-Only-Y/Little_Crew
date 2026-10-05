@@ -11,7 +11,7 @@
  *   3. 保存失败要**明确提示**，不能静默——否则用户以为改了、其实没生效。
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MASK_SENTINEL, saveSettings } from '../api/settings';
 import { getToken, handleUnauthorized } from '../api/auth';
 import type { ConfigField } from '../domain/registry';
@@ -140,16 +140,47 @@ export default function ConfigFieldEditor({
    */
   const hasStoredSecret = isSecret && String(current ?? '') === MASK_SENTINEL;
 
-  // 切换选中节点时同步外部值
+  /**
+   * 外部值变化时同步到本地状态。
+   *
+   * ## ⚠️ 这里修过一个"显示与实际不一致"的真 bug
+   *
+   * 原逻辑只在 **`field.key` 变了** 时才同步 `value`。但设置是**登录后
+   * 异步到**的 —— 首渲染时 `current` 还是 `undefined`，于是 `value` 被锁成
+   * `''`（下拉就显示"— 请选择 —"），**之后后端值到了也不会再同步**。
+   *
+   * 后果不止是显示：
+   *   · 用户明明存了 `image_provider_mode = local`，界面却显示"请选择"；
+   *   · 而"按下拉的值过滤提供者"依赖这个值 —— 值是 `unset` 就**不过滤**，
+   *     于是本地与云端又混在一起（用户报的"啥情况"，就是这个的连锁反应）。
+   *
+   * 修法：把"组件内值"与"外部值"对齐，但**不能无条件覆盖** ——
+   * 否则用户正在输入时被外部更新打断（比如密钥框被清空、数字框被回填）。
+   * 所以只在**用户还没动过**这个字段时自动跟随；动过之后以用户的为准。
+   *
+   * 用 `useEffect` 而不是渲染期 setState：同步是副作用，写在渲染里会在
+   * 并发渲染下重复执行。
+   */
   const currentStr = isSecret ? '' : current === undefined || current === null ? '' : String(current);
+  /** 用户是否已经动过这个字段（提交过 / 手动改过）。动过就不再自动跟随外部值。 */
+  const touchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!touchedRef.current) setValue(currentStr);
+  }, [currentStr]);
+
   const [lastKey, setLastKey] = useState(field.key);
   if (lastKey !== field.key) {
+    // 换字段：重置为"未动过"，并立即采用新字段的外部值
     setLastKey(field.key);
+    touchedRef.current = false;
     setValue(currentStr);
     setMsg(null);
   }
 
   const commit = async (raw: string) => {
+    // 用户动过了：此后不再自动跟随外部值，避免把他的操作覆盖掉
+    touchedRef.current = true;
     setBusy(true);
     setMsg(null);
     // 空串 = 清除覆盖（后端语义），密钥留空也走这条
