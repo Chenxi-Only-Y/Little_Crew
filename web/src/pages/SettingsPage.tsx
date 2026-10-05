@@ -576,9 +576,14 @@ export default function SettingsPage() {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         const body = await r.json().catch(() => ({}));
+        // 后端返回 [{id, kind}]；兼容旧的纯字符串数组，避免半新半旧时炸掉
+        const raw = (body?.models ?? []) as Array<string | { id?: string; kind?: string }>;
+        const models = raw
+          .map((m) => (typeof m === 'string' ? { id: m, kind: '' } : { id: String(m?.id ?? ''), kind: String(m?.kind ?? '') }))
+          .filter((m) => m.id);
         return {
           ok: Boolean(body?.ok),
-          models: (body?.models ?? []) as string[],
+          models,
           detail: String(body?.detail ?? (r.ok ? '没有返回模型清单' : `请求失败（HTTP ${r.status}）`)),
           source: body?.source as string | undefined,
         };

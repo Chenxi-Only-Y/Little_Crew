@@ -328,14 +328,24 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
     ok, out = _get(req)
 
     # Ollama 的**原生**清单端点是 `/api/tags`，不是 `/v1/models`。
-    # 它虽然也提供 OpenAI 兼容层，但各版本对 `/v1/models` 的支持并不一致
-    # ——所以拿不到就再用原生端点兜一次。本机是用户最常问的场景
-    # （"我怎么知道本机有哪些模型"），值得为它多做这一步。
-    if (not ok or not isinstance(out, bytes)) and is_local:
+    #
+    # ⚠️ 对 Ollama 要**优先**问原生端点，而不是"失败才兜底"。原因不只是
+    #    兼容性 —— 实测两者的信息量**不一样**：
+    #
+    #      /v1/models → {"data":[{"id":"bge-m3:latest","object":"model",...}]}
+    #                   **没有能力信息**，无法判断是对话还是嵌入模型
+    #      /api/tags  → {"models":[{...,"capabilities":["embedding"]}]}
+    #                   有 `capabilities`，能准确标注类型
+    #
+    #    用户要求"在列表里标一下模型类型"，而标类型必须靠 `capabilities`。
+    #    （实测确认：走 /v1/models 时 kind 全为空，走 /api/tags 才拿到。）
+    #
+    # 其余本地提供者（vLLM 等）只有 OpenAI 端，仍走 /v1/models。
+    if is_local:
         base = b.rstrip("/")
         if base.endswith("/v1"):
             base = base[:-3]
-        for path in ("/api/tags", "/v1/models"):
+        for path in ("/api/tags", "/v1/models", "/models"):
             req2 = urllib.request.Request(
                 base.rstrip("/") + path, method="GET",
                 headers={"Accept": "application/json"},
@@ -404,20 +414,26 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
         return _maybe_fallback(prov, b, is_local, "other",
                                "返回里没有模型列表（data / models 都为空）")
 
-    ids: list[str] = []
+    entries: list[dict] = []
     for it in items:
         if isinstance(it, str):
-            ids.append(it)
-        elif isinstance(it, dict):
-            for key in ("id", "name", "model"):
-                v = it.get(key)
-                if isinstance(v, str) and v:
-                    ids.append(v)
-                    break
+            entries.append({"id": it, "kind": ""})
+            continue
+        if not isinstance(it, dict):
+            continue
+        mid = ""
+        for key in ("id", "name", "model"):
+            v = it.get(key)
+            if isinstance(v, str) and v:
+                mid = v
+                break
+        if mid:
+            entries.append({"id": mid, "kind": _classify_model(it)})
 
     # 去重并保持稳定顺序（同一模型名只出现一次）
     seen: set[str] = set()
-    uniq = [x for x in ids if not (x in seen or seen.add(x))]
+    uniq: list[dict] = [e for e in entries if not (e["id"] in seen or seen.add(e["id"]))]
+    ids = [e["id"] for e in uniq]
 
     # 提供商返回了空列表也算"问到了但什么都没有"——
     # 本地服务（还没 pull 模型）与云端（账号没开通模型）都会这样。
@@ -429,7 +445,8 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
         if not is_local:
             fb = _fallback_known(prov)
             if fb:
-                return {"ok": True, "models": fb, "provider": prov, "base_url": b,
+                return {"ok": True, "models": [{"id": x, "kind": "chat"} for x in fb],
+                        "provider": prov, "base_url": b,
                         "source": "known_models", "error_type": "ok",
                         "detail": f"「{prov}」的 /models 返回空，改用已核对的清单"
                                   f"（{len(fb)} 个）"}
@@ -440,7 +457,45 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
 
     return {"ok": True, "models": uniq, "provider": prov, "base_url": b,
             "source": "provider", "error_type": "ok",
-            "detail": f"从 {prov} 查到 {len(uniq)} 个模型"}
+            "detail": f"从 {prov} 查到 {len(uniq)} 个模型"
+                      + ("（已标出模型类型）" if any(e["kind"] for e in uniq) else "")}
+
+
+def _classify_model(item: dict) -> str:
+    """判断一个模型条目是**对话**还是**嵌入**（UI 用来标注类型）。
+
+    ## 为什么需要（用户要求："在列表里标一下模型类型"）
+
+    实测本机 Ollama 同时装了 `qwen3:8b`（对话）与 `bge-m3:latest`（嵌入）。
+    **选错会直接报错**，而两个名字在图里长得一样，用户看不出区别。
+
+    ## 判据优先级（Ollama 的字段最权威）
+
+      1. `capabilities`（Ollama 会明确列出）：
+            ['embedding']                      → embed
+            ['completion', 'tools', 'thinking'] → chat
+      2. `details.family` 关键词兜底（老版本 Ollama 没有 capabilities）：
+            bert / embedding / rerank / clip   → embed
+      3. 认不出 → `""`（不瞎标；界面就不显示类型标签）
+    """
+    caps = item.get("capabilities")
+    if isinstance(caps, list):
+        c = {str(x).lower() for x in caps}
+        if "completion" in c or "chat" in c or "tools" in c or "thinking" in c:
+            return "chat"
+        if "embedding" in c or "embed" in c:
+            return "embed"
+
+    details = item.get("details")
+    fam = ""
+    if isinstance(details, dict):
+        fam = str(details.get("family") or "").lower()
+        fams = details.get("families")
+        if isinstance(fams, list):
+            fam = " ".join([fam] + [str(x).lower() for x in fams])
+    if any(t in fam for t in ("bert", "embed", "rerank", "clip", "bge")):
+        return "embed"
+    return ""
 
 
 def _maybe_fallback(provider: str, base_url: str, is_local: bool,
@@ -453,7 +508,10 @@ def _maybe_fallback(provider: str, base_url: str, is_local: bool,
     if not is_local:
         fb = _fallback_known(provider)
         if fb:
-            return {"ok": True, "models": fb, "provider": provider, "base_url": base_url,
+            # 兜底清单里都是我们人工核对的**对话模型**，所以 kind 一律标 chat
+            return {"ok": True,
+                    "models": [{"id": x, "kind": "chat"} for x in fb],
+                    "provider": provider, "base_url": base_url,
                     "source": "known_models", "error_type": "ok",
                     "detail": f"「{provider}」没有可用的 /models 端点（{reason}），"
                               f"改用已核对的清单（{len(fb)} 个，可能不是最新）"}

@@ -22,6 +22,12 @@ const MODE_HINT: Record<string, string> = {
   local: '本地推理',
 };
 
+/** 一个模型条目：名称 + 类型（`chat` 对话 / `embed` 嵌入 / `""` 未知）。 */
+export interface ModelInfo {
+  id: string;
+  kind: string;
+}
+
 interface Props {
   field: ConfigField;
   /** 后端返回的当前值（密钥为掩码或 undefined） */
@@ -86,7 +92,7 @@ interface Props {
    */
   modelSource?: {
     /** 拉取（由调用方提供，内部走 `/api/providers/models`） */
-    fetch: () => Promise<{ ok: boolean; models: string[]; detail: string; source?: string }>;
+    fetch: () => Promise<{ ok: boolean; models: ModelInfo[]; detail: string; source?: string }>;
   };
 }
 
@@ -108,7 +114,7 @@ export default function ConfigFieldEditor({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   /** 「获取可用模型」的结果（null = 还没点过） */
   const [models, setModels] = useState<
-    { ok: boolean; models: string[]; detail: string; source?: string } | null
+    { ok: boolean; models: ModelInfo[]; detail: string; source?: string } | null
   >(null);
   const [fetching, setFetching] = useState(false);
 
@@ -408,21 +414,42 @@ export default function ConfigFieldEditor({
                     overflowY: 'auto',
                   }}
                 >
-                  {models.models.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      className="btn ghost"
-                      title="点击填入「模型」"
-                      style={{ fontSize: 11, padding: '2px 6px' }}
-                      onClick={() => {
-                        setValue(m);
-                        void commit(m);
-                      }}
-                    >
-                      {m}
-                    </button>
-                  ))}
+                  {models.models.map((m) => {
+                    // 用户要求"在列表里标一下模型类型"。
+                    // 嵌入模型（如 bge-m3）当对话模型用**会直接报错**，
+                    // 而两个名字在图里长得一样 —— 所以除了标签还要给出警告。
+                    const kindLabel =
+                      m.kind === 'chat' ? '对话' : m.kind === 'embed' ? '嵌入' : '';
+                    const isEmbed = m.kind === 'embed';
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        className="btn ghost"
+                        title={
+                          isEmbed
+                            ? '这是嵌入模型，不能当对话模型用（调用会报错）'
+                            : '点击填入「模型」'
+                        }
+                        style={{
+                          fontSize: 11,
+                          padding: '2px 6px',
+                          color: isEmbed ? 'var(--st-review)' : undefined,
+                          borderColor: isEmbed ? 'var(--st-review)' : undefined,
+                        }}
+                        onClick={() => {
+                          setValue(m.id);
+                          void commit(m.id);
+                        }}
+                      >
+                        {m.id}
+                        {kindLabel && (
+                          <span style={{ marginLeft: 4, opacity: 0.8 }}>· {kindLabel}</span>
+                        )}
+                        {isEmbed && <span style={{ marginLeft: 4 }}>⚠ 不能对话</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

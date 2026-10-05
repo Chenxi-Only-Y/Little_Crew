@@ -76,26 +76,81 @@ def test_openai_shape(fake_provider):
     _Handler.routes = {"/v1/models": (200, {"data": [{"id": "gpt-6.1-sol"},
                                                       {"id": "gpt-6-luna"}]})}
     r = fetch_models("openai", base + "/v1", "sk-test")
-    assert r["ok"] and r["models"] == ["gpt-6.1-sol", "gpt-6-luna"], r
+    assert r["ok"] and [m["id"] for m in r["models"]] == ["gpt-6.1-sol", "gpt-6-luna"], r
+    # /v1/models 没有能力信息 → kind 应为空（不瞎标）
+    assert all(m["kind"] == "" for m in r["models"]), r
     assert r["source"] == "provider"
 
 
 def test_ollama_native_shape(fake_provider):
-    """Ollama 原生 /api/tags：{"models": [{"name": ...}]}
+    """Ollama 原生 /api/tags：{"models": [{"name": ..., "capabilities": [...]}]}
 
-    这是**本机**场景的主路径。Ollama 的 OpenAI 兼容层各版本对
-    `/v1/models` 支持不一致，所以 `/v1/models` 拿不到时会去试 `/api/tags`。
+    这是**本机**场景的主路径，而且对 Ollama 要**优先**走它 —— 不只是
+    兼容性：实测 `/v1/models` 的条目**没有能力信息**，无法判断是对话还是
+    嵌入模型；只有 `/api/tags` 带 `capabilities`。用户要求"标一下模型类型"，
+    标类型必须靠它。
     """
     base, _ = fake_provider
-    # 只提供原生端点，/v1/models 返回 404 —— 必须能靠兜底路径拿到
+    # 只提供原生端点，/v1/models 返回 404
     _Handler.routes = {
         "/v1/models": (404, {"error": "not found"}),
-        "/api/tags": (200, {"models": [{"name": "bge-m3:latest"},
-                                       {"name": "qwen3:8b"}]}),
+        "/api/tags": (200, {"models": [
+            {"name": "bge-m3:latest", "capabilities": ["embedding"]},
+            {"name": "qwen3:8b", "capabilities": ["completion", "tools", "thinking"]},
+        ]}),
     }
     r = fetch_models("ollama", base + "/v1", "")
     assert r["ok"], r
-    assert r["models"] == ["bge-m3:latest", "qwen3:8b"], r
+    assert [m["id"] for m in r["models"]] == ["bge-m3:latest", "qwen3:8b"], r
+    # Ollama 原生端点带 capabilities → 应能标出类型
+    kinds = {m["id"]: m["kind"] for m in r["models"]}
+    assert kinds["bge-m3:latest"] == "embed", kinds
+    assert kinds["qwen3:8b"] == "chat", kinds
+
+
+def test_ollama_prefers_native_endpoint_even_when_v1_works(fake_provider):
+    """⚠️ 对 Ollama **优先**原生端点，即使 `/v1/models` 能用。
+
+    因为两者信息量不同：`/v1/models` 没有 `capabilities`，标不出模型类型。
+    这个测试锁住"优先原生"，防止以后有人图省事改回去（那样类型标注会静默失效）。
+    """
+    base, _ = fake_provider
+    _Handler.routes = {
+        # /v1/models 能用，但没有类型信息
+        "/v1/models": (200, {"data": [{"id": "m1"}]}),
+        # /api/tags 有类型信息
+        "/api/tags": (200, {"models": [{"name": "m1", "capabilities": ["embedding"]}]}),
+    }
+    r = fetch_models("ollama", base + "/v1", "")
+    assert r["ok"], r
+    assert r["models"][0]["kind"] == "embed", r
+
+
+def test_vllm_uses_openai_endpoint(fake_provider):
+    """vLLM 只有 OpenAI 端，走 /v1/models；没有能力信息就不标类型（不瞎标）。"""
+    base, _ = fake_provider
+    _Handler.routes = {"/v1/models": (200, {"data": [{"id": "Qwen/Qwen3-8B"}]})}
+    r = fetch_models("vllm", base + "/v1", "")
+    assert r["ok"], r
+    assert r["models"] == [{"id": "Qwen/Qwen3-8B", "kind": ""}], r
+
+
+def test_classify_model_rules():
+    """`_classify_model` 的判据优先级：capabilities > details.family > 不标。"""
+    from app.services.llm import _classify_model
+
+    # 1) capabilities 最权威
+    assert _classify_model({"capabilities": ["embedding"]}) == "embed"
+    assert _classify_model({"capabilities": ["completion", "tools"]}) == "chat"
+    assert _classify_model({"capabilities": ["thinking"]}) == "chat"
+    # 2) 老版本 Ollama 没有 capabilities → 用 family 兜底
+    assert _classify_model({"details": {"family": "bert"}}) == "embed"
+    assert _classify_model({"details": {"families": ["clip"]}}) == "embed"
+    # 3) 认不出就**不标**，别瞎标 —— 标错了比不标更糟
+    assert _classify_model({"details": {"family": "qwen3"}}) == ""
+    assert _classify_model({}) == ""
+    # capabilities 里只有未知项时也不该瞎标
+    assert _classify_model({"capabilities": ["vision"]}) == ""
 
 
 def test_dedupes_and_keeps_order(fake_provider):
@@ -103,7 +158,7 @@ def test_dedupes_and_keeps_order(fake_provider):
     _Handler.routes = {"/v1/models": (200, {"data": [{"id": "a"}, {"id": "b"},
                                                       {"id": "a"}, {"id": "c"}]})}
     r = fetch_models("ollama", base + "/v1", "")
-    assert r["models"] == ["a", "b", "c"], r
+    assert [m["id"] for m in r["models"]] == ["a", "b", "c"], r
 
 
 def test_api_key_is_sent(fake_provider):
@@ -125,7 +180,9 @@ def test_cloud_falls_back_to_known_models(fake_provider):
     r = fetch_models("deepseek", base + "/v1", "sk-x")
     assert r["ok"], r
     assert r["source"] == "known_models"
-    assert "deepseek-flash" in r["models"]
+    assert "deepseek-flash" in [m["id"] for m in r["models"]]
+    # 兜底清单都是人工核对的对话模型
+    assert all(m["kind"] == "chat" for m in r["models"]), r
     # 来源要说明白，别让用户以为这是实时查到的
     assert "核对" in r["detail"] or "清单" in r["detail"]
 
