@@ -224,3 +224,269 @@ def test_llm_provider(provider: str, base_url: str | None, model: str | None,
         elif "429" in msg or "rate" in low or "quota" in low or "throttl" in low:
             et = "rate_limit"
         return {"ok": False, "error_type": et, "detail": redact(msg)[:300]}
+
+# ------------------------------------------------------------------
+# 获取提供者的可用模型清单
+# ------------------------------------------------------------------
+
+def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
+                 *, role: str = "", timeout: float = 12.0) -> dict:
+    """拉取该提供者的**可用模型清单**（`GET {base_url}/models`）。
+
+    ## 为什么需要它（用户的问题）
+
+    用户截图里选了「本地 vLLM」，下面"模型"一栏是**空的**，问：
+    "这种情况怎么知道自己模型"。
+
+    确实无从知道：注册表里的 `known_models` 是**云端模型名**（给 DeepSeek /
+    OpenAI 那类用的），而**本地 vLLM / Ollama 装了什么模型只有本地服务知道**。
+    让人去翻 `ollama list` 或 vLLM 启动日志，是把系统的信息缺口转嫁给用户。
+
+    所以直接问提供者自己 —— OpenAI 兼容端点都有 `GET /models`。
+
+    ## 安全：base_url **由服务端解析**，不接受调用方传入
+
+    这是与 `/api/settings/test` 的关键差异。那个端点的 `base_url` 来自请求体，
+    所以它**故意禁止 localhost**（否则任意登录用户可让服务端去访问本机
+    管理接口并读回响应）。
+
+    但"列模型"必须能访问本机（Ollama 在 11434、vLLM 在 8000）——
+    所以改成：**地址只从服务端已保存的设置里解析**，调用方只能指定
+    `capability` / `role`。这样本机地址能用，而 SSRF 面为零
+    （用户无法让服务端请求他指定的任意地址）。
+
+    仍然保留 `assert_public_url` 之外的一层：本地提供者才允许本机地址。
+
+    Returns:
+        {"ok": bool, "models": [str], "provider": str, "base_url": str,
+         "detail": str, "error_type": str}
+    """
+    import urllib.error
+    import urllib.request
+
+    from app.services.url_guard import assert_public_url
+
+    prov = (provider or "").strip().lower()
+    b = (base_url or "").strip()
+    k = api_key or ""
+
+    # 没给全就走服务端解析（正常路径）
+    if not b or not prov:
+        p2, b2, _m2, k2 = _resolve(role)
+        prov = prov or (p2 or "")
+        b = b or (b2 or "")
+        k = k or (k2 or "")
+
+    if not b:
+        return {"ok": False, "models": [], "provider": prov, "base_url": "",
+                "error_type": "config",
+                "detail": "这个提供者没有可用的 API 地址，无法查询模型清单"}
+
+    # ⚠️ "是不是本地"**只看提供者身份**，不要看主机名。
+    #
+    # 我第一版写成 `... or "127.0.0.1" in b`，于是任何指向回环地址的
+    # **云端**提供者都被判成本地 —— 而本机是不回退兜底清单的，
+    # 结果云端也拿不到兜底、直接失败（测试当场抓到）。
+    #
+    # 而且"本机地址"是**用户可配**的（`llm_base_url` 能指向局域网另一台
+    # 推理机）——那时它仍是本地推理语义，但与回环无关。
+    # 所以判据取提供者 key：ollama / vllm 是本地推理，其余都是云端。
+    is_local = prov in _LOCAL_PROVIDERS
+
+    # 本机 / 内网推理服务允许私有地址；真正的云端才走 SSRF 防护。
+    # 这里仍按**地址**区分"要不要做防护"，与上面的语义判断是两件事。
+    host_is_private = ("localhost" in b) or ("127.0.0.1" in b) or ("[::1]" in b)
+    if not (is_local or host_is_private):
+        try:
+            assert_public_url(b, context="llm_base_url")
+        except ValueError as exc:
+            return {"ok": False, "models": [], "provider": prov, "base_url": b,
+                    "error_type": "config", "detail": redact(str(exc))}
+
+    url = b.rstrip("/") + "/models"
+    req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
+    if k:
+        req.add_header("Authorization", f"Bearer {k}")
+    # 少数网关（如 OpenRouter）按来源站点做统计，带上无害；不带也能用
+    req.add_header("Content-Type", "application/json")
+
+    def _get(req_: urllib.request.Request):
+        """发一次 GET。返回 (成功, bytes 或错误信息 dict)。"""
+        try:
+            with urllib.request.urlopen(req_, timeout=timeout) as resp:  # noqa: S310
+                return True, resp.read(512 * 1024)
+        except urllib.error.HTTPError as exc:
+            body = ""
+            try:
+                body = exc.read(300).decode("utf-8", "replace")
+            except Exception:  # noqa: BLE001
+                pass
+            return False, {"code": exc.code, "body": body}
+        except Exception as exc:  # noqa: BLE001
+            return False, {"exc": exc}
+
+    ok, out = _get(req)
+
+    # Ollama 的**原生**清单端点是 `/api/tags`，不是 `/v1/models`。
+    # 它虽然也提供 OpenAI 兼容层，但各版本对 `/v1/models` 的支持并不一致
+    # ——所以拿不到就再用原生端点兜一次。本机是用户最常问的场景
+    # （"我怎么知道本机有哪些模型"），值得为它多做这一步。
+    if (not ok or not isinstance(out, bytes)) and is_local:
+        base = b.rstrip("/")
+        if base.endswith("/v1"):
+            base = base[:-3]
+        for path in ("/api/tags", "/v1/models"):
+            req2 = urllib.request.Request(
+                base.rstrip("/") + path, method="GET",
+                headers={"Accept": "application/json"},
+            )
+            if k:
+                req2.add_header("Authorization", f"Bearer {k}")
+            ok2, out2 = _get(req2)
+            if ok2 and isinstance(out2, bytes):
+                ok, out = ok2, out2
+                break
+
+    if not ok or not isinstance(out, bytes):
+        info = out if isinstance(out, dict) else {}
+        if "code" in info:
+            body = str(info.get("body") or "")
+            # ⚠️ 一个实测踩到的真实陷阱：**vLLM 的默认端口 8000 正是本项目
+            #    后端自己的端口**。用户配 vLLM 时如果没改地址，请求会打到
+            #    我们自己的 `/v1/models`，拿回 `401 未登录，请先登录` ——
+            #    看起来像"API Key 不对"，实际上**打错服务了**。
+            #    这里识别出来，直接告诉用户，省得他去瞎调密钥。
+            if info["code"] in (401, 403) and is_local and any(
+                t in body for t in ("请先登录", "未登录", "little crew", "小剧组")
+            ):
+                return {"ok": False, "models": [], "provider": prov, "base_url": b,
+                        "source": "provider", "error_type": "config",
+                        "detail": f"{b} 返回了「{body[:60]}」—— 这看起来是**本项目自己的"
+                                  f"后端**，不是 vLLM。vLLM 的默认端口 8000 与本项目后端"
+                                  f"冲突，请把 vLLM 换到别的端口（如 8033）再填这里"}
+            et = "auth" if info["code"] in (401, 403) else \
+                "network" if info["code"] >= 500 else "other"
+            reason = f"HTTP {info['code']}：{redact(body)[:200]}" if body \
+                else f"HTTP {info['code']}"
+            return _maybe_fallback(prov, b, is_local, et, reason)
+        exc = info.get("exc") or ""
+        low = str(exc).lower()
+        # 本机服务没在跑时的几种表现都要识别，别只认 "refused"：
+        #   · 端口没人听    → ConnectionRefusedError / WinError 10061
+        #   · 防火墙丢弃    → 超时（timed out），实测 127.0.0.1:1 就是这个
+        #   · 域名解析不了  → getaddrinfo failed
+        conn_like = ("refused", "connect", "10061", "timed out", "timeout",
+                     "unreachable", "getaddrinfo", "no route")
+        if is_local and any(t in low for t in conn_like):
+            return {"ok": False, "models": [], "provider": prov, "base_url": b,
+                    "source": "provider", "error_type": "network",
+                    "detail": f"连不上 {b} —— 本地推理服务没在运行。"
+                              f"请先启动它（Ollama 执行 `ollama serve`），再点一次"}
+        et = "network" if any(t in low for t in conn_like) else "other"
+        return _maybe_fallback(prov, b, is_local, et, redact(str(exc))[:250])
+
+    raw = out
+
+    # 各家 shape 不同，逐个兼容：
+    #   OpenAI / vLLM / 多数网关  {"data": [{"id": "..."}]}
+    #   Ollama 原生 /api/tags     {"models": [{"name": "..."}]}
+    #   Ollama OpenAI 兼容层       {"data": [{"id": "..."}]}
+    try:
+        obj = json.loads(raw.decode("utf-8", "replace"))
+    except Exception:  # noqa: BLE001
+        return _maybe_fallback(prov, b, is_local, "other",
+                               "返回的不是 JSON（该提供者可能没有 /models 端点）")
+
+    items = obj.get("data") if isinstance(obj, dict) else None
+    if items is None and isinstance(obj, dict):
+        items = obj.get("models")
+    if not isinstance(items, list):
+        return _maybe_fallback(prov, b, is_local, "other",
+                               "返回里没有模型列表（data / models 都为空）")
+
+    ids: list[str] = []
+    for it in items:
+        if isinstance(it, str):
+            ids.append(it)
+        elif isinstance(it, dict):
+            for key in ("id", "name", "model"):
+                v = it.get(key)
+                if isinstance(v, str) and v:
+                    ids.append(v)
+                    break
+
+    # 去重并保持稳定顺序（同一模型名只出现一次）
+    seen: set[str] = set()
+    uniq = [x for x in ids if not (x in seen or seen.add(x))]
+
+    # 提供商返回了空列表也算"问到了但什么都没有"——
+    # 本地服务（还没 pull 模型）与云端（账号没开通模型）都会这样。
+    if not uniq:
+        # ⚠️ **本机不回退**，与 `_maybe_fallback` 同一个道理：
+        #    本机装了什么只有本机知道。回退会给出 `_PRESETS` 里那个
+        #    旧默认名（如 `qwen2.5`），用户在本机根本没有它 —— 选了必失败。
+        #    （这个 bug 被测试当场抓到：`/api/tags` 返回空，却"查"出了 qwen2.5。）
+        if not is_local:
+            fb = _fallback_known(prov)
+            if fb:
+                return {"ok": True, "models": fb, "provider": prov, "base_url": b,
+                        "source": "known_models", "error_type": "ok",
+                        "detail": f"「{prov}」的 /models 返回空，改用已核对的清单"
+                                  f"（{len(fb)} 个）"}
+        hint = ("本地服务在跑，但里面还没有模型 —— 先下载/pull 一个再点一次"
+                if is_local else "该提供者返回了空列表（账号可能没开通任何模型）")
+        return {"ok": True, "models": [], "provider": prov, "base_url": b,
+                "source": "provider", "error_type": "ok", "detail": hint}
+
+    return {"ok": True, "models": uniq, "provider": prov, "base_url": b,
+            "source": "provider", "error_type": "ok",
+            "detail": f"从 {prov} 查到 {len(uniq)} 个模型"}
+
+
+def _maybe_fallback(provider: str, base_url: str, is_local: bool,
+                    error_type: str, reason: str) -> dict:
+    """问厂商失败时：云端退回已核对清单，本机如实报错。
+
+    **本机不回退**——本机装了什么只有本机知道，拿云端模型名去糊弄用户
+    会让他在自己的 Ollama 上选一个不存在的模型，比报错更糟。
+    """
+    if not is_local:
+        fb = _fallback_known(provider)
+        if fb:
+            return {"ok": True, "models": fb, "provider": provider, "base_url": base_url,
+                    "source": "known_models", "error_type": "ok",
+                    "detail": f"「{provider}」没有可用的 /models 端点（{reason}），"
+                              f"改用已核对的清单（{len(fb)} 个，可能不是最新）"}
+    return {"ok": False, "models": [], "provider": provider, "base_url": base_url,
+            "source": "provider", "error_type": error_type, "detail": reason}
+
+
+def _fallback_known(provider: str) -> list[str]:
+    """云端提供者的兜底清单：注册表里已人工核对的 `known_models`。
+
+    ## 为什么云端需要兜底（用户："如果是 api 就检测厂商模型"）
+
+    优先**问厂商自己**（`GET {base_url}/models`）——那是最准的，厂商上架
+    什么就有什么。但**不是每家都有这个端点**：国内不少厂商只提供
+    `/chat/completions`，`/models` 返回 404；网关（OpenRouter 等）虽然
+    有，但有的要额外 header。
+
+    这时如果只报错，用户就卡住了 —— 而我们在 `providers.py` 里**已经
+    逐家核对过**当前型号（`known_models`，含来源 URL）。所以顺序是：
+
+        1. 问厂商（最新、最全）
+        2. 厂商答不了 → 用已核对的清单（并标明来源，让用户知道这不是实时的）
+    """
+    try:
+        from app.services.providers import get as _spec_get
+
+        spec = _spec_get("llm", provider)
+        if spec is None:
+            return []
+        out = list(spec.known_models)
+        # 默认模型如果不在清单里也带上（它一定可用）
+        if spec.default_model and spec.default_model not in out:
+            out.insert(0, spec.default_model)
+        return out
+    except Exception:  # noqa: BLE001
+        return []

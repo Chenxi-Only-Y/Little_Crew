@@ -546,6 +546,46 @@ export default function SettingsPage() {
   const providerNamesForMode = (capPrefix: string): string[] =>
     allowedProviders(capPrefix).map((p) => p.label);
 
+  /**
+   * 「模型」字段的"获取可用模型"能力。
+   *
+   * 只给**模型**字段（`*_model_*` / `*_model`）用，不给提供者字段 ——
+   * 不然每一栏都多一个按钮，页面会很吵。
+   *
+   * ## 为什么需要（用户提问）
+   *
+   * 选了「本地 vLLM / Ollama」后，"模型"是空的：注册表里的 `known_models`
+   * 是**云端模型名**，对本地没用；本地装了什么只有本地服务知道。
+   * 用户补充要求："如果是 api 就检测厂商模型" ——
+   * 所以云端也走同一按钮：优先问厂商 `/models`，问不到回退已核对清单。
+   *
+   * 职业从字段键尾部取（`llm_model_writer` → `writer`），
+   * 于是接口按**该职业**的设置解析提供者与地址，与页面上显示的一致。
+   */
+  const modelSourceFor = (f: ConfigField, capPrefix: string) => {
+    if (!/_model(_|$)/.test(f.key)) return undefined;
+    // 取职业后缀：`llm_model_writer` → `writer`；`llm_model` → ''
+    const role = f.key.replace(/^.*?_model_?/, '');
+    const cap = capabilityOf(capPrefix);
+    if (cap !== 'llm') return undefined; // 目前只有 llm 有统一的 /models
+    return {
+      fetch: async () => {
+        const token = getToken();
+        const qs = new URLSearchParams({ capability: cap, role });
+        const r = await fetch(`/api/providers/models?${qs}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const body = await r.json().catch(() => ({}));
+        return {
+          ok: Boolean(body?.ok),
+          models: (body?.models ?? []) as string[],
+          detail: String(body?.detail ?? (r.ok ? '没有返回模型清单' : `请求失败（HTTP ${r.status}）`)),
+          source: body?.source as string | undefined,
+        };
+      },
+    };
+  };
+
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
   const renderField = (f: ConfigField, node: string, capPrefix: string) => (
     <ConfigFieldEditor
@@ -555,6 +595,7 @@ export default function SettingsPage() {
       optionLabels={optionLabelsFor(capPrefix)}
       allowedOptions={allowedOptionsFor(f, capPrefix)}
       optionGroups={optionGroupsFor(f, capPrefix)}
+      modelSource={modelSourceFor(f, capPrefix)}
       onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
     />
   );

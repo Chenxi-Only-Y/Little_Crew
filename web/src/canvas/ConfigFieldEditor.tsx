@@ -72,6 +72,22 @@ interface Props {
    * 否则它们会从列表里消失。
    */
   optionGroups?: Record<string, string>;
+  /**
+   * 提供「获取可用模型」能力（只在"模型"这个字段上有意义）。
+   *
+   * 用户问题：选了「本地 vLLM / Ollama」后，"模型"一栏是空的 ——
+   * 怎么知道本机有哪些模型？
+   *
+   * 注册表里给的 `known_models` 是**云端模型名**（DeepSeek/OpenAI 那类），
+   * 对本地服务无用；本地装了什么只有本地服务自己知道。所以点按钮去问它。
+   *
+   * 云端同样适用（"如果是 api 就检测厂商模型"）——
+   * 优先问厂商的 `/models`，问不到才回退到已核对的清单。
+   */
+  modelSource?: {
+    /** 拉取（由调用方提供，内部走 `/api/providers/models`） */
+    fetch: () => Promise<{ ok: boolean; models: string[]; detail: string; source?: string }>;
+  };
 }
 
 export default function ConfigFieldEditor({
@@ -81,6 +97,7 @@ export default function ConfigFieldEditor({
   optionLabels,
   allowedOptions,
   optionGroups,
+  modelSource,
 }: Props) {
   const isSecret = field.secret || field.type === 'password';
   // 密钥字段初始留空（不回显）；其余回显当前值
@@ -89,6 +106,24 @@ export default function ConfigFieldEditor({
   );
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  /** 「获取可用模型」的结果（null = 还没点过） */
+  const [models, setModels] = useState<
+    { ok: boolean; models: string[]; detail: string; source?: string } | null
+  >(null);
+  const [fetching, setFetching] = useState(false);
+
+  /** 问提供者要模型清单。云端走厂商 /models，本机走本地服务端点。 */
+  const doFetchModels = async () => {
+    if (!modelSource) return;
+    setFetching(true);
+    try {
+      setModels(await modelSource.fetch());
+    } catch (e) {
+      setModels({ ok: false, models: [], detail: String(e) });
+    } finally {
+      setFetching(false);
+    }
+  };
 
   /**
    * 后端是否已存有该密钥。
@@ -339,6 +374,61 @@ export default function ConfigFieldEditor({
         </button>
       )}
       {field.help && <div className="hint">{field.help}</div>}
+      {modelSource && (
+        <div style={{ marginTop: 4 }}>
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={fetching}
+            style={{ fontSize: 11, padding: '2px 8px' }}
+            onClick={() => void doFetchModels()}
+          >
+            {fetching ? '查询中…' : '获取可用模型'}
+          </button>
+          {models && (
+            <div style={{ marginTop: 6 }}>
+              <div
+                className="hint"
+                style={{ color: models.ok ? 'var(--text-muted)' : 'var(--st-failed)' }}
+              >
+                {models.ok ? '' : '✕ '}
+                {models.detail}
+                {models.source === 'known_models' && (
+                  <span style={{ opacity: 0.75 }}>（来源：已核对的清单，非实时）</span>
+                )}
+              </div>
+              {models.models.length > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 4,
+                    marginTop: 6,
+                    maxHeight: 132,
+                    overflowY: 'auto',
+                  }}
+                >
+                  {models.models.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      className="btn ghost"
+                      title="点击填入「模型」"
+                      style={{ fontSize: 11, padding: '2px 6px' }}
+                      onClick={() => {
+                        setValue(m);
+                        void commit(m);
+                      }}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {msg && (
         <div
           className="hint"
