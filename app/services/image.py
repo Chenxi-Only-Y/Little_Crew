@@ -61,33 +61,24 @@ def _img(name: str, fallback):
     return v if v is not None else fallback
 
 
-def _dept_for_role(role: str) -> str:
-    from app.core.org import dept_for_role
-
-    return dept_for_role(role)
-
-
 def _run_output_dir(output_dir, role: str, shot_id: str):
-    """按「账号 / 部门 / 职业 / 会话」归类输出目录。
+    """按「账号 / 部门 / 职业 / 会话 / 类型」归类输出目录。
 
-    生成的每张图落到: output/{user}/{部门}/{职业}/{会话}/{shot_id}.png，
-    会话为空时用 shot_id 前缀归类，避免跨会话/独立生成混在 uuid 目录里。
+    生成的每张图落到:
+        output/{uid}/{部门}/{职业}/{会话}/**images**/{shot_id}.png
+
+    ⚠️ `images` 这一层是后加的（用户："不同职业生成的东西，视频图片资产
+    都独立放"）。路径规则统一由 `app/services/asset_paths.py` 提供——
+    在此之前图片没有类型目录、视频有 `video/`、白模视频完全没有归类，
+    同一部片子的资产散在四处，想按职业单独打包做不到。
+
+    本函数保留 `shot_id` 参数只是为了旧调用点签名不变；会话缺失时
+    不再是 `no-session-{shot_id}`（那会让同一批生成散成很多目录），
+    而是按小时分桶，见 `asset_paths.current_session`。
     """
-    from app.services.runtime_settings import user as cur_user, run_session
-    from app.services.auth import get_user_store
+    from app.services import asset_paths
 
-    user = str(cur_user() or "local")
-    # 用唯一 UID 作为账号目录，避免重名/匿名撞在一起
-    try:
-        user = get_user_store().resolve_uid(user) or user
-    except Exception:  # noqa: BLE001
-        pass
-    dept = _dept_for_role(role)
-    role_name = role or "其他"
-    sess = run_session() or f"no-session-{shot_id}"
-    base = Path(output_dir) / user / dept / role_name / sess
-    base.mkdir(parents=True, exist_ok=True)
-    return base
+    return asset_paths.asset_dir(output_dir, role, "images")
 
 
 def _img_role(name: str, role: str, fallback):

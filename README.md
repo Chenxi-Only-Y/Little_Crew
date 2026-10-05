@@ -99,7 +99,8 @@ little_crew/
 │   └── src/registry.snapshot.json  # 后端注册表导出（构建时校验一致性）
 ├── scripts/                     # run_demo / run_server / check_secrets / export_registry
 ├── docs/recon/                  # 重构勘察记录（01~10）
-├── data/outputs/                # 图片/结果（gitignored）
+├── data/outputs/                # 图片/视频等产出（gitignored）
+│                                #   按 账号/部门/职业/会话/类型 分层，见 asset_paths.py
 ├── .github/workflows/ci.yml     # CI（安全扫描 + 测试 + 密钥防泄漏）
 ├── requirements.lock            # 环境锁定（pip freeze）
 ├── Dockerfile / docker-compose.yml  # 后端 + 导演台（web/Dockerfile 多阶段 + nginx）

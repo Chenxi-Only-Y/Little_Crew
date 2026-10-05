@@ -1185,9 +1185,28 @@ async def upload_whitebox_video(request: Request):
     do_upload = str(form.get("upload") or "") in ("1", "true", "yes")
     fps = int(str(form.get("fps") or 24))
 
-    work = pathlib.Path(settings.output_dir_path) / "whitebox" / uuid.uuid4().hex[:12]
-    frames_dir = work / "frames"
+    # 白模视频（预演导出的帧序列）此前落在 `outputs/whitebox/{随机 uuid}/`，
+    # **完全没有归类**——既看不出属于哪个账号，也看不出是哪个职业产出的，
+    # 更没和图片放在同一棵树里。
+    #
+    # 现在走统一规则（`app/services/asset_paths.py`）：
+    #
+    #     {outputs}/{uid}/{部门}/{职业}/{会话}/videos/whitebox-{id}.mp4
+    #     {outputs}/{uid}/{部门}/{职业}/{会话}/frames/{id}/00000.png...
+    #
+    # 归属职业取 `previs_artist`（预演师）——这就是它的产出者。
+    from app.services import asset_paths
+
+    role = "previs_artist"
+    token = uuid.uuid4().hex[:12]
+    frames_dir = asset_paths.asset_dir(
+        settings.output_dir_path, role, "frames"
+    ) / token
     frames_dir.mkdir(parents=True, exist_ok=True)
+    work = frames_dir.parent
+    box_mp4 = asset_paths.asset_path(
+        settings.output_dir_path, role, "videos", f"whitebox-{token}.mp4"
+    )
 
     saved: list[pathlib.Path] = []
     try:
@@ -1203,7 +1222,7 @@ async def upload_whitebox_video(request: Request):
         if not saved:
             raise HTTPException(status_code=400, detail="收到的帧都是空的。")
 
-        out_mp4 = work / "whitebox.mp4"
+        out_mp4 = box_mp4   # 统一路径：.../videos/whitebox-{id}.mp4
         try:
             encode_frames_to_mp4(saved, out_mp4, fps=fps,
                                  ffmpeg=str(rs.get("ffmpeg_path") or settings.ffmpeg_path or ""))

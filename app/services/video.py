@@ -37,22 +37,20 @@ def _extract_dialogue(script: dict) -> str:
     return "".join(lines)
 
 
-def _video_dir(out_dir: str, session_id: str) -> pathlib.Path:
-    """按「账号(UID) / 部门 / 职业 / 会话」归类视频输出目录。"""
-    from app.services.runtime_settings import user as cur_user
-    from app.services.auth import get_user_store
-    from app.core.org import dept_for_role, label_for_role
+def _video_dir(out_dir: str, session_id: str, role: str = "editor") -> pathlib.Path:
+    """按「账号 / 部门 / 职业 / 会话 / videos」归类视频输出目录。
 
-    user = str(cur_user() or "local")
-    try:
-        user = get_user_store().resolve_uid(user) or user
-    except Exception:  # noqa: BLE001
-        pass
-    dept = dept_for_role("editor")
-    role = label_for_role("editor")
-    d = pathlib.Path(out_dir) / user / dept / role / session_id / "video"
-    d.mkdir(parents=True, exist_ok=True)
-    return d
+    路径规则统一由 `app/services/asset_paths.py` 提供。
+    改动之前这里有**两套写法**：本函数带部门与职业，
+    而 `_mock` / `_real` 里直接写 `Path(out_dir)/session_id/"video"`——
+    后者**丢掉了部门与职业**，于是同一个片子里的图片和视频不在同一棵树下，
+    想按职业单独取资产就取不全（用户要求"视频图片资产都独立放"）。
+    """
+    from app.services import asset_paths
+
+    return asset_paths.asset_dir(
+        out_dir, role, "videos", session=session_id or None
+    )
 
 
 class VideoService:
@@ -124,8 +122,7 @@ class VideoService:
 
     def _mock(self, images: List[dict], dialogue: str, out_dir: str, session_id: str) -> Tuple[str, int]:
         """占位：写 manifest，返回目录（不产出真视频）。"""
-        d = pathlib.Path(out_dir) / session_id / "video"
-        d.mkdir(parents=True, exist_ok=True)
+        d = _video_dir(out_dir, session_id)
         manifest = {
             "session_id": session_id,
             "images": [im.get("local_path") for im in images],
@@ -144,8 +141,7 @@ class VideoService:
         img_paths = [im.get("local_path") for im in images if im.get("local_path")]
         if not img_paths:
             raise RuntimeError("没有可用图片，无法合成视频。")
-        d = pathlib.Path(out_dir) / session_id / "video"
-        d.mkdir(parents=True, exist_ok=True)
+        d = _video_dir(out_dir, session_id)
         out_mp4 = d / "out.mp4"
 
         # 1) 图片幻灯片（每镜固定时长，含淡入淡出）。TODO: 按镜头 duration_s 精确控制。
@@ -300,8 +296,7 @@ class VideoService:
 
         prov = replace(prov, base_url=base_url)
 
-        d = pathlib.Path(out_dir) / session_id / "video"
-        d.mkdir(parents=True, exist_ok=True)
+        d = _video_dir(out_dir, session_id)
         try:
             dl_url = submit_and_wait(prov, api_key, req, timeout=1200, interval=10)
         except VideoAdapterError as exc:
@@ -380,8 +375,7 @@ class VideoService:
             logger.info("[video] 无图片输入 → 走纯文生视频（不带 keyframe），段数=%d", segments)
             img_items = [{} for _ in range(segments)]
 
-        d = pathlib.Path(out_dir) / session_id / "video"
-        d.mkdir(parents=True, exist_ok=True)
+        d = _video_dir(out_dir, session_id)
         produced = 0
         # 本地档位也走 rs.resolve：它们已在设置白名单里，只读 settings 的话
         # "设置了却不生效"（与 local_gen_url / local_image_steps 保持一致）

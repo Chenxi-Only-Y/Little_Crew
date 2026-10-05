@@ -113,8 +113,16 @@ llm_provider_{role} · image_provider_{role} · video_provider_{role} · local_*
 
 ### 5.2 产物归档
 ```
-data/outputs/<账号UID 或 _global>/<部门中文名>/<职业 key>/<会话ID>/<shot_id>.png
+data/outputs/<账号UID>/<部门中文名>/<职业 key>/<会话ID>/<类型>/<文件名>
 ```
+
+> **2026-10-05 更新**：多了一层 `<类型>`（`images` / `videos` / `frames` /
+> `audio` / `meta`）。需求是"不同职业生成的东西，视频图片资产都独立放"，
+> 而改动前各处的路径**互相不一致**：图片无类型目录、视频有单数 `video/`、
+> 云端视频适配器丢了部门与职业、白模视频落在 `outputs/whitebox/{uuid}/`。
+> 现在统一由 `app/services/asset_paths.py` 提供（唯一入口），
+> 白模视频归属 `previs_artist`。本节下面几行描述的是**改动前**的状态。
+
 - 归一化依赖 `runtime_settings.set_context(user, session)`；
   **只有服务端 `task_runner` 会调用它**。
 - 目录名由 `app/core/org.py` 的 `ROLE_ORG` 映射（职业 → 部门/职业中文名）。

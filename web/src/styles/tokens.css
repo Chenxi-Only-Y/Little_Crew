@@ -1260,6 +1260,23 @@ h3 {
   z-index: 1;
 }
 
+/**
+ * ── 侧栏（节点库 / 属性）────────────────────────────
+ *
+ * ⚠️ **这里刻意不用磨砂玻璃**，与画布卡片不同。
+ *
+ * 之前侧栏用了 `--glass-bg-lite` + `backdrop-filter: blur(14px)`，
+ * 结果一个 240px 宽、**全是文字**的列表变得模糊不清：
+ *
+ *   · 玻璃本身就是一层半透明模糊——糊的正好是底下的字；
+ *   · 而且叠了三层：`.node-library` 一层、`.dept-title`（sticky）一层、
+ *     `.lib-item:hover` 一层。文字在多层模糊之上反复被糊；
+ *   · 侧栏底色是近黑的 `--bg`，`rgba(255,255,255,0.06)` 的"白玻璃"
+ *     在这里既透不出内容、又把对比度压低，字发灰。
+ *
+ * **玻璃是给"压在画布上的浮动卡片"用的**，让下面的画布透出来才有意义；
+ * 贴边的文字面板没有"下面"可透，只有代价没有收益。所以侧栏改**实色**。
+ */
 .node-library,
 .inspector {
   display: flex;
@@ -1267,67 +1284,112 @@ h3 {
   width: 240px;
   flex: 0 0 240px;
   overflow-y: auto;
-  /* 侧栏也用磨砂玻璃（用户："所以卡片都换成这种"）。
-     与卡片同一块材料，只是**不做圆角**——它们是贴着窗口边缘的面板，
-     圆角会露出后面的底色、看着像浮起来的卡片而不是侧栏。 */
-  background: var(--glass-bg-lite);
-  backdrop-filter: var(--glass-blur-lite);
-  -webkit-backdrop-filter: var(--glass-blur-lite);
+  /* 实色抬升面，比画布底色亮一档，边界靠 1px 描边而不是模糊 */
+  background: var(--bg-elev);
+  /* 滚动条不要抢视觉 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 .node-library {
-  border-right: 1px solid var(--glass-line-lite);
+  width: 252px;
+  flex: 0 0 252px;
+  border-right: 1px solid var(--line);
 }
 .inspector {
   width: 300px;
   flex: 0 0 300px;
-  border-left: 1px solid var(--glass-line-lite);
+  border-left: 1px solid var(--line);
 }
 
-.canvas-wrap {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  background: var(--bg);
+/* 部门分组 */
+.node-library .dept {
+  padding-bottom: var(--sp-2);
+}
+.node-library .dept + .dept {
+  border-top: 1px solid var(--line);
 }
 
+/**
+ * 部门标题：**两行**，标签一行、说明一行。
+ *
+ * 原先标签与描述挤在同一行（描述还被强制 `textTransform:none`），
+ * 在 240px 的窄栏里必然糊成一团。
+ */
 .node-library .dept-title {
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: var(--sp-3) var(--sp-4);
-  /* sticky 标题要**半透明**：实色会在玻璃侧栏上切出一条硬边，
-     而且滚动时看到的是"标题下面压着另一块板" */
-  background: var(--glass-bg-lite);
-  backdrop-filter: var(--glass-blur-lite);
-  -webkit-backdrop-filter: var(--glass-blur-lite);
-  border-bottom: 1px solid var(--glass-line-lite);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-4) var(--sp-2);
+  /* sticky 必须**实色**，否则滚动时下面的条目会从字缝里透出来 */
+  background: var(--bg-elev);
   font-size: var(--fs-eyebrow);
-  font-weight: 500;
   letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
+}
+.node-library .dept-label {
   color: var(--text-faint);
+  font-weight: 600;
+}
+.node-library .dept-desc {
+  /* 说明用正常大小写、更暗一档，与标签拉开层级 */
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-faint);
+  opacity: 0.7;
+  line-height: 1.35;
 }
 
+/* 清单项：状态点 + 两行文字（中文名 / 机器名） */
 .lib-item {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--line);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  color: var(--text);
+  font: inherit;
   cursor: grab;
   transition: background var(--t-hover) var(--ease);
 }
 .lib-item:hover {
-  background: var(--glass-bg-lite);
+  /* 悬停用实色高亮，不用玻璃——玻璃会再把字糊一次 */
+  background: rgba(255, 255, 255, 0.05);
 }
 .lib-item:active {
   cursor: grabbing;
 }
+.lib-item .lib-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.lib-item .lib-label {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .lib-item .lib-key {
-  margin-left: auto;
-  font-size: 11px;
+  /* 机器名放次行、用等宽小字：窄栏里与中文并排必然挤 */
+  font-size: 10.5px;
+  line-height: 1.2;
   color: var(--text-faint);
   font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lib-item .lib-dot {
   width: 6px;
@@ -1335,6 +1397,28 @@ h3 {
   flex: 0 0 6px;
   border-radius: var(--r-pill);
   background: var(--text-faint);
+}
+/* 已放上画布：靠**颜色变暗**区分，不用整体 opacity
+   （半透明会把文字一起弄糊） */
+.lib-item.is-placed .lib-label,
+.lib-item.is-placed .lib-key {
+  color: var(--text-faint);
+}
+.lib-item .lib-placed {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: var(--text-faint);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 1px 6px;
+}
+
+.canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: var(--bg);
 }
 
 /* ── 节点卡片 ── */
