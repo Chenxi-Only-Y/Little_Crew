@@ -203,15 +203,26 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  known_models=("z-image-turbo",),
                  note="本机 8GB 显存：出图约 32 秒/张；服务端串行推理，并发度固定为 1"),
     ProviderSpec("dashscope", "阿里百炼（通义万相 / 千问）", "image_gen", "cn_cloud",
-                 default_model="z-image-turbo",
-                 known_models=("z-image-turbo", "wan2.7-image-pro", "wan2.7-image",
-                               "qwen-image-2.0-pro", "qwen-image-2.0"),
-                 note="z-image* 走同步接口；其余走异步任务"),
+                 default_model="wan2.7-image-pro",
+                 # 型号名已按官方模型列表与 API 参考核对（2026-10）：
+                 #   https://www.alibabacloud.com/help/en/model-studio/model-list-image-generation
+                 #   https://www.alibabacloud.com/help/en/model-studio/text-to-image-v2-api-reference
+                 # ⚠️ 通义万相与千问图像是**两个模型族**：万相管文生图，千问管生成+编辑。
+                 #    这里两侧都给，让用户按需选；`z-image*` 是本地权重名（走同步接口）。
+                 known_models=("z-image-turbo",
+                               "wan2.7-image-pro", "wan2.7-image", "wan2.6-t2i", "wan2.6-image",
+                               "qwen-image-3.0-pro", "qwen-image-3.0", "qwen-image-2.1-pro"),
+                 note="z-image* 走同步接口；其余走异步任务（wan2.5 及更早是旧异步协议）"),
     ProviderSpec("minimax", "MiniMax", "image_gen", "cn_cloud",
                  default_model="image-01", known_models=("image-01",)),
     ProviderSpec("replicate", "Replicate", "image_gen", "gateway",
                  needs_proxy=True,
-                 known_models=("black-forest-labs/flux-2-dev", "stabilityai/sd3.5-large"),
+                 # 取自官方文生图集合页的推荐位（2026-10）：
+                 #   https://replicate.com/collections/text-to-image
+                 default_model="google/nano-banana-2",
+                 known_models=("google/nano-banana-2", "openai/gpt-image-2",
+                               "black-forest-labs/flux-2-max", "black-forest-labs/flux-2-pro",
+                               "bytedance/seedream-5.0", "google/imagen-4-ultra"),
                  note="需填具体 model version（IMAGE_BASE_URL）"),
     ProviderSpec("wavespeed", "WaveSpeedAI（聚合）", "image_gen", "gateway",
                  available=False, needs_proxy=True,
@@ -226,8 +237,9 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  known_models=("z-image-inpaint",),
                  note="ZImageInpaintPipeline 与现有权重共用；需在 local-gen 增加路由（v2 待接入）"),
     ProviderSpec("dashscope", "阿里百炼（千问图像编辑）", "image_edit", "cn_cloud",
-                 default_model="qwen-image-2.0-pro",
-                 known_models=("qwen-image-2.0-pro", "qwen-image-edit-max", "qwen-image-edit-plus"),
+                 default_model="qwen-image-3.0-pro",
+                 known_models=("qwen-image-3.0-pro", "qwen-image-3.0", "qwen-image-2.1-pro",
+                               "qwen-image-edit-max", "qwen-image-edit-plus"),
                  note="指令式编辑：改文字/增删物体/改动作/细节增强，支持 1–3 张多图输入"),
 
     # ================= 图生视频 =================
@@ -283,12 +295,30 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
     ProviderSpec("edge", "Edge TTS（免费兜底）", "tts", "free",
                  needs_api_key=False, known_models=("edge-tts",),
                  note="零成本；音色较少，适合先跑通链路"),
+    # 模型名按官方 API 参考核对（2026-10）：
+    #   https://help.aliyun.com/zh/model-studio/cosyvoice-tts-http-api
+    #   ⚠️ CosyVoice 的 HTTP 接口**仅华北2（北京）**可用，跨区调用会失败。
+    #   cosyvoice-v1 已不在取值范围。
     ProviderSpec("dashscope", "阿里 CosyVoice", "tts", "cn_cloud",
-                 known_models=("cosyvoice",), note="中文效果强"),
+                 default_model="cosyvoice-v3.5-plus",
+                 known_models=("cosyvoice-v3.5-plus", "cosyvoice-v3.5-flash",
+                               "cosyvoice-v3-plus", "cosyvoice-v3-flash", "cosyvoice-v2"),
+                 note="中文效果强；HTTP 接口仅华北2（北京）可用"),
+    # https://platform.minimax.io/docs/api-reference/speech-t2a-http
     ProviderSpec("minimax", "MiniMax 语音", "tts", "cn_cloud",
-                 known_models=("minimax-speech",), note="可与现有 MiniMax Key 共用"),
+                 default_model="speech-2.8-hd",
+                 known_models=("speech-2.8-hd", "speech-2.8-turbo"),
+                 note="可与现有 MiniMax Key 共用；speech-2.6 / 02 / 01 系列官方列为 Legacy"),
+    # https://elevenlabs.io/docs/api-reference/text-to-speech/convert
+    #   ⚠️ ElevenLabs 的参数名是 `model_id`，不是 `model`。
+    #   eleven_v4 / eleven_v4_turbo 挂在 Text to Dialogue 接口下，
+    #   官方**未写明** /v1/text-to-speech 是否接受它们，所以不放进来。
     ProviderSpec("elevenlabs", "ElevenLabs", "tts", "overseas_cloud",
-                 needs_proxy=True, known_models=("elevenlabs",), note="情感与音色最丰富"),
+                 needs_proxy=True,
+                 default_model="eleven_multilingual_v2",
+                 known_models=("eleven_multilingual_v2", "eleven_v3",
+                               "eleven_flash_v2_5", "eleven_flash_v2"),
+                 note="情感与音色最丰富；参数名是 model_id 不是 model"),
 
     # ================= 2D 白模预演 =================
     ProviderSpec("local", "本地 2D 绘制（PIL）", "render_2d", "local",

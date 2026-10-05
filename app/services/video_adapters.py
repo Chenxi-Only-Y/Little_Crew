@@ -382,9 +382,17 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         category="cn_cloud",
         base_url="https://dashscope.aliyuncs.com",
         model="wan3.0-video",
+        # 模型名按官方模型列表与 API 参考核对（2026-10）：
+        #   https://www.alibabacloud.com/help/en/model-studio/model-list-video-generation
+        #   https://www.alibabacloud.com/help/en/model-studio/wan3-0-video
+        # ⚠️ 只有在 `_DASHSCOPE_MODELS` 里登记过的才有精确的请求形状；
+        #    未登记的会按 auto 约定构造（有 warning），所以这里可以多列，
+        #    但请求体形状可能不完全对——这是"允许填"和"保证能跑"的区别。
         known_models=(
             "wan3.0-video", "wan3.0-video-prime",
-            "wan2.2-kf2v-flash",
+            "wan2.7-t2v", "wan2.6-t2v",
+            "wan2.6-i2v", "wan2.6-i2v-flash",
+            "wan2.6-r2v", "wan2.2-kf2v-flash",
             "vidu/viduq3-turbo_start-end2video",
             "vidu/viduq3-pro_start-end2video",
         ),
@@ -407,8 +415,19 @@ VIDEO_PROVIDERS: tuple[VideoProvider, ...] = (
         label="Seedance（火山方舟）",
         category="cn_cloud",
         base_url="https://ark.cn-beijing.volces.com",
-        model="doubao-seedance-1-0-pro",
-        known_models=("doubao-seedance-1-0-pro", "doubao-seedance-1-0-lite-i2v"),
+        # 模型名按方舟官方文档核对（2026-10）：
+        #   https://docs.volcengine.com/docs/ark/create-video-generation-task-api?lang=zh
+        #   请求示例即用 `doubao-seedance-2-5-260628`；1.0 系列属上一代
+        #   （仍出现在官方文档中，未见下线公告）。
+        model="doubao-seedance-2-5-260628",
+        known_models=(
+            "doubao-seedance-2-5-260628",
+            "doubao-seedance-2-0-260128",
+            "doubao-seedance-2-0-fast-260128",
+            "doubao-seedance-2-0-mini-260615",
+            "doubao-seedance-1-5-pro-251215",
+            "doubao-seedance-1-0-pro-250528",
+        ),
         api_key_setting="ark_api_key",
         build_body=_build_seedance_body,
         conditioning=("text", "first_frame", "last_frame", "reference_image"),
