@@ -12,7 +12,14 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { NoToneMapping, SRGBColorSpace, type Camera, type Scene, type WebGLRenderer } from 'three';
+import {
+  NoToneMapping,
+  SRGBColorSpace,
+  Vector3,
+  type Camera,
+  type Scene,
+  type WebGLRenderer,
+} from 'three';
 /**
  * 轨道控制取自 `three` 自带的 examples（**不引 drei**，项目刻意压依赖面）。
  * 用静态 import：这是 ESM 构建，`require` 在浏览器里不存在。
@@ -644,12 +651,96 @@ function FreeOrbit({ target }: { target: import('three').PerspectiveCamera | nul
     c.enableDamping = true;
     c.dampingFactor = 0.08;
     c.screenSpacePanning = true;   // 平移跟着屏幕走，比默认的"贴地面"直观
-    c.minDistance = 0.5;
-    c.maxDistance = 80;
-    // 允许俯视到接近正上方，但不允许转到地面以下（穿地观看很迷惑）
-    c.maxPolarAngle = Math.PI * 0.495;
+    c.minDistance = 0.05;
+    c.maxDistance = 500;
+
+    /**
+     * ## 去掉垂直锁定（用户报："不是全方位视角"）
+     *
+     * 我先前写了 `maxPolarAngle = Math.PI * 0.495`，理由是不让相机钻到
+     * 地面以下。但那等于把**垂直方向锁死**——只能从上方俯视，
+     * 没法转到下方仰视，用户感受就是"只能绕着中心点转，不是自由视角"。
+     *
+     * 现在放开：极角 0~π 全允许（含正上方与正下方），
+     * 想不穿地看就自己往上转，不该由控制强制。
+     * 方位角本来就是 360°（没设 min/maxAzimuthAngle）。
+     */
+    c.minPolarAngle = 0;
+    c.maxPolarAngle = Math.PI;
+
+    // 平移不要有边界，否则把场景挪出视野就拉不回来
+    c.enablePan = true;
     return c;
   }, [target, gl]);
+
+  /**
+   * ## 自由飞行（WASD / QE / 方向键）
+   *
+   * 只有"绕中心点转 + 平移"其实仍然不自由：**没法把视点本身挪到别处**。
+   * 这段键盘控制让相机连同它的注视点一起平移，于是可以走进场景内部、
+   * 绕到任意物体背后去看——那才是真正意义上的自由视角。
+   *
+   * 速度按"到目标点的距离"缩放：离得远就快、贴近了就慢，
+   * 否则近处动一下就跑飞、远处又慢得推不动。
+   */
+  useEffect(() => {
+    if (!controls) return;
+    const cam = controls.object;
+    const keys = new Set<string>();
+    const down = (e: KeyboardEvent) => {
+      // 焦点在输入框里时不要抢键（右栏有很多滑杆和文本框）
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      keys.add(e.key.toLowerCase());
+    };
+    const up = (e: KeyboardEvent) => keys.delete(e.key.toLowerCase());
+    const blur = () => keys.clear();
+
+    const fwd = new Vector3();
+    const right = new Vector3();
+    const move = new Vector3();
+
+    const tick = () => {
+      if (keys.size === 0) return;
+      const dist = cam.position.distanceTo(controls.target);
+      const step = Math.max(0.02, dist * 0.04);   // 距离越远，步长越大
+      // 相机的"前"用注视方向，保证 WASD 与视线一致
+      fwd.subVectors(controls.target, cam.position).normalize();
+      right.crossVectors(fwd, cam.up).normalize();
+
+      move.set(0, 0, 0);
+      if (keys.has('w') || keys.has('arrowup')) move.addScaledVector(fwd, step);
+      if (keys.has('s') || keys.has('arrowdown')) move.addScaledVector(fwd, -step);
+      if (keys.has('d') || keys.has('arrowright')) move.addScaledVector(right, step);
+      if (keys.has('a') || keys.has('arrowleft')) move.addScaledVector(right, -step);
+      if (keys.has('e') || keys.has(' ')) move.y += step;
+      if (keys.has('q')) move.y -= step;
+
+      if (move.lengthSq() > 0) {
+        // 相机与注视点一起移动：等于"整个人走过去看"，不改变朝向
+        cam.position.add(move);
+        controls.target.add(move);
+      }
+    };
+
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', blur);
+    // 用 rAF 而不是 useFrame：`controls.update()` 已经在 useFrame 里跑，
+    // 这里只负责根据按键改位置，频率不需要与渲染对齐。
+    let raf = 0;
+    const loop = () => {
+      tick();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', blur);
+    };
+  }, [controls]);
 
   useEffect(() => {
     if (!controls) return;

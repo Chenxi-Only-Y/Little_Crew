@@ -135,50 +135,68 @@ export interface BuiltBody {
 }
 
 /**
- * 关节球半径：**比相接肢体略粗**，让交接处真正连上。
+ * 关节球半径：**必须盖住相接体块的端面**。
  *
- * ## 这里的目标改过一次，方向是反的
+ * ## 取"最粗的那端"，不是"最细的"（这里返工过一次）
  *
- * 我先前把它夹在"不超过最细肢体的 0.92 倍"，理由是"给大了会在肘/膝
- * 鼓出疙瘩、像一串珠子"。那个顾虑本身没错，但**夹过头了**：
- * 球比肢体细 → 两段肢体之间出现可见的细腰，视觉上就是**一节一节断开**。
- * 用户看到的"关节断开"正是这个。
+ * 关节球的作用就是**封住圆柱的端面**。圆柱在某个关节那一端的半径是
+ * `r0` / `r1`，球只要比它小，端面就会露出一圈**环状断面**——
+ * 看起来就是"模型有空隙"（用户报的问题）。
  *
- * 正确的做法是**略粗一点点**（1.05 倍）：球稍微鼓出，交接处被包住，
- * 读起来是"一根连续的肢体、关节处略粗"——那正是白模需要的形态。
- * 真正要防的不是"略粗"，而是"粗很多"（那才会成串珠），所以上限留在 1.25 倍。
+ * 我先前取的是"最细的相邻肢体 × 1.05"，理由是"球大了会像串珠"。
+ * 那在**两条肢体一样粗**时没问题，但膝盖这种"大腿 0.089、小腿 0.057"
+ * 的地方就崩了：球按小腿算成 0.060，**盖不住大腿那端的 0.089**，
+ * 于是膝上露一圈、髋上又露一圈，四处都是缝。实测：
+ *
+ *     大腿膝端 0.0891  vs  髋球 0.0792   差 −0.0099  ❌
+ *     膝的踝端 0.0634  vs  膝球 0.0551   差 −0.0083  ❌
+ *     上臂肩端 0.0560  vs  肩球 0.0505   差 −0.0055  ❌
+ *
+ * 正确规则：
+ *
+ *     球半径 = max(相接体块在该端的最大半径) × 1.06
+ *
+ * 1.06 是刻意留的一点外凸——圆弧与圆柱相切处必然有细缝，略微鼓出才封得住；
+ * 再用 1.25 倍封顶，防止"粗很多"变成串珠。
  */
 function clampJointRadii(
   radii: Record<string, number>,
-  segments: Array<{ seg: BodySegment }>,
+  segments: Array<{ seg: BodySegment; a: Vec3; b: Vec3 }>,
 ): Record<string, number> {
-  const thinnest: Record<string, number> = {};
+  /** 每个关节处，相接体块在那里的**最大端面半径** */
+  const maxAtJoint: Record<string, number> = {};
+  const bump = (joint: string | null, r: number) => {
+    if (!joint || !(r > 0)) return;
+    maxAtJoint[joint] = Math.max(maxAtJoint[joint] ?? 0, r);
+  };
   for (const { seg } of segments) {
     /**
-     * ⚠️ **必须跳过 `r0/r1` 为 0 的段**（`box` 形状：手掌、脚掌）。
-     *
-     * 它们按设计不用半径、只用 `size`；若把 0 当成"最细半径"，
-     * 与它相接的关节球会被算成 `0 × 1.05 ≈ 0` ——球直接缩没，
-     * 手腕/脚踝处**看起来是断的**。实测 `wri_l` 的球半径被算成 0.0061，
-     * 而相邻前臂半径是 0.045，差了 7 倍。
+     * ⚠️ 跳过 `r0/r1` 都为 0 的段（`box` 形状：手掌、脚掌）。
+     * 它们按 `size` 描述尺寸；若把 0 当半径，相接的关节球会被算成 0 而缩没。
      */
-    const r = Math.min(seg.r0, seg.r1);
-    if (!(r > 0)) continue;
-    const parent = BODY_JOINT_PARENT[seg.joint];
-    if (parent) thinnest[parent] = Math.min(thinnest[parent] ?? Infinity, r);
-    thinnest[seg.joint] = Math.min(thinnest[seg.joint] ?? Infinity, r);
+    if (!(seg.r0 > 0) && !(seg.r1 > 0)) continue;
+    // 父端（a 侧）归属父关节，用 r0；子端（b 侧）归属本关节，用 r1
+    bump(BODY_JOINT_PARENT[seg.joint], seg.r0);
+    bump(seg.joint, seg.r1);
   }
+
   const out: Record<string, number> = {};
   for (const [name, r] of Object.entries(radii)) {
-    const thinnestAdj = thinnest[name];
-    // 躯干/头这些"本身就是主体"的关节不按肢体推，直接用规格给的半径
-    const isTorso = ['pelvis', 'spine', 'chest', 'head'].includes(name);
-    if (thinnestAdj === undefined || isTorso) {
+    const need = maxAtJoint[name];
+    /**
+     * ⚠️ **躯干关节也要参与**，不能再排除。
+     *
+     * 我先前把 `pelvis/spine/chest/head` 排除在外，理由是"它们本身就是主体"。
+     * 但躯干体块也是圆柱，同样有端面：脊柱端 0.0818 配骨盆球 0.0772
+     * 就露出一圈（实测第二次扫描仍报 2 处缝）。
+     * 让球跟着躯干段走即可——骨盆球稍大一点正好封住脊柱根部。
+     */
+    if (need === undefined) {
       out[name] = r;
       continue;
     }
-    // 取"规格值"与"相邻肢体 ×1.05"里较大的那个，再用 1.25 倍封顶
-    out[name] = Math.min(Math.max(r, thinnestAdj * 1.05), thinnestAdj * 1.25);
+    // 加 1e-6 容差：端面半径与球半径"恰好相等"时不该算作缝隙
+    out[name] = Math.min(Math.max(r, need * 1.06), need * 1.3 + 1e-6);
   }
   return out;
 }
@@ -244,10 +262,7 @@ export function buildBody(
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
-  const radii = clampJointRadii(
-    resolvedRadii(safe),
-    segments.map((s) => ({ seg: s.seg })),
-  );
+  const radii = clampJointRadii(resolvedRadii(safe), segments);
 
   /**
    * 接地：把整组上移，让**整个模型最低的那个几何点**落在 y=0。
