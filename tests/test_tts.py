@@ -75,6 +75,45 @@ def test_tools_python_is_none_without_tools_dir(monkeypatch, tmp_path):
 
 
 # ------------------------------------------------------------------
+# 外部目录的解析优先级
+# ------------------------------------------------------------------
+
+def test_tools_dir_falls_back_to_convention(monkeypatch, tmp_path):
+    """三档优先级：环境变量 → 设置项 → **约定默认位置**。
+
+    ⚠️ 为什么必须有第三档：只有 `start.bat` 会设环境变量，直接跑
+    `uvicorn` 或用 IDE 调试时它就不在了 —— 于是 TTS 与 ffmpeg **静默
+    降级**（`available()` 变 False），用户看到"配音不可用"却不知道
+    只是没设环境变量。实测踩到过。
+    """
+    import app.services.whitebox_video as wv
+
+    # 造一个"约定默认位置"
+    fake_default = tmp_path / "tools"
+    (fake_default / "venv" / "Scripts").mkdir(parents=True)
+    (fake_default / "venv" / "Scripts" / "python.exe").write_bytes(b"x")
+    monkeypatch.setattr(wv, "DEFAULT_TOOLS_DIR", str(fake_default))
+
+    # ① 环境变量优先
+    explicit = tmp_path / "from-env"
+    explicit.mkdir()
+    monkeypatch.setenv("LITTLE_CREW_TOOLS", str(explicit))
+    assert wv.tools_dir() == explicit
+
+    # ② 环境变量设了一个**不存在**的路径 → 返回 None，**不**回落到默认。
+    #    显式配错却静默改用别处，是最难排查的一类问题
+    #    （本项目其他地方也遵循同一条原则）。
+    monkeypatch.setenv("LITTLE_CREW_TOOLS", str(tmp_path / "nope"))
+    assert wv.tools_dir() is None
+
+    # ③ 环境变量清掉 → 用约定默认位置
+    monkeypatch.delenv("LITTLE_CREW_TOOLS", raising=False)
+    monkeypatch.setattr(wv.settings, "little_crew_tools", "")
+    assert wv.tools_dir() == fake_default
+    assert tts.tools_python() == str(fake_default / "venv" / "Scripts" / "python.exe")
+
+
+# ------------------------------------------------------------------
 # 语速换算（倍率 → edge-tts 的百分比）
 # ------------------------------------------------------------------
 

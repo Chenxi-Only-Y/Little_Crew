@@ -41,6 +41,33 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _default_tools_dir() -> str:
+    r"""外部工具与模型目录的**约定默认位置**。
+
+    规则：**与本项目同级**的 `little-crew-tools`（与 `local-gen` 平级）。
+
+        父目录/
+          ds.6/                  ← 本项目
+          little-crew-tools/     ← 工具与模型（本函数指的地方）
+          local-gen/             ← 本地推理服务
+
+    为什么按项目位置**推导**而不是写死 `D:\AI\little-crew-tools`：
+    写死意味着换台机器 / 换个盘符就失效，而失效时是**静默降级**
+    （配音与 ffmpeg 不可用，用户只看到"不可用"）。推导出来的路径
+    跟着项目走，到哪都对。
+
+    环境变量 `LITTLE_CREW_TOOLS` 与设置项 `little_crew_tools` 都能覆盖它。
+    """
+    try:
+        parent = pathlib.Path(__file__).resolve().parents[2].parent
+        return str(parent / "little-crew-tools")
+    except Exception:  # noqa: BLE001  取不到就退到字面量
+        return "D:\\AI\\little-crew-tools"
+
+
+DEFAULT_TOOLS_DIR = _default_tools_dir()
+
 #: 帧序列编码成 mp4 的目标规格。
 #:
 #: 为什么固定 24fps 与 yuv420p：
@@ -138,9 +165,16 @@ def tools_dir() -> pathlib.Path | None:
     **不报错**：没有它只是少了本地配音/拼接能力，云端功能不受影响。
     启动时就因为缺一个可选目录而失败，对"只想用云端"的用户不合理。
     """
-    raw = (settings.little_crew_tools or os.environ.get("LITTLE_CREW_TOOLS", "")).strip()
+    raw = (os.environ.get("LITTLE_CREW_TOOLS") or settings.little_crew_tools or "").strip()
     if not raw:
-        return None
+        # 环境变量与配置都没给 → 退到**约定默认位置**。
+        #
+        # 为什么要有这一档：只有 `start.bat` 会设环境变量，而直接跑
+        # `uvicorn` / 用 IDE 调试时它就不在了 —— 于是 TTS 与 ffmpeg
+        # **静默降级**（`available()` 变 False），用户看到"配音不可用"
+        # 却不知道只是没设环境变量。默认位置是 setup 脚本与实际安装处，
+        # 存在就用它，不存在依然返回 None（不报错）。
+        raw = DEFAULT_TOOLS_DIR
     p = pathlib.Path(raw)
     return p if p.is_dir() else None
 
