@@ -181,6 +181,10 @@ export function allowedProviders(
  * 只有**一档**可选时不加前缀（加了是噪音）；两档同时出现（模式未选）时
  * 用 `本地 · ` / `云端 · ` 标出各自属于哪一档。
  *
+ * ⚠️ 加前缀前要**先看 label 里有没有** —— 后端的本地提供者名字本身就以
+ * `本地 · ` 开头（如 `本地 · Z-Image`），无条件再加就变成
+ * `本地 · 本地 · Z-Image`（实际发生过）。
+ *
  * 为什么不用 `<optgroup>`：实测 Windows 原生下拉会把 optgroup 标题渲染成
  * **一条白色横条**（用户截图里那个白块），且各平台表现不一。
  * 文字前缀没有这个渲染差异。
@@ -194,7 +198,13 @@ export function optionLabelsFor(
   const onlyOne = restrictionFor(capPrefix, fieldKey, settings, providers) !== 'unset';
   const out: Record<string, string> = {};
   for (const p of allowedProviders(capPrefix, fieldKey, settings, providers)) {
-    out[p.key] = onlyOne ? p.label : p.is_local ? `本地 · ${p.label}` : `云端 · ${p.label}`;
+    // 后端 label 自带来源前缀时不再叠加
+    const hasPrefix = p.label.startsWith('本地 · ') || p.label.startsWith('云端 · ');
+    out[p.key] = onlyOne || hasPrefix
+      ? p.label
+      : p.is_local
+        ? `本地 · ${p.label}`
+        : `云端 · ${p.label}`;
   }
   return out;
 }

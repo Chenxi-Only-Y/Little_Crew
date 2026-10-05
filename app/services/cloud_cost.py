@@ -88,8 +88,8 @@ class CostEstimate:
 # ------------------------------------------------------------------
 
 _LOCAL = ModelCost(
-    key="local", label="本地推理 local-gen", capability="image_gen", unit="free",
-    price_hint="零成本（用你自己的 GPU 与电费）",
+    key="local", label="本地 · Z-Image", capability="image_gen", unit="free",
+    price_hint="不产生 API 费用（用自己的显卡）",
     region_ok=True, needs_proxy=False,
     note="本机 8GB 显存：出图约 32 秒/张；视频 8 步约 8.6 分钟、时长上限 10 秒",
 )
@@ -180,8 +180,8 @@ MODEL_COST: dict[str, ModelCost] = {
         needs_proxy=True,
     ),
     "z-image-inpaint": ModelCost(
-        "z-image-inpaint", "本地 inpaint（diffusers）", "image_edit", "free",
-        price_hint="零成本（需在 local-gen 增加 inpaint 路由）",
+        "z-image-inpaint", "本地 · Z-Image 修复", "image_edit", "free",
+        price_hint="不产生 API 费用（该路由尚未接入）",
         region_ok=True, note="ZImageInpaintPipeline 与现有权重共用，无需再下模型",
     ),
     # ============ 图生视频（价格差 10 倍，务必提醒）============
@@ -192,7 +192,7 @@ MODEL_COST: dict[str, ModelCost] = {
     ),
     "minimax-h3": ModelCost(
         "minimax-h3", "本地 MiniMax H3", "video_gen", "free",
-        price_hint="零成本；8GB 实测 8 步约 8.6 分钟/段，时长上限 10 秒",
+        price_hint="不产生 API 费用；8GB 实测 8 步约 8.6 分钟/段，时长上限 10 秒",
         region_ok=True, note="超过 10 秒必 OOM，降分辨率无效",
     ),
     "kling-3.0": ModelCost(
@@ -219,13 +219,13 @@ MODEL_COST: dict[str, ModelCost] = {
     ),
     "ffmpeg": ModelCost(
         "ffmpeg", "FFmpeg 本地合成", "video_gen", "free",
-        price_hint="零成本（图片幻灯片拼接）",
+        price_hint="不产生 API 费用（图片幻灯片拼接）",
         region_ok=True, note="时长固定、无真实运镜；转场/字幕需自己实现",
     ),
     # ============ LoRA 训练 ============
     "diffsynth-qlora": ModelCost(
-        "diffsynth-qlora", "本地 NF4 QLoRA（DiffSynth）", "lora_train", "free",
-        price_hint="零成本（本机 GPU）；NF4 + peft 已就绪",
+        "diffsynth-qlora", "本地 · DiffSynth", "lora_train", "free",
+        price_hint="不产生 API 费用（用你自己的显卡训练）",
         region_ok=True, trainable=True, lora_bound=True,
         note="只能训 Z-Image 底模；8GB 显存较慢",
     ),
@@ -244,7 +244,7 @@ MODEL_COST: dict[str, ModelCost] = {
     # ============ 配音 / 音乐 ============
     "edge-tts": ModelCost(
         "edge-tts", "Edge TTS", "tts", "free",
-        price_hint="零成本（免费兜底）",
+        price_hint="不产生 API 费用",
         region_ok=True, note="音色较少；适合先跑通链路",
     ),
     "cosyvoice": ModelCost(

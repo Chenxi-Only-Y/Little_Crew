@@ -232,6 +232,21 @@ test('`(自动)` 字段同样保留 `(自动)`', () => {
   assert.deepEqual(opts, ['(自动)', 'ollama', 'vllm'], JSON.stringify(opts));
 });
 
+test('label 自带来源前缀时不再叠加（避免 `本地 · 本地 · X`）', () => {
+  // 后端的本地提供者名字本身就以 `本地 · ` 开头（如 `本地 · Z-Image`），
+  // 而模式未选时前端还会加前缀 —— 无条件加就变成 `本地 · 本地 · Z-Image`。
+  const list: ProviderInfo[] = [
+    P('local', '本地 · Z-Image', 'image_gen', true),
+    P('dashscope', '阿里百炼（通义万相 / 千问）', 'image_gen', false),
+  ];
+  const labels = optionLabelsFor('image', 'image_provider_photographer', {}, list);
+  assert.equal(labels.local, '本地 · Z-Image', `不该重复加前缀: ${labels.local}`);
+  assert.equal(labels.dashscope, '云端 · 阿里百炼（通义万相 / 千问）');
+  // 只有一档时同样不叠加
+  const one = optionLabelsFor('image', 'image_provider_photographer', { image_provider_mode: 'local' }, list);
+  assert.equal(one.local, '本地 · Z-Image');
+});
+
 test('非 openai 协议的提供者永远不列（选了必然失败）', () => {
   const list: ProviderInfo[] = [
     { ...P('claude', 'Anthropic Claude', 'llm', false), api_style: 'unverified' },

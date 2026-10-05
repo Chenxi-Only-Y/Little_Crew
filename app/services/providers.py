@@ -319,10 +319,10 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                       "是否存在**未能验证**"),
     ProviderSpec("ollama", "本地 Ollama", "llm", "local",
                  default_model="qwen2.5", needs_api_key=False,
-                 note="本地推理，零成本；需本机已启动 ollama"),
+                 note="跑在你自己的机器上，不产生 API 费用；需先启动 ollama"),
     ProviderSpec("vllm", "本地 vLLM", "llm", "local",
                  default_model="Qwen/Qwen2.5-7B-Instruct", needs_api_key=False,
-                 note="本地推理，零成本；需本机已启动 vLLM"),
+                 note="跑在你自己的机器上，不产生 API 费用；需先启动 vLLM"),
     # ---- 聚合网关：一个 key 通多家模型（OpenAI 兼容）----
     #
     # 为什么单列这几家：它们不是模型厂，而是**路由器**——用同一个 OpenAI 兼容
@@ -350,10 +350,11 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
     ProviderSpec("custom", "自定义（OpenAI 兼容）", "llm", "gateway", note="自行填写 base_url 与模型"),
 
     # ================= 文生图 =================
-    ProviderSpec("local", "本地推理 local-gen（零成本）", "image_gen", "local",
+    ProviderSpec("local", "本地 · Z-Image", "image_gen", "local",
                  default_model="z-image-turbo", needs_api_key=False, max_concurrency=1,
                  known_models=("z-image-turbo",),
-                 note="本机 8GB 显存：出图约 32 秒/张；服务端串行推理，并发度固定为 1"),
+                 note="跑在你自己机器上的本地推理，不产生 API 费用。"
+                      "8GB 显存实测约 32 秒/张；串行处理，一次一张"),
     ProviderSpec("dashscope", "阿里百炼（通义万相 / 千问）", "image_gen", "cn_cloud",
                  default_model="wan2.7-image-pro",
                  # 型号名已按官方模型列表与 API 参考核对（2026-10）：
@@ -384,10 +385,10 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="一个 key 覆盖数十个模型（v2 待接入）"),
 
     # ================= 图像编辑 / 崩坏修复 =================
-    ProviderSpec("local", "本地 inpaint（diffusers）", "image_edit", "local",
+    ProviderSpec("local", "本地 · Z-Image 修复", "image_edit", "local",
                  available=False, needs_api_key=False, max_concurrency=1,
                  known_models=("z-image-inpaint",),
-                 note="ZImageInpaintPipeline 与现有权重共用；需在 local-gen 增加路由（v2 待接入）"),
+                 note="与本地出图共用权重；该路由尚未接入"),
     ProviderSpec("dashscope", "阿里百炼（千问图像编辑）", "image_edit", "cn_cloud",
                  default_model="qwen-image-3.0-pro",
                  known_models=("qwen-image-3.0-pro", "qwen-image-3.0", "qwen-image-2.1-pro",
@@ -395,7 +396,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="指令式编辑：改文字/增删物体/改动作/细节增强，支持 1–3 张多图输入"),
 
     # ================= 图生视频 =================
-    ProviderSpec("local", "本地 MiniMax H3（零成本）", "video_gen", "local",
+    ProviderSpec("local", "本地 · MiniMax H3", "video_gen", "local",
                  default_model="minimax-h3", needs_api_key=False, max_concurrency=1,
                  known_models=("minimax-h3",),
                  presets={"duration": DURATION_BY_PROVIDER["local"],
@@ -422,7 +423,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                                "reference_image", "reference_video", "reference_audio"),
                  note="H3: 768P/2K，4~15s；H3-Max 更快但无 2K、5~15s。"
                       "支持白模参考视频（复刻运镜与走位）。**首尾帧与参考视频互斥**"),
-    ProviderSpec("ffmpeg", "FFmpeg 本地合成（免费）", "video_gen", "free",
+    ProviderSpec("ffmpeg", "本地 · 图片拼接", "video_gen", "free",
                  default_model="ffmpeg", needs_api_key=False,
                  presets={"duration": DURATION_BY_PROVIDER["ffmpeg"],
                           "resolution": RESOLUTION_BY_PROVIDER["ffmpeg"]},
@@ -431,7 +432,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="图片幻灯片拼接；时长固定、无真实运镜（转场/字幕需自行实现）"),
 
     # ================= LoRA / 自定义模型训练 =================
-    ProviderSpec("local", "本地 NF4 QLoRA（DiffSynth）", "lora_train", "local",
+    ProviderSpec("local", "本地 · DiffSynth", "lora_train", "local",
                  default_model="diffsynth-qlora", needs_api_key=False, max_concurrency=1,
                  known_models=("diffsynth-qlora",),
                  note="peft + bitsandbytes 已就绪；只能训 Z-Image 底模；8GB 显存较慢"),
@@ -444,9 +445,9 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="仅支持 Flux/SDXL 底模；⚠️ 训出的 LoRA 不能给 Z-Image 用"),
 
     # ================= 配音 / 音乐 =================
-    ProviderSpec("edge", "Edge TTS（免费兜底）", "tts", "free",
+    ProviderSpec("edge", "本地 · 系统语音", "tts", "free",
                  needs_api_key=False, known_models=("edge-tts",),
-                 note="零成本；音色较少，适合先跑通链路"),
+                 note="不产生 API 费用；音色较少，适合先把链路跑通"),
     # 模型名按官方 API 参考核对（2026-10）：
     #   https://help.aliyun.com/zh/model-studio/cosyvoice-tts-http-api
     #   ⚠️ CosyVoice 的 HTTP 接口**仅华北2（北京）**可用，跨区调用会失败。
@@ -473,7 +474,7 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  note="情感与音色最丰富；参数名是 model_id 不是 model"),
 
     # ================= 2D 白模预演 =================
-    ProviderSpec("local", "本地 2D 绘制（PIL）", "render_2d", "local",
+    ProviderSpec("local", "本地 · 程序绘制", "render_2d", "local",
                  available=True, needs_api_key=False, max_concurrency=1,
                  note="俯视走位/机位示意图；零新依赖"),
 )
@@ -909,14 +910,14 @@ def _check_mode_consistency(
     if m == "local" and not is_local:
         return None, (
             f"配置矛盾：模式选了「本地推理」，但提供者是「{spec.label}」（云端）。"
-            f"本地模式只能用零成本、免密钥的提供者。"
+            f"本地模式只能用不产生 API 费用、免密钥的提供者。"
             f"请把「{MODE_KEY_BY_CAPABILITY.get(capability)}」改成「云端 API」，"
             f"或把提供者改成 {_local_names(capability)}。"
             f"（不替你猜：猜本地会失败，猜云端会产生你没预期的费用）"
         )
     if m == "cloud" and is_local:
         return None, (
-            f"配置矛盾：模式选了「云端 API」，但提供者是「{spec.label}」（本地/零成本）。"
+            f"配置矛盾：模式选了「云端 API」，但提供者是「{spec.label}」（本地）。"
             f"云端模式下不会调用本地服务。"
             f"请把「{MODE_KEY_BY_CAPABILITY.get(capability)}」改成「本地推理」，"
             f"或把提供者改成云端提供者。"

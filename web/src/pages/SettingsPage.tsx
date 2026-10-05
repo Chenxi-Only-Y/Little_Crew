@@ -48,15 +48,26 @@ import {
   optionLabelsFor as computeOptionLabels,
 } from '../settings/providerFilter';
 
-/** 费用审计返回的单项 */
+/**
+ * 费用审计返回的单项。
+ *
+ * ⚠️ 字段名必须与后端 `cloud_cost.audit_settings()` 的产物一致。
+ * 我原先按 `{label, note, unit_cost}` 写，而后端实际给的是
+ * `{title, detail, level, model}` —— 于是"费用提醒"那一栏**永远是空的**
+ * （读不到 `label` 就什么都不显示），而接口本身是好的。
+ * 这类"键名对不上"不会报错，只会静默显示空，所以特别值得记一笔。
+ */
 interface CostItem {
-  key?: string;
-  label?: string;
+  key: string;
   provider?: string;
-  is_cloud?: boolean;
-  note?: string;
-  unit_cost?: number;
-  currency?: string;
+  model?: string;
+  is_cloud: boolean;
+  /** 是否为用户显式设置（否则来自默认值） */
+  from_user_setting?: boolean;
+  /** 云端费用等级：free / cloud / unknown */
+  level?: string;
+  title: string;
+  detail?: string;
 }
 
 /** 后端下发的"提供者需要填什么凭据" */
@@ -142,7 +153,7 @@ const CAP_GROUPS: CapGroup[] = [
   {
     cap: 'lora_train',
     title: 'LoRA 训练',
-    desc: '角色一致性训练。零成本走本地，云端按训练步数计费。',
+    desc: '角色一致性训练。本地用自己的显卡（不产生 API 费用），云端按训练步数计费。',
     prefixes: ['lora'],
     kinds: '角色 LoRA 权重',
   },
@@ -189,6 +200,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cost, setCost] = useState<CostItem[] | null>(null);
+  /** 费用审计的一句话总结（后端 `summary`） */
+  const [costSummary, setCostSummary] = useState('');
   const [creds, setCreds] = useState<CredentialSpec | null>(null);
   /**
    * 提供者清单（`/api/providers`）：用来把下拉里的**内部标识**换成友好名。
@@ -332,7 +345,17 @@ export default function SettingsPage() {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         const body = await r.json().catch(() => ({}));
-        if (alive && r.ok) setCost((body.items ?? body.audit ?? []) as CostItem[]);
+        if (alive && r.ok) {
+          // ⚠️ 后端给的是 `{cloud_items, free_items, summary, has_cloud}`。
+          // 我原先读 `body.items ?? body.audit` —— 两个键都不存在，
+          // 于是"费用提醒"永远显示"费用审计不可用"（接口本身是好的）。
+          // 这类"键名对不上"不报错、只静默显示空。
+          setCost([
+            ...((body.cloud_items ?? []) as CostItem[]),
+            ...((body.free_items ?? []) as CostItem[]),
+          ]);
+          setCostSummary(String(body.summary ?? ''));
+        }
       } catch {
         /* 费用审计失败不影响设置本身 */
       }
@@ -704,7 +727,7 @@ export default function SettingsPage() {
                         const names = providerNamesForMode(g.cap);
                         const mode = modeOf(g.cap);
                         if (mode === 'unset') return `未选择时下面会列出全部 ${names.length} 家`;
-                        const which = mode === 'local' ? '本地 / 零成本' : '云端';
+                        const which = mode === 'local' ? '本地（不产生 API 费用）' : '云端';
                         return names.length
                           ? `「${which}」模式下可选：${names.join(' · ')}`
                           : `「${which}」模式下没有可用提供者`;
@@ -725,7 +748,7 @@ export default function SettingsPage() {
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.7 }}>
                   视频的密钥是<strong>提供者级</strong>的，与按职业的密钥不是同一个键。
-                  想用云端视频，必须在这里填对应提供者的 Key；只用本地 / FFmpeg 则不需要。
+                  想用云端视频，必须在这里填对应提供者的 Key；只用本地（图片拼接或本机推理）则不需要。
                 </div>
                 <div className="settings-grid">
                   {creds.video.keys.map((c) => (
@@ -815,21 +838,26 @@ export default function SettingsPage() {
         ) : (
           <>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
-              云端 {cloudItems.length} 项 · 本地 {localItems.length} 项
+              {costSummary || `云端 ${cloudItems.length} 项 · 本地 ${localItems.length} 项`}
             </div>
             <div className="settings-grid">
               {(cost ?? []).map((c, i) => (
                 <div
-                  key={c.key ?? i}
+                  key={`${c.key}-${i}`}
                   className="settings-cell"
                   style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}
                 >
                   <span style={{ color: c.is_cloud ? 'var(--glow-violet)' : 'var(--text)' }}>
                     {c.is_cloud ? '云' : '本地'}
                   </span>{' '}
-                  {c.label ?? c.key}
+                  {c.title}
                   {c.provider ? ` · ${c.provider}` : ''}
-                  {c.unit_cost != null ? ` · ${c.unit_cost}${c.currency ?? ''}` : ''}
+                  {/* 后端给的是 `detail`；原先读 `note` 同样是键名对不上 */}
+                  {c.detail ? (
+                    <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>
+                      {c.detail}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

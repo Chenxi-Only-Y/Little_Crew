@@ -1106,7 +1106,7 @@
           ],
           "default": "unset",
           "secret": false,
-          "help": "必选。云端默认阿里百炼；本地走 local-gen（零成本，8GB 显存约 32 秒/张）"
+          "help": "必选。云端默认阿里百炼；本地用你自己的显卡出图（不产生 API 费用，8GB 显存约 32 秒/张）"
         },
         {
           "key": "lora_train_provider_mode",
@@ -1120,7 +1120,7 @@
           ],
           "default": "unset",
           "secret": false,
-          "help": "必选。本地=本机 NF4 QLoRA（零成本、较慢）；云端按训练步数计费"
+          "help": "必选。本地用你自己的显卡训练（不产生 API 费用，较慢）；云端按训练步数计费"
         },
         {
           "key": "image_provider_character_designer",
@@ -1136,7 +1136,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理；其余为云端"
+          "help": "带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"
         },
         {
           "key": "image_model_character_designer",
@@ -1233,7 +1233,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理；其余为云端"
+          "help": "带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"
         },
         {
           "key": "image_model_scene_designer",
@@ -1296,7 +1296,7 @@
           ],
           "default": "unset",
           "secret": false,
-          "help": "必选。云端默认阿里百炼；本地走 local-gen（零成本，8GB 显存约 32 秒/张）"
+          "help": "必选。云端默认阿里百炼；本地用你自己的显卡出图（不产生 API 费用，8GB 显存约 32 秒/张）"
         },
         {
           "key": "image_provider_photographer",
@@ -1312,7 +1312,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理；其余为云端"
+          "help": "带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"
         },
         {
           "key": "image_model_photographer",
@@ -1438,7 +1438,7 @@
           ],
           "default": "2d",
           "secret": false,
-          "help": "2D 俯视示意图（PIL 绘制）：走位与机位，零成本、零新依赖"
+          "help": "2D 俯视示意图：画出走位与机位，不产生 API 费用、无需下载模型"
         },
         {
           "key": "previs_size",
@@ -1586,7 +1586,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "按模式即用上方模式默认；edge=免费兜底"
+          "help": "按模式即用上方模式默认；系统语音不需要 Key"
         },
         {
           "key": "tts_voice",

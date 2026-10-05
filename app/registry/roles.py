@@ -111,7 +111,7 @@ MODEL_MODE_FIELDS: dict[str, ConfigField] = {
     "image_gen": ConfigField(
         "image_provider_mode", "图片生成：云端 / 本地", "select", "global",
         ("unset", "cloud", "local"), default="unset",
-        help="必选。云端默认阿里百炼；本地走 local-gen（零成本，8GB 显存约 32 秒/张）",
+        help="必选。云端默认阿里百炼；本地用你自己的显卡出图（不产生 API 费用，8GB 显存约 32 秒/张）",
     ),
     "video_gen": ConfigField(
         "video_provider_mode", "视频生成：云端 / 本地", "select", "global",
@@ -121,7 +121,7 @@ MODEL_MODE_FIELDS: dict[str, ConfigField] = {
     "lora_train": ConfigField(
         "lora_train_provider_mode", "LoRA 训练：云端 / 本地", "select", "global",
         ("unset", "cloud", "local"), default="unset",
-        help="必选。本地=本机 NF4 QLoRA（零成本、较慢）；云端按训练步数计费",
+        help="必选。本地用你自己的显卡训练（不产生 API 费用，较慢）；云端按训练步数计费",
     ),
     "tts": ConfigField(
         "tts_provider_mode", "配音：云端 / 本地", "select", "global",
@@ -201,7 +201,7 @@ def _image_fields(role_key: str) -> tuple[ConfigField, ...]:
     return (
         ConfigField(f"image_provider_{role_key}", "图片模型来源", "select", "role",
                     _provider_options("image_gen"),
-                    help="local=本机零成本推理；其余为云端"),
+                    help="带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"),
         ConfigField(f"image_model_{role_key}", "模型", "text", "role",
                     help="留空则用该提供者的默认模型"),
         ConfigField(f"image_api_key_{role_key}", "API Key", "password", "role", secret=True),
@@ -565,7 +565,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
             # 只保留 2d：3D 预演（白模建模 + 渲染）成本与复杂度都远超当前定位，
             # 留着"3d"选项会让用户选了却没有任何反应。本项目统一 2D。
             ConfigField("previs_mode", "白模模式", "select", "global", ("2d",), "2d",
-                        help="2D 俯视示意图（PIL 绘制）：走位与机位，零成本、零新依赖"),
+                        help="2D 俯视示意图：画出走位与机位，不产生 API 费用、无需下载模型"),
             ConfigField("previs_size", "预演画布尺寸", "text", "global", default="1280x720"),
         ),
     ),
@@ -585,7 +585,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
             MODEL_MODE_FIELDS["tts"],
             ConfigField("tts_provider", "配音来源（覆盖模式）", "select", "global",
                         ("(按模式)",),
-                        help="按模式即用上方模式默认；edge=免费兜底",
+                        help="按模式即用上方模式默认；系统语音不需要 Key",
                         options_from="tts"),
             ConfigField("tts_voice", "默认音色", "text", "global"),
             ConfigField("tts_speed", "语速", "slider", "global", default=1.0),
