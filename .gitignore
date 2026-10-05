@@ -60,3 +60,6 @@ web/public/hero-bg.jpg
 
 # 调研中间产物（子任务抓的网页/文档），不入库
 _research/
+# 子任务在工作区留下的中间产物，不入库
+_research/
+tmpres/

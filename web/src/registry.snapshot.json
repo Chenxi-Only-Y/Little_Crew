@@ -683,20 +683,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_director",
@@ -706,7 +713,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_director",
@@ -767,20 +774,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_writer",
@@ -790,7 +804,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_writer",
@@ -838,20 +852,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_critics",
@@ -861,7 +882,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_critics",
@@ -905,20 +926,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_screenwriter",
@@ -928,7 +956,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_screenwriter",
@@ -973,20 +1001,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_storyboarder",
@@ -996,7 +1031,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_storyboarder",
@@ -1071,12 +1106,12 @@
             "(自动)",
             "local",
             "dashscope",
-            "replicate",
-            "minimax"
+            "minimax",
+            "replicate"
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理"
+          "help": "local=本机零成本推理；其余为云端"
         },
         {
           "key": "image_model_character_designer",
@@ -1086,7 +1121,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型"
         },
         {
           "key": "image_api_key_character_designer",
@@ -1168,12 +1203,12 @@
             "(自动)",
             "local",
             "dashscope",
-            "replicate",
-            "minimax"
+            "minimax",
+            "replicate"
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理"
+          "help": "local=本机零成本推理；其余为云端"
         },
         {
           "key": "image_model_scene_designer",
@@ -1183,7 +1218,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型"
         },
         {
           "key": "image_api_key_scene_designer",
@@ -1247,12 +1282,12 @@
             "(自动)",
             "local",
             "dashscope",
-            "replicate",
-            "minimax"
+            "minimax",
+            "replicate"
           ],
           "default": null,
           "secret": false,
-          "help": "local=本机零成本推理"
+          "help": "local=本机零成本推理；其余为云端"
         },
         {
           "key": "image_model_photographer",
@@ -1262,7 +1297,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型"
         },
         {
           "key": "image_api_key_photographer",
@@ -1426,20 +1461,27 @@
             "(自动)",
             "deepseek",
             "zhipu",
-            "openai",
             "qwen",
             "moonshot",
-            "claude",
-            "gemini",
             "doubao",
             "ernie",
+            "openai",
+            "claude",
+            "gemini",
             "ollama",
             "vllm",
+            "openrouter",
+            "groq",
+            "together",
+            "fireworks",
+            "deepinfra",
+            "cerebras",
+            "siliconflow",
             "custom"
           ],
           "default": null,
           "secret": false,
-          "help": "API 与本地（ollama/vllm）等价可选"
+          "help": "API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"
         },
         {
           "key": "llm_model_continuity",
@@ -1449,7 +1491,7 @@
           "options": [],
           "default": null,
           "secret": false,
-          "help": ""
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"
         },
         {
           "key": "llm_api_key_continuity",

@@ -26,17 +26,30 @@ def _try_parse_json(s: str):
     return None
 
 _PRESETS = {
-    "deepseek": ("https://api.deepseek.com", "deepseek-v4-flash"),
-    "zhipu": ("https://open.bigmodel.cn/api/paas/v4", "glm-4"),
-    "openai": ("https://api.openai.com/v1", "gpt-4o-mini"),
-    "qwen": ("https://dashscope.aliyuncs.com/compatible-mode/v1", "qwen-plus"),        # 阿里通义
-    "moonshot": ("https://api.moonshot.cn/v1", "moonshot-v1-8k"),                       # 月之暗面 Kimi
-    "claude": ("https://api.anthropic.com/v1", "claude-3-5-sonnet-latest"),             # Anthropic
-    "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai", "gemini-1.5-pro"),  # Google
-    "doubao": ("https://ark.cn-beijing.volces.com/api/v3", "doubao-pro-32k"),           # 字节豆包(火山方舟)
-    "ernie": ("https://qianfan.baidubce.com/v2", "ernie-4.0-8k"),                       # 百度文心(千帆)
+    "deepseek": ("https://api.deepseek.com", "deepseek-flash"),
+    "zhipu": ("https://open.bigmodel.cn/api/paas/v4", "glm-5.3"),
+    "openai": ("https://api.openai.com/v1", "gpt-6.1-sol"),
+    "qwen": ("https://dashscope.aliyuncs.com/compatible-mode/v1", "qwen3.7-plus"),        # 阿里通义
+    "moonshot": ("https://api.moonshot.cn/v1", "kimi-k3"),                       # 月之暗面 Kimi
+    "claude": ("https://api.anthropic.com/v1", "claude-sonnet-5-5"),             # Anthropic
+    "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai", "gemini-3.8-flash"),  # Google
+    "doubao": ("https://ark.cn-beijing.volces.com/api/v3", "doubao-seed-evolving"),           # 字节豆包(火山方舟)
+    "ernie": ("https://qianfan.baidubce.com/v2", "ernie-5.1"),                       # 百度文心(千帆)
     "ollama": ("http://localhost:11434/v1", "qwen2.5"),                                 # 本地部署
     "vllm": ("http://localhost:8000/v1", "Qwen/Qwen2.5-7B-Instruct"),                   # 本地 vLLM
+    # ---- 聚合网关（OpenAI 兼容）：base_url 与各厂同一机制，key 用共同的 llm_api_key ----
+    #
+    # ⚠️ 这几家**不预设默认模型**：它们的模型名是各家自己的目录 slug
+    #   （OpenRouter 形如 `anthropic/claude-…`、Groq 形如 `llama-…`），
+    #   预设一个必然很快过时，反而误导用户以为"默认那个一定能用"。
+    #   留空让用户在「模型」里填，provider 的 note 里说明了形状。
+    "openrouter": ("https://openrouter.ai/api/v1", ""),                                  # OpenRouter
+    "groq": ("https://api.groq.com/openai/v1", ""),                                      # Groq
+    "together": ("https://api.together.xyz/v1", ""),                                     # Together AI
+    "fireworks": ("https://api.fireworks.ai/inference/v1", ""),                          # Fireworks AI
+    "deepinfra": ("https://api.deepinfra.com/v1/openai", ""),                            # DeepInfra
+    "cerebras": ("https://api.cerebras.ai/v1", ""),                                      # Cerebras
+    "siliconflow": ("https://api.siliconflow.cn/v1", ""),                                # 硅基流动
 }
 _LOCAL_PROVIDERS = {"ollama", "vllm"}
 

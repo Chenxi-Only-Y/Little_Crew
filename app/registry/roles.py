@@ -131,6 +131,41 @@ MODEL_MODE_FIELDS: dict[str, ConfigField] = {
 }
 
 
+def _provider_options(capability: str) -> tuple[str, ...]:
+    """某能力的提供者下拉选项，**从 provider 注册表派生**。
+
+    ## 为什么要派生而不是硬编码（这里修过一次真缺陷）
+
+    原先两个函数各自写死一份列表：
+
+        _llm_fields   ("(自动)", "deepseek", "zhipu", "openai", … 13 个)
+        _image_fields ("(自动)", "local", "dashscope", "replicate", "minimax")
+
+    于是**在 `providers.py` 里新增提供者，设置页里却选不到**——
+    键在白名单里（能存）、有实现（能跑），就是没有下拉项。
+    这正是本项目已经吃过多次亏的"两份手写清单漂移"。
+
+    现在从 `PROVIDERS` 派生：只要在注册表里声明了，下拉就自动有。
+    按 `capability` 过滤，避免把图像提供者混进文字模型下拉
+    （`local` / `minimax` / `dashscope` 都是跨能力重名的 key）。
+
+    `available=False` 的（仅登记未接入）**不列入**——列出来会让用户
+    选到一个必然报错的选项。
+
+    ⚠️ 用**惰性 import**：`app.registry` 是被大量模块早期导入的包，
+    在模块顶层引入 `app.services.providers` 会把服务层拖进 registry 的
+    导入链（providers 自身又 import video_adapters / runtime_settings），
+    容易出现难查的循环导入。放在函数里最稳。
+    """
+    from app.services.providers import PROVIDERS
+
+    keys = ["(自动)"]
+    for p in PROVIDERS:
+        if p.capability == capability and p.available and p.key not in keys:
+            keys.append(p.key)
+    return tuple(keys)
+
+
 def _llm_fields(role_key: str) -> tuple[ConfigField, ...]:
     """某职业的 LLM 配置（API 或本地，二者等价可选）。
 
@@ -139,10 +174,10 @@ def _llm_fields(role_key: str) -> tuple[ConfigField, ...]:
     """
     return (
         ConfigField(f"llm_provider_{role_key}", "文字模型来源", "select", "role",
-                    ("(自动)", "deepseek", "zhipu", "openai", "qwen", "moonshot",
-                     "claude", "gemini", "doubao", "ernie", "ollama", "vllm", "custom"),
-                    help="API 与本地（ollama/vllm）等价可选"),
-        ConfigField(f"llm_model_{role_key}", "模型", "text", "role"),
+                    _provider_options("llm"),
+                    help="API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"),
+        ConfigField(f"llm_model_{role_key}", "模型", "text", "role",
+                    help="留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"),
         ConfigField(f"llm_api_key_{role_key}", "API Key", "password", "role", secret=True,
                     help="本地 provider（ollama/vllm）无需填写"),
     )
@@ -152,9 +187,10 @@ def _image_fields(role_key: str) -> tuple[ConfigField, ...]:
     """某职业的图像生成配置（本地/云端等价）。键名规则同 `_llm_fields`。"""
     return (
         ConfigField(f"image_provider_{role_key}", "图片模型来源", "select", "role",
-                    ("(自动)", "local", "dashscope", "replicate", "minimax"),
-                    help="local=本机零成本推理"),
-        ConfigField(f"image_model_{role_key}", "模型", "text", "role"),
+                    _provider_options("image_gen"),
+                    help="local=本机零成本推理；其余为云端"),
+        ConfigField(f"image_model_{role_key}", "模型", "text", "role",
+                    help="留空则用该提供者的默认模型"),
         ConfigField(f"image_api_key_{role_key}", "API Key", "password", "role", secret=True),
     )
 

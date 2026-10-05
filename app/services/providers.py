@@ -176,25 +176,100 @@ RESOLUTION_BY_PROVIDER: dict[str, tuple[str, ...]] = {
 
 PROVIDERS: tuple[ProviderSpec, ...] = (
     # ================= 文字大模型（API 与本地等价可选）=================
+    #
+    # 模型名于 2026-10 逐家核对。**证据分两档**，照实标注：
+    #
+    #   A 档：直接读到官方文档原文 —— DeepSeek / 智谱 / 千问 / Kimi / 豆包 / 文心
+    #   B 档：官网在本机网络下不可达（Cloudflare 403 / 区域封锁 / 超时），
+    #         改用**替代的官方来源**交叉验证 —— OpenAI / Claude / Gemini
+    #         （OpenAI 官方 OpenAPI spec、Microsoft Foundry 与 AWS Bedrock
+    #          官方模型卡、Google 官方 gemini-skills 仓库）
+    #
+    # ⚠️ 旧默认值都是**已下线或即将下线**的（gpt-4o-mini / claude-3-5-sonnet-latest /
+    #    gemini-1.5-pro / moonshot-v1-8k / doubao-pro-32k / ernie-4.0-8k），
+    #    照旧填会直接报错。
     ProviderSpec("deepseek", "DeepSeek", "llm", "cn_cloud",
-                 default_model="deepseek-v4-flash", note="默认供应商，OpenAI 兼容"),
-    ProviderSpec("zhipu", "智谱 GLM", "llm", "cn_cloud", default_model="glm-4"),
-    ProviderSpec("qwen", "阿里通义千问", "llm", "cn_cloud", default_model="qwen-plus"),
-    ProviderSpec("moonshot", "月之暗面 Kimi", "llm", "cn_cloud", default_model="moonshot-v1-8k"),
-    ProviderSpec("doubao", "字节豆包（火山方舟）", "llm", "cn_cloud", default_model="doubao-pro-32k"),
-    ProviderSpec("ernie", "百度文心（千帆）", "llm", "cn_cloud", default_model="ernie-4.0-8k"),
+                 default_model="deepseek-flash",
+                 known_models=("deepseek-flash", "deepseek-v4-pro"),
+                 note="默认供应商，OpenAI 兼容。"
+                      "https://api-docs.deepseek.com/quick_start/pricing "
+                      "（官方原文：deepseek-v4-flash 等 legacy names 已 retired）"),
+    ProviderSpec("zhipu", "智谱 GLM", "llm", "cn_cloud",
+                 default_model="glm-5.3",
+                 known_models=("glm-5.3", "glm-5.3-flash", "glm-5.3-flashx", "glm-5.2"),
+                 note="https://docs.bigmodel.cn/cn/guide/start/model-overview"),
+    ProviderSpec("qwen", "阿里通义千问", "llm", "cn_cloud",
+                 default_model="qwen3.7-plus",
+                 known_models=("qwen3.8-max", "qwen3.7-plus", "qwen3.8-flash", "qwen3.7-flash"),
+                 note="官方明确推荐 qwen3.7-plus；qwen-plus/max 等为旧版。"
+                      "https://help.aliyun.com/zh/model-studio/text-generation-model"),
+    ProviderSpec("moonshot", "月之暗面 Kimi", "llm", "cn_cloud",
+                 default_model="kimi-k3",
+                 known_models=("kimi-k3", "kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k2.6"),
+                 note="moonshot-v1 全系列与 kimi-k2 已下线。"
+                      "https://platform.kimi.com/docs/models"),
+    ProviderSpec("doubao", "字节豆包（火山方舟）", "llm", "cn_cloud",
+                 default_model="doubao-seed-evolving",
+                 known_models=("doubao-seed-evolving", "doubao-seed-2-1-pro-260915",
+                               "doubao-seed-2-1-lite-260915", "doubao-seed-2-1-turbo-260628"),
+                 note="doubao-pro-32k 等旧名已不在模型列表。"
+                      "https://docs.volcengine.com/docs/ark/model-list"),
+    ProviderSpec("ernie", "百度文心（千帆）", "llm", "cn_cloud",
+                 default_model="ernie-5.1",
+                 known_models=("ernie-5.1", "ernie-5.0", "ernie-5.0-thinking-latest",
+                               "ernie-4.5-turbo-128k"),
+                 note="https://cloud.baidu.com/doc/qianfan/s/rmh4stp0j"),
+    # ---- 下面三家：官网在本机网络下不可达，证据来自替代的官方来源（见上）----
     ProviderSpec("openai", "OpenAI", "llm", "overseas_cloud",
-                 default_model="gpt-4o-mini", needs_proxy=True),
+                 default_model="gpt-6.1-sol", needs_proxy=True,
+                 known_models=("gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna",
+                               "gpt-5.6-sol", "gpt-5.5"),
+                 note="⚠️ 官网不可达，模型名经 OpenAI 官方 OpenAPI spec + "
+                      "Microsoft Foundry / AWS Bedrock 官方文档交叉验证；"
+                      "gpt-6.1-sol 作为默认是**推断**（未见官方『默认』声明）"),
     ProviderSpec("claude", "Anthropic Claude", "llm", "overseas_cloud",
-                 default_model="claude-3-5-sonnet-latest", needs_proxy=True),
+                 default_model="claude-sonnet-5-5", needs_proxy=True,
+                 known_models=("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"),
+                 note="⚠️ 官网对本区域封锁；模型 ID 经 Microsoft Foundry + "
+                      "AWS Bedrock 模型卡 + 官方 SDK 三处交叉验证。"
+                      "是否存在 -latest 别名**未能验证**"),
     ProviderSpec("gemini", "Google Gemini", "llm", "overseas_cloud",
-                 default_model="gemini-1.5-pro", needs_proxy=True),
+                 default_model="gemini-3.8-flash", needs_proxy=True,
+                 known_models=("gemini-3.8-flash", "gemini-3.1-pro-preview",
+                               "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"),
+                 note="⚠️ Google 全域不可达；证据来自官方 gemini-skills 仓库的 "
+                      "『Current Models』。非 preview 的 gemini-3.1-pro "
+                      "是否存在**未能验证**"),
     ProviderSpec("ollama", "本地 Ollama", "llm", "local",
                  default_model="qwen2.5", needs_api_key=False,
                  note="本地推理，零成本；需本机已启动 ollama"),
     ProviderSpec("vllm", "本地 vLLM", "llm", "local",
                  default_model="Qwen/Qwen2.5-7B-Instruct", needs_api_key=False,
                  note="本地推理，零成本；需本机已启动 vLLM"),
+    # ---- 聚合网关：一个 key 通多家模型（OpenAI 兼容）----
+    #
+    # 为什么单列这几家：它们不是模型厂，而是**路由器**——用同一个 OpenAI 兼容
+    # 端点去调很多家的模型（OpenRouter 甚至能调 Claude/Gemini）。
+    # 对本项目这种"想都试一遍再决定"的场景最省事：换模型不用换 key。
+    #
+    # ⚠️ 它们的 base_url 由 `llm._PRESETS` 提供（与上面各厂同一机制），
+    #    key 用**共同的** `llm_api_key`——换网关时只需改 key 与 base_url。
+    ProviderSpec("openrouter", "OpenRouter（聚合 300+ 模型）", "llm", "gateway",
+                 default_model="", needs_proxy=True,
+                 note="一个 key 调多家（含 Claude / Gemini）；模型名形如 anthropic/claude-…"),
+    ProviderSpec("groq", "Groq（超快推理）", "llm", "gateway",
+                 default_model="", needs_proxy=True,
+                 note="主打低延迟；跑开源权重模型"),
+    ProviderSpec("together", "Together AI", "llm", "gateway",
+                 default_model="", needs_proxy=True, note="开源权重模型托管"),
+    ProviderSpec("fireworks", "Fireworks AI", "llm", "gateway",
+                 default_model="", needs_proxy=True, note="开源权重模型托管"),
+    ProviderSpec("deepinfra", "DeepInfra", "llm", "gateway",
+                 default_model="", needs_proxy=True, note="便宜的开源权重推理"),
+    ProviderSpec("cerebras", "Cerebras（极速）", "llm", "gateway",
+                 default_model="", needs_proxy=True, note="晶圆级芯片，吞吐极高"),
+    ProviderSpec("siliconflow", "硅基流动 SiliconFlow", "llm", "gateway",
+                 default_model="", note="国内聚合，一个 key 调多家开源模型"),
     ProviderSpec("custom", "自定义（OpenAI 兼容）", "llm", "gateway", note="自行填写 base_url 与模型"),
 
     # ================= 文生图 =================
