@@ -77,9 +77,24 @@ class Settings(BaseSettings):
     # 火山方舟（Seedance）。端点与模型名请按方舟控制台核对。
     ark_api_key: str = ""
     ark_base_url: str = "https://ark.cn-beijing.volces.com"
-    # ffmpeg 可执行文件路径。空 = 自动查找（环境变量 LITTLE_CREW_FFMPEG → PATH）。
-    # 用途：把预演导出的帧序列编码成 mp4（白模参考视频）。
+    # ffmpeg 可执行文件路径。空 = 自动查找：
+    #   设置项 → LITTLE_CREW_FFMPEG → PATH → 外部工具目录的 bin\ffmpeg.exe。
+    # 用途：把预演导出的帧序列编码成 mp4（白模参考视频）、
+    #       图片拼成视频、把配音混流进视频。
     ffmpeg_path: str = ""
+    #: **外部工具与模型目录**（默认与 `local-gen` 同级）。
+    #:
+    #: 为什么要有这个概念：模型权重动辄几 GB，装进项目目录会污染仓库、
+    #: 也让项目无法搬迁。本项目遵循一条边界：
+    #:
+    #:     <项目目录>             只放代码
+    #:     D:\AI\little-crew-tools\  放工具（edge-tts / ffmpeg）与模型缓存
+    #:     D:\AI\local-gen\          本地推理服务（出图 / 出视频）
+    #:
+    #: 里面放 `venv\`（边缘 Python 依赖，用**子进程**调用，不设 PYTHONPATH
+    #: 以免与项目 venv 的版本互相污染）、`bin\ffmpeg.exe`、`models\hf\`。
+    #: 目录不存在时**不报错**，只是对应本地能力不可用。
+    little_crew_tools: str = ""
     # 每段时长（秒）。可选档位 5/7/9/12/15，默认 7；
     # **实际上限由 provider 决定**（本地 8GB 只到 9，超过 10s 必 OOM），
     # 详见 app/services/providers.py 的 allowed_durations / resolve_duration。

@@ -1,3 +1,5 @@
+edge-tts==7.2.8
+imageio-ffmpeg==0.6.0
 ﻿# ============================================================
 # 小剧组 (Little Crew) — 环境锁定文件 (pip freeze)
 # 由 .venv 生成；含运行依赖 + CI 用 dev 工具(bandit/pip-audit/pytest)。

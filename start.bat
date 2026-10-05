@@ -15,6 +15,30 @@ set "PYTHONIOENCODING=utf-8"
 set "WEB=%~dp0web"
 set "URL=http://127.0.0.1:5183"
 
+rem ============================================================
+rem  外部目录边界：**本项目目录里只放代码，不放模型与工具**
+rem
+rem  模型权重动辄几 GB，装进项目会污染仓库、也让项目无法搬迁。
+rem  所以这些一律放外面（与 D:\AI\local-gen 同级或它自己的目录）：
+rem
+rem    LITTLE_CREW_TOOLS  edge-tts（配音）+ ffmpeg.exe（拼视频/混流）
+rem    HF_HOME            HuggingFace 模型缓存（角色一致性用的
+rem                       sentence-transformers 会往这里下载）
+rem
+rem  下面两行是**兜底默认值**：若外部目录不存在也不报错，
+rem  只是相应的本地能力不可用（界面会标注"本机未就绪"）。
+rem  想用别的位置，改成自己的路径即可。
+rem ============================================================
+if not defined LITTLE_CREW_TOOLS set "LITTLE_CREW_TOOLS=D:\AI\little-crew-tools"
+if not defined HF_HOME set "HF_HOME=D:\AI\little-crew-tools\models\hf"
+
+rem 没装外部工具时不拦启动 —— 只是少了本地配音/拼接能力。
+rem 拦下来会让"只想用云端"的用户也启动不了，那不合理。
+if not exist "%LITTLE_CREW_TOOLS%" (
+  echo [i] 未找到外部工具目录 %LITTLE_CREW_TOOLS%
+  echo     本地配音 / 视频拼接将不可用（云端功能不受影响）。
+)
+
 if not exist "%PYTHON%" (
   echo [ERROR] .venv not found. Please create it first:
   echo         python -m venv .venv ^&^& .venv\Scripts\activate ^&^& pip install -r requirements.txt

@@ -244,23 +244,20 @@ def test_no_ffmpeg_error_lists_actionable_steps(monkeypatch, tmp_path):
 
     monkeypatch.delenv("LITTLE_CREW_FFMPEG", raising=False)
     monkeypatch.setattr(whitebox_video.shutil, "which", lambda _: None)
-    # 让内置兜底也不可用
-    import builtins
-
-    real_import = builtins.__import__
-
-    def fake_import(name, *a, **kw):
-        if name == "imageio_ffmpeg":
-            raise ImportError("simulated")
-        return real_import(name, *a, **kw)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
+    # 外部工具目录也当成"没配置"（否则本机恰好装了就测不到报错分支）
+    monkeypatch.setattr(whitebox_video, "tools_bin_ffmpeg", lambda: None)
     with pytest.raises(whitebox_video.FFmpegNotFound) as ei:
         whitebox_video.find_ffmpeg("")
     msg = str(ei.value)
-    assert "imageio-ffmpeg" in msg
+    # 错误信息必须给出**可执行的修复步骤**，而不是只说"未安装"。
+    # 兜底方案从 `pip install imageio-ffmpeg`（装在项目里）改成了
+    # `scripts\setup_tools.ps1`（装到**项目外面**）—— 因为项目目录
+    # 只放代码，84 MB 的 ffmpeg 不该进仓库。
+    assert "setup_tools.ps1" in msg
     assert "ffmpeg_path" in msg
     assert "LITTLE_CREW_FFMPEG" in msg
+    # 报错里要列出**试过哪些地方**，否则用户不知道该往哪查
+    assert "已尝试" in msg
 
 
 # ------------------------------------------------------------------

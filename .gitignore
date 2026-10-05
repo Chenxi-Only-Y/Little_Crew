@@ -64,3 +64,18 @@ web/public/hero-bg.jpg
 # 子任务抓取的网页 / 文档（_research/ 与 tmpres/），不入库
 _research/
 tmpres/
+
+# ---- 模型 / 工具类大文件：绝不允许进项目 ----
+# 本项目边界：项目目录只放代码。模型权重与工具放外部目录
+# （D:\AI\little-crew-tools\，见 scripts/setup_tools.ps1 与 README）。
+# 下面这些是"万一有人手滑"的兜底 —— 不是计划要忽略，而是**不该出现**。
+*.gguf
+*.safetensors
+*.onnx
+*.pth
+*.ckpt
+*.pt
+models/
+hf_cache/
+.cache/
+little-crew-tools/

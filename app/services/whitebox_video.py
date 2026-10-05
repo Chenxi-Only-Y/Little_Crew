@@ -37,6 +37,8 @@ import subprocess
 import tempfile
 from typing import Optional
 
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
 
 #: 帧序列编码成 mp4 的目标规格。
@@ -108,27 +110,54 @@ def find_ffmpeg(explicit: str = "") -> str:
     if which:
         return which
 
-    # 内置兜底：`imageio-ffmpeg` 自带一份静态 ffmpeg（含 libx264 与 concat，
-    # 正好是编码 mp4 所需）。装了它就不必再单独配路径。
-    try:
-        import imageio_ffmpeg  # type: ignore
-
-        exe = imageio_ffmpeg.get_ffmpeg_exe()
-        tried.append("imageio-ffmpeg 自带")
-        if exe and pathlib.Path(exe).is_file():
-            return str(exe)
-    except Exception:  # noqa: BLE001  没装这个包就走报错分支
-        tried.append("imageio-ffmpeg 自带（未安装）")
+    # 外部工具目录的 `bin\ffmpeg.exe`。
+    #
+    # 为什么不再用 `imageio-ffmpeg` 兜底：那是**装在项目 venv 里**的包，
+    # 而 84 MB 里真正有用的只有 `ffmpeg.exe` 一个文件。用户明确要求
+    # "本地模型不污染本项目" —— 所以把那个 exe 取出来放到外部目录，
+    # 项目里只留"去哪儿找"的逻辑，不留二进制。
+    ext = tools_bin_ffmpeg()
+    tried.append(f"外部工具目录 {ext or '（未配置）'}")
+    if ext:
+        return ext
 
     raise FFmpegNotFound(
         "找不到 ffmpeg，无法把帧序列编码成 mp4。\n"
         "已尝试：" + "、".join(tried) + "\n"
         "四种解法任选其一：\n"
-        "  1) `pip install imageio-ffmpeg`（推荐：装在项目环境里，开箱即用）；\n"
+        "  1) 运行 `scripts\\setup_tools.ps1` 把 ffmpeg 装到外部工具目录（推荐）；\n"
         "  2) 在「设置」里填 `ffmpeg_path`，指向任意一份 ffmpeg 可执行文件；\n"
         "  3) 设环境变量 `LITTLE_CREW_FFMPEG` 指向它；\n"
         "  4) 把 ffmpeg 放进 PATH（Windows 可用 `choco install ffmpeg`，需管理员）。"
     )
+
+
+def tools_dir() -> pathlib.Path | None:
+    """外部工具与模型目录（`LITTLE_CREW_TOOLS`），不存在时返回 None。
+
+    **不报错**：没有它只是少了本地配音/拼接能力，云端功能不受影响。
+    启动时就因为缺一个可选目录而失败，对"只想用云端"的用户不合理。
+    """
+    raw = (settings.little_crew_tools or os.environ.get("LITTLE_CREW_TOOLS", "")).strip()
+    if not raw:
+        return None
+    p = pathlib.Path(raw)
+    return p if p.is_dir() else None
+
+
+def tools_bin_ffmpeg() -> str | None:
+    """外部工具目录里的 ffmpeg 可执行文件（找不到返回 None）。"""
+    d = tools_dir()
+    if d is None:
+        return None
+    bin_dir = d / "bin"
+    if not bin_dir.is_dir():
+        return None
+    # 不写死 `ffmpeg.exe`：发行包常带版本后缀，死名字会找不到
+    for q in sorted(bin_dir.iterdir()):
+        if q.is_file() and q.stem.lower().startswith("ffmpeg") and q.suffix.lower() in (".exe", ""):
+            return str(q)
+    return None
 
 
 def encode_frames_to_mp4(

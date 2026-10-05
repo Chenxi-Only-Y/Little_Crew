@@ -33,6 +33,9 @@ Pillow>=10.4.0               # 图片处理(占位图生成/校验)
 # 使编码**零配置可用**；用户仍可用设置项 `ffmpeg_path` 或
 # 环境变量 `LITTLE_CREW_FFMPEG` 覆盖成自己的版本。
 imageio-ffmpeg>=0.5.0
+# 配音（TTS）。Edge TTS 免费、无需 Key，是"配音"的免费兜底。
+# 纯 Python 包（约 0.1 MB），走微软的公开朗读服务；离线场景请改用其他提供者。
+edge-tts>=7.0.0
 
 # ---- 角色一致性（方案B）：图像特征提取 / 相似度 / IP-Adapter ----
 sentence-transformers>=2.2.0  # 图像特征提取和相似度计算
