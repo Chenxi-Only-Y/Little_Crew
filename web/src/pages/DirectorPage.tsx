@@ -13,6 +13,7 @@ import Inspector from '../canvas/Inspector';
 import RunBar, { ThinkingPanel } from '../canvas/RunBar';
 import ReviewPanel from '../canvas/ReviewPanel';
 import ProjectBar from '../canvas/ProjectBar';
+import ArchitectDrawer from '../canvas/ArchitectDrawer';
 import { useCanvas } from '../store/canvas';
 import { specOf, validateTopology } from '../domain/validate';
 
@@ -23,6 +24,7 @@ export default function DirectorPage() {
   const error = useCanvas((s) => s.error);
   const layoutFromRegistry = useCanvas((s) => s.layoutFromRegistry);
   const [showIssues, setShowIssues] = useState(false);
+  const [archOpen, setArchOpen] = useState(false);
 
   /** 画布可执行性：与后端 `/api/registry/validate` 同一套规则 */
   const validation = useMemo(() => {
@@ -61,6 +63,15 @@ export default function DirectorPage() {
         >
           按执行顺序铺开
         </button>
+        {/* 工作流架构师入口。放在这里而不是独立页面：文档里对它的定位就是
+            "导演台画布的后端基座"（见 docs/recon/05-roles-v2.md）。 */}
+        <button
+          className="btn ghost"
+          onClick={() => setArchOpen(true)}
+          title="让 AI 帮你改工作流：出提案 → 你审核 → 才生效"
+        >
+          工作流架构师
+        </button>
       </div>
 
       {showIssues && validation && !validation.ok && (
@@ -87,6 +98,7 @@ export default function DirectorPage() {
       <ReviewPanel />
       <ProjectBar />
       <ThinkingPanel />
+      <ArchitectDrawer open={archOpen} onClose={() => setArchOpen(false)} />
     </ReactFlowProvider>
   );
 }
