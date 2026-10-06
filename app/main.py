@@ -952,6 +952,68 @@ async def previs_plan(request: Request):
 # ------------------------------------------------------------------
 # 白模：由 LLM 生成规格（JSON），再由前端渲染成体块
 # ------------------------------------------------------------------
+@app.post("/api/previs/scene")
+async def generate_previs_scene_ep(payload: dict, request: Request):
+    """生成**预演初稿**（3D 白模场景 JSON）—— 白模预演师的起手式。
+
+    用户的要求："把「预演」构成「白模预演师」一部分，目前的预演相当于人工修改的"
+    + "AI 生成初稿，人工微调"。
+
+    所以这里出的是**初稿**，用户在 `#/previs` 编辑器里微调。
+
+    载荷：
+        storyboard      必填，分镜（list 或 dict）
+        sceneWhitebox   可选，场景白模
+        characters      可选，角色档案（`character_profiles`）
+        note            可选，额外要求（"镜头再低一点"之类）
+        sessionId       可选，从某个会话的状态里取 storyboard / 角色（省得前端自己传）
+
+    返回 `{status:"ok", scene, notes, attempts}` 或 400 + 可读原因。
+    结构与前端 `web/src/previs/types.ts` 的 `PrevisScene` 一致。
+    """
+    uid = _auth_user(request)
+    body = payload or {}
+
+    storyboard = body.get("storyboard")
+    scene_whitebox = body.get("sceneWhitebox")
+    characters = body.get("characters")
+
+    # 允许只给 sessionId：从该会话已产出的状态里取（前端更省事，也不用重复传大对象）
+    sid = str(body.get("sessionId") or "").strip()
+    if sid and (not storyboard or not characters):
+        row = _require_owner(sid, request)
+        st = (row.get("payload") or {}) if isinstance(row, dict) else {}
+        storyboard = storyboard or st.get("storyboard") or []
+        characters = characters or st.get("character_profiles") or None
+        scene_whitebox = scene_whitebox or st.get("scene_whitebox") or None
+
+    if not storyboard:
+        raise HTTPException(
+            status_code=400,
+            detail="缺少 storyboard（分镜）—— 先跑出分镜，或直接传一份分镜进来")
+
+    from app.services import runtime_settings as rs
+
+    rs.set_user(uid)
+    try:
+        from app.services.previs_prompt import generate_scene
+
+        res = generate_scene(
+            storyboard,
+            scene_whitebox=scene_whitebox,
+            characters=characters,
+            note=str(body.get("note") or ""),
+        )
+    finally:
+        rs.set_user(None)
+
+    if res.get("status") != "ok":
+        raise HTTPException(status_code=400,
+                            detail=str(res.get("message") or "生成失败"))
+    return {"status": "ok", "scene": res["scene"], "notes": res.get("notes") or [],
+            "attempts": res.get("attempts", 1)}
+
+
 @app.post("/api/previs/white-model")
 def generate_white_model(payload: dict, request: Request):
     """按角色描述生成一份**白模规格**（JSON）。

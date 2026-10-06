@@ -1,10 +1,16 @@
-"""重构安全网：**「读规格」搭出来的图，必须与重构前的硬编码拓扑完全等价**。
+"""图规格的测试：**期望拓扑逐条写死**，与实际搭出来的图对比。
 
 `build_graph()` 从"23 个 add_node + 41 个 add_edge 硬编码"改成"读 graph_spec"
 之后，最大的风险是**搬数据时搬错一条边** —— 那会静默改变执行路径
-（少一条出边 = 执行卡死；多一条 = 走错分支）。
+（少一条出边 = 执行卡死；多一条 = 走错分支）。这个文件就是那层安全网。
 
-所以这里把重构前的拓扑**逐条抄成期望值**，与搭出来的图对比。
+⚠️ **它是有意会红的**：任何对工作流的有意改动都必须同步更新下面的期望值。
+已经同步过一次 —— 把「白模预演师」正式接进执行链（用户要求
+"把「预演」构成「白模预演师」一部分"）：
+
+    节点 +1（previs_artist）
+    边  +1（previs_artist → rhythm_director）
+    review_storyboard 的 continue：rhythm_director → previs_artist
 
 ⚠️ 踩过的坑（写在测试里，免得下次又白查）：
     · `StateGraph.edges` 是 **`{(src, dst)}` 元组集合**，不是带
@@ -15,13 +21,13 @@
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# 重构前的硬编码拓扑（git 历史逐行抄来）
+# 期望拓扑（基线：重构前那份硬编码图；此后每处有意改动都在此同步）
 # ---------------------------------------------------------------------------
 EXPECTED_NODES = {
     "story_planner", "screenwriter", "critics", "review_script",
     "art_brief_parser", "character_designer", "scene_designer",
     "consistency_auditor", "review_assets", "storyboarder",
-    "review_storyboard", "rhythm_director", "continuity_checker",
+    "review_storyboard", "previs_artist", "rhythm_director", "continuity_checker",
     "prompt_compiler", "image_generator", "quality_assessor",
     "review_images", "review_critics", "review_rhythm",
     "review_continuity", "review_prompts", "review_quality", "aggregator",
@@ -38,6 +44,8 @@ EXPECTED_EDGES = {
     ("scene_designer", "consistency_auditor"),
     ("consistency_auditor", "review_assets"),
     ("storyboarder", "review_storyboard"),
+    # 白模预演师接线后新增
+    ("previs_artist", "rhythm_director"),
     ("rhythm_director", "review_rhythm"),
     ("continuity_checker", "review_continuity"),
     ("prompt_compiler", "review_prompts"),
@@ -51,7 +59,8 @@ EXPECTED_CONDITIONAL = {
                       "back": "story_planner"},
     "review_assets": {"continue": "storyboarder", "redo": "character_designer",
                       "back": "screenwriter"},
-    "review_storyboard": {"continue": "rhythm_director", "redo": "storyboarder",
+    # 分镜确认后**先进预演师**（出初稿），再进节奏
+    "review_storyboard": {"continue": "previs_artist", "redo": "storyboarder",
                           "back": "character_designer"},
     "review_rhythm": {"continue": "continuity_checker", "redo": "rhythm_director"},
     "review_continuity": {"continue": "prompt_compiler", "redo": "continuity_checker"},
@@ -63,7 +72,7 @@ EXPECTED_CONDITIONAL = {
 }
 
 
-def test_graph_matches_pre_refactor_topology():
+def test_graph_matches_expected_topology():
     """节点 + 普通边 + 条件边，全部逐条比对。"""
     from app.workflows.main_workflow import build_graph
 

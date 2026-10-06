@@ -253,9 +253,17 @@ WORKFLOW_NODE_BY_KEY: dict[str, str] = {
     "technical_director": "prompt_compiler",  # 阶段名 director
     "photographer": "image_generator",        # 阶段名 photographer
     "editor": "aggregator",                   # 阶段名 aggregator
-    # ---- v2 新角色：尚未进入工作流图（空 = 无对应节点） ----
+    # ---- v2 新角色 ----
+    # `previs_artist` 已**接进执行图**（用户要求"把「预演」构成「白模预演师」
+    # 一部分"）：它在分镜确认之后跑，产出 3D 预演**初稿**（`node_previs_artist`），
+    # 人工再到 `#/previs` 编辑器微调。
+    #
+    # 其余三个仍是"声明了但不在图里"：
+    #   · workflow_architect —— 它是**工具**（导演台的架构师抽屉），本就不该是执行步骤
+    #   · voice_director     —— TTS 有实现，但没接进流程
+    #   · distributor        —— 有实现类，但没接进流程
     "workflow_architect": "",
-    "previs_artist": "",
+    "previs_artist": "previs_artist",
     "voice_director": "",
     "distributor": "",
 }

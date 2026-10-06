@@ -124,6 +124,23 @@ class CrewState(TypedDict, total=False):
     # 默认：{}
     character_consistency_report: dict
 
+    # ------------------- 白模预演（3D previs） -------------------
+    # **AI 生成的预演初稿**（白模预演师的产出）。
+    #
+    # 为什么要它：视频模型会**自己编空间**（漂移/瞬移/比例失控），
+    # 所以要把"谁在哪、镜头怎么走"先摆出来当结构输入。
+    #
+    # 流程：本字段（初稿）→ 预演编辑器 `#/previs` **人工微调** → 逐帧导出
+    #       → `POST /api/video/whitebox` 编码 mp4 → 当参考视频。
+    #
+    # 结构与前端 `web/src/previs/types.ts` 的 `PrevisScene` 一致：
+    #   {"ground": [w, d], "actors": [...], "props": [...], "shots": [...]}
+    #
+    # 格式：{"scene": PrevisScene, "notes": [自动纠正说明], "attempts": 1|2,
+    #        "generated_at": float, "error": ""}
+    # 默认：{}
+    previs: dict
+
     # 质检总监(质量评估)汇总报告，供独立「质检总监」职业页展示。
     # 格式：{"overall_score": float, "shots": [{shot_id, quality, consistency, status, level}],
     #       "lowest_shots": [...], "failed_shots": [...], "generated_at": float}

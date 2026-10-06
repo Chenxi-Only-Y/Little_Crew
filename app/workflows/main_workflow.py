@@ -160,6 +160,18 @@ def _stage_thinking(stage_name: str, out: dict) -> str:
     if stage_name == "quality_assessor":
         q = out.get("quality_report") or {}
         return f"质检画面：整体评分 {q.get('overall_score','待定')}，标出最低分镜头与需重拍项。"
+    if stage_name == "previs_artist":
+        pv = out.get("previs") or {}
+        scene = pv.get("scene") or {}
+        if pv.get("error"):
+            return (f"预演初稿生成失败（{pv['error']}）。"
+                    f"可以在预演编辑器里从空白开始手动搭。")
+        if pv.get("skipped"):
+            return f"跳过预演：{pv['skipped']}。"
+        return (f"白模预演：出了 {len(scene.get('shots') or [])} 个镜头的初稿"
+                f"（{len(scene.get('actors') or [])} 个人物、"
+                f"{len(scene.get('props') or [])} 个道具）；"
+                f"走位与机位可在预演编辑器里微调。")
     if stage_name == "aggregator":
         return "汇总全部产物，打包成可展示的结果。"
     return f"完成「{_STAGE_LABEL.get(stage_name, stage_name)}」这一步。"
@@ -637,6 +649,25 @@ BUSINESS_NODE_FNS_BY_NAME: dict[str, object] = {}
 ROUTERS_BY_NAME: dict[str, object] = {}
 
 
+def node_previs_artist(state: CrewState) -> dict:
+    """白模预演师：生成**3D 预演初稿**（AI），供预演编辑器人工微调。
+
+    用户要求："把「预演」构成「白模预演师」一部分，目前的预演相当于人工修改的"
+    + "AI 生成初稿，人工微调"。
+
+    所以这一步只出**初稿**；微调发生在 `#/previs` 编辑器里。
+    生成失败**不抛异常**（预演是可选的结构输入），只记 `state["previs"]["error"]`。
+
+    思考记录由 `_bind_context` 那层的 `_attach_thinking` 统一生成
+    （见 `_stage_thinking` 里 `previs_artist` 那一支）——
+    所以这里**只返回产物**，不要自己拼 thinking_log（我第一版就编了个
+    不存在的 `_append_thinking`，白查一轮）。
+    """
+    from app.services.previs_artist import generate_previs_scene
+
+    return generate_previs_scene(state)
+
+
 def _register_node_fns() -> None:
     """把"零件表"填好（模块导入末尾调用一次）。
 
@@ -667,7 +698,7 @@ def _register_node_fns() -> None:
                  "character_designer", "scene_designer", "consistency_auditor",
                  "storyboarder", "rhythm_director", "continuity_checker",
                  "prompt_compiler", "image_generator", "quality_assessor",
-                 "aggregator"):
+                 "previs_artist", "aggregator"):
         # ⚠️ 键名是 **`node_xxx`**（带前缀）—— 因为 `build_graph` 是按
         # `spec["nodes"][i].fn`（默认 `f"node_{key}"`）查的。
         # 我第一版存的是不带前缀的 `name`，于是查 `node_story_planner` 查不到，
@@ -692,6 +723,8 @@ def _register_node_fns() -> None:
 # 先跑、`build_graph()` 去查零件表时它还是空的，报
 # "引用了未实现的函数 node_story_planner"。位置本身就是个坑。
 _register_node_fns()
+
+
 
 
 

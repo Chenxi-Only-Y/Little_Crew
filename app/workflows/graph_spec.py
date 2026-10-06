@@ -44,7 +44,11 @@ BUSINESS_NODE_FNS: tuple[str, ...] = (
     "story_planner", "screenwriter", "critics", "art_brief_parser",
     "character_designer", "scene_designer", "consistency_auditor",
     "storyboarder", "rhythm_director", "continuity_checker",
-    "prompt_compiler", "image_generator", "quality_assessor", "aggregator",
+    "prompt_compiler", "image_generator", "quality_assessor",
+    # 白模预演师：出 3D 预演**初稿**（人工在 #/previs 微调）。
+    # 加进这里之后，"预演"才算真的属于这个环节（原先只是注册表声明）。
+    "previs_artist",
+    "aggregator",
 )
 
 #: 人工确认点节点：各自一个独立函数（复用 `_review`）
@@ -91,6 +95,11 @@ def default_spec() -> dict:
             {"key": "scene_designer", "kind": "business"},
             {"key": "consistency_auditor", "kind": "business"},
             {"key": "storyboarder", "kind": "business"},
+            # 白模预演师：注册表里它本来就声明在第 11 步、能力 render_3d、
+            # 产出 previs —— 但 `workflow_node` 为空，**从没进过执行图**。
+            # 用户要求"把「预演」构成「白模预演师」一部分"，故正式接入：
+            # 它在分镜确认之后出**预演初稿**，人工再到 #/previs 微调。
+            {"key": "previs_artist", "kind": "business"},
             {"key": "rhythm_director", "kind": "business"},
             {"key": "continuity_checker", "kind": "business"},
             {"key": "prompt_compiler", "kind": "business"},
@@ -125,6 +134,8 @@ def default_spec() -> dict:
             {"from": "scene_designer", "to": "consistency_auditor"},
             {"from": "consistency_auditor", "to": "review_assets"},
             {"from": "storyboarder", "to": "review_storyboard"},
+            # 分镜确认 → **先出预演初稿** → 再进节奏/连贯性
+            {"from": "previs_artist", "to": "rhythm_director"},
             {"from": "rhythm_director", "to": "review_rhythm"},
             {"from": "continuity_checker", "to": "review_continuity"},
             {"from": "prompt_compiler", "to": "review_prompts"},
@@ -142,7 +153,7 @@ def default_spec() -> dict:
              "branches": {"continue": "storyboarder",
                           "redo": "character_designer", "back": "screenwriter"}},
             {"from": "review_storyboard", "router": "review_storyboard",
-             "branches": {"continue": "rhythm_director",
+             "branches": {"continue": "previs_artist",
                           "redo": "storyboarder", "back": "character_designer"}},
             {"from": "review_rhythm", "router": "simple_review",
              "branches": {"continue": "continuity_checker", "redo": "rhythm_director"}},
