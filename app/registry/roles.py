@@ -44,7 +44,6 @@ ARTIFACTS: tuple[Artifact, ...] = (
     Artifact("art_brief_plan", "美术设定包解析结果", "json", "art_brief_plan"),
     Artifact("character_profiles", "角色外貌锚定（角色圣经）", "json", "character_profiles"),
     Artifact("character_reference_images", "角色三视图", "json", "character_reference_images"),
-    Artifact("character_lora", "角色 LoRA 权重", "model"),
     Artifact("scene_design_profiles", "场景锚定描述", "json", "scene_design_profiles"),
     Artifact("scene_reference_images", "场景概念图", "json", "scene_reference_images"),
     Artifact("scene_whitebox", "场景白模（2D）", "image"),
@@ -117,11 +116,6 @@ MODEL_MODE_FIELDS: dict[str, ConfigField] = {
         "video_provider_mode", "视频生成：云端 / 本地", "select", "global",
         ("unset", "cloud", "local"), default="unset",
         help="必选。云端默认 MiniMax（约 $0.01/秒）；本地 8GB 时长上限 10 秒",
-    ),
-    "lora_train": ConfigField(
-        "lora_train_provider_mode", "LoRA 训练：云端 / 本地", "select", "global",
-        ("unset", "cloud", "local"), default="unset",
-        help="必选。本地用你自己的显卡训练（不产生 API 费用，较慢）；云端按训练步数计费",
     ),
     "tts": ConfigField(
         "tts_provider_mode", "配音：云端 / 本地", "select", "global",
@@ -306,11 +300,10 @@ ROLES: tuple[Role, ...] = (
     Role(
         key="technical_director", label="技术指导", en="technical_director",
         dept="infra", real_job="技术指导",
-        duty="模型选型、LoRA 训练调优、视频生成参数优化",
+        duty="模型选型、视频生成参数优化",
         node="technical_director",
         panels=(
             Panel("technical_director:main", "模型与参数", "main", "technical_director"),
-            Panel("technical_director:training", "LoRA 训练", "training", "technical_director"),
         ),
         legacy_keys=("director",),
     ),
@@ -355,12 +348,11 @@ ROLES: tuple[Role, ...] = (
     Role(
         key="character_designer", label="角色设计师", en="character_designer",
         dept="assets", real_job="角色设计师",
-        duty="角色三视图、LoRA 训练、角色圣经",
+        duty="角色三视图、角色圣经",
         node="character_designer",
         panels=(
             Panel("character_designer:main", "角色与三视图", "main", "character_designer"),
             Panel("character_designer:gallery", "角色圣经", "gallery", "character_designer"),
-            Panel("character_designer:training", "角色 LoRA", "training", "character_designer"),
         ),
     ),
     Role(
@@ -478,7 +470,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     "technical_director": dict(
         consumes=("script", "storyboard"),
         produces=("control_inputs",),
-        capability=("llm", "lora_train"),
+        capability=("llm",),
         # 配置键用 **_config_namespace**（= 运行时实际读取的 role），不是节点 key。
         # 例：本节点叫 technical_director，但 prompt_refiner 调用 role="director"，
         # 故键是 llm_provider_director —— 见 CONFIG_NAMESPACE_BY_KEY 的说明。
@@ -519,22 +511,9 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     ),
     "character_designer": dict(
         consumes=("story_outline", "art_brief_plan"),
-        produces=("character_profiles", "character_reference_images", "character_lora"),
-        capability=("image_gen", "lora_train"),
-        # 两个模式字段放最前：图片生成 与 LoRA 训练**各自**先选云端/本地
-        config=(MODEL_MODE_FIELDS["image_gen"], MODEL_MODE_FIELDS["lora_train"])
-        + _image_fields("character_designer") + (
-            # LoRA 训练的具体提供者（模式已在上方选定，这里可覆盖）
-            ConfigField("lora_train_provider", "LoRA 训练来源（覆盖模式）", "select", "global",
-                        # 占位符：表示"不覆盖、跟随上面的模式"（界面显示「跟随模式」）
-                        ("(按模式)",),
-                        help="留空/按模式即用上方的模式默认；也可强制指定",
-                        default="", options_from="lora_train"),
-            ConfigField("lora_rank", "LoRA 秩", "number", "global", default=32,
-                        help="百炼要求 2 的倍数；越大拟合越强、越慢"),
-            ConfigField("lora_train_steps", "训练步数", "number", "global", default=800,
-                        help="百炼按步数计费，建议 ≥500 才收敛"),
-        ),
+        produces=("character_profiles", "character_reference_images"),
+        capability=("image_gen",),
+        config=(MODEL_MODE_FIELDS["image_gen"],) + _image_fields("character_designer"),
         agent_class="CharacterDesigner",
     ),
     "scene_designer": dict(

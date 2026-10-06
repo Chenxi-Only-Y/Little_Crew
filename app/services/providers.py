@@ -30,7 +30,7 @@ from typing import Literal
 # ------------------------------------------------------------------
 
 Capability = Literal[
-    "llm", "image_gen", "image_edit", "video_gen", "lora_train", "tts", "music", "render_2d",
+    "llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_2d",
 ]
 
 #: 提供者类别
@@ -438,19 +438,6 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
                  conditioning=("first_frame",),
                  note="图片幻灯片拼接；时长固定、无真实运镜（转场/字幕需自行实现）"),
 
-    # ================= LoRA / 自定义模型训练 =================
-    ProviderSpec("local", "本地 · DiffSynth", "lora_train", "local",
-                 default_model="diffsynth-qlora", needs_api_key=False, max_concurrency=1,
-                 known_models=("diffsynth-qlora",),
-                 note="peft + bitsandbytes 已就绪；只能训 Z-Image 底模；8GB 显存较慢"),
-    ProviderSpec("dashscope", "阿里百炼（SFT-LoRA 微调）", "lora_train", "cn_cloud",
-                 known_models=("wan2.7-image-pro", "qwen-image-2.0-pro"),
-                 note="按训练步数计费；**仅华北2(北京)地域**，须用该地域 API Key；"
-                      "训练产物绑定底模，只能在百炼推理"),
-    ProviderSpec("replicate", "Replicate LoRA 训练", "lora_train", "gateway",
-                 needs_proxy=True, known_models=("flux-lora", "sdxl-lora"),
-                 note="仅支持 Flux/SDXL 底模；⚠️ 训出的 LoRA 不能给 Z-Image 用"),
-
     # ================= 配音 / 音乐 =================
     ProviderSpec("edge", "本地 · 系统语音", "tts", "free",
                  needs_api_key=False, known_models=("edge-tts",),
@@ -638,7 +625,7 @@ def is_local_provider(capability: str, provider_key: str) -> bool:
 #: 提供者字段里表示"**不指定、跟随模式**"的占位值。
 #:
 #: 注册表里用过两种写法，含义**完全相同**：
-#:   · `(自动)`   —— LLM / 图像 / TTS / LoRA 的提供者字段
+#:   · `(自动)`   —— LLM / 图像 / TTS 的提供者字段
 #:   · `(按模式)` —— 视频的 `video_provider`
 #:
 #: ⚠️ 这必须是**唯一**的一份定义。原先 `resolve_provider` 用 `if v:`
@@ -827,7 +814,7 @@ def video_parameter_options() -> dict:
 #
 # 为什么不能有静默默认：
 #   1. 默认本地 → 用户没部署本地模型时会直接失败，且耗时长；
-#   2. 默认云端 → 用户没意识到会产生费用（LoRA 训练/视频按量计费金额可观）；
+#   2. 默认云端 → 用户没意识到会产生费用（视频按量计费金额可观）；
 #   3. 静默默认还会掩盖"其实没配"的事实，让问题在很晚才暴露。
 #
 # 因此：两个都没设时**明确报错**，由调用方转成可读提示，引导用户去选。
@@ -843,7 +830,6 @@ _MODE_DEFAULT: dict[str, dict[str, str]] = {
     "image_gen": {"cloud": "dashscope", "local": "local"},
     "image_edit": {"cloud": "dashscope", "local": "local"},
     "video_gen": {"cloud": "minimax", "local": "local"},
-    "lora_train": {"cloud": "dashscope", "local": "local"},
     "tts": {"cloud": "dashscope", "local": "edge"},
 }
 
@@ -854,7 +840,6 @@ MODE_KEY_BY_CAPABILITY: dict[str, str] = {
     "image_gen": "image_provider_mode",
     "image_edit": "image_provider_mode",          # 编辑与生成共用同一个模式
     "video_gen": "video_provider_mode",
-    "lora_train": "lora_train_provider_mode",
     "tts": "tts_provider_mode",
 }
 
@@ -864,7 +849,6 @@ PROVIDER_KEY_BY_CAPABILITY: dict[str, str] = {
     "image_gen": "image_provider",
     "image_edit": "image_provider",
     "video_gen": "video_provider",
-    "lora_train": "lora_train_provider",
     "tts": "tts_provider",
 }
 
@@ -876,13 +860,16 @@ MODE_LABELS: dict[str, str] = {
 
 #: 目前**真正被调用**的能力。
 #:
-#: ⚠️ 为什么需要这个集合：`MODE_KEY_BY_CAPABILITY` 里有 6 个能力，但
-#: `lora_train` 与 `tts` 在代码里**没有任何调用点**——它们只是注册表声明。
-#: 前端却把它们和 llm/image/video 一起标成"（必选）"、并警告"未选择会报错"，
+#: ⚠️ 为什么需要这个集合：`MODE_KEY_BY_CAPABILITY` 里的能力，并非每个都在代码里
+#: 有调用点 —— 有的只是注册表声明。
+#: 前端却会把它们和 llm/image/video 一起标成"（必选）"、并警告"未选择会报错"，
 #: 这**是假的**：没选也不会报错，因为根本没人用。
-#: 结果是用户被推着去配置两个不影响任何行为的模式（还可能要填密钥）。
+#: 结果是用户被推着去配置一个不影响任何行为的模式（还可能要填密钥）。
 #: 这里如实下发"是否已接入"，让前端只对**真的会用到的**提示必选。
-#: 将来接入 TTS/LoRA 时把这个集合补上即可（前端会自动跟着变）。
+#: 将来接入某个能力时把这个集合补上即可（前端会自动跟着变）。
+#:
+#: 注：`lora_train` 已按用户要求整体删除（LoRA 训练属于"本地部署模型自己的事"，
+#: 不在本项目范围内），所以这个集合里也不会再有它。
 IMPLEMENTED_CAPABILITIES: frozenset[str] = frozenset({
     "llm", "image_gen", "image_edit", "video_gen",
 })
@@ -1152,12 +1139,11 @@ def generation_settings() -> list[dict]:
     UI 应把它们放在最显眼位置：对**已接入的能力**来说这是必须先做的选择。
 
     每项带一个 `implemented` 字段：告知该能力**当前是否真的有调用点**。
-    前端据此只对已接入的提示"必选"——`lora_train` / `tts` 目前只是注册表
-    声明（无调用点），把它们也标成必选会让用户白填一堆配置（见
-    `IMPLEMENTED_CAPABILITIES` 的说明）。
+    前端据此只对已接入的提示"必选"——没有调用点的能力若也标成必选，
+    会让用户白填一堆配置（见 `IMPLEMENTED_CAPABILITIES` 的说明）。
     """
     out = []
-    for cap in ("llm", "image_gen", "video_gen", "lora_train", "tts"):
+    for cap in ("llm", "image_gen", "video_gen", "tts"):
         mkey = MODE_KEY_BY_CAPABILITY[cap]
         modes = _MODE_DEFAULT.get(cap, {})
         out.append({

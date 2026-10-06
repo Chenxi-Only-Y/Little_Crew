@@ -37,7 +37,7 @@ def test_every_registry_capability_has_provider():
 
 
 def test_provider_capabilities_are_known():
-    known = {"llm", "image_gen", "image_edit", "video_gen", "lora_train", "tts", "music", "render_2d"}
+    known = {"llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_2d"}
     for p in prov.all_specs():
         assert p.capability in known, f"{p.key} 的能力 {p.capability} 不在已知集合内"
 
@@ -63,7 +63,7 @@ def test_local_generative_providers_are_serial():
     注意：本地 LLM（ollama/vllm）**不在此列**——它们是普通推理服务，能处理并发；
     "必须串行"这个约束来自 8GB 显存 + Disk Offload 的图像/视频模型，不是"本地"本身。
     """
-    serial_caps = {"image_gen", "image_edit", "video_gen", "lora_train", "render_2d"}
+    serial_caps = {"image_gen", "image_edit", "video_gen", "render_2d"}
     for p in prov.all_specs():
         if p.category == "local" and p.capability in serial_caps:
             assert p.max_concurrency == 1, (
@@ -90,7 +90,6 @@ def test_cloud_providers_allow_parallel():
     ("image_gen", "dashscope", 4),
     ("image_gen", "minimax", 4),
     ("video_gen", "local", 1),
-    ("lora_train", "local", 1),
 ])
 def test_max_concurrency(capability, provider, expected):
     assert prov.max_concurrency(capability, provider) == expected
@@ -348,7 +347,7 @@ def test_role_provider_beats_global(clean_settings):
 
 def test_mode_options_cover_all_capabilities(clean_settings):
     """每个需要选模式的能力都要能查到 cloud/local 两种默认。"""
-    for cap in ("llm", "image_gen", "video_gen", "lora_train", "tts"):
+    for cap in ("llm", "image_gen", "video_gen", "tts"):
         assert prov.mode_default_provider(cap, "cloud"), f"{cap} 缺云端默认"
         assert prov.mode_default_provider(cap, "local"), f"{cap} 缺本地默认"
 

@@ -34,7 +34,7 @@ ArtifactKind = Literal[
     "video",     # 视频
     "audio",     # 音频
     "score",     # 0-1 或 0-100 评分
-    "model",     # 训练产物（LoRA 权重）
+    "model",     # 模型权重文件（训练产物等）
     "timeline",  # 剪辑时间线
 ]
 
@@ -79,8 +79,8 @@ class ConfigField:
         help:     说明文字
         options_from:
             该 select 的选项**由注册表派生**，而不是手写。
-            取值为能力名（`llm` / `image_gen` / `video_gen` / `tts` /
-            `lora_train`），序列化时替换成"该能力当前已登记的提供者"。
+            取值为能力名（`llm` / `image_gen` / `video_gen` / `tts`），
+            序列化时替换成"该能力当前已登记的提供者"。
             为什么要这样：手写清单**必然漂移**——实测 `video_provider` 的选项
             只有 `('(按模式)', 'local', 'minimax', 'ffmpeg')`，而适配器里明明有
             `dashscope_video` 与 `seedance`（都已接好），用户**根本选不到**。
@@ -123,7 +123,6 @@ ProviderCapability = Literal[
     "image_gen",   # 文生图
     "image_edit",  # 图像编辑 / 崩坏修复
     "video_gen",   # 图生视频
-    "lora_train",  # LoRA / 自定义模型训练
     "tts",         # 语音合成
     "music",       # BGM / 音效
     "render_2d",   # 2D 白模预演渲染

@@ -148,7 +148,7 @@ def _probe_vllm() -> bool:
 
 
 def _probe_local_gen() -> bool:
-    """本机自建推理服务（出图 / 出视频 / LoRA 训练共用）。
+    """本机自建推理服务（出图 / 出视频共用）。
 
     先试 `/health`，再退回根路径 —— 不同版本的实现挂的路径不一样。
     只要**有一个**返回 200 就算在跑（不校验内容：这是自建服务，
@@ -211,7 +211,6 @@ PROBES: dict[tuple[str, str], object] = {
     ("image_edit", "local"): _probe_local_gen,
     ("video_gen", "local"): _probe_local_gen,
     ("video_gen", "ffmpeg"): _probe_ffmpeg,
-    ("lora_train", "local"): _probe_local_gen,
     ("tts", "edge"): _probe_edge_tts,
     # render_2d 的 `local` 是纯 Python（PIL 绘制），项目自带，永远可用 ——
     # 不放进探测表，由 `is_ready()` 直接放行。

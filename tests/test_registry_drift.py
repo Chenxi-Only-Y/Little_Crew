@@ -70,7 +70,6 @@ def test_snapshot_file_is_valid_json():
 @pytest.mark.parametrize("node_key,field_key,capability", [
     ("editor", "video_provider", "video_gen"),
     ("voice_director", "tts_provider", "tts"),
-    ("character_designer", "lora_train_provider", "lora_train"),
 ])
 def test_provider_options_are_derived(node_key, field_key, capability):
     """provider 下拉的选项必须包含该能力**当前已登记的全部提供者**。
@@ -105,9 +104,10 @@ def test_placeholder_option_is_preserved():
     它是"用上面选的模式默认"的语义；派生时若把它冲掉，
     用户就没法表达"按模式"了。
     """
+    # 只有这两个节点有"带占位符的提供者字段"（`character_designer` 那个
+    # `lora_train_provider` 已随「LoRA 训练」一起删除）。
     for node_key, field_key in (("editor", "video_provider"),
-                                ("voice_director", "tts_provider"),
-                                ("character_designer", "lora_train_provider")):
+                                ("voice_director", "tts_provider")):
         options = _field_options(node_key, field_key)
         assert any(o.startswith("(") for o in options), (
             f"{field_key} 的选项里没有占位项（如 `(按模式)`）：{options}"
@@ -121,7 +121,7 @@ def test_placeholder_option_is_preserved():
 def test_generation_settings_report_implemented_flag():
     """`/api/providers/modes` 必须告诉前端每个能力**是否已接入**。
 
-    否则前端会把 `lora_train` / `tts` 也标成"（必选）"并警告"不选会报错"
+    否则前端会把未接入的能力也标成"（必选）"并警告"不选会报错"
     ——而它们在代码里**没有任何调用点**，不选也不会报错。
     误导性的必选提示比不提示更糟：用户会去填一堆无用的配置。
     """
@@ -131,7 +131,7 @@ def test_generation_settings_report_implemented_flag():
 
     for cap in ("llm", "image_gen", "video_gen"):
         assert by_cap[cap]["implemented"] is True, f"{cap} 是已接入的，应为 True"
-    for cap in ("lora_train", "tts"):
+    for cap in ("tts",):
         assert by_cap[cap]["implemented"] is False, (
             f"{cap} 当前无调用点，implemented 应为 False（否则前端会误导用户）"
         )

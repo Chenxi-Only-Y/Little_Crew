@@ -118,12 +118,6 @@
       "state_key": "character_reference_images"
     },
     {
-      "key": "character_lora",
-      "label": "角色 LoRA 权重",
-      "kind": "model",
-      "state_key": null
-    },
-    {
       "key": "scene_design_profiles",
       "label": "场景锚定描述",
       "kind": "json",
@@ -280,7 +274,7 @@
       "label": "技术指导",
       "en": "technical_director",
       "dept": "infra",
-      "duty": "模型选型、LoRA 训练调优、视频生成参数优化",
+      "duty": "模型选型、视频生成参数优化",
       "real_job": "技术指导",
       "node": "technical_director",
       "legacy_keys": [
@@ -291,12 +285,6 @@
           "key": "technical_director:main",
           "label": "模型与参数",
           "kind": "main",
-          "node": "technical_director"
-        },
-        {
-          "key": "technical_director:training",
-          "label": "LoRA 训练",
-          "kind": "training",
           "node": "technical_director"
         }
       ]
@@ -395,7 +383,7 @@
       "label": "角色设计师",
       "en": "character_designer",
       "dept": "assets",
-      "duty": "角色三视图、LoRA 训练、角色圣经",
+      "duty": "角色三视图、角色圣经",
       "real_job": "角色设计师",
       "node": "character_designer",
       "legacy_keys": [],
@@ -410,12 +398,6 @@
           "key": "character_designer:gallery",
           "label": "角色圣经",
           "kind": "gallery",
-          "node": "character_designer"
-        },
-        {
-          "key": "character_designer:training",
-          "label": "角色 LoRA",
-          "kind": "training",
           "node": "character_designer"
         }
       ]
@@ -662,8 +644,7 @@
         "storyboard"
       ],
       "capability": [
-        "llm",
-        "lora_train"
+        "llm"
       ],
       "can_skip": true,
       "iter_group": null,
@@ -1347,16 +1328,14 @@
       "kind": "agent",
       "produces": [
         "character_profiles",
-        "character_reference_images",
-        "character_lora"
+        "character_reference_images"
       ],
       "consumes": [
         "story_outline",
         "art_brief_plan"
       ],
       "capability": [
-        "image_gen",
-        "lora_train"
+        "image_gen"
       ],
       "can_skip": true,
       "iter_group": null,
@@ -1377,20 +1356,6 @@
           "default": "unset",
           "secret": false,
           "help": "必选。云端默认阿里百炼；本地用你自己的显卡出图（不产生 API 费用，8GB 显存约 32 秒/张）"
-        },
-        {
-          "key": "lora_train_provider_mode",
-          "label": "LoRA 训练：云端 / 本地",
-          "type": "select",
-          "scope": "global",
-          "options": [
-            "unset",
-            "cloud",
-            "local"
-          ],
-          "default": "unset",
-          "secret": false,
-          "help": "必选。本地用你自己的显卡训练（不产生 API 费用，较慢）；云端按训练步数计费"
         },
         {
           "key": "image_provider_character_designer",
@@ -1448,41 +1413,6 @@
           "default": null,
           "secret": true,
           "help": ""
-        },
-        {
-          "key": "lora_train_provider",
-          "label": "LoRA 训练来源（覆盖模式）",
-          "type": "select",
-          "scope": "global",
-          "options": [
-            "(按模式)",
-            "local",
-            "dashscope",
-            "replicate"
-          ],
-          "default": "",
-          "secret": false,
-          "help": "留空/按模式即用上方的模式默认；也可强制指定"
-        },
-        {
-          "key": "lora_rank",
-          "label": "LoRA 秩",
-          "type": "number",
-          "scope": "global",
-          "options": [],
-          "default": 32,
-          "secret": false,
-          "help": "百炼要求 2 的倍数；越大拟合越强、越慢"
-        },
-        {
-          "key": "lora_train_steps",
-          "label": "训练步数",
-          "type": "number",
-          "scope": "global",
-          "options": [],
-          "default": 800,
-          "secret": false,
-          "help": "百炼按步数计费，建议 ≥500 才收敛"
         }
       ]
     },
@@ -2372,10 +2302,6 @@
         "kind": "json",
         "label": "角色三视图"
       },
-      "character_lora": {
-        "kind": "model",
-        "label": "角色 LoRA 权重"
-      },
       "scene_design_profiles": {
         "kind": "json",
         "label": "场景锚定描述"
@@ -2530,8 +2456,7 @@
         "label": "角色设计师",
         "produces": [
           "character_profiles",
-          "character_reference_images",
-          "character_lora"
+          "character_reference_images"
         ],
         "consumes": [
           "story_outline",
@@ -2696,10 +2621,6 @@
       ],
       "score": [
         "score",
-        "json"
-      ],
-      "model": [
-        "model",
         "json"
       ],
       "timeline": [

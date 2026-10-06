@@ -24,7 +24,7 @@ from typing import Literal
 #: 计费方式
 BillingUnit = Literal["per_image", "per_second", "per_step", "free", "unknown", "subscription"]
 
-Capability = Literal["llm", "image_gen", "image_edit", "video_gen", "lora_train", "tts", "music"]
+Capability = Literal["llm", "image_gen", "image_edit", "video_gen", "tts", "music"]
 
 
 @dataclass(frozen=True)
@@ -222,25 +222,6 @@ MODEL_COST: dict[str, ModelCost] = {
         price_hint="不产生 API 费用（图片幻灯片拼接）",
         region_ok=True, note="时长固定、无真实运镜；转场/字幕需自己实现",
     ),
-    # ============ LoRA 训练 ============
-    "diffsynth-qlora": ModelCost(
-        "diffsynth-qlora", "本地 · DiffSynth", "lora_train", "free",
-        price_hint="不产生 API 费用（用你自己的显卡训练）",
-        region_ok=True, trainable=True, lora_bound=True,
-        note="只能训 Z-Image 底模；8GB 显存较慢",
-    ),
-    "flux-lora": ModelCost(
-        "flux-lora", "Flux LoRA 训练（Replicate/fal）", "lora_train", "per_step", None,
-        "按训练计费；仅支持 Flux/SDXL 底模",
-        needs_proxy=True, trainable=True, lora_bound=True,
-        note="⚠️ 训出的 LoRA 不能给 Z-Image 用（底模绑定）",
-    ),
-    "sdxl-lora": ModelCost(
-        "sdxl-lora", "SDXL LoRA 训练", "lora_train", "per_step", None,
-        "按训练计费；仅支持 SDXL 底模",
-        needs_proxy=True, trainable=True, lora_bound=True,
-        note="⚠️ 底模绑定",
-    ),
     # ============ 配音 / 音乐 ============
     "edge-tts": ModelCost(
         "edge-tts", "Edge TTS", "tts", "free",
@@ -271,7 +252,7 @@ CLOUD_PROVIDERS = {
     "gemini", "elevenlabs", "deepseek", "zhipu", "qwen", "moonshot", "claude",
     "doubao", "ernie", "custom",
 }
-LOCAL_PROVIDERS = {"local", "ffmpeg", "edge", "ollama", "vllm", "mock", "diffsynth-qlora"}
+LOCAL_PROVIDERS = {"local", "ffmpeg", "edge", "ollama", "vllm", "mock"}
 
 
 def is_cloud(provider: str) -> bool:
@@ -454,7 +435,6 @@ def resolve_effective(snapshot_settings: dict, defaults: dict | None = None) -> 
         "video_provider": pick("video_provider", fallback="minimax"),
         "video_model": pick("video_model", fallback="MiniMax-H3"),
         "tts_provider": pick("tts_provider", fallback="edge"),
-        "lora_train_provider": pick("lora_train_provider", fallback="local"),
         # 用户显式设过的键（用于区分"默认回退"与"用户主动选择"）
         "_explicit": sorted(k for k, v in s.items() if v),
     }
@@ -479,13 +459,11 @@ def audit_settings(snapshot_settings: dict, defaults: dict | None = None) -> dic
         "image_provider": "image_gen",
         "video_provider": "video_gen",
         "tts_provider": "tts",
-        "lora_train_provider": "lora_train",
     }
     MODEL_OF = {
         "llm_provider": "llm_model",
         "image_provider": "image_model",
         "video_provider": "video_model",
-        "lora_train_provider": "lora_train_provider",
     }
 
     cloud_items, free_items = [], []

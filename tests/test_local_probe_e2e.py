@@ -137,7 +137,6 @@ def test_local_gen_probe_flips_with_health_endpoint(monkeypatch, fake_local_gen)
     result = lp.refresh(force=True)
     assert result["image_gen:local"] is True, "假服务在跑，出图该判可用"
     assert result["video_gen:local"] is True, "同一个服务也供视频"
-    assert result["lora_train:local"] is True
 
     monkeypatch.setattr(settings, "local_gen_url", "http://127.0.0.1:1")
     result = lp.refresh(force=True)

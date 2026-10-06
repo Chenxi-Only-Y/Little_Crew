@@ -76,9 +76,17 @@ def test_region_ok_badge():
 
 
 def test_lora_binding_warning():
-    """底模绑定的警告必须出现（否则用户会白花钱）。"""
-    r = reminder("dashscope", "wan2.7-image-pro", "lora_train", 800)
-    assert any("绑定底模" in n for n in r["estimate"]["notes"])
+    """底模绑定的警告必须出现（否则用户会白花钱）。
+
+    ⚠️ 这条原先传 `capability="lora_train"` —— 而「LoRA 训练」已按用户要求
+    从本项目整体删除（那是本地部署模型自己的事），那个能力不再存在。
+
+    但**这条警告本身仍要守**：`lora_bound` 是**模型属性**，图像模型上依然挂着
+    它（如百炼的模型"训练产物绑定底模，只能在同平台推理"）。所以改成对
+    **图像能力**断言 —— 测的是"警告逻辑对不对"，而不是"某个已删能力配得对不对"。
+    """
+    r = reminder("dashscope", "wan2.7-image-pro", "image_gen", 1)
+    assert any("绑定底模" in n for n in r["estimate"]["notes"]), r
 
 
 def test_unknown_price_keeps_metadata():

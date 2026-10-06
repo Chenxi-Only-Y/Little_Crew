@@ -348,12 +348,17 @@ def _order_subset(chosen: Sequence[str], edges: Iterable[tuple[str, str]] | None
 
 #: 产物形态之间的兼容性：`{源形态: [可被接受的输入形态]}`
 #: 用于画布连线校验。默认要求 key 完全一致；这里只声明**有意的放宽**。
+#:
+#: ⚠️ 键必须是**真实存在的产物形态**（有测试守住：`test_registry.py` 的
+#: `test_validation_spec_kinds_reference_real_artifacts`）。
+#: 原先有一条 `"model": ("model", "json")` —— 它唯一的用户是 `character_lora`
+#: （角色 LoRA 权重）；而「LoRA 训练」已按用户要求整体删除，于是 `model`
+#: 这个形态**没有任何产物在用**，留在矩阵里会让上面那条测试失败。
 COMPATIBLE_KINDS: dict[str, tuple[str, ...]] = {
     "image": ("image", "list"),      # 单图可作为图列表的一项
     "video": ("video", "list"),
     "audio": ("audio", "list"),
     "score": ("score", "json"),      # 分数可作为结构化报告的一部分
-    "model": ("model", "json"),      # 模型元信息可作为 json 传递
     "timeline": ("timeline", "json"),
 }
 
