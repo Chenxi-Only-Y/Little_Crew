@@ -131,7 +131,7 @@
     },
     {
       "key": "scene_whitebox",
-      "label": "场景白模（2D）",
+      "label": "场景白模（3D）",
       "kind": "image",
       "state_key": null
     },
@@ -173,7 +173,7 @@
     },
     {
       "key": "previs",
-      "label": "2D 白模预演（走位/机位）",
+      "label": "3D 白模预演（走位/机位）",
       "kind": "json",
       "state_key": null
     },
@@ -407,7 +407,7 @@
       "label": "场景设计师",
       "en": "scene_designer",
       "dept": "assets",
-      "duty": "场景概念图、白模场景搭建（2D）",
+      "duty": "场景概念图、白模场景搭建（3D）",
       "real_job": "场景设计师",
       "node": "scene_designer",
       "legacy_keys": [],
@@ -481,7 +481,7 @@
       "label": "白模预演师",
       "en": "previs_artist",
       "dept": "previs",
-      "duty": "搭白模、摆走位、录机位、导出预演视频（2D）",
+      "duty": "搭白模、摆走位、录机位、导出预演视频（3D）",
       "real_job": "预演师",
       "node": "previs_artist",
       "legacy_keys": [],
@@ -1701,7 +1701,7 @@
           ],
           "default": "2d",
           "secret": false,
-          "help": "2D 俯视示意图：画出走位与机位，不产生 API 费用、无需下载模型"
+          "help": "3D 体块预演：用体块摆走位、调机位，导出参考视频。不产生 API 费用（渲染在前端完成，逐帧导出）"
         },
         {
           "key": "previs_size",
@@ -2312,7 +2312,7 @@
       },
       "scene_whitebox": {
         "kind": "image",
-        "label": "场景白模（2D）"
+        "label": "场景白模（3D）"
       },
       "control_inputs": {
         "kind": "json",
@@ -2340,7 +2340,7 @@
       },
       "previs": {
         "kind": "json",
-        "label": "2D 白模预演（走位/机位）"
+        "label": "3D 白模预演（走位/机位）"
       },
       "continuity_report": {
         "kind": "list",

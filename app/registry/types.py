@@ -125,7 +125,10 @@ ProviderCapability = Literal[
     "video_gen",   # 图生视频
     "tts",         # 语音合成
     "music",       # BGM / 音效
-    "render_2d",   # 2D 白模预演渲染
+    # ⚠️ 名字里的 `2d` 是历史遗留：实际的预演是 **3D**（前端 Three.js 体块场景，
+    # 见 `web/src/previs/`）。这个能力目前**只是注册表声明，没有调用点**；
+    # 改名会牵动前端类型与测试，暂未动。
+    "render_2d",
 ]
 
 

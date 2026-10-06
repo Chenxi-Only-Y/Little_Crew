@@ -46,7 +46,7 @@ ARTIFACTS: tuple[Artifact, ...] = (
     Artifact("character_reference_images", "角色三视图", "json", "character_reference_images"),
     Artifact("scene_design_profiles", "场景锚定描述", "json", "scene_design_profiles"),
     Artifact("scene_reference_images", "场景概念图", "json", "scene_reference_images"),
-    Artifact("scene_whitebox", "场景白模（2D）", "image"),
+    Artifact("scene_whitebox", "场景白模（3D）", "image"),
     # ---- 生图 ----
     Artifact("control_inputs", "结构化控制图（ControlNet）", "json"),
     Artifact("prompts", "生图提示词", "list", "prompts"),
@@ -55,7 +55,7 @@ ARTIFACTS: tuple[Artifact, ...] = (
     Artifact("fixed_images", "修复后的画面", "list"),
     Artifact("consistent_takes", "抽卡筛优后的画面", "list"),
     # ---- 白模预演 ----
-    Artifact("previs", "2D 白模预演（走位/机位）", "json"),
+    Artifact("previs", "3D 白模预演（走位/机位）", "json"),
     # ---- 动态 ----
     Artifact("continuity_report", "连贯性报告（角色/场景/道具）", "list", "continuity_report"),
     Artifact("voice_track", "配音轨（含每句时长）", "audio"),
@@ -358,7 +358,7 @@ ROLES: tuple[Role, ...] = (
     Role(
         key="scene_designer", label="场景设计师", en="scene_designer",
         dept="assets", real_job="场景设计师",
-        duty="场景概念图、白模场景搭建（2D）",
+        duty="场景概念图、白模场景搭建（3D）",
         node="scene_designer",
         panels=(
             Panel("scene_designer:main", "场景与白模", "main", "scene_designer"),
@@ -391,7 +391,7 @@ ROLES: tuple[Role, ...] = (
     Role(
         key="previs_artist", label="白模预演师", en="previs_artist",
         dept="previs", real_job="预演师",
-        duty="搭白模、摆走位、录机位、导出预演视频（2D）",
+        duty="搭白模、摆走位、录机位、导出预演视频（3D）",
         node="previs_artist",
         panels=(
             Panel("previs_artist:main", "白模与走位", "main", "previs_artist"),
@@ -554,10 +554,21 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         produces=("previs",),
         capability=("render_2d",),
         config=(
-            # 只保留 2d：3D 预演（白模建模 + 渲染）成本与复杂度都远超当前定位，
-            # 留着"3d"选项会让用户选了却没有任何反应。本项目统一 2D。
+            # ⚠️ 这里的历史（我核对过，别凭注释想当然）：
+            #
+            # 这段注释原先写"只保留 2d：3D 预演成本与复杂度都远超当前定位，
+            # 留着 3d 选项会让用户选了却没有任何反应。**本项目统一 2D**" ——
+            # **这句话已经过时**：3D 预演后来做出来了，而且**成了唯一实现**：
+            #   · 前端 `web/src/previs/` 是完整 Three.js 3D 场景（Scene3D /
+            #     bodySpecMesh / exporter 逐帧渲染）；
+            #   · 后端 `white_model.py` 生成体块 JSON 规格（右手系、单位米）；
+            #   · `whitebox_video.py` 把 3D 帧序列编码成 mp4 当参考视频。
+            #
+            # 选项值仍留 `"2d"` 是**兼容已存的设置值**，不是还在跑 2D。
+            # 能力名 `render_2d` 同理（它是声明，没有调用点）。
             ConfigField("previs_mode", "白模模式", "select", "global", ("2d",), "2d",
-                        help="2D 俯视示意图：画出走位与机位，不产生 API 费用、无需下载模型"),
+                        help="3D 体块预演：用体块摆走位、调机位，导出参考视频。"
+                             "不产生 API 费用（渲染在前端完成，逐帧导出）"),
             ConfigField("previs_size", "预演画布尺寸", "text", "global", default="1280x720"),
         ),
     ),
