@@ -96,12 +96,21 @@ def test_resume_after_simulated_restart_is_rejected(mock_env, monkeypatch):
     assert tr.has_checkpoint(sid) is True
 
     # --- 模拟重启：换成一个全新的 workflow 实例（内存 checkpointer 为空）---
+    #
+    # ⚠️ 这里原先写的是 `monkeypatch.setattr(tr, "app_workflow", fresh)` ——
+    # 但 `task_runner` 已经**不再按值导入** `app_workflow`（那样 A2 运行时换图
+    # 它看不到），改成每次经 `graph_manager.current_graph()` 取当前图。
+    # 所以要替换的是 **manager 里那张图**，替换点从 `tr` 移到了 manager。
+    #
+    # 用 monkeypatch 直接打 `MANAGER._graph`：测试结束**自动恢复**，
+    # 不会让后面的测试看到这张空 checkpointer 的图。
     from langgraph.checkpoint.memory import MemorySaver
 
+    from app.workflows.graph_manager import MANAGER
     from app.workflows.main_workflow import build_graph
 
     fresh = build_graph().compile(checkpointer=MemorySaver())
-    monkeypatch.setattr(tr, "app_workflow", fresh)
+    monkeypatch.setattr(MANAGER, "_graph", fresh)
 
     assert tr.has_checkpoint(sid) is False, "新实例不应看到旧线程的 checkpoint"
 

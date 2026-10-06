@@ -640,18 +640,46 @@ def build_graph() -> StateGraph:
     return g
 
 
-def compile_graph():
-    """构建并编译图（带内存 checkpointer，支持 interrupt 断点续跑）。"""
-    from langgraph.checkpoint.memory import MemorySaver
+def compile_graph(checkpointer=None):
+    """构建并编译图（带 checkpointer，支持 interrupt 断点续跑）。
 
-    return build_graph().compile(checkpointer=MemorySaver())
+    ⚠️ **checkpointer 必须共享**：原先这里每次 `MemorySaver()` 都新建一个，
+    于是"运行时换一张图"会把所有在途会话的断点全部丢掉（正在确认点等用户
+    点"通过"的会话会突然变成"检查点丢失"）。
+
+    现在默认取 `graph_manager` 里那个**唯一实例**，换图不换记忆。
+    传 `checkpointer=` 可以显式指定（测试里用得上，便于隔离）。
+    """
+    if checkpointer is None:
+        from app.workflows.graph_manager import MANAGER
+
+        checkpointer = MANAGER.checkpointer()
+    return build_graph().compile(checkpointer=checkpointer)
 
 
-# 模块级编译实例：供 API / 脚本直接 import 复用
-app_workflow = compile_graph()
+def _install_initial_graph():
+    """把首张图装进 `graph_manager`，并返回它。
+
+    为什么要经过 manager：运行时换图（A2）后，**所有**要执行图的代码都得拿
+    到"当前那张"，而不是导入时绑定的第一张。见 `graph_manager` 的模块说明。
+    """
+    from app.workflows.graph_manager import MANAGER
+
+    graph = compile_graph()
+    MANAGER.install_initial(graph)
+    return graph
+
+
+# 模块级编译实例：供 API / 脚本直接 import 复用。
+#
+# ⚠️ 语义已降级为「**初始那张图**」。运行时要执行图的代码请用
+# `graph_manager.current_graph()` —— 否则 A2 换图后你拿到的还是第一版。
+app_workflow = _install_initial_graph()
 
 
 def run_once(state: dict) -> dict:
     """非交互单次运行（hitl 关闭时使用），返回最终状态。"""
+    from app.workflows.graph_manager import current_graph
+
     config = {"configurable": {"thread_id": state.get("session_id", "default")}}
-    return app_workflow.invoke(state, config=config)
+    return current_graph().invoke(state, config=config)

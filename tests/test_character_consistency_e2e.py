@@ -22,6 +22,8 @@ import sys
 import json
 import pathlib
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -31,12 +33,42 @@ os.environ.setdefault("LITTLE_CREW_SKIP_CLIP", "1")  # 跳过 CLIP 下载，快�
 
 from app.core.config import settings  # noqa: E402
 
-settings.mock_llm = True
-settings.mock_image = True
-settings.mock_quality = True
-settings.mock_critics = True
-settings.hitl = False
-settings.ip_adapter_provider = "mock"
+
+# ⚠️ 原先这里是**模块级直接改全局配置**：
+#
+#     settings.mock_llm = True
+#     ...
+#     settings.hitl = False        ← 这一条泄漏到了别的测试
+#
+# 后果（实测踩到）：`settings.hitl` 被永久改成 False，之后任何测试里
+# "人工确认点"都会**自动放行**，于是本该停在 `review` 的会话一路跑成 `done`。
+# 排查代价很高 —— 表现是"那条测试单独跑绿、一起跑就红"，
+# 我自己的 `test_graph_manager` 就被它坑了一次。
+#
+# 改成 **autouse fixture**：每个测试前后设置/还原，不再污染别人。
+@pytest.fixture(autouse=True)
+def _mock_settings():
+    """本文件所有测试都在全 mock、HITL 关闭下跑（跑完整链路，不停顿）。"""
+    keep = {
+        "mock_llm": settings.mock_llm,
+        "mock_image": settings.mock_image,
+        "mock_quality": settings.mock_quality,
+        "mock_critics": settings.mock_critics,
+        "hitl": settings.hitl,
+        "ip_adapter_provider": settings.ip_adapter_provider,
+    }
+    settings.mock_llm = True
+    settings.mock_image = True
+    settings.mock_quality = True
+    settings.mock_critics = True
+    settings.hitl = False
+    settings.ip_adapter_provider = "mock"
+    try:
+        yield
+    finally:
+        for k, v in keep.items():
+            setattr(settings, k, v)
+
 
 from app.workflows.main_workflow import run_once  # noqa: E402
 from app.agents.quality_assessor import QualityAssessor  # noqa: E402

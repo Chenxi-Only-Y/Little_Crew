@@ -15,7 +15,10 @@ from langgraph.types import Command
 from app.core.config import settings
 from app.services.events import get_hub
 from app.services.logging import redact
-from app.workflows.main_workflow import app_workflow
+# ⚠️ 不再 `from ... import app_workflow` —— 那是**按值绑定**，A2 运行时换图后
+# 这里拿到的仍是第一张图。改成每次经 `current_graph()` 取"当前那张"
+# （共享同一个 checkpointer，所以在途会话的断点不受换图影响）。
+from app.workflows.graph_manager import current_graph
 from app.services.session_store import get_session_store
 
 logger = logging.getLogger("little_crew")
@@ -134,7 +137,7 @@ def _run_stream(job_input, session_id: str, user_id: str, user_input: str, proje
         result = None
         phase = "start"
         review = None
-        for chunk in app_workflow.stream(job_input, config=config, stream_mode="updates"):
+        for chunk in current_graph().stream(job_input, config=config, stream_mode="updates"):
             if _CANCEL.get(session_id):
                 # 中途被打断：保存 cancelled 并退出。
                 # 关流与清理交给 finally（这里 return 也会走 finally），
@@ -332,7 +335,7 @@ def project_from_checkpoint(session_id: str) -> str:
         「未命名工程」——绝不能因为工程名缺失而让落盘失败。
     """
     try:
-        snap = app_workflow.get_state({"configurable": {"thread_id": session_id}})
+        snap = current_graph().get_state({"configurable": {"thread_id": session_id}})
         values = getattr(snap, "values", None) or {}
         ctx = values.get("run_context") or {}
         if isinstance(ctx, dict):
@@ -353,7 +356,7 @@ def has_checkpoint(session_id: str) -> bool:
     用 `get_state()` 的 `created_at` 判定：不存在时该字段为 None。
     """
     try:
-        snap = app_workflow.get_state({"configurable": {"thread_id": session_id}})
+        snap = current_graph().get_state({"configurable": {"thread_id": session_id}})
     except Exception:  # noqa: BLE001  取不到就按"没有"处理，宁可拒绝也不要重放
         return False
     return getattr(snap, "created_at", None) is not None
