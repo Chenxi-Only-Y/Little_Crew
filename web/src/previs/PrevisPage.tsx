@@ -23,6 +23,7 @@ import WhiteModelPanel from './WhiteModelPanel';
 import { POSE_PRESETS, JOINT_GROUPS, JOINT_LABELS, AXIS_LABELS } from './humanoid';
 import { ENV_PRESETS } from './env';
 import { getToken } from '../api/auth';
+import { useCanvas } from '../store/canvas';
 import { loadProject, listProjects, saveProject, type ProjectSummary } from '../api/projects';
 
 const AXES: Array<{ key: 0 | 1 | 2; label: string }> = [
@@ -120,6 +121,8 @@ export default function PrevisPage() {
   const viewMode = usePrevis((s) => s.viewMode);
 
   const [exporting, setExporting] = useState(false);
+  /** 「AI 出初稿」忙着的时候禁用按钮，避免连点生成两份 */
+  const [aiBusy, setAiBusy] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [outW, setOutW] = useState(832);
@@ -182,6 +185,69 @@ export default function PrevisPage() {
     }
   };
 
+  /**
+   * **AI 出初稿**：让白模预演师按分镜生成一份 3D 白模场景，替换当前预演。
+   *
+   * 用户要求："把「预演」构成「白模预演师」一部分" + "AI 生成初稿，人工微调"。
+   * 所以这里只取**初稿**，之后一切编辑都是人工的。
+   *
+   * 为什么要确认：它会**替换**当前场景。手摆的东西很费时间，误点很痛。
+   */
+  const onGenerateDraft = async () => {
+    if (dirty && !window.confirm('AI 初稿会**替换**当前预演（有未保存改动）。继续？')) return;
+    if (!dirty && (scene.actors.length || scene.shots.length)
+        && !window.confirm('AI 初稿会替换当前预演场景。继续？')) return;
+
+    setAiBusy(true);
+    setMsg(null);
+    try {
+      // 分镜来自**会话状态**，所以需要会话 id。
+      // 从画布 store 取（`run.sessionId`，导演台跑过一轮就有了）——
+      // ⚠️ 我第一版读的是一个**从没被赋值的** global（`window.__lcPrevisSession`），
+      // 于是永远发空 body → 后端 400。查证后改成读 store 里的真值。
+      const sid = useCanvas.getState().run.sessionId;
+      if (!sid) {
+        setMsg({
+          ok: false,
+          text: '还没有可用的分镜：请先去导演台跑一轮（至少跑到分镜），再回来出初稿。',
+        });
+        return;
+      }
+      const r = await fetch('/api/previs/scene', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+        },
+        body: JSON.stringify({ sessionId: sid }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        const d = body?.detail;
+        setMsg({ ok: false, text: typeof d === 'string' ? d : '生成失败' });
+        return;
+      }
+      const next = body.scene as PrevisScene;
+      if (!next || !Array.isArray(next.actors)) {
+        setMsg({ ok: false, text: '后端返回的场景不合法' });
+        return;
+      }
+      usePrevis.getState().setScene(next);
+      setDirty(true);
+      const notes = (body.notes as string[]) ?? [];
+      const n = notes.length ? `（自动纠正 ${notes.length} 处：${notes[0]}）` : '';
+      setMsg({
+        ok: true,
+        text: `已生成初稿：${next.shots?.length ?? 0} 个镜头、`
+              + `${next.actors.length} 个人物${n}。接下来请人工微调。`,
+      });
+    } catch (e) {
+      setMsg({ ok: false, text: `生成失败：${String(e)}` });
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   const onOpenPrevis = async (id: string) => {
     if (dirty && !window.confirm('当前预演有未保存改动，打开其它会丢弃它们。继续？')) return;
     const res = await loadProject(id, getToken());
@@ -202,8 +268,7 @@ export default function PrevisPage() {
     setMsg({ ok: true, text: `已打开「${res.project.name}」` });
   };
 
-  const shot = scene.shots[shotIndex] ? migrateShot(scene.shots[shotIndex]) : undefined;
-  const selActor = selected?.kind === 'actor' ? scene.actors.find((a) => a.id === selected.id) : null;
+  const shot = scene.shots[shotIndex] ? migrateShot(scene.shots[shotIndex]) : undefined;  const selActor = selected?.kind === 'actor' ? scene.actors.find((a) => a.id === selected.id) : null;
   const selProp = selected?.kind === 'prop' ? scene.props.find((p) => p.id === selected.id) : null;
   const activeTrackId = usePrevis((s) => s.activeTrackId);
   const drawing = usePrevis((s) => s.drawing);
@@ -699,6 +764,17 @@ export default function PrevisPage() {
           </button>
           <button className="btn ghost" onClick={() => void onSavePrevis(true)} disabled={exporting}>
             另存为
+          </button>
+          {/* AI 出初稿：这是「白模预演师」这一环的起手式（分镜 → 3D 白模）。
+              用户要求"AI 生成初稿，人工微调"，所以生成完是**替换当前场景**，
+              有未保存改动时先问一声。 */}
+          <button
+            className="btn ghost"
+            disabled={exporting || aiBusy}
+            onClick={() => void onGenerateDraft()}
+            title="按分镜生成 3D 白模初稿（白模预演师），生成后人工微调"
+          >
+            {aiBusy ? '生成中…' : '⚡ AI 出初稿'}
           </button>
           <button
             className="btn ghost"
