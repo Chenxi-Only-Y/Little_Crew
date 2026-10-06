@@ -88,7 +88,7 @@ DEPARTMENTS: tuple[Department, ...] = (
     Department("planning", "策划", 1, "把点子变成可执行的剧本与分镜"),
     Department("assets", "资产", 2, "确定角色与场景长什么样"),
     Department("imaging", "生图", 3, "写出能用的提示词并批量出图、筛优"),
-    Department("previs", "白膜", 4, "用白模预演走位与机位"),
+    Department("previs", "白模", 4, "用白模预演走位与机位"),
     Department("motion", "动态", 5, "贯穿一致性与声音"),
     Department("post", "后期", 6, "节奏、剪辑、分发"),
 )
@@ -387,7 +387,7 @@ ROLES: tuple[Role, ...] = (
             Panel("quality_assessor:report", "逐镜详情与重拍", "report", "quality_assessor"),
         ),
     ),
-    # ---------------- 白膜 ----------------
+    # ---------------- 白模 ----------------
     Role(
         key="previs_artist", label="白模预演师", en="previs_artist",
         dept="previs", real_job="预演师",

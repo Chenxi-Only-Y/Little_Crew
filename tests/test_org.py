@@ -84,7 +84,7 @@ def test_lookup_returns_registry_values():
     expected = {
         "showrunner": "策划",
         "script_editor": "策划",
-        "previs_artist": "白膜",
+        "previs_artist": "白模",
         "supervising_editor": "后期",
         "continuity": "动态",
         "voice_director": "动态",
