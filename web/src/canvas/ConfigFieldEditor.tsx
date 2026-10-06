@@ -36,6 +36,18 @@ interface Props {
   current: unknown;
   onSaved: (key: string, value: unknown) => void;
   /**
+   * 模型字段的**下拉清单**（只含当前提供者的模型，形如
+   * `Seedance（火山方舟） · doubao-seedance-2-5-260628`）。
+   *
+   * 由调用方按"当前选中的提供者"过滤好再传进来 —— 组件自己不知道
+   * 用户选了哪家，也不该去猜。
+   *
+   * ⚠️ 用户要求："前面厂商是什么后面才是什么厂商的模型，
+   * 我不要下滑是所有的"。所以**不要**退回用注册表那份
+   * "所有提供者并集"的 `field.options`。
+   */
+  modelChoices?: string[];
+  /**
    * 下拉选项的**显示名**（值 → 友好名）。
    *
    * 注册表给的 `options` 是内部标识（`deepseek` / `zhipu` / `vllm`），
@@ -81,7 +93,7 @@ interface Props {
    */
   optionGroups?: Record<string, string>;
   /**
-   * 提供「获取可用模型」能力（只在"模型"这个字段上有意义）。
+   * 提供模型字段的**下拉清单**（只在"模型"这个字段上有意义）。
    *
    * 用户问题：选了「本地 vLLM / Ollama」后，"模型"一栏是空的 ——
    * 怎么知道本机有哪些模型？
@@ -92,10 +104,6 @@ interface Props {
    * 云端同样适用（"如果是 api 就检测厂商模型"）——
    * 优先问厂商的 `/models`，问不到才回退到已核对的清单。
    */
-  modelSource?: {
-    /** 拉取（由调用方提供，内部走 `/api/providers/models`） */
-    fetch: () => Promise<{ ok: boolean; models: ModelInfo[]; detail: string; source?: string }>;
-  };
 }
 
 export default function ConfigFieldEditor({
@@ -103,9 +111,9 @@ export default function ConfigFieldEditor({
   current,
   onSaved,
   optionLabels,
+  modelChoices,
   allowedOptions,
   optionGroups,
-  modelSource,
 }: Props) {
   const isSecret = field.secret || field.type === 'password';
   // 密钥字段初始留空（不回显）；其余回显当前值
@@ -114,31 +122,6 @@ export default function ConfigFieldEditor({
   );
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  /** 「获取可用模型」的结果（null = 还没点过） */
-  const [models, setModels] = useState<
-    { ok: boolean; models: ModelInfo[]; detail: string; source?: string } | null
-  >(null);
-  const [fetching, setFetching] = useState(false);
-
-  /**
-   * 把一段文字渲染成"可提交"的输入框（模型字段的自定义态用）。
-   *
-   * 与下面 `text` 分支的区别：那个是受控 + 失焦提交；这里额外给一个
-   * 「从清单里选」把它切回下拉 —— 否则用户点进自定义就出不来了。
-   */
-
-  /** 问提供者要模型清单。云端走厂商 /models，本机走本地服务端点。 */
-  const doFetchModels = async () => {
-    if (!modelSource) return;
-    setFetching(true);
-    try {
-      setModels(await modelSource.fetch());
-    } catch (e) {
-      setModels({ ok: false, models: [], detail: String(e) });
-    } finally {
-      setFetching(false);
-    }
-  };
 
   /**
    * 后端是否已存有该密钥。
@@ -311,31 +294,29 @@ export default function ConfigFieldEditor({
          */
         const isModelField = /(^|_)model(_|$)/.test(field.key);
         if (isModelField) {
-          const base = allowedOptions
-            ? field.options.filter((o) => allowedOptions.includes(o))
-            : field.options;
           /**
-           * 清单 = **注册表里已核对的** + **「获取可用模型」拉回来的**。
+           * 清单 = **当前提供者的模型**（`modelChoices`，由调用方按提供者过滤好，
+           * 形如 `Seedance（火山方舟） · doubao-seedance-2-5-260628`）。
            *
-           * 为什么不只用一个：
-           *   · 注册表那份是静态的（可能滞后，但一定含图像/视频模型）；
-           *   · 拉回来那份更新鲜（厂商上新模型会出现），但很多平台的
-           *     `/models` **只列对话模型**，不含图像/视频。
-           * 合并后两个来源的模型都在下拉里可选。
+           * ⚠️ 用户明确要求："**前面厂商是什么后面才是什么厂商的模型，
+           * 我不要下滑是所有的**" —— 所以这里**不再**用注册表那份
+           * "所有提供者并集"的 `field.options`（那会把 MiniMax、阿里百炼、
+           * Seedance 的模型全混在一个下拉里）。
+           *
+           * `modelChoices` 没给时的兜底：用字段自带选项（老路径，避免半新半旧
+           * 时下拉变空）。
            */
           const seen = new Set<string>();
-          const opts: Array<{ id: string; kind?: string }> = [];
-          for (const id of base) {
-            if (id && !seen.has(id)) {
-              seen.add(id);
-              opts.push({ id });
-            }
-          }
-          for (const m of models?.models ?? []) {
-            if (m.id && !seen.has(m.id)) {
-              seen.add(m.id);
-              opts.push({ id: m.id, kind: m.kind });
-            }
+          //: 显示名 → 存进去的值（显示 `厂商 · 模型`，但存的是**模型名**）
+          const opts: Array<{ id: string; kind?: string; label?: string }> = [];
+          for (const label of modelChoices ?? field.options) {
+            if (!label) continue;
+            // 显示名里的 ` · ` 后面才是模型名；没有分隔符就用整体
+            const idx = label.lastIndexOf(' · ');
+            const id = idx === -1 ? label : label.slice(idx + 3);
+            if (!id || seen.has(id)) continue;
+            seen.add(id);
+            opts.push({ id, label });
           }
           return (
             <ModelCombo
@@ -508,43 +489,6 @@ export default function ConfigFieldEditor({
         </button>
       )}
       {field.help && <div className="hint">{field.help}</div>}
-      {modelSource && (
-        <div style={{ marginTop: 4 }}>
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={fetching}
-            style={{ fontSize: 11, padding: '2px 8px' }}
-            onClick={() => void doFetchModels()}
-          >
-            {fetching ? '查询中…' : '获取可用模型'}
-          </button>
-          {models && (
-            <div style={{ marginTop: 6 }}>
-              <div
-                className="hint"
-                style={{ color: models.ok ? 'var(--text-muted)' : 'var(--st-failed)' }}
-              >
-                {models.ok ? '' : '✕ '}
-                {models.detail}
-                {/*
-                  ⚠️ 判据必须与后端**一致**。后端两处都表达"这份清单是人工核对的"：
-                    · `llm._maybe_fallback()` → `source: "registry"`
-                    · `model_catalog.list_models()` → `source: "registry"`
-                  而我原先只判 `'known_models'`（更早的常量名，已改名）
-                  —— 于是这行提示**从来不显示**，用户不知道清单是非实时的。
-                */}
-                {models.source === 'registry' && (
-                  <span style={{ opacity: 0.75 }}>（来源：已核对的清单，非实时）</span>
-                )}
-                {models.source === 'merged' && (
-                  <span style={{ opacity: 0.75 }}>（厂商返回 + 已核对清单，已合并）</span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
       {msg && (
         <div
           className="hint"

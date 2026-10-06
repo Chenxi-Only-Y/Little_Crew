@@ -714,7 +714,7 @@ export default function SettingsPage() {
     allowedProviders(capPrefix).map((p) => p.label);
 
   /**
-   * 「模型」字段的"获取可用模型"能力。
+   * 「模型」字段的下拉清单（按当前提供者过滤）。
    *
    * 只给**模型**字段（`*_model_*` / `*_model`）用，不给提供者字段 ——
    * 不然每一栏都多一个按钮，页面会很吵。
@@ -729,45 +729,45 @@ export default function SettingsPage() {
    * 职业从字段键尾部取（`llm_model_writer` → `writer`），
    * 于是接口按**该职业**的设置解析提供者与地址，与页面上显示的一致。
    */
-  const modelSourceFor = (f: ConfigField, capPrefix: string) => {
+  /**
+   * 模型字段的**下拉清单**：**只列当前选的那家提供者**的模型。
+   *
+   * ## 用户要求（原话）
+   *
+   *   "前面厂商是什么后面才是什么厂商的模型，我不要下滑是所有的"
+   *
+   * 所以：
+   *   · 逐项显示成 `{厂商} · {模型}`（厂商在前）；
+   *   · **只列当前提供者的** —— 不把别家的模型混进来。
+   *
+   * 原先后端 `_field_options(options_from_models)` 是把该能力**所有提供者**
+   * 的模型并集成一个清单，于是视频模型下拉里同时出现 MiniMax、阿里百炼、
+   * Seedance 三家的模型 —— 正是用户说的"下滑是所有的"。
+   *
+   * 数据不用新接口：`/api/providers` **每家已经自带 `known_models`**，
+   * 前端按当前提供者过滤即可。
+   */
+  const modelChoicesFor = (f: ConfigField, capPrefix: string) => {
     if (!/_model(_|$)/.test(f.key)) return undefined;
-    // 取职业后缀：`llm_model_writer` → `writer`；`llm_model` → ''
-    const role = f.key.replace(/^.*?_model_?/, '');
     const cap = capabilityOf(capPrefix);
-    // ⚠️ 这里原先写的是 `if (cap !== 'llm') return undefined;`
-    // （注释："目前只有 llm 有统一的 /models"）—— 于是**只有文字模型有
-    // 「获取可用模型」按钮**，图像/视频/配音都没有，用户报过这个。
-    //
-    // 现在后端对非 llm 能力也支持了（`services/model_catalog.py`）：
-    // 能问厂商就问，问不到就用注册表里人工核对的清单，并标出来源。
-    return {
-      fetch: async () => {
-        const token = getToken();
-        const qs = new URLSearchParams({ capability: cap, role });
-        const r = await fetch(`/api/providers/models?${qs}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        const body = await r.json().catch(() => ({}));
-        // 后端返回 [{id, kind, source}]；兼容纯字符串数组，避免半新半旧时炸掉
-        const raw = (body?.models ?? []) as Array<
-          string | { id?: string; kind?: string; source?: string }
-        >;
-        const models = raw
-          .map((m) =>
-            typeof m === 'string'
-              ? { id: m, kind: '' }
-              : { id: String(m?.id ?? ''), kind: String(m?.kind ?? '') },
-          )
-          .filter((m) => m.id);
-        return {
-          ok: Boolean(body?.ok),
-          models,
-          detail: String(body?.detail ?? (r.ok ? '没有返回模型清单' : `请求失败（HTTP ${r.status}）`)),
-          source: body?.source as string | undefined,
-        };
-      },
-    };
+
+    // 当前提供者：`{cap前缀}_provider_{role}` > `{cap前缀}_provider` > 模式默认
+    const role = f.key.replace(/^.*?_model_?/, '');
+    const pkey = cap === 'video_gen' ? 'video_provider'
+      : cap === 'image_gen' ? 'image_provider'
+      : cap === 'tts' ? 'tts_provider' : 'llm_provider';
+    const own = String(settings?.[role ? `${pkey}_${role}` : pkey] ?? '')
+      || String(settings?.[pkey] ?? '');
+    const isPlaceholder = !own || own.startsWith('(') || own === 'unset';
+    const eff = isPlaceholder
+      ? String(modeDefaults?.[cap]?.[modeOf(capPrefix)] ?? '')
+      : own;
+
+    return providers
+      .filter((p) => p.capability === cap && (!eff || p.key === eff))
+      .flatMap((p) => (p.known_models ?? []).map((m) => `${p.label} · ${m}`));
   };
+
 
   /**
    * 视频**实际会用哪一家提供者**（与后端 `resolve_provider` 的优先级一致）：
@@ -794,7 +794,7 @@ export default function SettingsPage() {
           current={settings?.[f.key]}
           optionLabels={optionLabelsFor(capPrefix, f.key)}
           allowedOptions={allowedOptionsFor(f, capPrefix)}
-          modelSource={modelSourceFor(f, capPrefix)}
+          modelChoices={modelChoicesFor(f, capPrefix)}
           onSaved={(k, v) => setSettings((s) => ({ ...(s ?? {}), [k]: v }))}
         />
         {emptyReason ? (

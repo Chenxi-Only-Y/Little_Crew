@@ -5,7 +5,7 @@
  *
  *   "所有换成文本框 然后下面清单选" / "可以用户自己输入"
  *   → 清单形式选的是：「**输入框里带下拉箭头（输入框兼任筛选）**」
- *   → 显示时机选的是：「**默认收起，点「获取可用模型」才展开**」
+ *   → 显示时机：清单**默认收起**，点 `▾` 或聚焦时展开
  *
  * 所以这个组件的行为是：
  *   1. 平时就是个**文本框** —— 厂商出新模型可以直接打进去（这是硬需求：
@@ -32,8 +32,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface ModelOption {
-  /** 模型名（也就是会存进设置的值） */
+  /** 模型名（**会存进设置的值**） */
   id: string;
+  /**
+   * 显示名。默认与 `id` 相同；模型字段会给成 `厂商 · 模型`
+   * （用户要求"前面厂商是什么后面才是什么厂商的模型"）。
+   *
+   * ⚠️ 显示用 `label`、**存值必须用 `id`** —— 两者混用会把
+   * "Seedance（火山方舟） · doubao-…" 整串存进设置，接口必然不认。
+   */
+  label?: string;
   /**
    * 类型标注（对话 / 嵌入）。空串表示未知。
    * 只对文字模型有意义 —— 选错嵌入模型会直接报错，所以界面上要标出来。
@@ -51,7 +59,7 @@ interface Props {
   placeholder?: string;
 }
 
-/** 嵌入模型选了不能对话 —— 用醒目的红字提醒（与「获取可用模型」列表一致）。 */
+/** 嵌入模型选了不能对话 —— 用醒目的红字提醒（选错会直接报错）。 */
 function kindBadge(kind: string) {
   if (!kind) return null;
   const embed = /embed/i.test(kind);
@@ -99,7 +107,11 @@ export default function ModelCombo({ value, disabled, options, onChange, placeho
   const filtered = useMemo(() => {
     const q = text.trim().toLowerCase();
     if (!q) return options;
-    return options.filter((o) => o.id.toLowerCase().includes(q));
+    // 用**显示名**筛选（用户看到的是 `厂商 · 模型`，按厂商名也该能搜到），
+    // 同时保留按 id 匹配。
+    return options.filter(
+      (o) => (o.label ?? o.id).toLowerCase().includes(q) || o.id.toLowerCase().includes(q),
+    );
   }, [options, text]);
 
   const commit = (v: string) => {
@@ -188,7 +200,7 @@ export default function ModelCombo({ value, disabled, options, onChange, placeho
           {filtered.length === 0 ? (
             <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-faint)' }}>
               {options.length === 0
-                ? '清单还是空的 —— 点下面的「获取可用模型」，或直接输入模型名'
+                ? '这个提供者没有已登记的模型清单 —— 直接输入模型名'
                 : '没有匹配的模型；直接按回车就用你输入的名字'}
             </div>
           ) : (
@@ -211,7 +223,7 @@ export default function ModelCombo({ value, disabled, options, onChange, placeho
                   color: o.id === value ? 'var(--text)' : 'var(--text-muted)',
                 }}
               >
-                <span style={{ flex: 1, wordBreak: 'break-all' }}>{o.id}</span>
+                <span style={{ flex: 1, wordBreak: 'break-all' }}>{o.label ?? o.id}</span>
                 {kindBadge(o.kind ?? '')}
               </div>
             ))
