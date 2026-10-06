@@ -34,10 +34,10 @@
  * 职业 key、职业的旧键名），穷举匹配最长后缀。注册表再加旧名也不会漏。
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ConfigFieldEditor from '../canvas/ConfigFieldEditor';
 import { fetchSettings, type SettingsMap } from '../api/settings';
-import { AUTH_CHANGED_EVENT, getToken, requireAuth } from '../api/auth';
+import { AUTH_CHANGED_EVENT, getToken, handleUnauthorized, requireAuth } from '../api/auth';
 import { useCanvas } from '../store/canvas';
 import type { ConfigField } from '../domain/registry';
 import {
@@ -288,46 +288,96 @@ export default function SettingsPage() {
    *   结果就是这三个键在白名单里（能存）却**没有输入框**——
    *   用户根本没法配视频 API key。由后端声明就不会再有这种漂移。
    */
-  useEffect(() => {
-    let alive = true;
-    void (async () => {
-      try {
-        const token = getToken();
-        const r = await fetch('/api/providers', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        const body = await r.json().catch(() => ({}));
-        if (alive && r.ok) {
-          if (body?.credential_spec) setCreds(body.credential_spec as CredentialSpec);
-          if (body?.mode_defaults) {
-            setModeDefaults(body.mode_defaults as Record<string, Record<string, string>>);
-          }
-          if (Array.isArray(body?.providers)) {
-            setProviders(
-              body.providers as Array<{
-                key: string;
-                label: string;
-                capability: string;
-                is_local: boolean;
-                api_style: string;
-                /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
-                has_native_audio?: boolean;
-                /** 本机能力探测结果；false 的提供者直接不列 */
-                runtime_ready?: boolean;
-                default_model?: string;
-                known_models?: string[];
-              }>,
-            );
-          }
-        }
-      } catch {
-        /* 凭据清单拉不到不影响本页其余部分 */
+  /**
+   * 拉取提供者清单（`/api/providers`）。
+   *
+   * 抽成函数是因为**两处要用**：挂载时拉一次，「重新检测」按钮后再拉一次。
+   * 探测结果变了之后必须重拉 —— 否则界面上还是旧的过滤结果，
+   * 用户会以为"检测没生效"。
+   *
+   * 返回是否成功（按钮据此给反馈）。
+   */
+  const loadProviders = useCallback(async (): Promise<boolean> => {
+    try {
+      const token = getToken();
+      const r = await fetch('/api/providers', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) return false;
+      if (body?.credential_spec) setCreds(body.credential_spec as CredentialSpec);
+      if (body?.mode_defaults) {
+        setModeDefaults(body.mode_defaults as Record<string, Record<string, string>>);
       }
-    })();
-    return () => {
-      alive = false;
-    };
+      if (Array.isArray(body?.providers)) {
+        setProviders(
+          body.providers as Array<{
+            key: string;
+            label: string;
+            capability: string;
+            is_local: boolean;
+            api_style: string;
+            /** 产出的视频里有没有声音（仅视频有意义，用于过滤「声音来源」） */
+            has_native_audio?: boolean;
+            /** 本机能力探测结果；false 的提供者直接不列 */
+            runtime_ready?: boolean;
+            default_model?: string;
+            known_models?: string[];
+          }>,
+        );
+      }
+      return true;
+    } catch {
+      /* 凭据清单拉不到不影响本页其余部分 */
+      return false;
+    }
   }, []);
+
+  useEffect(() => {
+    void loadProviders();
+  }, [loadProviders]);
+
+  /**
+   * 「重新检测」：强制后端重探本机能力，然后重拉清单。
+   *
+   * ## 为什么需要这个按钮
+   *
+   * 探测结果缓存 60 秒（探测要跑 ffmpeg 与几次 HTTP，实测并行约 3.5 秒，
+   * 不能放在界面渲染路径上每次重跑）。于是用户**刚启动** local-gen 或
+   * Ollama 之后，界面上最多要等一分钟才出现对应的本地提供者 ——
+   * 他会以为"没识别到本机服务"，然后来问为什么。
+   *
+   * 有了它，用户能立刻拿到**确定**的结果：要么出现了，要么确实没起来。
+   */
+  const [rechecking, setRechecking] = useState(false);
+  const [recheckMsg, setRecheckMsg] = useState('');
+  const onRecheck = useCallback(async () => {
+    setRechecking(true);
+    setRecheckMsg('');
+    try {
+      const token = getToken();
+      const r = await fetch('/api/providers/recheck', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (r.status === 401) {
+        // 与保存字段时的处理一致：**不能只说"失败"**，用户会以为是后端坏了
+        setRecheckMsg('登录已失效，请重新登录后重试');
+        handleUnauthorized();
+        return;
+      }
+      const body = await r.json().catch(() => ({}));
+      // 关键：探测结果变了就得**重拉清单**，否则界面还是旧的过滤结果
+      await loadProviders();
+      setRecheckMsg(String(body?.detail ?? (r.ok ? '重新检测完成。' : `检测失败（HTTP ${r.status}）`)));
+    } catch {
+      // 探测本身失败时仍然重拉一次 —— 可能只是这一个请求挂了
+      await loadProviders();
+      setRecheckMsg('检测请求失败，请稍后重试。');
+    } finally {
+      setRechecking(false);
+    }
+  }, [loadProviders]);
 
   /**
    * 拉设置。
@@ -689,6 +739,30 @@ export default function SettingsPage() {
         按能力分组：每张卡里就是这个能力的<strong>全部</strong>设置——先选云端还是本地，
         再按需给个别职业单独指定，最后填提供者密钥。
       </p>
+
+      {/*
+        「重新检测本机能力」。
+        下拉里只出现**本机真的能用**的本地提供者，所以刚启动 local-gen /
+        Ollama 之后需要重探一次（探测结果缓存 60 秒，否则最多要等一分钟）。
+      */}
+      <div
+        className="card"
+        style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, padding: '10px 14px' }}
+      >
+        <button
+          type="button"
+          className="btn"
+          onClick={() => void onRecheck()}
+          disabled={rechecking}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {rechecking ? '检测中…' : '重新检测'}
+        </button>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          {recheckMsg ||
+            '下拉里只列出本机真的能用的本地提供者；刚启动本地服务后点这里立刻重探（不必等缓存过期）。'}
+        </div>
+      </div>
 
       {error && (
         <div className="card" style={{ borderColor: 'var(--st-review)', marginBottom: 14 }}>

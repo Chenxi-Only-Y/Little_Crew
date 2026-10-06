@@ -853,6 +853,44 @@ async def provider_modes():
     return {"status": "ok", "count": len(modes), "modes": modes}
 
 
+@app.post("/api/providers/recheck")
+async def recheck_local_capabilities(request: Request):
+    """**强制**重新探测本机能力（设置页的「重新检测」按钮）。
+
+    为什么需要它：探测结果缓存 60 秒（探测要跑 ffmpeg 与几次 HTTP，
+    实测并行约 3.5 秒，不能放在界面渲染路径上每次重跑）。于是用户
+    **刚启动** local-gen / Ollama 之后，界面上最多要等一分钟才出现
+    对应的本地提供者 —— 他会以为"没识别到"。
+
+    这个端点让用户能立刻重探，拿到确定的结果。
+
+    需要登录：它会让服务端去连本机端口（虽然只有白名单里的那几个固定
+    地址，不是用户可控的 URL），但没有任何理由让匿名调用者触发它。
+    """
+    _auth_user(request)   # 未登录直接 401
+
+    from app.services import local_probe
+
+    try:
+        result = local_probe.refresh(force=True)
+    except Exception as exc:  # noqa: BLE001  探测失败不该 500，给可读信息
+        return {"status": "error", "detail": f"探测失败：{exc}", "ready": {}}
+
+    ready = {k: v for k, v in result.items() if v}
+    return {
+        "status": "ok",
+        # 键是 `capability:key`，前端不用它做逻辑，只用来展示"检测到几个"
+        "ready": result,
+        "ready_count": len(ready),
+        "total": len(result),
+        # 顺带说清"没检测到的会怎样" —— 用户看到的是"少了几个选项"
+        "detail": (
+            f"检测到 {len(ready)} / {len(result)} 项本机能力可用。"
+            "不可用的本地提供者不会出现在下拉里；启动对应服务后点这里再检测一次。"
+        ),
+    }
+
+
 @app.get("/api/providers")
 async def list_providers(capability: str | None = None, include_unavailable: bool = False):
     """下发 provider 清单（唯一数据源，前端不再自带 PROVIDER_OPTIONS）。
