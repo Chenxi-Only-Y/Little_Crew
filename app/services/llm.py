@@ -397,47 +397,36 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
 
     raw = out
 
-    # 各家 shape 不同，逐个兼容：
+    # 各家 shape 不同，交给**共用解析器**（`services/model_listing.py`）：
     #   OpenAI / vLLM / 多数网关  {"data": [{"id": "..."}]}
     #   Ollama 原生 /api/tags     {"models": [{"name": "..."}]}
-    #   Ollama OpenAI 兼容层       {"data": [{"id": "..."}]}
+    #   **部分兼容网关**           {"models": {"id": {...}}}   ← map，不是数组
+    #
+    # ⚠️ 这个解析原先在 `fetch_models` 与 `model_catalog` 里**各写一份**
+    # （两份手写必然漂移），现在统一到 `model_listing.parse_models()`。
+    # 补上 map 形状是照 DSH 的做法：它的解析器明确"接受标准的 data 数组
+    # 以及某些兼容网关暴露的 models map"。
+    from app.services.model_listing import parse_models
+
     try:
-        obj = json.loads(raw.decode("utf-8", "replace"))
-    except Exception:  # noqa: BLE001
+        uniq = parse_models(raw)
+    except Exception:  # noqa: BLE001  不是合法 JSON
         return _maybe_fallback(prov, b, is_local, "other",
                                "返回的不是 JSON（该提供者可能没有 /models 端点）")
 
-    items = obj.get("data") if isinstance(obj, dict) else None
-    if items is None and isinstance(obj, dict):
-        items = obj.get("models")
-    if not isinstance(items, list):
-        return _maybe_fallback(prov, b, is_local, "other",
-                               "返回里没有模型列表（data / models 都为空）")
+    # 注意：这里**只**处理"响应不是合法结构"（parse_models 抛异常，上面已处理）。
+    # "响应里没有条目"是**空列表**，属于成功但有提示 —— 见下面 `if not entries`。
+    # ⚠️ 只回 `{id, kind}` —— 解析器返回的条目还带一个内部用的 `raw`
+    # （原始条目），泄漏到接口响应里会让字段集变得不可预期。
+    entries = [{"id": e["id"], "kind": e["kind"]} for e in uniq]
+    ids = [e["id"] for e in entries]
 
-    entries: list[dict] = []
-    for it in items:
-        if isinstance(it, str):
-            entries.append({"id": it, "kind": ""})
-            continue
-        if not isinstance(it, dict):
-            continue
-        mid = ""
-        for key in ("id", "name", "model"):
-            v = it.get(key)
-            if isinstance(v, str) and v:
-                mid = v
-                break
-        if mid:
-            entries.append({"id": mid, "kind": _classify_model(it)})
-
-    # 去重并保持稳定顺序（同一模型名只出现一次）
-    seen: set[str] = set()
-    uniq: list[dict] = [e for e in entries if not (e["id"] in seen or seen.add(e["id"]))]
-    ids = [e["id"] for e in uniq]
-
-    # 提供商返回了空列表也算"问到了但什么都没有"——
-    # 本地服务（还没 pull 模型）与云端（账号没开通模型）都会这样。
-    if not uniq:
+    # **响应里没有条目 ≠ 查询失败**：本地服务还没 pull、云端账号没开通模型，
+    # 都会返回空列表 —— 那是"问到了，但里面是空的"，要给提示而不是报错。
+    #
+    # ⚠️ 这里**不能**走 `_maybe_fallback`：那会把"空列表"报成
+    # "返回里没有模型列表"（措辞像故障），而且对本地提供者还会直接变成失败。
+    if not entries:
         # ⚠️ **本机不回退**，与 `_maybe_fallback` 同一个道理：
         #    本机装了什么只有本机知道。回退会给出 `_PRESETS` 里那个
         #    旧默认名（如 `qwen2.5`），用户在本机根本没有它 —— 选了必失败。
@@ -447,7 +436,7 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
             if fb:
                 return {"ok": True, "models": [{"id": x, "kind": "chat"} for x in fb],
                         "provider": prov, "base_url": b,
-                        "source": "known_models", "error_type": "ok",
+                        "source": "registry", "error_type": "ok",
                         "detail": f"「{prov}」的 /models 返回空，改用已核对的清单"
                                   f"（{len(fb)} 个）"}
         hint = ("本地服务在跑，但里面还没有模型 —— 先下载/pull 一个再点一次"
@@ -455,48 +444,12 @@ def fetch_models(provider: str = "", base_url: str = "", api_key: str = "",
         return {"ok": True, "models": [], "provider": prov, "base_url": b,
                 "source": "provider", "error_type": "ok", "detail": hint}
 
-    return {"ok": True, "models": uniq, "provider": prov, "base_url": b,
+    # ⚠️ 回的是 `entries`（只有 id/kind），不是解析器的原始输出 `uniq`
+    # —— 后者带内部用的 `raw`。
+    return {"ok": True, "models": entries, "provider": prov, "base_url": b,
             "source": "provider", "error_type": "ok",
-            "detail": f"从 {prov} 查到 {len(uniq)} 个模型"
-                      + ("（已标出模型类型）" if any(e["kind"] for e in uniq) else "")}
-
-
-def _classify_model(item: dict) -> str:
-    """判断一个模型条目是**对话**还是**嵌入**（UI 用来标注类型）。
-
-    ## 为什么需要（用户要求："在列表里标一下模型类型"）
-
-    实测本机 Ollama 同时装了 `qwen3:8b`（对话）与 `bge-m3:latest`（嵌入）。
-    **选错会直接报错**，而两个名字在图里长得一样，用户看不出区别。
-
-    ## 判据优先级（Ollama 的字段最权威）
-
-      1. `capabilities`（Ollama 会明确列出）：
-            ['embedding']                      → embed
-            ['completion', 'tools', 'thinking'] → chat
-      2. `details.family` 关键词兜底（老版本 Ollama 没有 capabilities）：
-            bert / embedding / rerank / clip   → embed
-      3. 认不出 → `""`（不瞎标；界面就不显示类型标签）
-    """
-    caps = item.get("capabilities")
-    if isinstance(caps, list):
-        c = {str(x).lower() for x in caps}
-        if "completion" in c or "chat" in c or "tools" in c or "thinking" in c:
-            return "chat"
-        if "embedding" in c or "embed" in c:
-            return "embed"
-
-    details = item.get("details")
-    fam = ""
-    if isinstance(details, dict):
-        fam = str(details.get("family") or "").lower()
-        fams = details.get("families")
-        if isinstance(fams, list):
-            fam = " ".join([fam] + [str(x).lower() for x in fams])
-    if any(t in fam for t in ("bert", "embed", "rerank", "clip", "bge")):
-        return "embed"
-    return ""
-
+            "detail": f"从 {prov} 查到 {len(entries)} 个模型"
+                      + ("（已标出模型类型）" if any(e["kind"] for e in entries) else "")}
 
 def _maybe_fallback(provider: str, base_url: str, is_local: bool,
                     error_type: str, reason: str) -> dict:
@@ -508,13 +461,31 @@ def _maybe_fallback(provider: str, base_url: str, is_local: bool,
     if not is_local:
         fb = _fallback_known(provider)
         if fb:
-            # 兜底清单里都是我们人工核对的**对话模型**，所以 kind 一律标 chat
+            # ⚠️ 措辞必须区分"没端点"和"没通过鉴权" —— 这两件事完全不同：
+            #
+            #   · **没端点**：这个平台就是不提供列模型接口 → 只能用兜底清单，
+            #     用户做什么都没用；
+            #   · **401/403**：端点存在，只是**没通过鉴权**（多半是还没填 Key）
+            #     → 用户**填好 Key 就能拿到实时清单**。
+            #
+            # 原先一律写成"没有可用的 /models 端点"，于是没填 Key 的用户会以为
+            # "这个平台不支持"，**永远不会去填 Key**（实测踩到：
+            # "HTTP 401: Authentication Fails (governor)" 被说成"没有端点"）。
+            if error_type == "auth":
+                why = (f"厂商拒绝了这次查询（{reason}）—— **端点是在的**，"
+                       f"填好 API Key 就能拿到实时清单；先用已核对的 {len(fb)} 个垫着")
+            elif error_type == "network":
+                why = (f"连不上厂商（{reason}），"
+                       f"先用已核对的清单（{len(fb)} 个）")
+            else:
+                why = (f"「{provider}」没有可用的 /models 端点（{reason}），"
+                       f"改用已核对的清单（{len(fb)} 个，可能不是最新）")
             return {"ok": True,
+                    # 兜底清单里都是我们人工核对的**对话模型**，所以 kind 一律标 chat
                     "models": [{"id": x, "kind": "chat"} for x in fb],
                     "provider": provider, "base_url": base_url,
-                    "source": "known_models", "error_type": "ok",
-                    "detail": f"「{provider}」没有可用的 /models 端点（{reason}），"
-                              f"改用已核对的清单（{len(fb)} 个，可能不是最新）"}
+                    "source": "registry", "error_type": "ok",
+                    "detail": why}
     return {"ok": False, "models": [], "provider": provider, "base_url": base_url,
             "source": "provider", "error_type": error_type, "detail": reason}
 

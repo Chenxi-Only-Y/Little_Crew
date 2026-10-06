@@ -136,21 +136,57 @@ def test_vllm_uses_openai_endpoint(fake_provider):
 
 
 def test_classify_model_rules():
-    """`_classify_model` 的判据优先级：capabilities > details.family > 不标。"""
-    from app.services.llm import _classify_model
+    """模型类型判据的优先级：capabilities > details.family > 不标。
+
+    ⚠️ 这段逻辑已经移到 `services/model_listing.py`（与 `model_catalog`
+    共用一份，避免两份手写漂移）。测试跟着改指共用实现，但**判据本身不变**。
+    """
+    from app.services.model_listing import _classify as classify
 
     # 1) capabilities 最权威
-    assert _classify_model({"capabilities": ["embedding"]}) == "embed"
-    assert _classify_model({"capabilities": ["completion", "tools"]}) == "chat"
-    assert _classify_model({"capabilities": ["thinking"]}) == "chat"
+    assert classify({"capabilities": ["embedding"]}) == "embed"
+    assert classify({"capabilities": ["completion", "tools"]}) == "chat"
+    assert classify({"capabilities": ["thinking"]}) == "chat"
     # 2) 老版本 Ollama 没有 capabilities → 用 family 兜底
-    assert _classify_model({"details": {"family": "bert"}}) == "embed"
-    assert _classify_model({"details": {"families": ["clip"]}}) == "embed"
+    assert classify({"details": {"family": "bert"}}) == "embed"
+    assert classify({"details": {"families": ["clip"]}}) == "embed"
     # 3) 认不出就**不标**，别瞎标 —— 标错了比不标更糟
-    assert _classify_model({"details": {"family": "qwen3"}}) == ""
-    assert _classify_model({}) == ""
+    assert classify({"details": {"family": "qwen3"}}) == ""
+    assert classify({}) == ""
     # capabilities 里只有未知项时也不该瞎标
-    assert _classify_model({"capabilities": ["vision"]}) == ""
+    assert classify({"capabilities": ["vision"]}) == ""
+
+
+def test_parser_accepts_gateway_models_map():
+    """**`models` 写成 map 的网关也要认**（照 DSH 的做法）。
+
+    DSH 的解析器原话："接受标准的 `data` 数组，以及某些兼容网关暴露的
+    `models` map"。我们原先只认数组，遇到这种网关会报"返回里没有模型列表"
+    —— 而它其实有，只是形状不同。
+    """
+    from app.services.model_listing import parse_models
+
+    # map 形状：key 就是模型名，值可能没有 id 字段
+    got = parse_models('{"models": {"gpt-x": {"context": 8}, "gpt-y": {}}}')
+    assert [e["id"] for e in got] == ["gpt-x", "gpt-y"]
+
+    # 标准 data 数组
+    assert [e["id"] for e in parse_models('{"data": [{"id": "a"}, {"id": "b"}]}')] == ["a", "b"]
+    # Ollama 原生 models 数组
+    assert [e["id"] for e in parse_models('{"models": [{"name": "qwen3:8b"}]}')] == ["qwen3:8b"]
+    # 顶层直接是数组 / 纯字符串条目
+    assert [e["id"] for e in parse_models('["m1", "m2"]')] == ["m1", "m2"]
+    # 名称字段的各种叫法
+    assert [e["id"] for e in parse_models('{"data": [{"model_name": "z"}]}')] == ["z"]
+    # 空 / 怪形状 → 空列表（调用方据此给"没有模型列表"的提示）
+    assert parse_models("{}") == []
+    assert parse_models('{"data": "nope"}') == []
+
+    # 非法 JSON 要**抛出来**，调用方才能区分"没有端点"与"返回怪东西"
+    import pytest
+
+    with pytest.raises(Exception):
+        parse_models("<html>not json</html>")
 
 
 def test_dedupes_and_keeps_order(fake_provider):
@@ -179,7 +215,7 @@ def test_cloud_falls_back_to_known_models(fake_provider):
     _Handler.routes = {"/v1/models": (404, {"error": "no such endpoint"})}
     r = fetch_models("deepseek", base + "/v1", "sk-x")
     assert r["ok"], r
-    assert r["source"] == "known_models"
+    assert r["source"] == "registry"
     assert "deepseek-flash" in [m["id"] for m in r["models"]]
     # 兜底清单都是人工核对的对话模型
     assert all(m["kind"] == "chat" for m in r["models"]), r
@@ -232,7 +268,61 @@ def test_non_json_response_does_not_raise(fake_provider):
     _Handler.routes = {"/v1/models": (200, b"<html>nope</html>")}
     # 用一个**有**已核对清单的云端提供者，这样能看到"回退"这条路
     r = fetch_models("deepseek", base + "/v1", "sk-x")
-    assert r["ok"] and r["source"] == "known_models", r
+    assert r["ok"] and r["source"] == "registry", r
+
+
+def test_auth_failure_is_not_reported_as_missing_endpoint():
+    """**鉴权失败不能说成"没有 /models 端点"**（用户实际踩到的坑）。
+
+    实测：用户没填 Key，界面报
+
+        「deepseek」没有可用的 /models 端点（HTTP 401: Authentication Fails）
+
+    —— 而**端点是在的**，只是没通过鉴权。这句话会让人以为"这个平台不支持
+    列模型"，于是**永远不会去填 Key**。两件事的处置完全不同：
+
+        · 没端点   → 用户做什么都没用，只能用已核对的清单
+        · 401/403  → **填好 Key 就能拿到实时清单**，必须说清
+
+    （DSH 的源码里也把这条写成了明确的设计约束：猜鉴权方式
+     "会把鉴权失败报成该提供者没有模型"。）
+    """
+    import json
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    from app.services import llm
+
+    class _H(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802  (http.server 的命名约定)
+            body = json.dumps({"error": {"message": "Authentication Fails"}}).encode()
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *a):  # 静音
+            pass
+
+    srv = HTTPServer(("127.0.0.1", 0), _H)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        r = llm.fetch_models("deepseek", f"http://127.0.0.1:{port}/v1", "sk-bad")
+    finally:
+        srv.shutdown()
+        srv.server_close()
+
+    # 有已核对的清单垫着，所以 ok 仍为 True —— 但**措辞必须点明端点是在的**
+    assert r["ok"], r
+    assert r["source"] == "registry"
+    detail = r["detail"]
+    assert "端点是在的" in detail, detail
+    assert "API Key" in detail, detail
+    assert "没有可用的 /models 端点" not in detail, (
+        "401 不能说成没有端点 —— 那会让人放弃填 Key：" + detail
+    )
 
 
 def test_gateway_without_known_models_reports_honestly(fake_provider):

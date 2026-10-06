@@ -527,8 +527,18 @@ export default function ConfigFieldEditor({
               >
                 {models.ok ? '' : '✕ '}
                 {models.detail}
-                {models.source === 'known_models' && (
+                {/*
+                  ⚠️ 判据必须与后端**一致**。后端两处都表达"这份清单是人工核对的"：
+                    · `llm._maybe_fallback()` → `source: "registry"`
+                    · `model_catalog.list_models()` → `source: "registry"`
+                  而我原先只判 `'known_models'`（更早的常量名，已改名）
+                  —— 于是这行提示**从来不显示**，用户不知道清单是非实时的。
+                */}
+                {models.source === 'registry' && (
                   <span style={{ opacity: 0.75 }}>（来源：已核对的清单，非实时）</span>
+                )}
+                {models.source === 'merged' && (
+                  <span style={{ opacity: 0.75 }}>（厂商返回 + 已核对清单，已合并）</span>
                 )}
               </div>
             </div>

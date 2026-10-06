@@ -144,21 +144,18 @@ def _ask_provider(base_url: str, api_key: str, *, is_local: bool) -> tuple[bool,
     except Exception as exc:  # noqa: BLE001
         return False, [], f"连不上厂商（{type(exc).__name__}）"
 
+    # 形状解析交给**共用解析器**（与 `llm.fetch_models` 同一份实现）：
+    # 标准 `data` 数组、Ollama 的 `models` 数组、以及部分兼容网关的
+    # `models` map 都认 —— 后者原先会被报成"结构里没有模型数组"。
+    from app.services.model_listing import parse_models
+
     try:
-        data = json.loads(body)
+        entries = parse_models(body)
     except ValueError:
         return False, [], "厂商返回的不是 JSON"
-    rows = data.get("data") if isinstance(data, dict) else data
-    if not isinstance(rows, list):
-        return False, [], "厂商返回的结构里没有模型数组"
-    ids: list[str] = []
-    for it in rows:
-        if isinstance(it, str):
-            ids.append(it)
-        elif isinstance(it, dict):
-            mid = it.get("id") or it.get("model") or it.get("name")
-            if mid:
-                ids.append(str(mid))
+    if not entries:
+        return False, [], "厂商返回的结构里没有模型列表（data / models 都为空）"
+    ids = [e["id"] for e in entries]
     return True, ids, f"厂商返回 {len(ids)} 个模型"
 
 
