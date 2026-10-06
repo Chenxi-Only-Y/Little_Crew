@@ -560,84 +560,139 @@ def route_simple_review(state: CrewState) -> Literal["continue", "redo"]:
 
 # ------------------- 图构建 / 编译 -------------------
 
-def build_graph() -> StateGraph:
-    """构建含人工确认点的 StateGraph。"""
+def build_graph(spec: dict | None = None) -> StateGraph:
+    """构建含人工确认点的 StateGraph。
+
+    ## 从"硬编码"改成"读规格"（A2 的前提）
+
+    原先这里 23 个 `add_node` + 41 个 `add_edge` 一行行写死，于是
+    **"运行时改图"根本没有落点**（改一条边就得改代码）。
+
+    现在拓扑来自 `graph_spec.default_spec()`，`build_graph(spec)` 按数据搭图。
+    于是「开关节点 / 重排连线」= 改数据 + 重新 `build_graph`，
+    这正是 A2 换图要的能力。
+
+    Args:
+        spec: 图规格；`None` 表示用默认（即当前生产图）。
+              调用方负责先用 `graph_spec.validate_spec()` 校验 ——
+              这里**不重复做业务校验**，只在拿到坏数据时让 LangGraph 自己报错。
+
+    ⚠️ 等价性有测试守着：`tests/test_graph_spec.py` 会把这张数据图与
+    重构前的硬编码拓扑**逐边对比**。改错一条边就会被抓到。
+    """
+    from app.workflows import graph_spec as gs
+
+    spec = spec or gs.default_spec()
     g = StateGraph(CrewState)
 
-    g.add_node("story_planner", _ctx("node_story_planner"))
-    g.add_node("screenwriter", _ctx("node_screenwriter"))
-    g.add_node("critics", _ctx("node_critics"))
-    g.add_node("review_script", review_script_node)
-    g.add_node("art_brief_parser", _ctx("node_art_brief_parser"))
-    g.add_node("character_designer", _ctx("node_character_designer"))
-    g.add_node("scene_designer", _ctx("node_scene_designer"))
-    g.add_node("consistency_auditor", _ctx("node_consistency_auditor"))
-    g.add_node("review_assets", review_assets_node)
-    g.add_node("storyboarder", _ctx("node_storyboarder"))
-    g.add_node("review_storyboard", review_storyboard_node)
-    g.add_node("rhythm_director", _ctx("node_rhythm_director"))
-    g.add_node("continuity_checker", _ctx("node_continuity_checker"))
-    g.add_node("prompt_compiler", _ctx("node_prompt_compiler"))
-    g.add_node("image_generator", _ctx("node_image_generator"))
-    g.add_node("quality_assessor", _ctx("node_quality_assessor"))
-    g.add_node("review_images", review_images_node)
-    g.add_node("review_critics", review_critics_node)
-    g.add_node("review_rhythm", review_rhythm_node)
-    g.add_node("review_continuity", review_continuity_node)
-    g.add_node("review_prompts", review_prompts_node)
-    g.add_node("review_quality", review_quality_node)
-    g.add_node("aggregator", _ctx("node_aggregator"))
+    # ---- 节点：按 kind 选"怎么包" ----
+    #     业务节点用 `_ctx("node_xxx")` 包一层（注入阶段名）；
+    #     确认点各自一个独立函数（内部复用 `_review`）。
+    for n in spec.get("nodes") or []:
+        key = n["key"]
+        kind = n.get("kind")
+        if kind == "review":
+            # 确认点函数名约定为 `{key}_node`
+            fn = REVIEW_NODE_FNS_BY_KEY.get(key)
+            if fn is None:
+                raise ValueError(f"确认点 {key!r} 没有对应实现（应为 {key}_node）")
+        else:
+            # 业务节点函数名约定为 `node_{key}`，除非规格显式给了 `fn`
+            fn_name = n.get("fn") or f"node_{key}"
+            raw = BUSINESS_NODE_FNS_BY_NAME.get(fn_name)
+            if raw is None:
+                raise ValueError(
+                    f"节点 {key!r} 引用了未实现的函数 {fn_name!r} —— "
+                    f"A2 只能重新组装**已有**的实现函数；新增业务环节需要先写代码"
+                )
+            # 统一在这里包一次上下文（`_ctx` = `_bind_context(globals()[name])`）
+            fn = _ctx(fn_name)
+        g.add_node(key, fn)
 
-    g.add_edge(START, "story_planner")
-    g.add_edge("story_planner", "screenwriter")
-    g.add_edge("screenwriter", "critics")
-    g.add_edge("critics", "review_critics")
-    g.add_conditional_edges("review_critics", route_simple_review,
-                            {"continue": "review_script", "redo": "critics"})
-    # 剧本确认通过后，先解析「美术设定包」，再让 角色设计 与 场景设计 **并行**（各自拿到 script/设定包）
-    g.add_conditional_edges(
-        "review_script", route_review_script,
-        {"continue": "art_brief_parser", "redo": "screenwriter", "back": "story_planner"},
-    )
-    g.add_edge("art_brief_parser", "character_designer")
-    g.add_edge("art_brief_parser", "scene_designer")
-    g.add_edge("character_designer", "consistency_auditor")
-    g.add_edge("scene_designer", "consistency_auditor")
-    g.add_edge("consistency_auditor", "review_assets")
-    g.add_conditional_edges(
-        "review_assets", route_review_assets,
-        {"continue": "storyboarder", "redo": "character_designer", "back": "screenwriter"},
-    )
+    # ---- 入口 ----
+    g.add_edge(START, spec.get("entry"))
 
-    g.add_edge("storyboarder", "review_storyboard")
-    g.add_conditional_edges(
-        "review_storyboard", route_review_storyboard,
-        {"continue": "rhythm_director", "redo": "storyboarder", "back": "character_designer"},
-    )
-    g.add_edge("rhythm_director", "review_rhythm")
-    g.add_conditional_edges("review_rhythm", route_simple_review,
-                            {"continue": "continuity_checker", "redo": "rhythm_director"})
-    g.add_edge("continuity_checker", "review_continuity")
-    g.add_conditional_edges("review_continuity", route_simple_review,
-                            {"continue": "prompt_compiler", "redo": "continuity_checker"})
+    # ---- 普通边 ----
+    for e in spec.get("edges") or []:
+        src, dst = e["from"], e["to"]
+        g.add_edge(src, END if dst == "__END__" else dst)
 
-    g.add_edge("prompt_compiler", "review_prompts")
-    g.add_conditional_edges("review_prompts", route_simple_review,
-                            {"continue": "image_generator", "redo": "prompt_compiler"})
-    g.add_edge("image_generator", "quality_assessor")
-    g.add_conditional_edges(
-        "quality_assessor", route_quality,
-        {"retry": "image_generator", "continue": "review_quality"},
-    )
-    g.add_conditional_edges("review_quality", route_simple_review,
-                            {"continue": "review_images", "redo": "quality_assessor"})
-    g.add_conditional_edges(
-        "review_images", route_review_images,
-        {"continue": "aggregator", "redo": "image_generator", "back": "storyboarder"},
-    )
+    # ---- 条件边 ----
+    for e in spec.get("conditional") or []:
+        router = ROUTERS_BY_NAME.get(e.get("router"))
+        if router is None:
+            raise ValueError(f"未知路由函数 {e.get('router')!r}")
+        branches = {k: (END if v == "__END__" else v)
+                    for k, v in (e.get("branches") or {}).items()}
+        g.add_conditional_edges(e["from"], router, branches)
 
-    g.add_edge("aggregator", END)
     return g
+
+
+#: 确认点 key → 实现函数（约定 `{key}_node`）
+REVIEW_NODE_FNS_BY_KEY: dict[str, object] = {}
+#: 业务节点实现名 → 原始函数（**未**包上下文；包装由 build_graph 调 `_ctx` 做一次）
+BUSINESS_NODE_FNS_BY_NAME: dict[str, object] = {}
+#: 路由名 → 路由 callable
+ROUTERS_BY_NAME: dict[str, object] = {}
+
+
+def _register_node_fns() -> None:
+    """把"零件表"填好（模块导入末尾调用一次）。
+
+    ## 两个容易搞错的点
+
+    1. **为什么用函数而不是模块级字典字面量**：这些函数定义在本文件**上面**，
+       字面量写在 `build_graph` 附近会引用到尚未定义的名字（NameError）。
+
+    2. **存的是"原始函数"，不是 `_ctx(...)` 包装后的**：
+       `_ctx(name)` 的定义是 `_bind_context(globals()[name])` —— 它**已经**包一层
+       上下文绑定。我第一版在这里存了 `_ctx(name)`，`build_graph` 里又调一次
+       `_ctx`，于是**重复绑定**（而且 `globals()["node_story_planner"]` 取到的
+       正是包装后的值，等于绑了两次）。现在统一：这里存原始函数，
+       搭图时由 `build_graph` 调一次 `_ctx`。
+    """
+    import sys
+
+    ns = sys.modules[__name__].__dict__
+
+    for key in ("review_script", "review_critics", "review_assets",
+                "review_storyboard", "review_rhythm", "review_continuity",
+                "review_prompts", "review_quality", "review_images"):
+        fn = ns.get(f"{key}_node")
+        if fn is not None:
+            REVIEW_NODE_FNS_BY_KEY[key] = fn
+
+    for name in ("story_planner", "screenwriter", "critics", "art_brief_parser",
+                 "character_designer", "scene_designer", "consistency_auditor",
+                 "storyboarder", "rhythm_director", "continuity_checker",
+                 "prompt_compiler", "image_generator", "quality_assessor",
+                 "aggregator"):
+        # ⚠️ 键名是 **`node_xxx`**（带前缀）—— 因为 `build_graph` 是按
+        # `spec["nodes"][i].fn`（默认 `f"node_{key}"`）查的。
+        # 我第一版存的是不带前缀的 `name`，于是查 `node_story_planner` 查不到，
+        # 报"引用了未实现的函数"（那个报错还把人往"没写代码"上引，实际是键名不匹配）。
+        fn_name = f"node_{name}"
+        raw = ns.get(fn_name)
+        if raw is not None:
+            # 存**原始函数**；包装交给 build_graph（见上面第 2 点）
+            BUSINESS_NODE_FNS_BY_NAME[fn_name] = raw
+
+    for name, fn in (("simple_review", route_simple_review),
+                     ("review_script", route_review_script),
+                     ("review_assets", route_review_assets),
+                     ("review_storyboard", route_review_storyboard),
+                     ("review_images", route_review_images),
+                     ("quality", route_quality)):
+        ROUTERS_BY_NAME[name] = fn
+
+
+# ⚠️ 必须在这里调用 —— **早于** `app_workflow = _install_initial_graph()`。
+# 我第一版把它放在文件最末尾，于是 `_install_initial_graph()`（第 719 行）
+# 先跑、`build_graph()` 去查零件表时它还是空的，报
+# "引用了未实现的函数 node_story_planner"。位置本身就是个坑。
+_register_node_fns()
+
 
 
 def compile_graph(checkpointer=None):
@@ -683,3 +738,4 @@ def run_once(state: dict) -> dict:
 
     config = {"configurable": {"thread_id": state.get("session_id", "default")}}
     return current_graph().invoke(state, config=config)
+
