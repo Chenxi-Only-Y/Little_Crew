@@ -1096,6 +1096,232 @@ async def session_events_snapshot(session_id: str, request: Request):
     }
 
 
+# ======================================================================
+# 工作流架构师：变更提案 + **人工审核闸门**（A2/A3）
+#
+# 用户的要求（原话）："接 A 但是每次参与执行需要用户审核"、
+# "允许删节点但需显式二次确认"。
+#
+# 所以这里的流程是**强制**的：
+#     提提案 → 预演（两道校验）→ 人工通过 → 才允许生效
+# 没有任何"直接生效"的捷径 —— 生效只发生在 /approve 里。
+# ======================================================================
+
+def _proposal_or_404(pid: str):
+    from app.workflows import proposal_store as store
+
+    rec = store.load(pid)
+    if rec is None:
+        raise HTTPException(status_code=404, detail=f"提案不存在：{pid}")
+    return rec
+
+
+@app.post("/api/workflow/proposal")
+async def create_workflow_proposal(payload: dict, request: Request):
+    """让工作流架构师针对一段诉求出一份**变更提案**（不生效）。
+
+    body:
+        request: 用户的话（"我们不做配音了" / "把分镜提前"）
+        base:    可选，基于哪份规格（默认当前生产图）
+
+    返回提案 + **预演结果**（改了什么、两道校验过没过、是否需二次确认）。
+    """
+    uid = _auth_user(request)
+    req = str((payload or {}).get("request") or "").strip()
+    if not req:
+        raise HTTPException(status_code=400, detail="缺少 request（你想怎么改工作流）")
+
+    from app.workflows import architect, proposal_store as store
+
+    # ⚠️ 必须设用户上下文：架构师要调 LLM，而"用哪家提供者/哪个模型"是
+    # **按用户读**运行时设置的。不设的话会报
+    # "未选择「llm」的提供者"（实测踩到）—— 因为读到的不是这个用户的设置。
+    # 与 `/api/previs/plan` 等端点的做法一致。
+    from app.services import runtime_settings as rs
+
+    rs.set_user(uid)
+    try:
+        prop = architect.propose(req, author=uid)
+    finally:
+        rs.set_user(None)
+    pv = architect.preview(prop)
+
+    rec = {
+        "id": prop.id,
+        "summary": prop.summary,
+        "author": prop.author or uid,
+        "request": req,
+        "ops": prop.ops,
+        "risks": prop.risks,
+        "needs_second_confirm": prop.needs_second_confirm,
+        "removes_nodes": prop.removes_nodes,
+        "status": "pending_review",
+        "raw": prop.raw,
+        # 预演里的 `spec` 是"应用后的规格"——审核通过时直接用，
+        # 避免"审核的"与"生效的"不是同一份。
+        "preview": {k: v for k, v in pv.items() if k != "spec"},
+        "_spec": pv.get("spec"),
+        "events": [],
+    }
+    store.save(rec)
+    store.append_event(prop.id, "proposed", {"summary": prop.summary}, actor=uid)
+    if not pv.get("ok"):
+        store.append_event(prop.id, "preview_failed",
+                           {"problems": pv.get("problems")}, actor="system")
+    return {"status": "ok", "proposal": store.as_public(store.load(prop.id))}
+
+
+@app.get("/api/workflow/proposals")
+async def list_workflow_proposals(request: Request, limit: int = 50):
+    """列出提案（新的在前）。"""
+    _auth_user(request)
+    from app.workflows import proposal_store as store
+
+    return {"status": "ok",
+            "proposals": [store.as_public(r) for r in store.list_all(limit)]}
+
+
+@app.get("/api/workflow/proposal/{pid}")
+async def get_workflow_proposal(pid: str, request: Request):
+    _auth_user(request)
+    from app.workflows import proposal_store as store
+
+    return {"status": "ok", "proposal": store.as_public(_proposal_or_404(pid))}
+
+
+@app.get("/api/workflow/graph")
+async def current_graph_info(request: Request):
+    """当前生效的图：版本、节点数、历史（供界面显示"现在跑的是哪一版"）。"""
+    _auth_user(request)
+    from app.workflows.graph_manager import MANAGER
+
+    return {"status": "ok", "graph": MANAGER.snapshot()}
+
+
+@app.post("/api/workflow/proposal/{pid}/approve")
+async def approve_workflow_proposal(pid: str, payload: dict, request: Request):
+    """**审核闸门**：通过提案 → 拓扑校验 → 运行时换图（A2）。
+
+    body:
+        confirm_removals: 提案里有删节点时**必须**为 true（二次确认）；
+        apply:            默认 true；false 表示"只批准、先不生效"
+
+    流程（每一步失败都**不改任何东西**）：
+        1. 取提案；已生效过的不能再批
+        2. 若含删节点且未二次确认 → 403，并列出要删哪些
+        3. 结构校验（可达性 / 出边 / 边指向…）—— 不过就拒绝，并说清原因
+        4. `graph_manager.swap()` 换图（**共享 checkpointer，在途会话不受影响**）
+        5. 记录事件与生效后的图版本
+    """
+    uid = _auth_user(request)
+    body = payload or {}
+    rec = _proposal_or_404(pid)
+    from app.workflows import graph_spec as gs
+    from app.workflows import proposal_store as store
+    from app.workflows.graph_manager import MANAGER
+    from app.workflows.main_workflow import build_graph
+
+    if rec.get("status") == "applied":
+        raise HTTPException(status_code=409,
+                            detail=f"提案 {pid} 已经生效过（图版本 {rec.get('graph_version')}）")
+
+    # ---- 二次确认：删节点必须显式确认（用户要求） ----
+    removes = rec.get("removes_nodes") or []
+    if removes and not body.get("confirm_removals"):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "这份提案会**删掉节点**，需要显式二次确认",
+                "removes_nodes": removes,
+                "hint": "确认后再调一次，带上 confirm_removals=true",
+            },
+        )
+
+    spec = rec.get("_spec")
+    if not spec:
+        # 没存下"应用后的规格"（例如预演就失败了）→ 现场重算
+        from app.workflows import proposal as P
+
+        prop = P.Proposal(summary=rec.get("summary") or "", ops=rec.get("ops") or [])
+        new_spec, _log = P.apply_ops(gs.default_spec(), prop.ops)
+        spec = new_spec
+
+    problems = gs.validate_spec(spec)
+    errs = gs.errors_of(problems)
+    if errs:
+        store.append_event(pid, "rejected_by_validation",
+                           {"problems": [p.as_dict() for p in problems]}, actor="system")
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "改完的图通不过拓扑校验，**未生效**",
+                "problems": [p.as_dict() for p in problems],
+            },
+        )
+
+    if body.get("apply") is False:
+        store.append_event(pid, "approved_not_applied", {}, actor=uid)
+        rec = store.load(pid) or rec
+        rec["status"] = "approved"
+        store.save(rec)
+        return {"status": "ok", "applied": False,
+                "proposal": store.as_public(store.load(pid))}
+
+    # ---- 换图（A2）----
+    #
+    # ⚠️ 必须**编译**（`compile_graph(spec=...)`），不能直接用 `build_graph()`：
+    # 后者只返回 `StateGraph` 骨架，**没有 `.stream()` / `.get_state()`**。
+    # 我第一版误用了它，换进去的图让**所有**会话都跑不起来
+    # （`AttributeError: 'StateGraph' object has no attribute 'stream'`）——
+    # 而且 `graph_manager` 是单例，等于全局坏掉。
+    # 靠"测试单独跑绿、组合跑红"才暴露出来。
+    from app.workflows.main_workflow import compile_graph
+
+    graph = compile_graph(spec=spec)
+    version = MANAGER.swap(
+        graph,
+        reason=f"架构师提案生效：{rec.get('summary') or pid}",
+        source=f"architect_proposal:{pid}",
+        proposal={"id": pid, "summary": rec.get("summary"), "ops": rec.get("ops")},
+        meta={"approved_by": uid,
+              "removes_nodes": removes},
+    )
+    store.append_event(pid, "applied", {"graph_version": version}, actor=uid)
+    rec = store.load(pid) or rec
+    rec["status"] = "applied"
+    rec["graph_version"] = version
+    store.save(rec)
+    return {"status": "ok", "applied": True, "graph_version": version,
+            "proposal": store.as_public(store.load(pid))}
+
+
+@app.post("/api/workflow/proposal/{pid}/reject")
+async def reject_workflow_proposal(pid: str, payload: dict, request: Request):
+    """驳回提案（**不改任何东西**）。"""
+    uid = _auth_user(request)
+    rec = _proposal_or_404(pid)
+    from app.workflows import proposal_store as store
+
+    store.append_event(pid, "rejected",
+                       {"reason": str((payload or {}).get("reason") or "")}, actor=uid)
+    rec = store.load(pid) or rec
+    rec["status"] = "rejected"
+    store.save(rec)
+    return {"status": "ok", "proposal": store.as_public(store.load(pid))}
+
+
+@app.post("/api/workflow/rollback")
+async def rollback_workflow(request: Request):
+    """把工作流回滚到上一版（换图出问题时的退路）。"""
+    uid = _auth_user(request)
+    from app.workflows.graph_manager import MANAGER
+
+    if not MANAGER.can_rollback():
+        raise HTTPException(status_code=409, detail="没有可回滚的上一版图")
+    version = MANAGER.rollback(reason=f"用户手动回滚（{uid}）")
+    return {"status": "ok", "graph_version": version, "graph": MANAGER.snapshot()}
+
+
 @app.post("/api/crew/run")
 async def run_crew(payload: dict, request: Request):
     """异步启动一次创作（后台运行，轮询 /status 取进度）。

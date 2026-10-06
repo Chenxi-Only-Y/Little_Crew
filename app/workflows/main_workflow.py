@@ -695,7 +695,7 @@ _register_node_fns()
 
 
 
-def compile_graph(checkpointer=None):
+def compile_graph(checkpointer=None, spec: dict | None = None):
     """构建并编译图（带 checkpointer，支持 interrupt 断点续跑）。
 
     ⚠️ **checkpointer 必须共享**：原先这里每次 `MemorySaver()` 都新建一个，
@@ -704,12 +704,20 @@ def compile_graph(checkpointer=None):
 
     现在默认取 `graph_manager` 里那个**唯一实例**，换图不换记忆。
     传 `checkpointer=` 可以显式指定（测试里用得上，便于隔离）。
+
+    Args:
+        spec: 图规格（A2 换图时传入改过的规格）；`None` = 当前生产图。
+              ⚠️ 调用方必须用 **`compile_graph(spec=...)`** 而不是
+              `build_graph(spec)` —— 后者只返回**未编译**的 `StateGraph` 骨架，
+              没有 `.stream()` / `.get_state()`，换进 `graph_manager` 会让
+              **所有**会话跑不起来（我踩过：`AttributeError: 'StateGraph'
+              object has no attribute 'stream'`，而且是全局性故障）。
     """
     if checkpointer is None:
         from app.workflows.graph_manager import MANAGER
 
         checkpointer = MANAGER.checkpointer()
-    return build_graph().compile(checkpointer=checkpointer)
+    return build_graph(spec).compile(checkpointer=checkpointer)
 
 
 def _install_initial_graph():

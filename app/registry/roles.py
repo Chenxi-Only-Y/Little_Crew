@@ -464,7 +464,22 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     "workflow_architect": dict(
         kind="service", can_skip=False,
         consumes=(), produces=(),
-        capability=(),
+        # ⚠️ 原先这里是 `capability=()` + `agent_class=""` —— **它没有能力、
+        # 也没有实现**，只是一个占位（排在执行顺序第 1 位却永不执行，
+        # 用户问过"为啥没有实现"）。
+        #
+        # 现在按用户要求"接 A"：给它 **`llm` 能力**，让它真的能干活 ——
+        # 分析当前工作流并**产出变更提案**（`app/workflows/architect.py`）。
+        #
+        # 但它**不直接改图**：用户明确要求"每次参与执行需要用户审核"，
+        # 所以它的产出只是一份提案，必须过审核闸门才允许生效。
+        #
+        # 配置键用 `_config_namespace` 取（与其它职业一致）；架构师没有
+        # 别名，所以命名空间就是 `workflow_architect`，即
+        # `llm_model_workflow_architect` / `llm_provider_workflow_architect`
+        # / `llm_api_key_workflow_architect`。
+        capability=("llm",),
+        config=_llm_fields(_config_namespace("workflow_architect")),
         agent_class="",
     ),
     "technical_director": dict(
