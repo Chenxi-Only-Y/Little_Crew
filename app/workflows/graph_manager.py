@@ -209,8 +209,15 @@ class GraphManager:
             return [h.as_dict() for h in self._history]
 
     def snapshot(self) -> dict:
-        """给 API/界面用的当前状态。"""
+        """给 API/界面用的当前状态。
+
+        ⚠️ 会**先惰性装入**（若还没装）—— 否则在"图尚未被任何人取用"的时刻
+        查询，会得到 `version=0 / nodes=0` 这种**看起来像故障**的结果
+        （我自己在独立脚本里查时就先被它误导了一次）。
+        """
         with self._lock:
+            if self._graph is None:
+                self._lazy_install_locked()
             nodes: list[str] = []
             if self._graph is not None:
                 try:
