@@ -49,7 +49,18 @@ class ArtBriefParser(BaseAgent):
             llm = get_llm()
             if llm.mock:
                 return None
-            plan = llm.chat_json(_SYSTEM, brief, role="writer")
+            # ⚠️ role 用**自己的职业键**，不要借 `"writer"`。
+            #
+            # 原先写的是 `role="writer"` —— 也就是**借用编剧的 LLM 配置**
+            # （模型 / 提供者 / 密钥都按编剧那套解析）。后果：
+            #   · 用户在设置页改「编剧」的模型，其实**连带改了这个节点**，
+            #     但他不知道；
+            #   · 想给"美术设定包解析"单独指定一个便宜/快的模型 → 做不到。
+            #
+            # 现在节点已声明 `capability=("llm",)`，注册表会给它自己的
+            # `llm_model_art_brief_parser` / `llm_provider_art_brief_parser` 字段，
+            # 所以这里按自己的角色取，与页面上显示的配置**一致**。
+            plan = llm.chat_json(_SYSTEM, brief, role="art_brief_parser")
             if isinstance(plan, dict):
                 return {
                     "style": str(plan.get("style") or ""),

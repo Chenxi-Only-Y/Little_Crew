@@ -666,6 +666,18 @@ SYSTEM_NODES: tuple[Node, ...] = tuple(
         key=n.key, label=n.label, dept=n.dept,
         consumes=n.consumes, produces=n.produces,
         legacy_keys=n.legacy_keys, agent_class=n.agent_class,
+        # ⚠️ 这两个字段**原先漏了**，是真 bug：底下的 `Node(...)` 里写了
+        # `capability=` / `config=` 也**会被静默丢弃** —— 因为这段推导式
+        # 是**重新构造**一个新 Node，只复制上面列出的那些字段。
+        #
+        # 表现：系统节点（美术设定包解析 / 一致性审查 / 剪辑指导 / 发行总监）
+        # 无论如何都改不出能力与配置字段。我给「美术设定包解析」补
+        # `capability=("llm",)` 时就是被它吃掉的（补了读出来还是空）。
+        #
+        # 注意顺序：`**` 展开在前，`workflow_node` / `config_namespace`
+        # 是**派生值**，放最后覆盖 —— 与下面 `NODES` 的写法保持一致。
+        capability=n.capability,
+        config=n.config,
         workflow_node=_workflow_node(n.key),
         config_namespace=_config_namespace(n.key),
     )
@@ -673,7 +685,19 @@ SYSTEM_NODES: tuple[Node, ...] = tuple(
         Node(
             key="art_brief_parser", label="美术设定包解析", dept="assets",
             consumes=("art_brief",), produces=("art_brief_plan",),
+            # ⚠️ 这个能力**原先漏了**：它确实在调 LLM
+            # （`ArtBriefParser._parse_llm` → `llm.chat_json(...)`），
+            # 只是运行时**借用**编剧的配置（`role="writer"`），所以没声明。
+            #
+            # 补上之后：
+            #   · 画布上会标出"这个节点要用文字模型"；
+            #   · 设置页「文字模型」卡里会出现它自己的
+            #     `llm_model_art_brief_parser` / `llm_provider_art_brief_parser`
+            #     / `llm_api_key_art_brief_parser`，可单独指定；
+            #   · 运行时也改成按自己的 role 取（见该 Agent 的 `_parse_llm`）。
+            capability=("llm",),
             agent_class="ArtBriefParser",
+            config=_llm_fields("art_brief_parser"),
         ),
         Node(
             key="consistency_auditor", label="美术总监·一致性审查", dept="assets",
