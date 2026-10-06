@@ -32,7 +32,26 @@ logger = logging.getLogger("little_crew")
 
 
 def proposals_dir() -> Path:
-    """提案目录（相对项目根解析，与数据库同处 `data/` 下）。"""
+    """提案目录（相对项目根解析，与数据库同处 `data/` 下）。
+
+    ## 为什么可以用环境变量改（`LITTLE_CREW_PROPOSALS_DIR`）
+
+    **测试必须能把它指到临时目录。** 原先这里是硬编码的，
+    于是跑测试会往**真实数据目录**里写提案 —— 实测一次全套测试留下 100 份
+    `author='test'` 的垃圾（`data/proposals/` 里 105 份有 100 份是测试的）。
+
+    这种"测试污染用户数据"的问题不会让测试变红，所以特别容易漏掉；
+    靠人工核查才发现。加这个开关后，`tests/conftest.py` 会把它指向
+    `tmp_path`，测试与现实数据彻底隔离。
+    """
+    import os
+
+    override = (os.environ.get("LITTLE_CREW_PROPOSALS_DIR") or "").strip()
+    if override:
+        d = Path(override)
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
     from app.core.config import settings
 
     root = Path(str(settings.db_path_value)).parent
