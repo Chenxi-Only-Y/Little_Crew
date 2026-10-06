@@ -447,14 +447,24 @@ async def list_provider_models(request: Request, capability: str = "llm", role: 
     因为用户无法让服务端请求他指定的任意地址。
 
     Query:
-        capability: 目前只支持 llm（图像/视频提供者没有统一的 /models 端点）
+        capability: llm / image_gen / image_edit / video_gen / tts / lora_train
         role:       按某职业的设置解析（留空 = 全局设置）
     """
     cap = (capability or "llm").strip().lower()
-    if cap != "llm":
-        raise HTTPException(status_code=400,
-                            detail=f"暂时只支持 llm 的模型清单（收到 {cap}）")
     _auth_user(request)
+
+    if cap != "llm":
+        # 图像 / 视频 / 配音 / LoRA。
+        #
+        # 这些能力的提供者**没有统一的 `/models` 契约**，所以清单来自两处
+        # 并集（见 `services/model_catalog.py` 的说明）：
+        #   · 能问厂商的就问（厂商上新模型会自动出现）
+        #   · 注册表里人工核对的 `known_models` 兜底
+        # 每个模型带 `source` 标出来自哪边，界面据此诚实展示。
+        from app.services.model_catalog import list_models
+
+        res = list_models(cap, role=(role or "").strip())
+        return {"status": "ok" if res["ok"] else "error", **res}
 
     from app.services.llm import fetch_models
 

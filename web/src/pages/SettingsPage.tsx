@@ -734,7 +734,12 @@ export default function SettingsPage() {
     // 取职业后缀：`llm_model_writer` → `writer`；`llm_model` → ''
     const role = f.key.replace(/^.*?_model_?/, '');
     const cap = capabilityOf(capPrefix);
-    if (cap !== 'llm') return undefined; // 目前只有 llm 有统一的 /models
+    // ⚠️ 这里原先写的是 `if (cap !== 'llm') return undefined;`
+    // （注释："目前只有 llm 有统一的 /models"）—— 于是**只有文字模型有
+    // 「获取可用模型」按钮**，图像/视频/配音都没有，用户报过这个。
+    //
+    // 现在后端对非 llm 能力也支持了（`services/model_catalog.py`）：
+    // 能问厂商就问，问不到就用注册表里人工核对的清单，并标出来源。
     return {
       fetch: async () => {
         const token = getToken();
@@ -743,10 +748,16 @@ export default function SettingsPage() {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         const body = await r.json().catch(() => ({}));
-        // 后端返回 [{id, kind}]；兼容旧的纯字符串数组，避免半新半旧时炸掉
-        const raw = (body?.models ?? []) as Array<string | { id?: string; kind?: string }>;
+        // 后端返回 [{id, kind, source}]；兼容纯字符串数组，避免半新半旧时炸掉
+        const raw = (body?.models ?? []) as Array<
+          string | { id?: string; kind?: string; source?: string }
+        >;
         const models = raw
-          .map((m) => (typeof m === 'string' ? { id: m, kind: '' } : { id: String(m?.id ?? ''), kind: String(m?.kind ?? '') }))
+          .map((m) =>
+            typeof m === 'string'
+              ? { id: m, kind: '' }
+              : { id: String(m?.id ?? ''), kind: String(m?.kind ?? '') },
+          )
           .filter((m) => m.id);
         return {
           ok: Boolean(body?.ok),
