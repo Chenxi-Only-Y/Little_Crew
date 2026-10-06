@@ -772,7 +772,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_director",
@@ -922,7 +922,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_writer",
@@ -1059,7 +1059,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_critics",
@@ -1192,7 +1192,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_screenwriter",
@@ -1326,7 +1326,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_storyboarder",
@@ -1437,7 +1437,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"
+          "help": "留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"
         },
         {
           "key": "image_api_key_character_designer",
@@ -1555,7 +1555,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"
+          "help": "留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"
         },
         {
           "key": "image_api_key_scene_designer",
@@ -1655,7 +1655,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"
+          "help": "留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"
         },
         {
           "key": "image_api_key_photographer",
@@ -1908,7 +1908,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。厂商上新模型后可用「获取可用模型」刷新"
+          "help": "留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…；厂商新模型可直接输入"
         },
         {
           "key": "llm_api_key_continuity",
@@ -2119,7 +2119,7 @@
           ],
           "default": null,
           "secret": false,
-          "help": "留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"
+          "help": "留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"
         },
         {
           "key": "video_max_duration",

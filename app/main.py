@@ -425,53 +425,6 @@ async def put_settings(payload: dict, request: Request):
     return {"status": "ok", "user_id": uid, "settings": _mask_secrets(rs_snap(uid))}
 
 
-@app.get("/api/providers/models")
-async def list_provider_models(request: Request, capability: str = "llm", role: str = ""):
-    """拉取当前已配置提供者的**可用模型清单**（`GET {base_url}/models`）。
-
-    用户问题："本地 vLLM / Ollama"下面"模型"一栏是空的，怎么知道有哪些模型。
-
-    注册表里的 `known_models` 是**云端模型名**，对本地服务无用；
-    本地装了什么只有本地服务自己知道。所以直接问它。
-
-    ## 为什么参数里没有 base_url / api_key
-
-    地址与密钥**只从服务端已保存的设置里解析**（`llm.fetch_models` 内部走
-    `_resolve(role)`）。这是刻意的：
-
-      · `/api/settings/test` 的 `base_url` 来自请求体，所以它**必须禁止
-        localhost**，否则任意登录用户能让服务端访问本机管理接口；
-      · 而列模型**必须**能访问本机（Ollama 11434 / vLLM 8000）。
-
-    不接受调用方传地址，本机地址就能安全放行 —— SSRF 面为零，
-    因为用户无法让服务端请求他指定的任意地址。
-
-    Query:
-        capability: llm / image_gen / image_edit / video_gen / tts / lora_train
-        role:       按某职业的设置解析（留空 = 全局设置）
-    """
-    cap = (capability or "llm").strip().lower()
-    _auth_user(request)
-
-    if cap != "llm":
-        # 图像 / 视频 / 配音 / LoRA。
-        #
-        # 这些能力的提供者**没有统一的 `/models` 契约**，所以清单来自两处
-        # 并集（见 `services/model_catalog.py` 的说明）：
-        #   · 能问厂商的就问（厂商上新模型会自动出现）
-        #   · 注册表里人工核对的 `known_models` 兜底
-        # 每个模型带 `source` 标出来自哪边，界面据此诚实展示。
-        from app.services.model_catalog import list_models
-
-        res = list_models(cap, role=(role or "").strip())
-        return {"status": "ok" if res["ok"] else "error", **res}
-
-    from app.services.llm import fetch_models
-
-    res = fetch_models(role=(role or "").strip())
-    return {"status": "ok" if res["ok"] else "error", **res}
-
-
 @app.post("/api/settings/test")
 async def test_settings(payload: dict, request: Request):
     """测试通道：对给定 类型(provider/model/api_key) 做一次真实连通测试，识别问题模型。

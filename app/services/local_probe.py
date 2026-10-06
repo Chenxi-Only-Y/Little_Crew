@@ -129,7 +129,7 @@ def _probe_ollama() -> bool:
         base = "http://" + base
     # `/api/tags` 是 Ollama 的原生列表接口，返回 `{"models": [...]}`。
     # 用它而不是 `/v1/models`，还因为原生接口带 `capabilities`
-    # （能区分对话模型与嵌入模型，见 llm.fetch_models）。
+    # （能区分对话模型与嵌入模型）。
     return _http_ok(f"{base}/api/tags", validate=lambda d: "models" in d)
 
 

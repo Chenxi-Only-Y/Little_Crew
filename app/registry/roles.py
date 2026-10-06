@@ -200,8 +200,8 @@ def _llm_fields(role_key: str) -> tuple[ConfigField, ...]:
                     help="API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"),
         ConfigField(f"llm_model_{role_key}", "模型", "select", "role",
                     options_from_models="llm",
-                    help="留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。"
-                         "厂商上新模型后可用「获取可用模型」刷新"),
+                    help="留空则用该提供者的默认模型；聚合网关的模型名形如 "
+                         "anthropic/claude-…；厂商新模型可直接输入"),
         ConfigField(f"llm_api_key_{role_key}", "API Key", "password", "role", secret=True,
                     help="本地 provider（ollama/vllm）无需填写"),
     )
@@ -215,7 +215,7 @@ def _image_fields(role_key: str) -> tuple[ConfigField, ...]:
                     help="带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"),
         ConfigField(f"image_model_{role_key}", "模型", "select", "role",
                     options_from_models="image_gen",
-                    help="留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"),
+                    help="留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"),
         ConfigField(f"image_api_key_{role_key}", "API Key", "password", "role", secret=True),
     )
 
@@ -630,7 +630,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
             # 用户不知道能填什么（用户报过"视频模型没有api填入"）。
             ConfigField("video_model", "视频模型", "select", "global",
                         options_from_models="video_gen",
-                        help="留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"),
+                        help="留空则用该提供者的默认模型；清单只列**当前提供者**已登记的模型，厂商新模型可直接输入"),
             ConfigField("video_max_duration", "每段时长（秒）", "select", "global",
                         options=("5", "7", "9", "12", "15"), default="7",
                         help="本地仅 5/7/9（8GB 显存超过 10s 必 OOM）；云端可到 15"),
