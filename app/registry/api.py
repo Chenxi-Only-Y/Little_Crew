@@ -457,6 +457,30 @@ def _field_options(c) -> list[str]:
     （与 `allowed_settings()` 同一个思路：清单由注册表派生，不手抄。）
     """
     base = list(c.options)
+
+    # ---- 模型清单：该能力下所有提供者的 `known_models` 并集 ----
+    #
+    # 与 `options_from`（提供者清单）分开，因为两者语义不同：
+    # 那个给的是"选哪家"，这个给的是"那家有哪些模型"。
+    # 模型名带**来源前缀**，否则不同厂商的模型混在一个下拉里分不清。
+    models_cap = getattr(c, "options_from_models", "")
+    if models_cap:
+        try:
+            from app.services import providers as _prov
+
+            rows = _prov.for_capability(models_cap, include_unavailable=True)
+        except Exception:  # noqa: BLE001  提供者表不可用时退回手写清单
+            return base
+        out = list(base)
+        seen: set[str] = set()
+        for p in rows:
+            for m in p.known_models:
+                if not m or m in seen:
+                    continue
+                seen.add(m)
+                out.append(f"{p.label} · {m}")
+        return out
+
     cap = getattr(c, "options_from", "")
     if not cap:
         return base

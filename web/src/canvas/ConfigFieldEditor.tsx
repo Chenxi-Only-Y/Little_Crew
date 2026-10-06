@@ -96,6 +96,14 @@ interface Props {
   };
 }
 
+/**
+ * 模型下拉里「自定义…」那一项的哨兵值。
+ *
+ * 用一个不可能与真实模型名撞车的字符串（双下划线 + 英文），而**不是空串**
+ * —— 空串在本项目里是**合法业务值**（= 用提供者默认）。
+ */
+const CUSTOM_SENTINEL = '__custom__';
+
 export default function ConfigFieldEditor({
   field,
   current,
@@ -117,6 +125,53 @@ export default function ConfigFieldEditor({
     { ok: boolean; models: ModelInfo[]; detail: string; source?: string } | null
   >(null);
   const [fetching, setFetching] = useState(false);
+  /**
+   * 模型字段是否处于「自定义」输入态。
+   *
+   * 为什么要有这个状态（而不是只看"值在不在清单里"）：
+   * 用户从下拉选了「自定义…」时值为空，而**空值本身是合法业务值**
+   * （= 用提供者默认）。所以"想手填"这个意图必须单独记，否则
+   * 他一切到自定义就被判成"空值 → 渲染回下拉"，根本填不进去。
+   */
+  const [customMode, setCustomMode] = useState(false);
+
+  /**
+   * 把一段文字渲染成"可提交"的输入框（模型字段的自定义态用）。
+   *
+   * 与下面 `text` 分支的区别：那个是受控 + 失焦提交；这里额外给一个
+   * 「从清单里选」把它切回下拉 —— 否则用户点进自定义就出不来了。
+   */
+  const renderModelInput = () => (
+    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+      <input
+        type="text"
+        className="input"
+        value={value}
+        disabled={busy}
+        placeholder="厂商的模型名，例如 wan3.0-video"
+        style={{ flex: 1 }}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => void commit(value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') void commit(value);
+        }}
+      />
+      <button
+        type="button"
+        className="btn ghost"
+        style={{ fontSize: 11, padding: '2px 8px', whiteSpace: 'nowrap' }}
+        onClick={() => {
+          setCustomMode(false);
+          // 切回清单时清空：否则那个自定义值不在选项里，
+          // 下拉又会退回显示第一项、值与显示不一致
+          setValue('');
+          void commit('');
+        }}
+      >
+        从清单里选
+      </button>
+    </div>
+  );
 
   /** 问提供者要模型清单。云端走厂商 /models，本机走本地服务端点。 */
   const doFetchModels = async () => {
@@ -183,6 +238,7 @@ export default function ConfigFieldEditor({
     lastSavedRef.current = null;
     setValue(currentStr);
     setMsg(null);
+    setCustomMode(false);
   }
 
   const commit = async (raw: string) => {
@@ -279,6 +335,57 @@ export default function ConfigFieldEditor({
   const control = (() => {
     switch (field.type) {
       case 'select': {
+        /**
+         * **模型字段**：下拉 + 「自定义…」。
+         *
+         * ## 为什么模型要特判
+         *
+         * `video_model` / `image_model_*` / `llm_model_*` 的选项是
+         * **所有提供者的模型名并集**（后端 `options_from_models` 派生）。
+         * 于是有个普通下拉没有的问题：**当前值可能不在选项里** ——
+         * 用户手填过厂商新模型、或清单还没收录它。普通下拉遇到这种情况会
+         * **退回显示第一项**，用户看到的值与后端存的不是一回事
+         * （这个坑本项目踩过好几次）。
+         *
+         * 所以：
+         *   · 第一项是空值 = 「用提供者默认」（不是无意义的"请选择"）；
+         *   · 值不在清单里 → 渲染成**文本框**，不假装选中第一项；
+         *   · 最后一项「自定义…」→ 切成文本框，可手填新模型名；
+         *   · 文本框旁给「从清单里选」切回下拉。
+         *
+         * ⚠️ 不做「测试」按钮 —— 用户明确说过"不要测试了"。
+         */
+        const isModelField = /(^|_)model(_|$)/.test(field.key);
+        if (isModelField && !customMode) {
+          const opts = allowedOptions
+            ? field.options.filter((o) => allowedOptions.includes(o))
+            : field.options;
+          // 值不在清单里 → 用户填过自定义模型，直接以文本框呈现
+          if (value && !opts.includes(value)) return renderModelInput();
+          return (
+            <select
+              value={value}
+              disabled={busy}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === CUSTOM_SENTINEL) {
+                  setCustomMode(true);
+                  return;
+                }
+                setValue(v);
+                void commit(v);
+              }}
+            >
+              <option value="">用提供者默认</option>
+              {opts.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+              <option value={CUSTOM_SENTINEL}>自定义…（手填新模型名）</option>
+            </select>
+          );
+        }
         const all = field.options.length ? field.options : [];
         // allowedOptions 是白名单：不传=全集；传了就只留其中的
         // （"(自动)" 等非提供者项由调用方一并放进白名单）

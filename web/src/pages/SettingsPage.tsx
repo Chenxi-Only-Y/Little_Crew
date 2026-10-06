@@ -170,10 +170,45 @@ function groupOfKey(key: string): CapGroup | null {
   return null;
 }
 
+/** "把凭据字段插在这一位"的哨兵键。 */
+const CRED_KEYS_SLOT = '__cred_keys__';
+
+/**
+ * **能力级全局字段的展示顺序**。
+ *
+ * ## 为什么要有它（用户要求）
+ *
+ * 用户："我希望第一排是视频生成：云端/本地，第二排 视频模型来源 模型 api，
+ * 剩下的就第三排"。
+ *
+ * 卡片里的字段原来是**按注册表的声明顺序**平铺进 `.settings-grid` 的。
+ * 那个顺序是"实现顺序"，不是"配置顺序" —— 于是「视频模型」出现在
+ * 「视频来源」之前、密钥又单独一大块在下面，用户得来回找。
+ *
+ * 这里把顺序**显式写出来**（而不是去调注册表的声明顺序）：注册表的顺序
+ * 还影响别的消费方（文档生成、parity 校验），为界面改它会把影响面放大。
+ *
+ * `CRED_KEYS_SLOT` 是"该提供者的 API Key 插在这里"，见 `renderCredCell`。
+ */
+const GLOBAL_FIELD_ORDER: Record<string, number> = {
+  // 第 2 排：来源 → 模型 → （密钥紧跟其后）
+  video_provider: 10,
+  video_model: 11,
+  [CRED_KEYS_SLOT]: 12,
+  // 第 3 排：其余参数
+  video_audio: 20,
+  video_max_duration: 21,
+  video_count: 22,
+};
+
+/** 取某个全局字段的展示序号（表里没有的排在最后，保持原相对顺序）。 */
+function globalOrder(key: string): number {
+  return GLOBAL_FIELD_ORDER[key] ?? 900;
+}
+
 /**
  * 把一个字段键拆成「能力前缀 + 种类 + 角色后缀」。
- *
- * `roleIds` 是**所有可能的角色标识**（节点 key、职业 key、职业的旧键名），
+ * * `roleIds` 是**所有可能的角色标识**（节点 key、职业 key、职业的旧键名），
  * 由调用方从注册表收集。用穷举最长后缀匹配而不是"查当前职业列表"，
  * 因为注册表里实际写的后缀是**旧键名**，只匹配当前 key 会漏掉它们，
  * 把角色覆盖项误当成能力级全局项（这正是"同一行重复两遍"的成因）。
@@ -722,6 +757,31 @@ export default function SettingsPage() {
     };
   };
 
+  /**
+   * 视频**实际会用哪一家提供者**（与后端 `resolve_provider` 的优先级一致）：
+   *
+   *     字段覆盖（`video_provider` 选了具体某家）
+   *       > 模式默认（`_MODE_DEFAULT[video_gen][模式]`）
+   *       > 空（还没定）
+   *
+   * 抽成函数是因为**两处要用**（第二排的 Key、第三排收起的端点），
+   * 两处判据必须一致 —— 否则会出现"Key 是 A 家的、端点是 B 家的"。
+   */
+  const effectiveVideoProvider = useMemo(() => {
+    const prov = String(settings?.video_provider ?? '');
+    const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
+    if (!isPlaceholder) return prov;
+    return String(modeDefaults?.video_gen?.[modeOf('video_gen')] ?? '');
+  }, [settings, modeDefaults]);
+
+  /** 某个凭据字段是否属于"当前会用的那家"。都没定时全放行（别让用户无从下手）。 */
+  const credForProvider = (c: { provider: string }): boolean => {
+    const prov = String(settings?.video_provider ?? '');
+    const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
+    if (isPlaceholder && !effectiveVideoProvider) return true;
+    return c.provider === effectiveVideoProvider;
+  };
+
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
   const renderField = (f: ConfigField, node: string, capPrefix: string) => {
     // "本机用不了的本地提供者直接不列"有个副作用：如果模式设成本地而
@@ -816,7 +876,17 @@ export default function SettingsPage() {
       {CAP_GROUPS.map((g) => {
         const bucket = grouped.groups.get(g.cap);
         if (!bucket) return null;
-        const hasCreds = g.cap === 'video' && (creds?.video?.keys?.length ?? 0) > 0;
+        /**
+         * 视频卡的**提供者级凭据**（每个云端提供者一个 API Key）。
+         *
+         * ⚠️ 这里原先写的是 `g.cap === 'video'`，而 `CAP_GROUPS` 里这一组的
+         * `cap` 是 **`video_gen`** —— 条件**恒为假**，于是视频的 Key
+         * **从来没渲染出来过**。用户报的"视频模型没有api填入"，
+         * 一半原因是模型字段是空框，另一半就是这个：密钥区根本不显示。
+         */
+        const credKeys =
+          g.cap === 'video_gen' ? (creds?.video?.keys ?? []) : [];
+        const hasCreds = credKeys.length > 0;
         if (!bucket.mode && !bucket.global.length && !bucket.byRole.size && !hasCreds) return null;
 
         const needsPick =
@@ -888,34 +958,89 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
-                {bucket.global.map((e) => (
-                  <div className="settings-cell" key={e.field.key}>
-                    {renderField(e.field, e.node, g.cap)}
-                  </div>
-                ))}
+                {(() => {
+                  /**
+                   * 能力级全局字段，**按 `GLOBAL_FIELD_ORDER` 排**，
+                   * 并在 `CRED_KEYS_SLOT` 那一格插入"当前提供者的 API Key"。
+                   *
+                   * 这样就得到用户要的三排：
+                   *   1) 云端/本地
+                   *   2) 来源 · 模型 · API Key
+                   *   3) 其余参数
+                   *
+                   * ⚠️ 凭据按**当前提供者过滤**：原来三个提供者的 Key 同时列出，
+                   * 用户只用其中一个、另外两个纯属干扰。
+                   * 端点（base_url）留在第三排 —— 那是"高级设置"，不该占着
+                   * 第二排的位置（用户要的第二排就是"来源 + 模型 + api"）。
+                   */
+                  type Row = { k: string; order: number; cell: React.ReactNode };
+                  const rows: Row[] = bucket.global.map((e) => ({
+                    k: e.field.key,
+                    order: globalOrder(e.field.key),
+                    cell: renderField(e.field, e.node, g.cap),
+                  }));
+
+                  // 当前提供者的 Key（只有视频有提供者级密钥）。
+                  //
+                  // 三档，与后端 `resolve_provider` 的优先级一致：
+                  //   ① `video_provider` 选了具体某家 → 只要那一家的 Key
+                  //   ② 是占位符（跟随模式）→ 用**模式默认**那一家
+                  //   ③ 都没有 → 全列（用户还没选，不能让他无从下手）
+                  const keyFields = credKeys.filter(credForProvider);
+                  rows.push({
+                    k: CRED_KEYS_SLOT,
+                    order: globalOrder(CRED_KEYS_SLOT),
+                    // ⚠️ 这里**不要**再包一层 `.settings-cell` ——
+                    // 下面 `rows.map` 渲染时会统一包。原先两层嵌套，
+                    // 于是这个格子在外层网格里占位、内层又自成网格，
+                    // 布局和对 DOM 的计数都会错乱。
+                    cell:
+                      keyFields.length === 0 ? null : (
+                        <>
+                          {keyFields.map((c) => (
+                            <div key={c.key}>
+                              {renderField(toConfigField(c), 'video-cred', g.cap)}
+                              {c.verified === false && (
+                                <div style={{ fontSize: 11, color: 'var(--st-review)', marginTop: 4 }}>
+                                  ⚠ 该提供者按公开文档实现，尚未用真实 key 跑通；首次使用请核对返回的报错
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      ),
+                  });
+
+                  rows.sort((a, b) => a.order - b.order);
+                  return rows.map((r) =>
+                    r.cell ? (
+                      <div className="settings-cell" key={r.k}>
+                        {r.cell}
+                      </div>
+                    ) : null,
+                  );
+                })()}
               </div>
             )}
 
-            {/* 该能力的提供者凭据（目前只有视频有提供者级密钥） */}
+            {/* 提供者端点（高级）——第二排只放"来源 + 模型 + api"，端点收在这里 */}
             {hasCreds && creds?.video ? (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.7 }}>
-                  视频的密钥是<strong>提供者级</strong>的，与按职业的密钥不是同一个键。
-                  想用云端视频，必须在这里填对应提供者的 Key；只用本地（图片拼接或本机推理）则不需要。
+              <details style={{ marginTop: 12 }}>
+                <summary
+                  style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', lineHeight: 1.7 }}
+                >
+                  自定义端点（高级，一般不用改）
+                </summary>
+                <div className="settings-grid" style={{ marginTop: 10 }}>
+                  {(creds.video.endpoints ?? [])
+                    .filter((c) => credForProvider(c))
+                    .map((c) => (
+                      <div className="settings-cell" key={c.key}>
+                        {renderField(toConfigField(c), 'video-cred', g.cap)}
+                      </div>
+                    ))}
                 </div>
-                <div className="settings-grid">
-                  {creds.video.keys.map((c) => (
-                    <div className="settings-cell" key={c.key}>
-                      {renderField(toConfigField(c), 'video-cred', g.cap)}
-                      {c.verified === false && (
-                        <div style={{ fontSize: 11, color: 'var(--st-review)', marginTop: 4 }}>
-                          ⚠ 该提供者按公开文档实现，尚未用真实 key 跑通；首次使用请核对返回的报错
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              </details>
             ) : null}
 
             {/*

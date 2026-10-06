@@ -30,7 +30,9 @@ import { usePage } from './app/router';
 import { loadRegistry } from './api/registry';
 import {
   AUTH_CHANGED_EVENT,
+  authWasRequested,
   clearAuth,
+  clearAuthRequest,
   consumePendingIntent,
   getToken,
   getUsername,
@@ -58,7 +60,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState<AuthState>('checking');
   /** 登录卡片是否显示（受 requireAuth 事件驱动，也可被用户关掉） */
-  const [authOpen, setAuthOpen] = useState(false);
+  /**
+   * 登录卡片是否显示。
+   *
+   * ⚠️ 初值**直接读** `authWasRequested()`，而不是固定 `false`：
+   * 子组件的 effect 比 App 的先跑，设置页可能在 App 挂监听之前就
+   * 请求过登录（见 `api/auth.ts` 里的时间线）。那样事件会丢，
+   * 卡片永远不弹 —— 这就是"没有登录入口"那个 bug 的根因。
+   */
+  const [authOpen, setAuthOpen] = useState(() => authWasRequested());
   const page = usePage();
 
   // ---- 启动：确认登录态（但**不**用它拦页面） ----
@@ -130,6 +140,9 @@ export default function App() {
   useEffect(() => {
     const onRequire = () => setAuthOpen(true);
     window.addEventListener(REQUIRE_AUTH_EVENT, onRequire);
+    // 补读：子 effect 有可能在 App 首次渲染**之后**才请求登录，
+    // 那时上面那个 useState 初值还是 false。这里再兜一次。
+    if (authWasRequested()) setAuthOpen(true);
     return () => window.removeEventListener(REQUIRE_AUTH_EVENT, onRequire);
   }, []);
 
@@ -186,6 +199,7 @@ export default function App() {
    */
   const onLoginSuccess = () => {
     setAuth('authenticated');
+    clearAuthRequest();
     setAuthOpen(false);
     const intent = consumePendingIntent();
     intent?.();
@@ -232,7 +246,13 @@ export default function App() {
 
       {/* 登录卡片：按需弹出。`checking` 期间不弹，避免已登录用户被闪一下。 */}
       {authOpen && auth !== 'authenticated' && (
-        <LoginPage onSuccess={onLoginSuccess} onClose={() => setAuthOpen(false)} />
+        <LoginPage
+            onSuccess={onLoginSuccess}
+            onClose={() => {
+              clearAuthRequest();
+              setAuthOpen(false);
+            }}
+          />
       )}
     </>
   );

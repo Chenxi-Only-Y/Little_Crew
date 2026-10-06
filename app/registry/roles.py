@@ -198,8 +198,10 @@ def _llm_fields(role_key: str) -> tuple[ConfigField, ...]:
         ConfigField(f"llm_provider_{role_key}", "文字模型来源", "select", "role",
                     _provider_options("llm"),
                     help="API、本地（ollama/vllm）与聚合网关（openrouter 等）等价可选"),
-        ConfigField(f"llm_model_{role_key}", "模型", "text", "role",
-                    help="留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…"),
+        ConfigField(f"llm_model_{role_key}", "模型", "select", "role",
+                    options_from_models="llm",
+                    help="留空则用该提供者的默认模型；聚合网关的模型名形如 anthropic/claude-…。"
+                         "厂商上新模型后可用「获取可用模型」刷新"),
         ConfigField(f"llm_api_key_{role_key}", "API Key", "password", "role", secret=True,
                     help="本地 provider（ollama/vllm）无需填写"),
     )
@@ -211,8 +213,9 @@ def _image_fields(role_key: str) -> tuple[ConfigField, ...]:
         ConfigField(f"image_provider_{role_key}", "图片模型来源", "select", "role",
                     _provider_options("image_gen"),
                     help="带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"),
-        ConfigField(f"image_model_{role_key}", "模型", "text", "role",
-                    help="留空则用该提供者的默认模型"),
+        ConfigField(f"image_model_{role_key}", "模型", "select", "role",
+                    options_from_models="image_gen",
+                    help="留空则用该提供者的默认模型；没有你要的可以选「自定义…」手填"),
         ConfigField(f"image_api_key_{role_key}", "API Key", "password", "role", secret=True),
     )
 
@@ -622,7 +625,12 @@ ROLE_NODE_SPECS: dict[str, dict] = {
                         ("(按模式)",),
                         help="按模式即用上方模式默认；选项由注册表派生（含 dashscope_video / seedance）",
                         options_from="video_gen"),
-            ConfigField("video_model", "视频模型", "text", "global"),
+            # 模型清单由注册表派生（各提供者的 known_models 并集，带来源前缀）。
+            # 原来是 `type="text"` + 空 options —— 界面上就是个**空框**，
+            # 用户不知道能填什么（用户报过"视频模型没有api填入"）。
+            ConfigField("video_model", "视频模型", "select", "global",
+                        options_from_models="video_gen",
+                        help="留空则用该提供者的默认模型；没有你要的可以选「自定义…」手填"),
             ConfigField("video_max_duration", "每段时长（秒）", "select", "global",
                         options=("5", "7", "9", "12", "15"), default="7",
                         help="本地仅 5/7/9（8GB 显存超过 10s 必 OOM）；云端可到 15"),

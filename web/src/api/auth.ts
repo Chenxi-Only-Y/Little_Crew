@@ -161,11 +161,43 @@ export function pageNeedsAuth(page: string): boolean {
  * `onSuccess` 会在登录成功后调用（用来继续用户原本想做的事，
  * 例如"登录完自动进入导演台"）。只有**最近一次**请求的回调会被记住——
  * 用户连点两次入口时，应该继续最后一次意图。
+ *
+ * ## ⚠️ 为什么还要把请求**持久化**（`authRequested` 这个模块级标记）
+ *
+ * 原先只 `dispatchEvent`。但 **React 的 effect 是"子先父后"**：
+ * 设置页在它自己的 `useEffect` 里调 `requireAuth()`（例如"没有 token
+ * 就直接请用户登录"），那一刻 **App 的监听器还没注册** —— 事件被丢掉，
+ * 卡片永远不弹。
+ *
+ * 实测时间线（无 token 进设置页）：
+ *
+ *     207ms  require-auth 派发; overlay=0     ← App 还没挂监听
+ *     209ms  require-auth 派发; overlay=0
+ *     701ms … 8400ms  overlay 始终 = 0        ← 用户看到"没有登录入口"
+ *
+ * 这就是"时灵时不灵"的真相：取决于 effect 谁先跑。
+ *
+ * 现在请求会**记在模块变量里**，App 初始化时直接读它（见 `authWasRequested`），
+ * 不再依赖"监听器恰好已经挂上"这种时序假设。
  */
 let pending: (() => void) | null = null;
 
+/** 是否有过"请用户登录"的请求（读后不清，供 App 初始化时判断）。 */
+let authRequested = false;
+
+/** App 初始化时读一次：是否已经有人请求过登录。 */
+export function authWasRequested(): boolean {
+  return authRequested;
+}
+
+/** App 关闭登录卡片时清掉标记，避免下次无关的渲染又把它弹出来。 */
+export function clearAuthRequest(): void {
+  authRequested = false;
+}
+
 export function requireAuth(onSuccess?: () => void): void {
   pending = onSuccess ?? null;
+  authRequested = true;
   window.dispatchEvent(new CustomEvent(REQUIRE_AUTH_EVENT));
 }
 
