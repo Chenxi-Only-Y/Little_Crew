@@ -215,7 +215,7 @@ def _image_fields(role_key: str) -> tuple[ConfigField, ...]:
                     help="带「本地」前缀的用你自己的显卡推理，不产生 API 费用；其余为云端"),
         ConfigField(f"image_model_{role_key}", "模型", "select", "role",
                     options_from_models="image_gen",
-                    help="留空则用该提供者的默认模型；没有你要的可以选「自定义…」手填"),
+                    help="留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"),
         ConfigField(f"image_api_key_{role_key}", "API Key", "password", "role", secret=True),
     )
 
@@ -630,7 +630,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
             # 用户不知道能填什么（用户报过"视频模型没有api填入"）。
             ConfigField("video_model", "视频模型", "select", "global",
                         options_from_models="video_gen",
-                        help="留空则用该提供者的默认模型；没有你要的可以选「自定义…」手填"),
+                        help="留空则用该提供者的默认模型；点「获取可用模型」拉清单，或直接输入模型名（厂商新模型清单里可能还没有）"),
             ConfigField("video_max_duration", "每段时长（秒）", "select", "global",
                         options=("5", "7", "9", "12", "15"), default="7",
                         help="本地仅 5/7/9（8GB 显存超过 10s 必 OOM）；云端可到 15"),

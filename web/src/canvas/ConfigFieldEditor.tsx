@@ -12,6 +12,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+
+import ModelCombo from './ModelCombo';
 import { MASK_SENTINEL, saveSettings } from '../api/settings';
 import { getToken, handleUnauthorized } from '../api/auth';
 import type { ConfigField } from '../domain/registry';
@@ -96,14 +98,6 @@ interface Props {
   };
 }
 
-/**
- * 模型下拉里「自定义…」那一项的哨兵值。
- *
- * 用一个不可能与真实模型名撞车的字符串（双下划线 + 英文），而**不是空串**
- * —— 空串在本项目里是**合法业务值**（= 用提供者默认）。
- */
-const CUSTOM_SENTINEL = '__custom__';
-
 export default function ConfigFieldEditor({
   field,
   current,
@@ -125,15 +119,6 @@ export default function ConfigFieldEditor({
     { ok: boolean; models: ModelInfo[]; detail: string; source?: string } | null
   >(null);
   const [fetching, setFetching] = useState(false);
-  /**
-   * 模型字段是否处于「自定义」输入态。
-   *
-   * 为什么要有这个状态（而不是只看"值在不在清单里"）：
-   * 用户从下拉选了「自定义…」时值为空，而**空值本身是合法业务值**
-   * （= 用提供者默认）。所以"想手填"这个意图必须单独记，否则
-   * 他一切到自定义就被判成"空值 → 渲染回下拉"，根本填不进去。
-   */
-  const [customMode, setCustomMode] = useState(false);
 
   /**
    * 把一段文字渲染成"可提交"的输入框（模型字段的自定义态用）。
@@ -141,37 +126,6 @@ export default function ConfigFieldEditor({
    * 与下面 `text` 分支的区别：那个是受控 + 失焦提交；这里额外给一个
    * 「从清单里选」把它切回下拉 —— 否则用户点进自定义就出不来了。
    */
-  const renderModelInput = () => (
-    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-      <input
-        type="text"
-        className="input"
-        value={value}
-        disabled={busy}
-        placeholder="厂商的模型名，例如 wan3.0-video"
-        style={{ flex: 1 }}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => void commit(value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') void commit(value);
-        }}
-      />
-      <button
-        type="button"
-        className="btn ghost"
-        style={{ fontSize: 11, padding: '2px 8px', whiteSpace: 'nowrap' }}
-        onClick={() => {
-          setCustomMode(false);
-          // 切回清单时清空：否则那个自定义值不在选项里，
-          // 下拉又会退回显示第一项、值与显示不一致
-          setValue('');
-          void commit('');
-        }}
-      >
-        从清单里选
-      </button>
-    </div>
-  );
 
   /** 问提供者要模型清单。云端走厂商 /models，本机走本地服务端点。 */
   const doFetchModels = async () => {
@@ -238,7 +192,6 @@ export default function ConfigFieldEditor({
     lastSavedRef.current = null;
     setValue(currentStr);
     setMsg(null);
-    setCustomMode(false);
   }
 
   const commit = async (raw: string) => {
@@ -336,54 +289,64 @@ export default function ConfigFieldEditor({
     switch (field.type) {
       case 'select': {
         /**
-         * **模型字段**：下拉 + 「自定义…」。
+         * **模型字段** → 用 `ModelCombo`（可自由输入 + 可筛选的下拉清单）。
          *
-         * ## 为什么模型要特判
+         * ## 为什么不用普通 `<select>`（试过，不行）
          *
-         * `video_model` / `image_model_*` / `llm_model_*` 的选项是
-         * **所有提供者的模型名并集**（后端 `options_from_models` 派生）。
-         * 于是有个普通下拉没有的问题：**当前值可能不在选项里** ——
-         * 用户手填过厂商新模型、或清单还没收录它。普通下拉遇到这种情况会
-         * **退回显示第一项**，用户看到的值与后端存的不是一回事
-         * （这个坑本项目踩过好几次）。
+         * `video_model` / `image_model_*` / `llm_model_*` 的选项是**所有提供者
+         * 的模型名并集**（后端 `options_from_models` 派生），于是：
          *
-         * 所以：
-         *   · 第一项是空值 = 「用提供者默认」（不是无意义的"请选择"）；
-         *   · 值不在清单里 → 渲染成**文本框**，不假装选中第一项；
-         *   · 最后一项「自定义…」→ 切成文本框，可手填新模型名；
-         *   · 文本框旁给「从清单里选」切回下拉。
+         *   · **当前值可能不在清单里** —— 用户手填过厂商新模型、或清单还没收录。
+         *     普通下拉遇到这种情况会**退回显示第一项**，用户看到的值与后端存的
+         *     不是一回事（本项目踩过好几次）；
+         *   · 清单**永远滞后**：厂商上新模型时不会自动出现，所以必须**允许直接
+         *     输入**（用户明确要求："可以用户自己输入"）。
+         *
+         * ## 我第一版做错的地方
+         *
+         * 我发明了"下拉 + 自定义…切文本框 + 从清单里选切回"这套 —— 用户要的是
+         * **一个输入框带下拉箭头**，不是两个模式来回切。已改成 `ModelCombo`。
          *
          * ⚠️ 不做「测试」按钮 —— 用户明确说过"不要测试了"。
          */
         const isModelField = /(^|_)model(_|$)/.test(field.key);
-        if (isModelField && !customMode) {
-          const opts = allowedOptions
+        if (isModelField) {
+          const base = allowedOptions
             ? field.options.filter((o) => allowedOptions.includes(o))
             : field.options;
-          // 值不在清单里 → 用户填过自定义模型，直接以文本框呈现
-          if (value && !opts.includes(value)) return renderModelInput();
+          /**
+           * 清单 = **注册表里已核对的** + **「获取可用模型」拉回来的**。
+           *
+           * 为什么不只用一个：
+           *   · 注册表那份是静态的（可能滞后，但一定含图像/视频模型）；
+           *   · 拉回来那份更新鲜（厂商上新模型会出现），但很多平台的
+           *     `/models` **只列对话模型**，不含图像/视频。
+           * 合并后两个来源的模型都在下拉里可选。
+           */
+          const seen = new Set<string>();
+          const opts: Array<{ id: string; kind?: string }> = [];
+          for (const id of base) {
+            if (id && !seen.has(id)) {
+              seen.add(id);
+              opts.push({ id });
+            }
+          }
+          for (const m of models?.models ?? []) {
+            if (m.id && !seen.has(m.id)) {
+              seen.add(m.id);
+              opts.push({ id: m.id, kind: m.kind });
+            }
+          }
           return (
-            <select
+            <ModelCombo
               value={value}
               disabled={busy}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === CUSTOM_SENTINEL) {
-                  setCustomMode(true);
-                  return;
-                }
+              options={opts}
+              onChange={(v) => {
                 setValue(v);
                 void commit(v);
               }}
-            >
-              <option value="">用提供者默认</option>
-              {opts.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-              <option value={CUSTOM_SENTINEL}>自定义…（手填新模型名）</option>
-            </select>
+            />
           );
         }
         const all = field.options.length ? field.options : [];
@@ -568,55 +531,6 @@ export default function ConfigFieldEditor({
                   <span style={{ opacity: 0.75 }}>（来源：已核对的清单，非实时）</span>
                 )}
               </div>
-              {models.models.length > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 4,
-                    marginTop: 6,
-                    maxHeight: 132,
-                    overflowY: 'auto',
-                  }}
-                >
-                  {models.models.map((m) => {
-                    // 用户要求"在列表里标一下模型类型"。
-                    // 嵌入模型（如 bge-m3）当对话模型用**会直接报错**，
-                    // 而两个名字在图里长得一样 —— 所以除了标签还要给出警告。
-                    const kindLabel =
-                      m.kind === 'chat' ? '对话' : m.kind === 'embed' ? '嵌入' : '';
-                    const isEmbed = m.kind === 'embed';
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        className="btn ghost"
-                        title={
-                          isEmbed
-                            ? '这是嵌入模型，不能当对话模型用（调用会报错）'
-                            : '点击填入「模型」'
-                        }
-                        style={{
-                          fontSize: 11,
-                          padding: '2px 6px',
-                          color: isEmbed ? 'var(--st-review)' : undefined,
-                          borderColor: isEmbed ? 'var(--st-review)' : undefined,
-                        }}
-                        onClick={() => {
-                          setValue(m.id);
-                          void commit(m.id);
-                        }}
-                      >
-                        {m.id}
-                        {kindLabel && (
-                          <span style={{ marginLeft: 4, opacity: 0.8 }}>· {kindLabel}</span>
-                        )}
-                        {isEmbed && <span style={{ marginLeft: 4 }}>⚠ 不能对话</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
         </div>
