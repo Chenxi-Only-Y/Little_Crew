@@ -286,7 +286,51 @@ def validate_spec(spec: dict) -> list[SpecProblem]:
                 f"节点 {k!r} 没有任何入边 —— 它**永远不会被执行**",
                 where=k))
 
+    # 8. **可达性**：从入口顺着边能不能走到它
+    #
+    # ⚠️ 这条是**补上来的**：上面第 6 条只看"有没有入边"，会漏掉一种情况 ——
+    # 某个节点自己有出边（所以它出现在边的"起点"里），于是第 6 条不报它，
+    # 但从**入口**已经走不到它了（它的所有前驱被删掉）。
+    # 实测：删掉 `image_generator` 后，`quality_assessor` 自己还是 `retry` 的起点，
+    # 于是"有入边"的检查判它没问题，可它已经成了进不去的死环节。
+    reachable = _reachable_from(entry, node_set, spec)
+    for k in sorted(node_set - reachable):
+        out.append(SpecProblem(
+            "error",
+            f"节点 {k!r} 从入口 {entry!r} **走不到**（前驱被摘掉了）—— "
+            f"它会成为永远不执行的死环节",
+            where=k))
+
     return out
+
+
+def _reachable_from(entry: str, node_set: set[str], spec: dict) -> set[str]:
+    """从入口做一次图遍历，返回可达的节点集合。"""
+    if entry not in node_set:
+        return set()
+    # 邻接表：包含普通边与条件分支
+    adj: dict[str, set[str]] = {k: set() for k in node_set}
+    for e in spec.get("edges") or []:
+        a, b = e.get("from"), e.get("to")
+        if a in adj and b in node_set:
+            adj[a].add(b)
+    for e in spec.get("conditional") or []:
+        a = e.get("from")
+        if a not in adj:
+            continue
+        for tgt in (e.get("branches") or {}).values():
+            if tgt in node_set:
+                adj[a].add(tgt)
+
+    seen: set[str] = set()
+    stack = [entry]
+    while stack:
+        cur = stack.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        stack.extend(adj.get(cur, ()))
+    return seen
 
 
 def errors_of(problems: list[SpecProblem]) -> list[SpecProblem]:
