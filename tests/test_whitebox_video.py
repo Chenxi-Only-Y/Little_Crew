@@ -350,14 +350,31 @@ def test_request_user_propagates_to_sync_endpoint():
     # 断言它只会测出错误的东西（我第一版就是这么写错的）。
 
 
-def test_global_still_wins_when_no_request_user():
-    """没有请求用户时仍应回退到 _global（不要因为加了请求作用域就破坏原有回退）。"""
+def test_global_still_wins_when_no_request_user(tmp_path):
+    """没有请求用户时仍应回退到 _global（不要因为加了请求作用域就破坏原有回退）。
+
+    ⚠️ 这条测试原先直接用 `set_many("_global", …)` 往**真实数据库**的 `_global`
+    行写了一个 `probe_global_only`，**测完不清理** —— 于是每跑一次测试，
+    用户库里就多留一个键，而且它会出现在 `GET /api/settings` 的返回里
+    （我核查时被它误导过一次，先当成了孤儿键问题）。
+
+    这里改成：**先保存 `_global` 原值，测完恢复**。这样测试不再污染真实设置。
+    """
     from app.services import runtime_settings as rs
 
-    rs.set_many("_global", {"probe_global_only": "G"})
-    rs.set_request_user(None)
-    rs.set_user(None)
-    assert rs.get("probe_global_only") == "G"
+    KEY = "probe_global_only"
+    saved = rs._user_override("_global") or {}
+    try:
+        rs.set_many("_global", {KEY: "G"})
+        rs.set_request_user(None)
+        rs.set_user(None)
+        assert rs.get(KEY) == "G"
+    finally:
+        # 恢复：把整个 `_global` payload 写回原样（merge=False 才能删掉测试键）
+        rs.reset("_global")
+        if saved:
+            rs.set_many("_global", saved, merge=False)
+        assert KEY not in (rs._user_override("_global") or {}), "测试键没清干净"
 
 
 def test_clearing_setting_restores_autodiscovery(client: TestClient, with_ffmpeg):
