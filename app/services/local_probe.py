@@ -28,7 +28,7 @@
 
     ollama        GET :11434/api/tags     且响应里有 models 数组
     vllm          GET :8000/v1/models     且响应像 OpenAI（有 data/object）
-    local-gen     GET :8100/health（退回 /）—— 出图 / 出视频 / LoRA 训练共用
+    local-gen     GET :8100/health（退回 /）—— 出图 / 出视频共用
     ffmpeg        <外部目录>/bin/ffmpeg.exe -version 退出码 0
     edge-tts      外部 venv 的 python -c "import edge_tts"
     render_2d     不需要探测（纯 Python PIL，项目自带）
@@ -202,8 +202,8 @@ NO_PROBE_NEEDED: frozenset[tuple[str, str]] = frozenset({
 #: 提供者 key → 探测函数。
 #:
 #: ⚠️ key 是 `(capability, provider_key)` 的组合，不是单纯的 provider key：
-#: 同一个 key `local` 在 5 个能力下都是"本机自建服务"，但要分开判断
-#: （比如出图服务在跑不代表 LoRA 训练的训练依赖齐了）。
+#: 同一个 key `local` 在多个能力下都是"本机自建服务"，但要分开判断
+#: （比如出图服务在跑不代表出视频也齐了）。
 PROBES: dict[tuple[str, str], object] = {
     ("llm", "ollama"): _probe_ollama,
     ("llm", "vllm"): _probe_vllm,

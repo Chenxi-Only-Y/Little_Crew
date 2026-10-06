@@ -59,7 +59,7 @@ export type Restriction = 'local' | 'cloud' | 'unset';
  * 表示"没有覆盖、跟随模式"的占位值。
  *
  * 注册表里用过两种写法，**含义相同**：
- *   · `(自动)`   —— LLM / 图像 / TTS / LoRA 的提供者字段
+ *   · `(自动)`   —— LLM / 图像 / TTS 的提供者字段
  *   · `(按模式)` —— 视频的 `video_provider`（它只有这一个静态选项，
  *                   真正的候选由后端 `_field_options` 动态补上）
  *
@@ -72,11 +72,12 @@ const PLACEHOLDERS = new Set(['', '(自动)', '(按模式)', 'unset']);
  * 把前端用的短前缀规范成 `/api/providers` 的能力名。
  *
  * ⚠️ 这个映射**必须完整**，漏一个能力名就会让那组下拉失去过滤。
- * 我第一版就漏了 `video → video_gen`（只写了 image 与 lora），
+ * 我第一版就漏了 `video → video_gen`（只写了 image），
  * 而**恰好视频那组就是用户截图里混档的那组** —— 单元测试当场抓到了它。
  *
  * 对照后端 `ProviderSpec.capability` 的取值：
- *   llm / image_gen / image_edit / video_gen / lora_train / tts / music / render_2d
+ *   llm / image_gen / image_edit / video_gen / tts / music / render_2d
+ * （`lora_train` 已随「LoRA 训练」一起从本项目删除。）
  */
 const CAPABILITY_ALIAS: Record<string, string> = {
   image: 'image_gen',
@@ -84,8 +85,6 @@ const CAPABILITY_ALIAS: Record<string, string> = {
   image_edit: 'image_gen',
   video: 'video_gen',
   video_gen: 'video_gen',
-  lora: 'lora_train',
-  lora_train: 'lora_train',
 };
 
 export function capabilityOf(capPrefix: string): string {
@@ -101,21 +100,20 @@ export function capabilityOf(capPrefix: string): string {
  *
  *     image_provider_mode        ← 不是 image_gen_provider_mode
  *     video_provider_mode        ← 不是 video_gen_provider_mode
- *     lora_train_provider_mode   ← 这个是特例（带 train）
  *     llm_provider_mode  /  tts_provider_mode
  *
  * 所以**不能**先把入参规范化成能力名再拼键名 —— 那样 image/video 就拼错了，
  * 键不存在 → 永远读到 `unset` → 那两组下拉完全不过滤。
- * 只有 `lora` → `lora_train_provider_mode` 这一处需要改写。
  *
  * 反过来 `allowedProviders` 里比较 `p.capability` 时**需要**能力名
  * （`image_gen` / `video_gen`），那是另一件事，用 `capabilityOf`。
  * 两个映射混用正是我反复出错的根源，故此处显式区分。
+ *
+ * （原有一个特例：`lora` → `lora_train_provider_mode` —— 那是**唯一**一个
+ *   "短前缀 ≠ 键名前缀"的情况。LoRA 训练已从本项目删除，该分支随之删掉，
+ *   于是这里的规则变得更干净：键名就是 `{前缀}_provider_mode`。）
  */
 export function modeKeyOf(capPrefixOrCapability: string): string {
-  if (capPrefixOrCapability === 'lora' || capPrefixOrCapability === 'lora_train') {
-    return 'lora_train_provider_mode';
-  }
   // image / image_gen / image_edit 共用同一个模式键
   if (capPrefixOrCapability === 'image' || capPrefixOrCapability === 'image_edit') {
     return 'image_provider_mode';
@@ -320,7 +318,7 @@ export function audioOptionsFor(
  *
  * 实测踩到过：
  *
- *     lora_train_provider_mode = 'local'  →  lora_train_provider 选项 = ["(按模式)"]
+ *     image_provider_mode = 'local'  →  image_provider 选项 = ["(按模式)"]
  *
  * 所以要给一句**能行动**的说明：不是"出错了"，而是"本机没检测到，
  * 你可以启动它，或者把模式切到云端"。

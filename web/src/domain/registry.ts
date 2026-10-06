@@ -18,13 +18,18 @@ export type ArtifactKind =
   | 'model'
   | 'timeline';
 
-/** 能力类别：决定节点能用哪些 provider */
+/**
+ * 能力类别：决定节点能用哪些 provider。
+ *
+ * ⚠️ 这是**手写**的联合类型（不来自快照），作用之一是**漂移守卫**：
+ *    若后端新增了前端不认识的能力，这里的类型就不会匹配，编译期能发现。
+ * `lora_train` 已随「LoRA 训练」从本项目删除（那是本地部署模型自己的事）。
+ */
 export type ProviderCapability =
   | 'llm'
   | 'image_gen'
   | 'image_edit'
   | 'video_gen'
-  | 'lora_train'
   | 'tts'
   | 'music'
   | 'render_2d';

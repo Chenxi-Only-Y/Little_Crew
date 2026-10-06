@@ -72,11 +72,12 @@ test('modeKeyOf 对每个能力都给出后端**真实存在**的键名', () => 
   assert.equal(modeKeyOf('image'), 'image_provider_mode');
   assert.equal(modeKeyOf('video'), 'video_provider_mode');
   assert.equal(modeKeyOf('tts'), 'tts_provider_mode');
-  assert.equal(modeKeyOf('lora'), 'lora_train_provider_mode');
   // 传能力名（CAP_GROUPS.cap）也必须落到同一个键 —— 第 1 次就是这么错的
   assert.equal(modeKeyOf('image_gen'), 'image_provider_mode');
   assert.equal(modeKeyOf('image_edit'), 'image_provider_mode');
-  assert.equal(modeKeyOf('lora_train'), 'lora_train_provider_mode');
+  // ⚠️ 这里原先还断言 `modeKeyOf('lora'/'lora_train') === 'lora_train_provider_mode'`。
+  // 「LoRA 训练」已按用户要求从本项目整体删除（那是本地部署模型自己的事），
+  // 所以那条断言和 `providerFilter.ts` 里对应的特例分支一起删掉了。
 });
 
 test('modeOf 能读到真实设置里的模式值', () => {
@@ -90,9 +91,9 @@ test('modeOf 能读到真实设置里的模式值', () => {
 
 test('capabilityOf 把短前缀映射到接口的能力名', () => {
   assert.equal(capabilityOf('image'), 'image_gen');
-  assert.equal(capabilityOf('lora'), 'lora_train');
   assert.equal(capabilityOf('llm'), 'llm');
   assert.equal(capabilityOf('video'), 'video_gen');
+  // （原有一条 `capabilityOf('lora') === 'lora_train'`，随 LoRA 训练一起删除）
 });
 
 // ------------------------------------------------------------------
@@ -355,22 +356,24 @@ test('一档里一个可用提供者都没有时，要说明**为什么**和**�
   // "直接不列"有个副作用：模式设成本地、而本机一个本地提供者都没有时，
   // 那个下拉里只剩占位符 —— 用户看到一个空框，不知道是配错了还是坏了。
   //
-  // 实测踩到：lora_train_provider_mode='local' 且 local-gen 没启动
-  // → lora_train_provider 的选项 = ["(按模式)"]，什么都没有。
+  // ⚠️ 这个夹具原先用的是 LoRA（`lora_train_provider_mode='local'` 且
+  // local-gen 没启动）；LoRA 训练已从本项目删除，改用**仍然存在**的
+  // 「配音」能力 —— `emptyReasonFor` 是能力无关的通用函数，
+  // 换能力不影响这条测试要守的东西（原因 + 可行动的做法）。
   const list: ProviderInfo[] = [
-    { ...P('local', '本地 · DiffSynth', 'lora_train', true), runtime_ready: false },
-    { ...P('dashscope', '阿里百炼', 'lora_train', false), runtime_ready: true },
+    { ...P('edge', '本地 · 系统语音', 'tts', true), runtime_ready: false },
+    { ...P('dashscope', '阿里百炼', 'tts', false), runtime_ready: true },
   ];
 
-  const reason = emptyReasonFor('lora', 'lora_train_provider', { lora_train_provider_mode: 'local' }, list);
+  const reason = emptyReasonFor('tts', 'tts_provider', { tts_provider_mode: 'local' }, list);
   assert.ok(reason, '应当给出原因');
   assert.match(reason, /本地/, '要说清是哪一档');
   assert.match(reason, /云端|启动/, '要给出可行动的做法');
 
   // 有可选提供者时不提示
-  assert.equal(emptyReasonFor('lora', 'lora_train_provider', { lora_train_provider_mode: 'cloud' }, list), null);
+  assert.equal(emptyReasonFor('tts', 'tts_provider', { tts_provider_mode: 'cloud' }, list), null);
   // 没有字段键时不提示（模式字段等）
-  assert.equal(emptyReasonFor('lora', undefined, {}, list), null);
+  assert.equal(emptyReasonFor('tts', undefined, {}, list), null);
 });
 
 test('非 openai 协议的提供者永远不列（选了必然失败）', () => {
