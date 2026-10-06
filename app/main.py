@@ -20,7 +20,7 @@ import uuid
 import threading
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from app.core.config import settings
 from app.services.auth import get_user_store
@@ -1287,12 +1287,80 @@ async def approve_workflow_proposal(pid: str, payload: dict, request: Request):
               "removes_nodes": removes},
     )
     store.append_event(pid, "applied", {"graph_version": version}, actor=uid)
+
+    # ---- A3：顺手把改动落成**代码补丁**（进版本库、可 review）----
+    #
+    # A2 换的是内存里的图，重启即失效；补丁是"要固定下来时"用的。
+    # 生成失败**不影响**已经生效的换图 —— 所以只记事件、不抛错。
+    patch_path = ""
+    try:
+        from app.workflows.patch import make_patch
+
+        _text, patch_path = make_patch(
+            rec, spec, approved_by=uid, graph_version=version)
+        store.append_event(pid, "patch_generated",
+                           {"path": str(patch_path)}, actor="system")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[patch] 生成补丁失败（换图已生效，不受影响）：%s", exc)
+        store.append_event(pid, "patch_failed",
+                           {"error": f"{type(exc).__name__}: {exc}"}, actor="system")
+
+    # ⚠️ 必须**重新 load** 再改字段，不能拿"追加事件之前"读的 `rec` 整份 save ——
+    # 那样会把 `append_event` 刚写进去的事件流**整段盖掉**。
+    # 实测踩到：事件流里只剩 `applied`，`patch_generated` 不见了。
     rec = store.load(pid) or rec
     rec["status"] = "applied"
     rec["graph_version"] = version
+    if patch_path:
+        rec["patch_path"] = str(patch_path)
     store.save(rec)
     return {"status": "ok", "applied": True, "graph_version": version,
             "proposal": store.as_public(store.load(pid))}
+
+
+@app.get("/api/workflow/proposal/{pid}/patch")
+async def get_workflow_patch(pid: str, request: Request, regenerate: int = 0):
+    """取这份提案的**代码补丁**（A3）。
+
+    补丁在批准时生成；`regenerate=1` 可以按当前规格重新生成
+    （例如批准时只选了"不生效"，后来才决定要补丁）。
+    """
+    _auth_user(request)
+    rec = _proposal_or_404(pid)
+
+    if regenerate or not rec.get("patch_path"):
+        spec = rec.get("_spec")
+        if not spec:
+            from app.workflows import graph_spec as gs
+            from app.workflows import proposal as P
+
+            prop = P.Proposal(summary=rec.get("summary") or "", ops=rec.get("ops") or [])
+            spec, _ = P.apply_ops(gs.default_spec(), prop.ops)
+        from app.workflows.patch import make_patch
+        from app.workflows import proposal_store as store
+
+        text, path = make_patch(rec, spec, approved_by=rec.get("author") or "",
+                                graph_version=rec.get("graph_version"))
+        rec = store.load(pid) or rec
+        rec["patch_path"] = str(path)
+        store.save(rec)
+
+    p = pathlib.Path(rec["patch_path"])
+    if not p.exists():
+        raise HTTPException(status_code=404, detail=f"补丁文件不存在：{p}")
+    return {"status": "ok", "path": str(p), "patch": p.read_text(encoding="utf-8")}
+
+
+@app.get("/api/workflow/proposal/{pid}/patch/download")
+async def download_workflow_patch(pid: str, request: Request):
+    """下载补丁文件（`text/plain`，便于直接保存成 .patch/.diff）。"""
+    _auth_user(request)
+    rec = _proposal_or_404(pid)
+    path = rec.get("patch_path")
+    if not path or not pathlib.Path(path).exists():
+        raise HTTPException(status_code=404, detail="还没有生成补丁，先生成或批准一次")
+    return FileResponse(path, media_type="text/plain",
+                        filename=pathlib.Path(path).name)
 
 
 @app.post("/api/workflow/proposal/{pid}/reject")
