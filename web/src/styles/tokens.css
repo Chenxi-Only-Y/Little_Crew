@@ -1146,6 +1146,35 @@ h3 {
 }
 
 /**
+ * **固定 3 列**的设置网格。
+ *
+ * 与 `.settings-grid`（`auto-fit`）的区别是实测出来的：1920px 宽时
+ * `auto-fit` 会算出 **6 列**，于是视频卡那 6 个字段**全挤成一排** ——
+ * 用户看到的就是"根本没分成排、乱成一团"。
+ *
+ * 而"按职业一行"的网格（图像卡/文字卡里那排）是固定 3 列，所以
+ * 「来源 · 模型 · API Key」正好一排、宽度也刚好。用户要的就是
+ * "和这种格式一样"（原话）。
+ *
+ * 窄屏退回 2 列 / 1 列，不至于把每个格子压到读不清。
+ */
+.settings-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .settings-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .settings-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/**
  * 网格单元：**统一顶部对齐 + 标签定高**。
  *
  * 光有 `align-items: start` 不够：设置项的文字长短差别很大，

@@ -356,6 +356,56 @@ export function emptyReasonFor(
 }
 
 /**
+ * 「视频**实际会用哪一家**提供者」——与后端 `resolve_provider` 的优先级一致：
+ *
+ *     字段覆盖（`video_provider` 选了具体某家）
+ *       > 模式默认（后端下发的 `mode_defaults.video_gen[模式]`）
+ *       > 空（还没定）
+ *
+ * ## 为什么做成**模块级纯函数**，而不是组件里的 `useMemo`
+ *
+ * 我第一版写在 `SettingsPage` 里当 `useMemo`，连踩两个坑：
+ *
+ *   1. **Hook 数量在两次渲染间变化**：它写在 `if (settings === null) return`
+ *      之后 —— 首次渲染走早返回（hook 不执行），设置到达后重渲染（hook 执行），
+ *      React 抛 "Rendered more hooks than during the previous render."
+ *      并**把整页渲染成黑屏**（用户报的"黑屏"就是这个）。
+ *   2. 挪到早返回之前后，又变成
+ *      **"Cannot access 'modeOf' before initialization"** —— `modeOf` 是组件里
+ *      定义在更下方的 `const`，在 `useMemo` 的求值顺序下仍处于 TDZ。
+ *
+ * 两个坑的根源相同：**它就是个廉价计算，不配用 `useMemo`**。
+ * 抽成模块级纯函数后，既没有 hook 顺序问题、也没有 TDZ 问题，还能单独测。
+ */
+export function effectiveVideoProvider(
+  settings: Record<string, unknown> | null | undefined,
+  modeDefaults?: Record<string, Record<string, string>> | null,
+): string {
+  const prov = String(settings?.['video_provider'] ?? '');
+  const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
+  if (!isPlaceholder) return prov;
+  return String(modeDefaults?.['video_gen']?.[modeOf('video_gen', settings)] ?? '');
+}
+
+/**
+ * 某个凭据字段是否属于"当前会用的那家提供者"。
+ *
+ * 都没定（还没选模式、也没有默认）时**全放行** —— 别让用户在还没选的时候
+ * 就无从下手配密钥。
+ */
+export function credForProvider(
+  c: { provider: string },
+  settings: Record<string, unknown> | null | undefined,
+  modeDefaults?: Record<string, Record<string, string>> | null,
+): boolean {
+  const prov = String(settings?.['video_provider'] ?? '');
+  const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
+  const eff = effectiveVideoProvider(settings, modeDefaults);
+  if (isPlaceholder && !eff) return true;
+  return c.provider === eff;
+}
+
+/**
  * 下拉的**白名单**（选项本身，不只是显示名）。
  *
  * ⚠️ 只过滤显示名是不够的：`field.options` 来自后端注册表的**静态**

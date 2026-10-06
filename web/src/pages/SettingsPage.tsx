@@ -46,6 +46,7 @@ import {
   AUDIO_LABELS,
   allowedProviders as computeAllowedProviders,
   capabilityOf,
+  credForProvider as isCredForCurrentProvider,
   emptyReasonFor,
   modeOf as computeModeOf,
   optionLabelsFor as computeOptionLabels,
@@ -767,20 +768,6 @@ export default function SettingsPage() {
    * 抽成函数是因为**两处要用**（第二排的 Key、第三排收起的端点），
    * 两处判据必须一致 —— 否则会出现"Key 是 A 家的、端点是 B 家的"。
    */
-  const effectiveVideoProvider = useMemo(() => {
-    const prov = String(settings?.video_provider ?? '');
-    const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
-    if (!isPlaceholder) return prov;
-    return String(modeDefaults?.video_gen?.[modeOf('video_gen')] ?? '');
-  }, [settings, modeDefaults]);
-
-  /** 某个凭据字段是否属于"当前会用的那家"。都没定时全放行（别让用户无从下手）。 */
-  const credForProvider = (c: { provider: string }): boolean => {
-    const prov = String(settings?.video_provider ?? '');
-    const isPlaceholder = !prov || prov.startsWith('(') || prov === 'unset';
-    if (isPlaceholder && !effectiveVideoProvider) return true;
-    return c.provider === effectiveVideoProvider;
-  };
 
   /** 渲染一个字段：设置值 + 保存回调，避免每处都写一遍 */
   const renderField = (f: ConfigField, node: string, capPrefix: string) => {
@@ -927,9 +914,24 @@ export default function SettingsPage() {
               {g.desc}
             </div>
 
-            {/* 能力级：模式 + 该能力的全局参数。标签对齐靠 .settings-grid */}
+            {/*
+              能力级：模式 + 该能力的全局参数。
+
+              ⚠️ 用 `settings-grid-3`（**固定 3 列**）而不是 `settings-grid`
+              （`auto-fit minmax(240px,1fr)`）。区别是实测出来的：
+
+                  1920px 宽下，`auto-fit` 会算出 **6 列** —— 于是视频卡的
+                  「模式 · 来源 · 模型 · API Key · 声音来源 · 每段时长」
+                  **全挤成一排**，用户看到的就是"乱成一团、根本没分成排"。
+
+              而图像卡按职业的那一行用的是固定 3 列网格，所以
+              「来源 · 模型 · API Key」正好一排、宽度也刚好 ——
+              用户要的就是"和这种格式一样"。
+
+              固定 3 列后：来源 → 模型 → API Key 一排；其余参数自然折到下一排。
+            */}
             {(bucket.mode || bucket.global.length > 0) && (
-              <div className="settings-grid">
+              <div className="settings-grid settings-grid-3">
                 {bucket.mode && (
                   <div className="settings-cell">
                     {renderField(bucket.mode.field, bucket.mode.node, g.cap)}
@@ -958,6 +960,16 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/*
+              ⚠️ 全局参数是**另一个网格**，不能和上面的模式挤在同一个容器里。
+              同一个网格里 `auto-fit`/固定列都会把"模式"和"来源"排到同一行 ——
+              用户要的是模式**单独占第一排**。
+            */}
+            {bucket.global.length > 0 && (
+              <div className="settings-grid settings-grid-3">
                 {(() => {
                   /**
                    * 能力级全局字段，**按 `GLOBAL_FIELD_ORDER` 排**，
@@ -986,7 +998,7 @@ export default function SettingsPage() {
                   //   ① `video_provider` 选了具体某家 → 只要那一家的 Key
                   //   ② 是占位符（跟随模式）→ 用**模式默认**那一家
                   //   ③ 都没有 → 全列（用户还没选，不能让他无从下手）
-                  const keyFields = credKeys.filter(credForProvider);
+                  const keyFields = credKeys.filter((c) => isCredForCurrentProvider(c, settings, modeDefaults));
                   rows.push({
                     k: CRED_KEYS_SLOT,
                     order: globalOrder(CRED_KEYS_SLOT),
@@ -1033,7 +1045,7 @@ export default function SettingsPage() {
                 </summary>
                 <div className="settings-grid" style={{ marginTop: 10 }}>
                   {(creds.video.endpoints ?? [])
-                    .filter((c) => credForProvider(c))
+                    .filter((c) => isCredForCurrentProvider(c, settings, modeDefaults))
                     .map((c) => (
                       <div className="settings-cell" key={c.key}>
                         {renderField(toConfigField(c), 'video-cred', g.cap)}

@@ -499,7 +499,11 @@ def video_credential_fields() -> list[dict]:
         seen.add(p.api_key_setting)
         out.append({
             "key": p.api_key_setting,
-            "label": f"{p.label} · API Key",
+            # 标签就叫「API Key」——**不加提供者前缀**（用户明确要求）。
+            # 上面「视频来源」已经选了是哪一家，这里再重复一遍提供者名
+            # 纯属噪音；而且前端只显示**当前那一家**的 Key，
+            # 根本不存在"分不清是哪个"的问题。
+            "label": "API Key",
             "kind": "secret",
             "provider": p.key,
             "hint": p.note,
@@ -521,7 +525,7 @@ def video_endpoint_fields() -> list[dict]:
         field = p.endpoint_setting or f"{p.key}_base_url"
         out.append({
             "key": field,
-            "label": f"{p.label} · 端点",
+            "label": "API 端点",
             "kind": "text",
             "provider": p.key,
             "hint": f"留空用默认：{p.base_url}",
