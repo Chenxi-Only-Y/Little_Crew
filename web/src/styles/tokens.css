@@ -839,6 +839,30 @@ h3 {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.6);
 }
 
+/**
+ * 顶栏那个 chip 在未登录时是**登录入口**（用户报过"左上角不能点击登录"）。
+ *
+ * 它原本是个 `<span>`（纯展示），处于"凭据失效"状态时用户在顶部找不到
+ * 任何可点的入口 —— 而登录卡片当时又因为竞态没弹出来，彻底卡住。
+ *
+ * 改成 `<button>` 后要补两件事：
+ *   · `cursor: pointer` —— `<button>` 默认不是手型，点起来不像能点；
+ *   · hover 反馈 —— 否则与旁边的纯展示信息片看起来一模一样。
+ * 其余观感沿用 `.pill-dock .pill-chip`（透明底 + 文字阴影），
+ * 这样它与顶栏其它元素仍然是一体的。
+ */
+.pill-chip-btn {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.pill-chip-btn:hover {
+  color: var(--text);
+  border-color: var(--line);
+}
+
 /* ══════════════════════════════════════════════════════════════
    卡片
    ══════════════════════════════════════════════════════════════ */

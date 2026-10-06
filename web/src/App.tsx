@@ -29,6 +29,7 @@ import SettingsPage from './pages/SettingsPage';
 import { usePage } from './app/router';
 import { loadRegistry } from './api/registry';
 import {
+  AUTH_CHANGED_EVENT,
   clearAuth,
   consumePendingIntent,
   getToken,
@@ -82,15 +83,52 @@ export default function App() {
   }, []);
 
   /**
-   * 监听"请求登录"事件（进导演台/预演/设置时由 Shell 与首页入口触发）。
+   * 凭据变化（登录 / 退出 / 失效清除）时同步 `auth` 状态。
    *
-   * 已经是登录态时**不弹**——避免用户点导航时被自己的登录卡片挡一下。
+   * ## ⚠️ 为什么必须监听（用户报的"不能点击登录"）
+   *
+   * `auth` 原先**只在启动时算一次**。而 token 是**运行期间**失效的
+   * （后端 TTL 90 天，所以是"某一天突然全都 401"）。失效后：
+   *
+   *   · 设置页 401 → `handleUnauthorized()` → `clearAuth()` + `requireAuth()`
+   *     → `setAuthOpen(true)`；
+   *   · **但登录卡片的渲染条件是 `authOpen && auth !== 'authenticated'`**
+   *     （见本文件下方），而 `auth` 还停在 `authenticated` ——
+   *   · 于是卡片**渲染不出来**，用户面对一个"说未登录、却没有任何登录入口"
+   *     的页面。点导航也没用（`onRequire` 里 `getToken()` 那次判断也过不去）。
+   *
+   * 用户的截图正是这个状态：设置页写着"登录已失效"，而页面上**只有一个
+   * 不显眼的「重新登录」按钮**、没有任何自动弹出的登录卡片。
    */
   useEffect(() => {
-    const onRequire = () => {
-      if (getToken()) return; // 已登录，直接放行
-      setAuthOpen(true);
-    };
+    const sync = () => setAuth(getToken() ? 'authenticated' : 'anonymous');
+    window.addEventListener(AUTH_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
+  }, []);
+
+  /**
+   * 监听"请求登录"事件（进导演台/预演/设置时由 Shell 与首页入口触发，
+   * 以及任何请求收到 401 时由 `handleUnauthorized()` 触发）。
+   *
+   * ## ⚠️ 为什么不再判断 `getToken()`
+   *
+   * 原先是 `if (getToken()) return;`，注释写着"已经是登录态时不弹，
+   * 避免用户点导航时被卡片挡一下"。但**发起方比这里更清楚要不要登录**：
+   *
+   *   · 导航到受限页面时会先判断"没 token 才 requireAuth"；
+   *   · 而**收到 401** 的路径恰恰相反 —— 那时 token **还在**（只是失效了），
+   *     `handleUnauthorized()` 先 `clearAuth()` 再 `requireAuth()`，
+   *     所以这里其实读不到它。真正的问题是**竞态**：若事件在 `clearAuth()`
+   *     之前/之间被处理，`getToken()` 仍有值 → 直接 return → **卡片不弹**。
+   *
+   * 这正是用户截图里的状态：设置页说"登录已失效"，却**没有任何登录入口**。
+   *
+   * 现在无条件打开卡片。已登录时被多弹一次是可接受的（而且 `requireAuth()`
+   * 的调用方都在"确实需要凭据"的位置）；反过来"该弹时没弹"会让用户
+   * 彻底卡住 —— 两者代价差得很远。
+   */
+  useEffect(() => {
+    const onRequire = () => setAuthOpen(true);
     window.addEventListener(REQUIRE_AUTH_EVENT, onRequire);
     return () => window.removeEventListener(REQUIRE_AUTH_EVENT, onRequire);
   }, []);

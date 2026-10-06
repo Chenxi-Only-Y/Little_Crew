@@ -406,6 +406,22 @@ export default function SettingsPage() {
 
     const load = async (attempt = 0) => {
       const token = getToken();
+
+      // ⚠️ **没有 token 就不要发这个必然 401 的请求**，直接请用户登录。
+      //
+      // 为什么不能靠"401 → handleUnauthorized()"来兜：那条路会
+      // `clearAuth()` → 派发 `AUTH_CHANGED_EVENT` → `onAuth` 又调本函数
+      // → 又 401 → **无限循环**；而如果为了防循环而"无 token 时不处理
+      // 401"，卡片就**永远不弹**（用户看到的还是"找不到登录入口"）。
+      //
+      // 两条路都不通，所以在这里**提前返回**：既不发无用请求，
+      // 也不会循环，卡片也一定会弹。
+      if (!token) {
+        setError('登录已失效，无法读取你的设置。');
+        requireAuth();
+        return;
+      }
+
       const res = await fetchSettings(token);
       if (!alive) return;
       if (res.ok) {
@@ -413,8 +429,13 @@ export default function SettingsPage() {
         setError(null);
       } else {
         setError(res.error ?? '读取设置失败');
-        // 未登录/凭据未就绪：稍后重试（最多 5 次，约 4 秒）
-        if (attempt < 5) {
+        if (res.status === 401) {
+          // 带着 token 却 401 → 凭据确实失效了。清掉它并请用户重新登录。
+          // （此时 `token` 非空，不会与上面的提前返回形成循环。）
+          handleUnauthorized();
+        } else if (attempt < 5) {
+          // 非 401 的失败（后端还没起来等）：稍后重试（最多 5 次，约 4 秒）。
+          // 401 不重试 —— 重试一百次还是 401，只会让提示晚 4 秒出现。
           timer = window.setTimeout(() => void load(attempt + 1), 800);
         }
       }

@@ -78,12 +78,39 @@ export default function Shell({ page, username, actions, status, onLogout, child
           {actions}
           {status}
 
-          <span className="pill-chip" title={username ? `已登录：${username}` : '未登录'}>
-            {username ?? '未登录'}
-          </span>
-          <button type="button" className="nav-pill nav-pill-quiet" onClick={onLogout} title="退出登录">
-            退出
+          {/*
+            未登录时这个 chip **就是个登录入口**，必须可点。
+
+            用户报过："而且左上角不能点击登录" —— 当时它是个纯展示的
+            `<span>`，没绑任何事件，所以处于"登录已失效"状态时用户
+            在顶部找不到任何可点的入口（登录卡片又因为竞态没弹出来），
+            彻底卡住。
+
+            已登录时点它是"切换账号"：先确认再退出，然后弹出登录卡片 ——
+            比"先点退出、再自己找地方登录"少一步。
+          */}
+          <button
+            type="button"
+            className="pill-chip pill-chip-btn"
+            title={username ? `已登录：${username}（点击切换账号）` : '未登录，点击登录'}
+            onClick={() => {
+              if (!username) {
+                requireAuth();
+                return;
+              }
+              if (window.confirm('切换账号？未保存的画布改动会丢失。')) {
+                onLogout();
+                requireAuth();
+              }
+            }}
+          >
+            {username ?? '点击登录'}
           </button>
+          {username ? (
+            <button type="button" className="nav-pill nav-pill-quiet" onClick={onLogout} title="退出登录">
+              退出
+            </button>
+          ) : null}
         </div>
       </nav>
 

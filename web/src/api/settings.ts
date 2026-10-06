@@ -18,6 +18,8 @@ export interface SettingsResult {
   ok: boolean;
   settings: SettingsMap;
   error?: string;
+  /** HTTP 状态码。调用方据此区分"凭据失效（401）"与"后端出错（5xx）"。 */
+  status?: number;
 }
 
 export async function fetchSettings(token?: string | null): Promise<SettingsResult> {
@@ -26,8 +28,15 @@ export async function fetchSettings(token?: string | null): Promise<SettingsResu
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) return { ok: false, settings: {}, error: body?.message || `接口 ${res.status}` };
-    return { ok: true, settings: (body.settings ?? {}) as SettingsMap };
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        settings: {},
+        error: body?.message || `接口 ${res.status}`,
+      };
+    }
+    return { ok: true, status: res.status, settings: (body.settings ?? {}) as SettingsMap };
   } catch (err) {
     return { ok: false, settings: {}, error: (err as Error).message };
   }
