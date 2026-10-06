@@ -76,7 +76,7 @@ const PLACEHOLDERS = new Set(['', '(自动)', '(按模式)', 'unset']);
  * 而**恰好视频那组就是用户截图里混档的那组** —— 单元测试当场抓到了它。
  *
  * 对照后端 `ProviderSpec.capability` 的取值：
- *   llm / image_gen / image_edit / video_gen / tts / music / render_2d
+ *   llm / image_gen / image_edit / video_gen / tts / music / render_3d
  * （`lora_train` 已随「LoRA 训练」一起从本项目删除。）
  */
 const CAPABILITY_ALIAS: Record<string, string> = {

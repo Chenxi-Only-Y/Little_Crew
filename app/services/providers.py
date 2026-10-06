@@ -30,7 +30,7 @@ from typing import Literal
 # ------------------------------------------------------------------
 
 Capability = Literal[
-    "llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_2d",
+    "llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_3d",
 ]
 
 #: 提供者类别
@@ -474,9 +474,9 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
     # 后端 `white_model.py` 出体块 JSON 规格、`whitebox_video.py` 把逐帧导出编码成 mp4。
     # 后端**已无** PIL 画俯视图那条路。
     #
-    # 能力名与提供者 key 仍是 `render_2d` / `local`（改名会牵动前端类型与测试）；
+    # 能力名与提供者 key 仍是 `render_3d` / `local`（改名会牵动前端类型与测试）；
     # 这里只把**给用户看的文字**改对。
-    ProviderSpec("local", "本地 · 程序绘制", "render_2d", "local",
+    ProviderSpec("local", "本地 · 程序绘制", "render_3d", "local",
                  available=True, needs_api_key=False, max_concurrency=1,
                  note="3D 体块预演（前端 Three.js 渲染 + 逐帧导出）；零新依赖、不产生 API 费用"),
 )

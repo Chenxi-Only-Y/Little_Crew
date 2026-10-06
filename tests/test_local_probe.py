@@ -56,14 +56,17 @@ def test_local_provider_without_probe_is_not_ready(monkeypatch):
     assert lp.is_ready("image_gen", "完全虚构的提供者", category="local") is False
 
 
-def test_render_2d_needs_no_probe():
-    """`render_2d` 是纯 Python（PIL），不该被探测挡住。
+def test_render_3d_needs_no_probe():
+    """`render_3d` 的渲染在**前端**（Three.js），不该被探测挡住。
 
-    PIL 是项目自身的依赖，没有外部服务或二进制 —— 把它也走探测会让
-    一个**本来就能用**的功能在界面上消失。
+    它没有外部服务或二进制依赖（体块场景由浏览器渲染，见 `web/src/previs/`），
+    把它也走探测会让一个**本来就能用**的功能在界面上消失。
+
+    （这条测试原先写"是纯 Python（PIL）" —— 那是过时的描述：
+     3D 预演做出来后，后端已无 PIL 绘制白模的代码。）
     """
-    assert ("render_2d", "local") in lp.NO_PROBE_NEEDED
-    assert lp.is_ready("render_2d", "local", category="local") is True
+    assert ("render_3d", "local") in lp.NO_PROBE_NEEDED
+    assert lp.is_ready("render_3d", "local", category="local") is True
 
 
 def test_every_probe_key_is_a_real_local_provider():

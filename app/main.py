@@ -863,7 +863,7 @@ async def list_providers(capability: str | None = None, include_unavailable: boo
 
     Query:
         capability: 只看某类能力（llm / image_gen / image_edit / video_gen /
-                    tts / music / render_2d）
+                    tts / music / render_3d）
         include_unavailable: 是否包含"已登记未接入"的提供者
     """
     from app.services.providers import (

@@ -31,7 +31,7 @@
     local-gen     GET :8100/health（退回 /）—— 出图 / 出视频共用
     ffmpeg        <外部目录>/bin/ffmpeg.exe -version 退出码 0
     edge-tts      外部 venv 的 python -c "import edge_tts"
-    render_2d     不需要探测（渲染在前端 Three.js，无外部依赖）
+    render_3d     不需要探测（渲染在前端 Three.js，无外部依赖）
 
 ## 用户显式配置的地址**不探测**
 
@@ -190,17 +190,17 @@ def _probe_edge_tts() -> bool:
 
 #: **不需要探测**就能确定可用的本地提供者。
 #:
-#: 目前只有 `render_2d`：它是**白模预演**，渲染发生在**前端**（Three.js 体块
+#: 目前只有 `render_3d`：它是**白模预演**，渲染发生在**前端**（Three.js 体块
 #: 场景，见 `web/src/previs/`），后端没有外部服务或二进制依赖 ——
 #: 所以"能不能用"不取决于本机装了什么，永远可用。
 #:
 #: （原先这里写的是"用 PIL 画的俯视示意图"，那是**过时**的描述：
-#:  3D 预演做出来之后，后端已无 PIL 绘制白模的代码。能力名仍是 `render_2d`。）
+#:  3D 预演做出来之后，后端已无 PIL 绘制白模的代码。能力名仍是 `render_3d`。）
 #:
 #: ⚠️ 写白名单而不是"没探测函数就默认放行" —— 后者会让**以后新加的**
 #: 本地提供者悄悄变成"永远显示"，而那正是本模块要消灭的问题。
 NO_PROBE_NEEDED: frozenset[tuple[str, str]] = frozenset({
-    ("render_2d", "local"),
+    ("render_3d", "local"),
 })
 
 #: 提供者 key → 探测函数。
@@ -216,7 +216,7 @@ PROBES: dict[tuple[str, str], object] = {
     ("video_gen", "local"): _probe_local_gen,
     ("video_gen", "ffmpeg"): _probe_ffmpeg,
     ("tts", "edge"): _probe_edge_tts,
-    # render_2d 的 `local` 渲染在前端（Three.js），无外部依赖，永远可用 ——
+    # render_3d 的 `local` 渲染在前端（Three.js），无外部依赖，永远可用 ——
     # 不放进探测表，由 `is_ready()` 直接放行。
 }
 
@@ -238,7 +238,7 @@ def is_ready(capability: str, key: str, *, category: str) -> bool:
     规则：
       · 云端 → 一律 True。能不能用取决于有没有 Key，那不是"本机能力"。
       · 本地 / 免费 → 查探测结果。**没有探测方式的一律 False**
-        （证明不了就当不可用）。唯一例外是渲染在前端、无外部依赖的 `render_2d`
+        （证明不了就当不可用）。唯一例外是渲染在前端、无外部依赖的 `render_3d`
         （PIL 绘制，项目自带，没有外部依赖）。
     """
     if category not in ("local", "free"):

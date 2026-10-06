@@ -519,7 +519,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     "scene_designer": dict(
         consumes=("script", "art_brief_plan"),
         produces=("scene_design_profiles", "scene_reference_images", "scene_whitebox"),
-        capability=("image_gen", "render_2d"),
+        capability=("image_gen", "render_3d"),
         config=_image_fields("scene_designer"),
         agent_class="SceneDesigner",
     ),
@@ -552,7 +552,7 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     "previs_artist": dict(
         consumes=("storyboard", "scene_whitebox", "character_reference_images"),
         produces=("previs",),
-        capability=("render_2d",),
+        capability=("render_3d",),
         config=(
             # ⚠️ 这里的历史（我核对过，别凭注释想当然）：
             #
@@ -565,8 +565,8 @@ ROLE_NODE_SPECS: dict[str, dict] = {
             #   · `whitebox_video.py` 把 3D 帧序列编码成 mp4 当参考视频。
             #
             # 选项值仍留 `"2d"` 是**兼容已存的设置值**，不是还在跑 2D。
-            # 能力名 `render_2d` 同理（它是声明，没有调用点）。
-            ConfigField("previs_mode", "白模模式", "select", "global", ("2d",), "2d",
+            # 能力名 `render_3d` 同理（它是声明，没有调用点）。
+            ConfigField("previs_mode", "白模模式", "select", "global", ("3d",), "3d",
                         help="3D 体块预演：用体块摆走位、调机位，导出参考视频。"
                              "不产生 API 费用（渲染在前端完成，逐帧导出）"),
             ConfigField("previs_size", "预演画布尺寸", "text", "global", default="1280x720"),

@@ -37,7 +37,7 @@ def test_every_registry_capability_has_provider():
 
 
 def test_provider_capabilities_are_known():
-    known = {"llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_2d"}
+    known = {"llm", "image_gen", "image_edit", "video_gen", "tts", "music", "render_3d"}
     for p in prov.all_specs():
         assert p.capability in known, f"{p.key} 的能力 {p.capability} 不在已知集合内"
 
@@ -63,7 +63,7 @@ def test_local_generative_providers_are_serial():
     注意：本地 LLM（ollama/vllm）**不在此列**——它们是普通推理服务，能处理并发；
     "必须串行"这个约束来自 8GB 显存 + Disk Offload 的图像/视频模型，不是"本地"本身。
     """
-    serial_caps = {"image_gen", "image_edit", "video_gen", "render_2d"}
+    serial_caps = {"image_gen", "image_edit", "video_gen", "render_3d"}
     for p in prov.all_specs():
         if p.category == "local" and p.capability in serial_caps:
             assert p.max_concurrency == 1, (

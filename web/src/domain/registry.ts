@@ -32,7 +32,7 @@ export type ProviderCapability =
   | 'video_gen'
   | 'tts'
   | 'music'
-  | 'render_2d';
+  | 'render_3d';
 
 export type NodeKind = 'agent' | 'service';
 export type PanelKind =

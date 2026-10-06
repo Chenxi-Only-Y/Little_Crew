@@ -1432,7 +1432,7 @@
       ],
       "capability": [
         "image_gen",
-        "render_2d"
+        "render_3d"
       ],
       "can_skip": true,
       "iter_group": null,
@@ -1683,7 +1683,7 @@
         "character_reference_images"
       ],
       "capability": [
-        "render_2d"
+        "render_3d"
       ],
       "can_skip": true,
       "iter_group": null,
@@ -1697,9 +1697,9 @@
           "type": "select",
           "scope": "global",
           "options": [
-            "2d"
+            "3d"
           ],
-          "default": "2d",
+          "default": "3d",
           "secret": false,
           "help": "3D 体块预演：用体块摆走位、调机位，导出参考视频。不产生 API 费用（渲染在前端完成，逐帧导出）"
         },
