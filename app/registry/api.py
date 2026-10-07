@@ -453,8 +453,14 @@ def validation_spec() -> dict[str, Any]:
             for n in ALL_NODES
         },
         "compatible_kinds": {k: list(v) for k, v in COMPATIBLE_KINDS.items()},
-        # 需要提供的外部输入（用户输入 / 上一轮产物），校验时视为已满足
-        "external_inputs": ["user_input", "art_brief"],
+        # 需要提供的外部输入（用户输入 / 上一轮产物），校验时视为已满足。
+        #
+        # ⚠️ `video` 也在里面：它由**工作流之外的异步任务**产出
+        # （`POST /api/crew/video/{会话}`，产物落在会话 payload），
+        # 没有任何节点 `produces` 它，但「视频质检师」`consumes` 它。
+        # 不列进来的话，前端画布会一直显示"缺少上游产物：镜头视频"
+        # —— 实测就是这条让导演台顶部挂了「⚠ 1 个问题」。
+        "external_inputs": ["user_input", "art_brief", *EXTERNAL_ARTIFACTS],
     }
 
 

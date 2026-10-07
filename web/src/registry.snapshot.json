@@ -3116,7 +3116,8 @@
     },
     "external_inputs": [
       "user_input",
-      "art_brief"
+      "art_brief",
+      "video"
     ]
   },
   "artifact_state_map": {
