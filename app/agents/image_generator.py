@@ -212,7 +212,15 @@ class ImageGenerator(BaseAgent):
                 logger.warning("[image_generator] %s IP-Adapter 无结果，回退文生图", sid)
                 method = "text2img"
             else:
-                logger.info("[image_generator] %s 用主图片服务(%s)直接出图", sid, _st.image_provider)
+                # ⚠️ 这里**不能**打印 `settings.image_provider`（来自 `.env` 的静态值）——
+                # 真正生效的是**运行时设置**（用户在设置页选的）。
+                # 实测踩过：`.env` 里 `IMAGE_PROVIDER=minimax`，而运行时设的是
+                # `local`（请求真打到 127.0.0.1:8100），日志却说"用主图片服务(minimax)"
+                # —— 与事实相反，看日志会以为在用云端。
+                from app.services.providers import resolve_provider as _resolve
+
+                eff, _why = _resolve("image_gen", "photographer")
+                logger.info("[image_generator] %s 用主图片服务(%s)直接出图", sid, eff or "(未选)")
         except Exception as exc:  # noqa: BLE001
             logger.warning("[image_generator] %s IP-Adapter 失败(%s)，回退文生图", sid, exc)
 
