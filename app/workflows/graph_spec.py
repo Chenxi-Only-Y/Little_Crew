@@ -50,6 +50,14 @@ BUSINESS_NODE_FNS: tuple[str, ...] = (
     "previs_artist",
     # 配音指导：逐镜头对白音频（TTS）。原先注册表声明了、但不在图里。
     "voice_director",
+    # 发行总监：**可跳过** —— 它的输入（成片）来自独立的异步视频任务，
+    # 不在图里，所以输入缺失时优雅跳过而不是阻塞。
+    #
+    # ⚠️ 注意**没有**单独的 editor 节点：注册表里 `editor`（剪辑师）的
+    # `workflow_node` 本来就是 `aggregator`（历史命名，legacy_keys=('aggregator',)）
+    # —— 也就是**聚合节点就是剪辑师**。我第一版另外加了个 `editor` 节点，
+    # 等于两个剪辑师（标签还撞名），已撤掉。
+    "distributor",
     "aggregator",
 )
 
@@ -110,6 +118,8 @@ def default_spec() -> dict:
             {"key": "prompt_compiler", "kind": "business"},
             {"key": "image_generator", "kind": "business"},
             {"key": "quality_assessor", "kind": "business"},
+            # 发行总监（可跳过）。剪辑师 = 上面的 aggregator，不重复声明。
+            {"key": "distributor", "kind": "business"},
             {"key": "aggregator", "kind": "business"},
             # ---- 人工确认点 ----
             {"key": "review_critics", "kind": "review"},
@@ -146,7 +156,9 @@ def default_spec() -> dict:
             {"from": "continuity_checker", "to": "review_continuity"},
             {"from": "prompt_compiler", "to": "review_prompts"},
             {"from": "image_generator", "to": "quality_assessor"},
-            {"from": "aggregator", "to": "__END__"},
+            # 剪辑师（aggregator）→ 发行总监 → 结束
+            {"from": "aggregator", "to": "distributor"},
+            {"from": "distributor", "to": "__END__"},
         ],
         #: 条件边：`branches` 是 路由返回值 → 目标节点
         "conditional": [

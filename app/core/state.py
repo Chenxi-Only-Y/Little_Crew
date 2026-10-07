@@ -97,6 +97,23 @@ class CrewState(TypedDict, total=False):
     # ------------------- Stage 4a 图片生成 -------------------
     images: list             # [{shot_id, image_url, local_path, status: pending|ok|failed}]
 
+    # ------------------- Stage 4b 视频生成 / 剪辑 -------------------
+    # ⚠️ 视频生成是**独立的异步后台任务**（`POST /api/crew/video/{sid}`），
+    # 结果落在**会话 payload** 的 `video` 键里（`{dir_or_path, produced}`），
+    # 不在图状态里。这里补这个字段是为了：
+    #   · 剪辑师 / 发行总监能从 `state["video"]` 读到它
+    #     （`Distributor.run()` 的 docstring 就是按 `video` 写的）；
+    #   · 允许"同一次运行里已经有视频"时直接使用。
+    # 格式：{"dir_or_path": str, "produced": int, "error": ""}
+    # 默认：{}
+    video: dict
+
+    # 剪辑师产出的时间线。格式：[{"index": 1, "source": "..."}]；默认 []
+    timeline: list
+
+    # 成片。格式：{"dir_or_path": str, "segments": int}；默认 {}
+    final_video: dict
+
     # ------------------- Stage 结果聚合 -------------------
     result: dict             # 最终汇总：{session_id, outline, script, storyboard, images}
 

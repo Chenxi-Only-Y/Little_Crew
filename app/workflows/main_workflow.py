@@ -668,6 +668,16 @@ def node_previs_artist(state: CrewState) -> dict:
     return generate_previs_scene(state)
 
 
+def node_distributor(state: CrewState) -> dict:
+    """发行总监：生成发布物料 + 各平台状态（不做真实上传，需 OAuth）。
+
+    同样**可跳过**：没有成片就跳过并说明，不报错。
+    """
+    from app.services.post_production import publish
+
+    return publish(state)
+
+
 def node_voice_director(state: CrewState) -> dict:
     """配音指导：把分镜台词合成成逐镜头音频（TTS）。
 
@@ -713,7 +723,8 @@ def _register_node_fns() -> None:
                  "character_designer", "scene_designer", "consistency_auditor",
                  "storyboarder", "rhythm_director", "continuity_checker",
                  "prompt_compiler", "image_generator", "quality_assessor",
-                 "previs_artist", "voice_director", "aggregator"):
+                 "previs_artist", "voice_director",
+                 "distributor", "aggregator"):
         # ⚠️ 键名是 **`node_xxx`**（带前缀）—— 因为 `build_graph` 是按
         # `spec["nodes"][i].fn`（默认 `f"node_{key}"`）查的。
         # 我第一版存的是不带前缀的 `name`，于是查 `node_story_planner` 查不到，

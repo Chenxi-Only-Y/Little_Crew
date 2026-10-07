@@ -267,7 +267,12 @@ WORKFLOW_NODE_BY_KEY: dict[str, str] = {
     # 配音指导已接进执行图（用户要求"1、2 先做"里的 ①）：
     # 它在预演之后、节奏之前跑，逐镜头合成对白音频。
     "voice_director": "voice_director",
-    "distributor": "",
+    # 发行总监已接进执行图（用户："剪辑师不是必需的，可以点跳过"）——
+    # 它在图里但**输入缺失时优雅跳过**，所以"可跳过"语义成立。
+    #
+    # 注：`editor`（剪辑师）**不需要写在这里** —— 它的 workflow_node
+    # 本来就是上面的 `"editor": "aggregator"`（历史命名）。
+    "distributor": "distributor",
 }
 
 #: 注册表节点 key → **配置命名空间**（① → ③，即运行时实际读取的 role）

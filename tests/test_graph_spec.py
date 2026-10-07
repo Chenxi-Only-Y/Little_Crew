@@ -37,7 +37,8 @@ EXPECTED_NODES = {
     "continuity_checker",
     "prompt_compiler", "image_generator", "quality_assessor",
     "review_images", "review_critics", "review_rhythm",
-    "review_continuity", "review_prompts", "review_quality", "aggregator",
+    "review_continuity", "review_prompts", "review_quality",
+    "distributor", "aggregator",
 }
 
 EXPECTED_EDGES = {
@@ -58,7 +59,9 @@ EXPECTED_EDGES = {
     ("continuity_checker", "review_continuity"),
     ("prompt_compiler", "review_prompts"),
     ("image_generator", "quality_assessor"),
-    ("aggregator", "__end__"),
+    # 发行总监（可跳过）；剪辑师就是 aggregator
+    ("aggregator", "distributor"),
+    ("distributor", "__end__"),
 }
 
 EXPECTED_CONDITIONAL = {
