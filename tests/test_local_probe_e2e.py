@@ -24,6 +24,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import pytest
 
 from app.services import local_probe as lp
+from app.services.auth import get_user_store
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -152,7 +153,16 @@ def test_recheck_endpoint_is_authenticated_and_forces_refresh(client):
     r = client.post("/api/providers/recheck")
     assert r.status_code == 401, "不该让匿名调用者触发探测"
 
-    tok = client.post("/api/auth/login", json={"username": "director", "password": "test1234"}).json()["token"]
+    # ⚠️ 原先这里用 `director` / `test1234` **登录真实库里预置的账号** ——
+    # 那让测试**依赖外部数据**：conftest 现在把库也隔离到临时目录
+    # （为的是不污染用户的会话与设置），那个账号不存在，于是
+    # `KeyError: 'token'`。改成**自己注册一个**，让测试自足。
+    import time
+
+    uname = f"recheck_{int(time.time() * 1000)}"
+    tok, _msg = get_user_store().register(uname, "test1234")
+    assert tok, f"注册失败：{_msg}"
+
     r = client.post("/api/providers/recheck", headers={"Authorization": f"Bearer {tok}"})
     assert r.status_code == 200
     body = r.json()
