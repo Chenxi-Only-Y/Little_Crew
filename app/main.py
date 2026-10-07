@@ -1469,10 +1469,39 @@ async def run_crew(payload: dict, request: Request):
     if claimed is not None:
         return claimed
     session_id = str(payload.get("session_id") or "").strip() or uuid.uuid4().hex[:8]
+
+    # ⚠️ `seed` 里的 `start_stage` / `end_stage` 必须先校验，**不能静默忽略**。
+    #
+    # 实测过这个坑：用户传 `end_stage="showrunner"`（**画布上的名字**），
+    # 而 `_STAGE_ORDER` 用的是算法阶段名（`writer`），于是 `_skipped_by_scope`
+    # 判"不在表里"就返回 False → **整条流程照跑**（用户以为设了终点，
+    # 其实没有，还照花 API 费）。静默忽略是最糟的失败方式。
+    #
+    # 现在两套命名都认（`_normalize_stage` 有别名表）；真认不出的**直接 422**，
+    # 并把合法值列出来，让用户一眼能改。
+    seed = payload.get("seed") or None
+    if isinstance(seed, dict):
+        from app.workflows.main_workflow import (
+            _STAGE_ORDER,
+            _STAGE_ALIASES,
+            unknown_scope_values,
+        )
+
+        unknown = unknown_scope_values(seed)
+        if unknown:
+            raise HTTPException(
+                status_code=422,
+                detail=("start_stage / end_stage 里有不认识的值："
+                        + "、".join(unknown)
+                        + "。可用值（算法阶段名）：" + "、".join(_STAGE_ORDER)
+                        + "；也接受画布/图里的名字，如 "
+                        + "、".join(sorted(_STAGE_ALIASES)[:8]) + " 等。"),
+            )
+
     # 工程名 → 产出路径的第二层（账号/项目名/部门/职业/会话/类型/文件）
     start_run(
         session_id, user_input, user_id,
-        seed=payload.get("seed") or None,
+        seed=seed,
         project=str(payload.get("project") or "").strip()[:80],
     )
     return {"status": "accepted", "session_id": session_id, "user_id": user_id}

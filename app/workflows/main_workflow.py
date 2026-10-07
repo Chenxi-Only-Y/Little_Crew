@@ -79,21 +79,103 @@ _STAGE_ORDER = [
 ]
 
 
+#: 图里的节点名 → `_STAGE_ORDER` 的算法阶段名。
+#:
+#: ⚠️ 这套映射**必须显式写**，不能靠注册表推：注册表的
+#: `WORKFLOW_NODE_BY_KEY` 给的是**图节点名**（`story_planner` / `critics` /
+#: `prompt_compiler` / `image_generator` / `aggregator`），而 `_STAGE_ORDER`
+#: 用的是**算法阶段名**（`writer` / `critics` / `director` / `photographer` /
+#: `aggregator`）—— 两套命名在历史上分化了，只有 `critics` / `aggregator` 恰好同名。
+#:
+#: 实测（2026-10-07）：用户传 `end_stage="photographer"` 能用（同名），
+#: 但传 `"showrunner"` / `"technical_director"`（**画布上的名字**）会被静默忽略，
+#: 整条流程照跑。所以别名表要能把**画布名**也翻过来。
+_STAGE_ALIASES: dict[str, str] = {
+    # 画布/注册表名 → 算法阶段名
+    "showrunner": "writer",
+    "story_planner": "writer",
+    "script_editor": "critics",
+    "technical_director": "director",
+    "prompt_compiler": "director",
+    "photographer": "photographer",
+    "image_generator": "photographer",
+    "editor": "aggregator",
+    "supervising_editor": "rhythm_director",
+    "continuity": "continuity_checker",
+    "art_brief_parser": "character_designer",   # 紧邻资产，归到资产段
+    "consistency_auditor": "scene_designer",    # 一致性审查是资产段的收尾
+    "distributor": "aggregator",                # 发行挂在聚合之后
+}
+
+
+def _normalize_stage(name: str) -> str:
+    """把用户给的阶段名归一到 `_STAGE_ORDER` 里的名字；认不出就原样返回。
+
+    ## 为什么需要这层
+
+    用户看到的是**注册表/画布上的名字**，而 `_STAGE_ORDER` 用的是**算法阶段名**
+    （历史上分化成两套），两者大量对不上：
+
+        画布上叫              算法阶段名
+        showrunner        →  writer
+        script_editor     →  critics
+        technical_director →  director
+        photographer      →  photographer   （恰好同名）
+        editor            →  aggregator
+
+    实测：传 `end_stage="showrunner"` 会被静默忽略 —— `_skipped_by_scope`
+    判断"不在表里"就返回 False，于是**整个流程照跑**（用户以为设了终点，其实没有，
+    还白花钱）。
+
+    归一顺序：
+      1. 已经在 `_STAGE_ORDER` 里 → 直接用；
+      2. 命中 `_STAGE_ALIASES`（画布名/图节点名）→ 翻成算法阶段名；
+      3. 都不认 → 原样返回（调用方据此判"不认识"，**会明确报错**而不是静默放过）。
+    """
+    if not name:
+        return name
+    if name in _STAGE_ORDER:
+        return name
+    aliased = _STAGE_ALIASES.get(name)
+    if aliased and aliased in _STAGE_ORDER:
+        return aliased
+    return name
+
+
+def unknown_scope_values(state: CrewState) -> list[str]:
+    """`start_stage` / `end_stage` 里**认不出**的值（供 API 层明确报错）。
+
+    静默忽略是最糟的：用户设了"跑到摄影师就停"，结果跑完整条流程还花了钱。
+    所以调用方应当把这里返回的名字报给用户，而不是装作没看见。
+    """
+    out: list[str] = []
+    for k in ("start_stage", "end_stage"):
+        v = state.get(k)
+        if not v:
+            continue
+        if _normalize_stage(str(v)) not in _STAGE_ORDER:
+            out.append(f"{k}={v}")
+    return out
+
+
 def _skipped_by_scope(state: CrewState, stage_name: str) -> bool:
     """该环节是否因 start_stage / end_stage 区间被跳过。
 
     - start_stage 更靠后 -> 该环节跳过
     - end_stage 更靠前   -> 该环节跳过
     - 环节不在 _STAGE_ORDER（如 distributor）或未设 start/end -> 不跳过
+
+    用户传的名字会先经 `_normalize_stage` 归一（见那里的说明：画布名与内部
+    阶段名不同，不归一会导致"设了没反应"）。
     """
-    start_stage = state.get("start_stage")
-    end_stage = state.get("end_stage")
+    start_stage = _normalize_stage(state.get("start_stage") or "")
+    end_stage = _normalize_stage(state.get("end_stage") or "")
     if stage_name not in _STAGE_ORDER:
         return False
     idx = _STAGE_ORDER.index(stage_name)
-    if start_stage and start_stage in _STAGE_ORDER and idx < _STAGE_ORDER.index(start_stage):
+    if start_stage in _STAGE_ORDER and idx < _STAGE_ORDER.index(start_stage):
         return True
-    if end_stage and end_stage in _STAGE_ORDER and idx > _STAGE_ORDER.index(end_stage):
+    if end_stage in _STAGE_ORDER and idx > _STAGE_ORDER.index(end_stage):
         return True
     return False
 
