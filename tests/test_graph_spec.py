@@ -12,6 +12,12 @@
     边  +1（previs_artist → rhythm_director）
     review_storyboard 的 continue：rhythm_director → previs_artist
 
+再同步一次 —— 把「配音指导」也接进执行链（用户要求"1、2 先做"）：
+
+    节点 +1（voice_director）
+    previs_artist 的出边：rhythm_director → voice_director
+    边  +1（voice_director → rhythm_director）
+
 ⚠️ 踩过的坑（写在测试里，免得下次又白查）：
     · `StateGraph.edges` 是 **`{(src, dst)}` 元组集合**，不是带
       `.source/.target` 的对象 —— 按属性读会得到"0 条边"的假象；
@@ -27,7 +33,8 @@ EXPECTED_NODES = {
     "story_planner", "screenwriter", "critics", "review_script",
     "art_brief_parser", "character_designer", "scene_designer",
     "consistency_auditor", "review_assets", "storyboarder",
-    "review_storyboard", "previs_artist", "rhythm_director", "continuity_checker",
+    "review_storyboard", "previs_artist", "voice_director", "rhythm_director",
+    "continuity_checker",
     "prompt_compiler", "image_generator", "quality_assessor",
     "review_images", "review_critics", "review_rhythm",
     "review_continuity", "review_prompts", "review_quality", "aggregator",
@@ -44,8 +51,9 @@ EXPECTED_EDGES = {
     ("scene_designer", "consistency_auditor"),
     ("consistency_auditor", "review_assets"),
     ("storyboarder", "review_storyboard"),
-    # 白模预演师接线后新增
-    ("previs_artist", "rhythm_director"),
+    # 白模预演师接线后新增；配音指导接入后改为 previs → voice → rhythm
+    ("previs_artist", "voice_director"),
+    ("voice_director", "rhythm_director"),
     ("rhythm_director", "review_rhythm"),
     ("continuity_checker", "review_continuity"),
     ("prompt_compiler", "review_prompts"),

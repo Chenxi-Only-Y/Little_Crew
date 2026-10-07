@@ -48,6 +48,8 @@ BUSINESS_NODE_FNS: tuple[str, ...] = (
     # 白模预演师：出 3D 预演**初稿**（人工在 #/previs 微调）。
     # 加进这里之后，"预演"才算真的属于这个环节（原先只是注册表声明）。
     "previs_artist",
+    # 配音指导：逐镜头对白音频（TTS）。原先注册表声明了、但不在图里。
+    "voice_director",
     "aggregator",
 )
 
@@ -100,6 +102,9 @@ def default_spec() -> dict:
             # 用户要求"把「预演」构成「白模预演师」一部分"，故正式接入：
             # 它在分镜确认之后出**预演初稿**，人工再到 #/previs 微调。
             {"key": "previs_artist", "kind": "business"},
+            # 配音指导：注册表声明它在第 12 步、产出 voice_track ——
+            # 但 `workflow_node` 为空，从没进过执行图。用户要求"1、2 先做"。
+            {"key": "voice_director", "kind": "business"},
             {"key": "rhythm_director", "kind": "business"},
             {"key": "continuity_checker", "kind": "business"},
             {"key": "prompt_compiler", "kind": "business"},
@@ -134,8 +139,9 @@ def default_spec() -> dict:
             {"from": "scene_designer", "to": "consistency_auditor"},
             {"from": "consistency_auditor", "to": "review_assets"},
             {"from": "storyboarder", "to": "review_storyboard"},
-            # 分镜确认 → **先出预演初稿** → 再进节奏/连贯性
-            {"from": "previs_artist", "to": "rhythm_director"},
+            # 分镜确认 → 预演初稿 → **配音** → 节奏/连贯性
+            {"from": "previs_artist", "to": "voice_director"},
+            {"from": "voice_director", "to": "rhythm_director"},
             {"from": "rhythm_director", "to": "review_rhythm"},
             {"from": "continuity_checker", "to": "review_continuity"},
             {"from": "prompt_compiler", "to": "review_prompts"},

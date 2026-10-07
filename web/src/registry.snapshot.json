@@ -1986,7 +1986,7 @@
       "iter_group": null,
       "legacy_keys": [],
       "agent_class": "",
-      "workflow_node": "",
+      "workflow_node": "voice_director",
       "config": [
         {
           "key": "tts_provider_mode",

@@ -141,6 +141,24 @@ class CrewState(TypedDict, total=False):
     # 默认：{}
     previs: dict
 
+    # ------------------- 配音（配音指导） -------------------
+    # ⚠️ 注册表**声明**配音指导产出 `voice_track` / `bgm_track`，但这两个字段
+    # 原先在 CrewState 里**根本不存在** —— 又一次"声明了但没有落点"。
+    #
+    # 逐镜头的对白音频（edge-tts 免费 / 云端 TTS 按量计费）。
+    # 格式：[{"shot_id", "text", "path", "voice", "status": ok|skipped|failed,
+    #        "reason": ""}]
+    # 默认：[]
+    voice_track: list
+
+    # BGM / 音效轨。
+    # ⚠️ **目前没有实现**：`music` 能力在提供者表里是空的（已知空缺，见
+    # `tests/test_providers.py` 的 `optional = {"music"}`）。
+    # 保留字段是为了让"注册表声明"与"状态"一致，将来接上不用改结构。
+    # 格式：[{"id", "path", "source", "status"}]
+    # 默认：[]
+    bgm_track: list
+
     # 质检总监(质量评估)汇总报告，供独立「质检总监」职业页展示。
     # 格式：{"overall_score": float, "shots": [{shot_id, quality, consistency, status, level}],
     #       "lowest_shots": [...], "failed_shots": [...], "generated_at": float}

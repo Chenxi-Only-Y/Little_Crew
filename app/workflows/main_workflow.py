@@ -668,6 +668,21 @@ def node_previs_artist(state: CrewState) -> dict:
     return generate_previs_scene(state)
 
 
+def node_voice_director(state: CrewState) -> dict:
+    """配音指导：把分镜台词合成成逐镜头音频（TTS）。
+
+    用户要求"1、2 先做"里的 ① —— 原先注册表声明了它、但 `workflow_node`
+    为空（从没进过执行图），而且 `voice_track` / `bgm_track` 这两个字段在
+    `CrewState` 里**根本不存在**。现在补齐字段并接入。
+
+    只做**对白**；BGM 不做（`music` 能力在提供者表里是空的，已知空缺）。
+    失败**不抛异常**（用户可以后期自己配），在条目里记 `status` / `reason`。
+    """
+    from app.services.voice_director import synthesize_voice_track
+
+    return synthesize_voice_track(state)
+
+
 def _register_node_fns() -> None:
     """把"零件表"填好（模块导入末尾调用一次）。
 
@@ -698,7 +713,7 @@ def _register_node_fns() -> None:
                  "character_designer", "scene_designer", "consistency_auditor",
                  "storyboarder", "rhythm_director", "continuity_checker",
                  "prompt_compiler", "image_generator", "quality_assessor",
-                 "previs_artist", "aggregator"):
+                 "previs_artist", "voice_director", "aggregator"):
         # ⚠️ 键名是 **`node_xxx`**（带前缀）—— 因为 `build_graph` 是按
         # `spec["nodes"][i].fn`（默认 `f"node_{key}"`）查的。
         # 我第一版存的是不带前缀的 `name`，于是查 `node_story_planner` 查不到，

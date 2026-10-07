@@ -264,7 +264,9 @@ WORKFLOW_NODE_BY_KEY: dict[str, str] = {
     #   · distributor        —— 有实现类，但没接进流程
     "workflow_architect": "",
     "previs_artist": "previs_artist",
-    "voice_director": "",
+    # 配音指导已接进执行图（用户要求"1、2 先做"里的 ①）：
+    # 它在预演之后、节奏之前跑，逐镜头合成对白音频。
+    "voice_director": "voice_director",
     "distributor": "",
 }
 
