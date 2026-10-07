@@ -267,7 +267,10 @@ def validate_topology(
     for k in chosen:
         produced.update(NODE_BY_KEY[k].produces)
     provided = set(available_inputs or ())
-    satisfiable = produced | provided
+    # 图外产物也算"可满足"：它们来自**工作流之外**的独立任务（见
+    # `EXTERNAL_ARTIFACTS` 的说明）。不加这一条，`video_assessor` 这种
+    # "消费视频、但视频由异步任务产出"的节点会被误判为依赖缺失。
+    satisfiable = produced | provided | set(EXTERNAL_ARTIFACTS)
 
     # 规则 3：依赖是否可满足
     unmatched: dict[str, list[str]] = {}
@@ -354,6 +357,17 @@ def _order_subset(chosen: Sequence[str], edges: Iterable[tuple[str, str]] | None
 #: 原先有一条 `"model": ("model", "json")` —— 它唯一的用户是 `character_lora`
 #: （角色 LoRA 权重）；而「LoRA 训练」已按用户要求整体删除，于是 `model`
 #: 这个形态**没有任何产物在用**，留在矩阵里会让上面那条测试失败。
+#: **图外产物** —— 工作流之外独立任务产出的东西。
+#:
+#: 目前只有 `video`：视频生成是**独立的异步后台任务**
+#: （`POST /api/crew/video/{会话}`，几分钟 + 轮询），产物落在**会话 payload**，
+#: 不是工作流状态。所以**没有任何节点"产出"它**，但「视频质检师」确实要消费它。
+#:
+#: 把它们显式列在这里，校验器才不会把这类节点误判成"缺少上游产物"
+#: —— 比偷偷绕过校验、或假装某个节点产出它，都要诚实。
+EXTERNAL_ARTIFACTS: tuple[str, ...] = ("video",)
+
+
 COMPATIBLE_KINDS: dict[str, tuple[str, ...]] = {
     "image": ("image", "list"),      # 单图可作为图列表的一项
     "video": ("video", "list"),

@@ -18,6 +18,14 @@
     previs_artist 的出边：rhythm_director → voice_director
     边  +1（voice_director → rhythm_director）
 
+再三同步 —— 补后期三环（用户 2026-10-07："动态合成师就是视频生成"、
+"修图师先保留，后续开发，流程直接跳过"、"缺的 agent 也补上"）：
+
+    节点 +3（inpainter / motion_compositor / video_assessor）
+    review_images 的 continue：aggregator → inpainter
+    边  +4（inpainter→motion_compositor→video_assessor→aggregator，
+           加上原有的 aggregator→distributor）
+
 ⚠️ 踩过的坑（写在测试里，免得下次又白查）：
     · `StateGraph.edges` 是 **`{(src, dst)}` 元组集合**，不是带
       `.source/.target` 的对象 —— 按属性读会得到"0 条边"的假象；
@@ -38,6 +46,7 @@ EXPECTED_NODES = {
     "prompt_compiler", "image_generator", "quality_assessor",
     "review_images", "review_critics", "review_rhythm",
     "review_continuity", "review_prompts", "review_quality",
+    "inpainter", "motion_compositor", "video_assessor",
     "distributor", "aggregator",
 }
 
@@ -59,7 +68,10 @@ EXPECTED_EDGES = {
     ("continuity_checker", "review_continuity"),
     ("prompt_compiler", "review_prompts"),
     ("image_generator", "quality_assessor"),
-    # 发行总监（可跳过）；剪辑师就是 aggregator
+    # 后期：修图 → 动态合成（视频）→ 视频质检 → 剪辑师 → 发行总监 → 结束
+    ("inpainter", "motion_compositor"),
+    ("motion_compositor", "video_assessor"),
+    ("video_assessor", "aggregator"),
     ("aggregator", "distributor"),
     ("distributor", "__end__"),
 }
@@ -78,7 +90,7 @@ EXPECTED_CONDITIONAL = {
     "review_prompts": {"continue": "image_generator", "redo": "prompt_compiler"},
     "quality_assessor": {"retry": "image_generator", "continue": "review_quality"},
     "review_quality": {"continue": "review_images", "redo": "quality_assessor"},
-    "review_images": {"continue": "aggregator", "redo": "image_generator",
+    "review_images": {"continue": "inpainter", "redo": "image_generator",
                       "back": "storyboarder"},
 }
 

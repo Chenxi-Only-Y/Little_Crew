@@ -50,6 +50,12 @@ BUSINESS_NODE_FNS: tuple[str, ...] = (
     "previs_artist",
     # 配音指导：逐镜头对白音频（TTS）。原先注册表声明了、但不在图里。
     "voice_director",
+    # 后期三环：修图师 / 动态合成师（=视频生成）/ 视频质检师。
+    # 都**可跳过**：修图后端未接入（用户："先保留，后续开发，流程直接跳过"）；
+    # 视频生成是异步后台任务，节点只**提交**不等待，所以不会阻塞图。
+    "inpainter",
+    "motion_compositor",
+    "video_assessor",
     # 发行总监：**可跳过** —— 它的输入（成片）来自独立的异步视频任务，
     # 不在图里，所以输入缺失时优雅跳过而不是阻塞。
     #
@@ -118,6 +124,10 @@ def default_spec() -> dict:
             {"key": "prompt_compiler", "kind": "business"},
             {"key": "image_generator", "kind": "business"},
             {"key": "quality_assessor", "kind": "business"},
+            # 后期三环（都可跳过，见 `post_production.py`）
+            {"key": "inpainter", "kind": "business"},
+            {"key": "motion_compositor", "kind": "business"},
+            {"key": "video_assessor", "kind": "business"},
             # 发行总监（可跳过）。剪辑师 = 上面的 aggregator，不重复声明。
             {"key": "distributor", "kind": "business"},
             {"key": "aggregator", "kind": "business"},
@@ -156,7 +166,10 @@ def default_spec() -> dict:
             {"from": "continuity_checker", "to": "review_continuity"},
             {"from": "prompt_compiler", "to": "review_prompts"},
             {"from": "image_generator", "to": "quality_assessor"},
-            # 剪辑师（aggregator）→ 发行总监 → 结束
+            # 后期：修图 → 动态合成（视频）→ 视频质检 → 剪辑师 → 发行 → 结束
+            {"from": "inpainter", "to": "motion_compositor"},
+            {"from": "motion_compositor", "to": "video_assessor"},
+            {"from": "video_assessor", "to": "aggregator"},
             {"from": "aggregator", "to": "distributor"},
             {"from": "distributor", "to": "__END__"},
         ],
@@ -184,7 +197,7 @@ def default_spec() -> dict:
             {"from": "review_quality", "router": "simple_review",
              "branches": {"continue": "review_images", "redo": "quality_assessor"}},
             {"from": "review_images", "router": "review_images",
-             "branches": {"continue": "aggregator", "redo": "image_generator",
+             "branches": {"continue": "inpainter", "redo": "image_generator",
                           "back": "storyboarder"}},
         ],
     }

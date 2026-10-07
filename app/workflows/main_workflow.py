@@ -678,6 +678,34 @@ def node_distributor(state: CrewState) -> dict:
     return publish(state)
 
 
+def node_inpainter(state: CrewState) -> dict:
+    """修图师：**占位，直接跳过**（用户："先保留，后续开发，流程直接跳过"）。
+
+    为什么不假装能修：`ImageService` 只有 `generate()`，没有 inpaint 方法。
+    详见 `app/services/post_production.py::inpaint`。
+    """
+    from app.services.post_production import inpaint
+
+    return inpaint(state)
+
+
+def node_motion_compositor(state: CrewState) -> dict:
+    """动态合成师（用户："**动态合成师就是视频生成**"）。
+
+    只**提交**后台视频任务就返回 —— 视频要几分钟，不能在图里等。
+    """
+    from app.services.post_production import composite_motion
+
+    return composite_motion(state)
+
+
+def node_video_assessor(state: CrewState) -> dict:
+    """视频质检师：视频还没好就跳过（它在后台跑）。"""
+    from app.services.post_production import assess_video
+
+    return assess_video(state)
+
+
 def node_voice_director(state: CrewState) -> dict:
     """配音指导：把分镜台词合成成逐镜头音频（TTS）。
 
@@ -724,7 +752,8 @@ def _register_node_fns() -> None:
                  "storyboarder", "rhythm_director", "continuity_checker",
                  "prompt_compiler", "image_generator", "quality_assessor",
                  "previs_artist", "voice_director",
-                 "distributor", "aggregator"):
+                 "distributor", "aggregator",
+                 "inpainter", "motion_compositor", "video_assessor"):
         # ⚠️ 键名是 **`node_xxx`**（带前缀）—— 因为 `build_graph` 是按
         # `spec["nodes"][i].fn`（默认 `f"node_{key}"`）查的。
         # 我第一版存的是不带前缀的 `name`，于是查 `node_story_planner` 查不到，

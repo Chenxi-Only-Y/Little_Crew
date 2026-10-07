@@ -196,6 +196,24 @@
       "state_key": null
     },
     {
+      "key": "video",
+      "label": "镜头视频（异步任务产出，图外）",
+      "kind": "video",
+      "state_key": null
+    },
+    {
+      "key": "fused_video",
+      "label": "融合视频（静态图 + 白模对齐）",
+      "kind": "video",
+      "state_key": null
+    },
+    {
+      "key": "video_report",
+      "label": "视频质检报告（闪烁/变形/崩坏）",
+      "kind": "json",
+      "state_key": "video_report"
+    },
+    {
       "key": "rhythm_plan",
       "label": "节奏方案（每镜时长/快慢）",
       "kind": "list",
@@ -454,11 +472,11 @@
     },
     {
       "key": "quality_assessor",
-      "label": "质检总监",
+      "label": "图像质检师",
       "en": "quality_assessor",
       "dept": "imaging",
-      "duty": "抽卡筛选、修复崩坏画面（手/脸/闪烁）",
-      "real_job": "质检总监",
+      "duty": "抽卡筛选静态图，检查崩坏、手部畸形、风格统一",
+      "real_job": "质检师",
       "node": "quality_assessor",
       "legacy_keys": [],
       "panels": [
@@ -473,6 +491,30 @@
           "label": "逐镜详情与重拍",
           "kind": "report",
           "node": "quality_assessor"
+        }
+      ]
+    },
+    {
+      "key": "inpainter",
+      "label": "修图师",
+      "en": "inpainter",
+      "dept": "imaging",
+      "duty": "Inpainting/Outpainting 修复 AI 生图瑕疵，扩图，精修关键帧",
+      "real_job": "修图师",
+      "node": "inpainter",
+      "legacy_keys": [],
+      "panels": [
+        {
+          "key": "inpainter:main",
+          "label": "修复与扩图",
+          "kind": "main",
+          "node": "inpainter"
+        },
+        {
+          "key": "inpainter:gallery",
+          "label": "修复前后对比",
+          "kind": "gallery",
+          "node": "inpainter"
         }
       ]
     },
@@ -497,6 +539,54 @@
           "label": "预演序列",
           "kind": "timeline",
           "node": "previs_artist"
+        }
+      ]
+    },
+    {
+      "key": "motion_compositor",
+      "label": "动态合成师",
+      "en": "motion_compositor",
+      "dept": "motion",
+      "duty": "将静态图与白模视频对齐，融合生成视频（Depth + IP-Adapter）",
+      "real_job": "动态合成师",
+      "node": "motion_compositor",
+      "legacy_keys": [],
+      "panels": [
+        {
+          "key": "motion_compositor:main",
+          "label": "融合与对齐",
+          "kind": "main",
+          "node": "motion_compositor"
+        },
+        {
+          "key": "motion_compositor:timeline",
+          "label": "融合结果",
+          "kind": "timeline",
+          "node": "motion_compositor"
+        }
+      ]
+    },
+    {
+      "key": "video_assessor",
+      "label": "视频质检师",
+      "en": "video_assessor",
+      "dept": "motion",
+      "duty": "检查融合视频是否有闪烁、变形、崩坏，筛选最佳片段",
+      "real_job": "视频质检师",
+      "node": "video_assessor",
+      "legacy_keys": [],
+      "panels": [
+        {
+          "key": "video_assessor:main",
+          "label": "视频质检",
+          "kind": "main",
+          "node": "video_assessor"
+        },
+        {
+          "key": "video_assessor:report",
+          "label": "问题片段",
+          "kind": "report",
+          "node": "video_assessor"
         }
       ]
     },
@@ -1724,12 +1814,11 @@
     },
     {
       "key": "quality_assessor",
-      "label": "质检总监",
+      "label": "图像质检师",
       "dept": "imaging",
       "kind": "agent",
       "produces": [
         "quality_report",
-        "fixed_images",
         "consistent_takes"
       ],
       "consumes": [
@@ -1783,6 +1872,57 @@
       ]
     },
     {
+      "key": "inpainter",
+      "label": "修图师",
+      "dept": "imaging",
+      "kind": "agent",
+      "produces": [
+        "fixed_images"
+      ],
+      "consumes": [
+        "images",
+        "quality_report",
+        "character_reference_images"
+      ],
+      "capability": [
+        "image_edit"
+      ],
+      "can_skip": true,
+      "iter_group": null,
+      "legacy_keys": [],
+      "agent_class": "",
+      "workflow_node": "inpainter",
+      "config": [
+        {
+          "key": "image_provider_image_edit",
+          "label": "修复模型来源",
+          "type": "select",
+          "scope": "role",
+          "options": [
+            "(自动)",
+            "local",
+            "dashscope"
+          ],
+          "default": null,
+          "secret": false,
+          "help": "崩坏修复（手/脸/闪烁）；local 需 inpaint 路由，dashscope 用指令编辑"
+        },
+        {
+          "key": "inpainter_outpaint",
+          "label": "扩图开关",
+          "type": "select",
+          "scope": "role",
+          "options": [
+            "关",
+            "开"
+          ],
+          "default": null,
+          "secret": false,
+          "help": "开：对边缘被裁的主体做 Outpainting 扩图"
+        }
+      ]
+    },
+    {
       "key": "previs_artist",
       "label": "白模预演师",
       "dept": "previs",
@@ -1825,6 +1965,77 @@
           "default": "1280x720",
           "secret": false,
           "help": ""
+        }
+      ]
+    },
+    {
+      "key": "motion_compositor",
+      "label": "动态合成师",
+      "dept": "motion",
+      "kind": "agent",
+      "produces": [
+        "fused_video"
+      ],
+      "consumes": [
+        "images",
+        "previs",
+        "scene_whitebox"
+      ],
+      "capability": [
+        "video_gen"
+      ],
+      "can_skip": true,
+      "iter_group": null,
+      "legacy_keys": [],
+      "agent_class": "",
+      "workflow_node": "motion_compositor",
+      "config": [
+        {
+          "key": "composite_mode",
+          "label": "融合方式",
+          "type": "select",
+          "scope": "global",
+          "options": [
+            "depth",
+            "pose",
+            "depth+pose"
+          ],
+          "default": "depth",
+          "secret": false,
+          "help": "用白模的哪种结构条件去约束静态图生成视频"
+        }
+      ]
+    },
+    {
+      "key": "video_assessor",
+      "label": "视频质检师",
+      "dept": "motion",
+      "kind": "agent",
+      "produces": [
+        "video_report"
+      ],
+      "consumes": [
+        "video",
+        "storyboard"
+      ],
+      "capability": [
+        "video_gen"
+      ],
+      "can_skip": true,
+      "iter_group": null,
+      "legacy_keys": [],
+      "agent_class": "",
+      "workflow_node": "video_assessor",
+      "config": [
+        {
+          "key": "video_assessor_flicker_threshold",
+          "label": "闪烁阈值",
+          "type": "number",
+          "scope": "global",
+          "options": [],
+          "default": 0.35,
+          "secret": false,
+          "help": "帧间差异超过它视为闪烁；越低越严格"
         }
       ]
     },
@@ -2470,12 +2681,15 @@
     "consistency_auditor",
     "technical_director",
     "previs_artist",
+    "video_assessor",
     "voice_director",
     "photographer",
     "rhythm_director",
     "quality_assessor",
+    "motion_compositor",
     "continuity_checker",
     "editor",
+    "inpainter",
     "distributor"
   ],
   "validation_spec": {
@@ -2579,6 +2793,18 @@
       "bgm_track": {
         "kind": "audio",
         "label": "BGM / 音效轨"
+      },
+      "video": {
+        "kind": "video",
+        "label": "镜头视频（异步任务产出，图外）"
+      },
+      "fused_video": {
+        "kind": "video",
+        "label": "融合视频（静态图 + 白模对齐）"
+      },
+      "video_report": {
+        "kind": "json",
+        "label": "视频质检报告（闪烁/变形/崩坏）"
       },
       "rhythm_plan": {
         "kind": "list",
@@ -2719,15 +2945,26 @@
         "can_skip": true
       },
       "quality_assessor": {
-        "label": "质检总监",
+        "label": "图像质检师",
         "produces": [
           "quality_report",
-          "fixed_images",
           "consistent_takes"
         ],
         "consumes": [
           "images",
           "prompts",
+          "character_reference_images"
+        ],
+        "can_skip": true
+      },
+      "inpainter": {
+        "label": "修图师",
+        "produces": [
+          "fixed_images"
+        ],
+        "consumes": [
+          "images",
+          "quality_report",
           "character_reference_images"
         ],
         "can_skip": true
@@ -2741,6 +2978,29 @@
           "storyboard",
           "scene_whitebox",
           "character_reference_images"
+        ],
+        "can_skip": true
+      },
+      "motion_compositor": {
+        "label": "动态合成师",
+        "produces": [
+          "fused_video"
+        ],
+        "consumes": [
+          "images",
+          "previs",
+          "scene_whitebox"
+        ],
+        "can_skip": true
+      },
+      "video_assessor": {
+        "label": "视频质检师",
+        "produces": [
+          "video_report"
+        ],
+        "consumes": [
+          "video",
+          "storyboard"
         ],
         "can_skip": true
       },
@@ -2876,6 +3136,7 @@
     "images": "images",
     "quality_report": "quality_report",
     "continuity_report": "continuity_report",
+    "video_report": "video_report",
     "rhythm_plan": "rhythm_plan",
     "publish_results": "publish_results",
     "result": "result",

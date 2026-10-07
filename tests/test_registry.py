@@ -21,9 +21,15 @@ from app.registry import api
 # ------------------------------------------------------------------
 
 def test_scale():
-    """部门 7 / 职业 16 / 节点含系统节点 / 产物与确认点非空。"""
+    """部门 7 / 职业 19 / 节点含系统节点 / 产物与确认点非空。
+
+    职业数变化史：
+        16 → **19**（2026-10-07，用户"缺的 agent 也补上"）：
+        `inpainter` 修图师、`motion_compositor` 动态合成师、`video_assessor` 视频质检师。
+        同日「质检总监」→「图像质检师」是**改名**（key 不变），不改变数量。
+    """
     assert len(api.all_departments()) == 7
-    assert len(api.all_roles()) == 16
+    assert len(api.all_roles()) == 19
     assert len(api.all_nodes()) == len(api.all_roles()) + 2  # +2 个系统节点
     assert len(api.snapshot()["artifacts"]) > 20
     assert len(api.all_checkpoints()) >= 9

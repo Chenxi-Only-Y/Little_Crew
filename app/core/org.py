@@ -45,13 +45,16 @@ ROLE_ORG = {
     "scene_designer": ("资产", "场景设计师"),
     # 生图
     "photographer": ("生图", "摄影师"),
-    "quality_assessor": ("生图", "质检总监"),
+    "quality_assessor": ("生图", "图像质检师"),
+    "inpainter": ("生图", "修图师"),
     # 白模（注意：是"模"不是"膜" —— 影视预演里的白模 = greybox / previz，
     # 指没有材质贴图的灰白素模。这一行原先写成"白膜"，与下面同一行的
     # "白模预演师"自相矛盾，且部门名会直接显示在界面上。）
     "previs_artist": ("白模", "白模预演师"),
     # 动态
     "continuity": ("动态", "场记"),
+    "motion_compositor": ("动态", "动态合成师"),
+    "video_assessor": ("动态", "视频质检师"),
     "voice_director": ("动态", "配音指导"),
     # 后期
     "supervising_editor": ("后期", "剪辑指导"),

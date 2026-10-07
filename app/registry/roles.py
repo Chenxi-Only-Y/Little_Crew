@@ -56,10 +56,17 @@ ARTIFACTS: tuple[Artifact, ...] = (
     Artifact("consistent_takes", "抽卡筛优后的画面", "list"),
     # ---- 白模预演 ----
     Artifact("previs", "3D 白模预演（走位/机位）", "json"),
-    # ---- 动态 ----
+    # ---- 动态（用户职责表里叫"融合视频"）----
     Artifact("continuity_report", "连贯性报告（角色/场景/道具）", "list", "continuity_report"),
     Artifact("voice_track", "配音轨（含每句时长）", "audio"),
     Artifact("bgm_track", "BGM / 音效轨", "audio"),
+    # 融合视频线（2026-10-07 补：动态合成师 / 视频质检师）
+    # `video` 是**图外产物**：由独立的异步视频任务产出，落在会话 payload。
+    # 没有任何节点 produces 它，但「视频质检师」consumes 它 ——
+    # 所以它在 `api.EXTERNAL_ARTIFACTS` 里显式登记，校验器才不会误判。
+    Artifact("video", "镜头视频（异步任务产出，图外）", "video"),
+    Artifact("fused_video", "融合视频（静态图 + 白模对齐）", "video"),
+    Artifact("video_report", "视频质检报告（闪烁/变形/崩坏）", "json", "video_report"),
     # ---- 后期 ----
     Artifact("rhythm_plan", "节奏方案（每镜时长/快慢）", "list", "rhythm_plan"),
     Artifact("edit_plan", "组接方案", "json"),
@@ -245,6 +252,10 @@ WORKFLOW_NODE_BY_KEY: dict[str, str] = {
     "scene_designer": "scene_designer",
     "storyboarder": "storyboarder",
     "quality_assessor": "quality_assessor",
+    # 后期三环已接进执行图（2026-10-07）
+    "inpainter": "inpainter",
+    "motion_compositor": "motion_compositor",
+    "video_assessor": "video_assessor",
     "rhythm_director": "rhythm_director",
     "continuity_checker": "continuity_checker",
     # ---- 改了名的（关键） ----
@@ -393,13 +404,45 @@ ROLES: tuple[Role, ...] = (
         legacy_keys=("image_generator",),
     ),
     Role(
-        key="quality_assessor", label="质检总监", en="quality_assessor",
-        dept="imaging", real_job="质检总监",
-        duty="抽卡筛选、修复崩坏画面（手/脸/闪烁）",
+        key="quality_assessor", label="图像质检师", en="quality_assessor",
+        dept="imaging", real_job="质检师",
+        # 用户 2026-10-07 拍板："图像质检师就是质检总监" —— 只是**换个名字**，
+        # 不是新增职业。所以 `key` / 节点名保持 `quality_assessor` 不变
+        # （改 key 会牵动图规格、前端快照与 13 个文件，风险不值得）。
+        #
+        # ⚠️ 但职责要**收窄**：修图（`fixed_images`）拆给新的「修图师」。
+        # 这条 duty 原先写"抽卡筛选、**修复崩坏画面**"，与修图师重复。
+        duty="抽卡筛选静态图，检查崩坏、手部畸形、风格统一",
         node="quality_assessor",
         panels=(
             Panel("quality_assessor:main", "质检总览", "main", "quality_assessor"),
             Panel("quality_assessor:report", "逐镜详情与重拍", "report", "quality_assessor"),
+        ),
+    ),
+    Role(
+        key="inpainter", label="修图师", en="inpainter",
+        dept="imaging", real_job="修图师",
+        # 用户 2026-10-07 要求补的职业。职责原先**声明**在「图像质检师」的
+        # `produces` 里（`fixed_images`），这里拆出来独立成环。
+        #
+        # ⚠️ **但实现是没有的** —— 我查证过，别被"能力已声明"骗了：
+        #   · `ImageService` 只有 `generate()`（文生图），**没有 edit / inpaint 方法**；
+        #   · `_local` 分支走 Z-Image **文生图**，无 inpaint 路由；
+        #   · `z-image-inpaint` 只出现在**三个声明处**（`providers.py` 的
+        #     ProviderSpec、`cloud_cost.py` 的成本表、`local_probe.py` 的探测表），
+        #     **没有任何代码真正调用它做修复**。
+        #
+        # 而且 `fixed_images`（修复后的画面）这个产物**从来没有被写入过** ——
+        # `quality_assessor.run()` 只返回 `quality_report`。这个声明**一直是空的**
+        # （我接手时就是），不是我这次改出来的。
+        #
+        # 所以这个节点目前是**占位**：跑起来会优雅跳过并说明"修复后端未接入"，
+        # 等真正接上 inpaint 路由（或 dashscope 的 qwen-image-edit）才能干活。
+        duty="Inpainting/Outpainting 修复 AI 生图瑕疵，扩图，精修关键帧",
+        node="inpainter",
+        panels=(
+            Panel("inpainter:main", "修复与扩图", "main", "inpainter"),
+            Panel("inpainter:gallery", "修复前后对比", "gallery", "inpainter"),
         ),
     ),
     # ---------------- 白模 ----------------
@@ -413,7 +456,38 @@ ROLES: tuple[Role, ...] = (
             Panel("previs_artist:timeline", "预演序列", "timeline", "previs_artist"),
         ),
     ),
-    # ---------------- 动态 ----------------
+    # ---------------- 动态（用户职责表里叫"融合视频"）----------------
+    Role(
+        key="motion_compositor", label="动态合成师", en="motion_compositor",
+        dept="motion", real_job="动态合成师",
+        # 用户 2026-10-07："缺的 agent 也补上"。
+        # 它是**全新岗位**（原先项目里完全没有）：把静态图与白模视频**对齐融合**
+        # （Depth + IP-Adapter 之类）生成视频，解决视频模型自己编空间的问题。
+        #
+        # ⚠️ 实现在 `app/services/post_production.py::composite_motion`，
+        # 当前**没有融合后端**（ComfyUI 节点未接），所以它会**优雅跳过**并说明。
+        duty="将静态图与白模视频对齐，融合生成视频（Depth + IP-Adapter）",
+        node="motion_compositor",
+        panels=(
+            Panel("motion_compositor:main", "融合与对齐", "main", "motion_compositor"),
+            Panel("motion_compositor:timeline", "融合结果", "timeline", "motion_compositor"),
+        ),
+    ),
+    Role(
+        key="video_assessor", label="视频质检师", en="video_assessor",
+        dept="motion", real_job="视频质检师",
+        # 用户 2026-10-07："缺的 agent 也补上"。
+        # 检查融合视频有没有闪烁、变形、崩坏，筛出最佳片段。
+        #
+        # ⚠️ 它消费 `video`（独立异步视频任务的产物，不在图状态里），
+        # 没有视频时**优雅跳过** —— 见 `app/services/post_production.py::assess_video`。
+        duty="检查融合视频是否有闪烁、变形、崩坏，筛选最佳片段",
+        node="video_assessor",
+        panels=(
+            Panel("video_assessor:main", "视频质检", "main", "video_assessor"),
+            Panel("video_assessor:report", "问题片段", "report", "video_assessor"),
+        ),
+    ),
     Role(
         key="continuity", label="场记", en="continuity",
         dept="motion", real_job="场记",
@@ -565,19 +639,70 @@ ROLE_NODE_SPECS: dict[str, dict] = {
     ),
     "quality_assessor": dict(
         consumes=("images", "prompts", "character_reference_images"),
-        produces=("quality_report", "fixed_images", "consistent_takes"),
+        # ⚠️ 原先这里还产出 `fixed_images`（修复后的画面）—— 那是**修图师的活**，
+        # 2026-10-07 拆给 `inpainter`。留着会让"谁产修复图"有两个答案。
+        produces=("quality_report", "consistent_takes"),
         capability=("image_edit",),
         config=(
             ConfigField("quality_threshold", "合格阈值", "number", "global", default=0.5),
             ConfigField("consistency_threshold", "一致性阈值", "number", "global", default=75.0),
-            # 例外：这个"修复模型"不属于任何独立职业（该节点没有自己的 Role），
-            # 故用能力名 image_edit 作为命名空间，避免与摄影师的
-            # image_provider_photographer 抢同一个键。
+            # 注意：`image_provider_image_edit`（修复模型来源）**也留在这里**，
+            # 同时 `inpainter` 声明了同一个键 —— 这是**有意的别名**：
+            # 键是已存设置（白名单派生自注册表），删掉会让用户的设置静默丢失。
+            # 两个节点都能改它，改的是同一个值。见 `inpainter` 那段的说明。
             ConfigField("image_provider_image_edit", "修复模型来源", "select", "role",
                         ("(自动)", "local", "dashscope"),
                         help="崩坏修复（手/脸/闪烁）；local 需 inpaint 路由，dashscope 用指令编辑"),
         ),
         agent_class="QualityAssessor",
+    ),
+    "inpainter": dict(
+        consumes=("images", "quality_report", "character_reference_images"),
+        produces=("fixed_images",),
+        capability=("image_edit",),
+        config=(
+            # 这个键的命名空间用**能力名** `image_edit`（不是职业名）——
+            # 历史原因：它原先挂在 `quality_assessor` 上，而那个节点没有自己的
+            # Role 命名空间，所以用能力名避免和摄影师的 `image_provider_photographer`
+            # 抢键。现在有了独立的 `inpainter` 职业，但**键不能改**：
+            # 用户已存的设置就存在这个键上，改了会静默丢失（设置白名单是派生的）。
+            ConfigField("image_provider_image_edit", "修复模型来源", "select", "role",
+                        ("(自动)", "local", "dashscope"),
+                        help="崩坏修复（手/脸/闪烁）；local 需 inpaint 路由，"
+                             "dashscope 用指令编辑"),
+            # ⚠️ role 级配置键**必须包含角色命名空间**（`inpainter`），
+            # 否则界面写入的键与运行读取的键不一致（有测试守住）。
+            ConfigField("inpainter_outpaint", "扩图开关", "select", "role",
+                        ("关", "开"),
+                        help="开：对边缘被裁的主体做 Outpainting 扩图"),
+        ),
+        agent_class="",
+    ),
+    "video_assessor": dict(
+        # ⚠️ 消费 `video`：那是**独立异步视频任务**的产物（落在会话 payload），
+        # 不在图状态里。所以这个节点现在会**优雅跳过** —— 见
+        # `app/services/post_production.py`。
+        consumes=("video", "storyboard"),
+        produces=("video_report",),
+        capability=("video_gen",),
+        config=(
+            ConfigField("video_assessor_flicker_threshold", "闪烁阈值", "number", "global",
+                        default=0.35,
+                        help="帧间差异超过它视为闪烁；越低越严格"),
+        ),
+        agent_class="",
+    ),
+    "motion_compositor": dict(
+        # 融合：把静态图与白模视频对齐（Depth + IP-Adapter 之类）生成视频。
+        consumes=("images", "previs", "scene_whitebox"),
+        produces=("fused_video",),
+        capability=("video_gen",),
+        config=(
+            ConfigField("composite_mode", "融合方式", "select", "global",
+                        ("depth", "pose", "depth+pose"), "depth",
+                        help="用白模的哪种结构条件去约束静态图生成视频"),
+        ),
+        agent_class="",
     ),
     "previs_artist": dict(
         consumes=("storyboard", "scene_whitebox", "character_reference_images"),
