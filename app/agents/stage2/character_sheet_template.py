@@ -44,16 +44,33 @@
 
 from __future__ import annotations
 
-#: 设定表尺寸（16:9）。1216×688 实测每格约 250px，够看清版式；
-#: 想更清楚可以给 1820×1024（更慢）。
-SHEET_SIZE = (1216, 688)
+#: 设定表尺寸（16:9）。
+#:
+#: ## 为什么从 1216×688 提到 1920×1080
+#:
+#: 用户问"像素会不会太低了"——**对，偏低**。算每格实际像素：
+#:
+#:     1216×688  → 每格全身 261×684  = 把 768×1024 缩到 261×348（**单视角图的 23%**）
+#:     1920×1080 → 每格全身 416×1088 = 缩到 416×555（**57%**）
+#:
+#: 实测 1920×1080（77 秒，8GB 显存够用）：蕾丝纹理、发丝、裙褶、鞋面细节
+#: 都明显更清楚。1216 那档是我为"29 秒出图"选的，偏小了。
+#:
+#: 耗时（实测）：1216→29s、1536→43s、1920→77s。
+#: 想快可以降到 1536×864（每格 332×864，单视角图的 36%）。
+SHEET_SIZE = (1920, 1080)
 
 #: 固定版式模板。占位符只有 3 个：`{name}` / `{appearance}` / `{style}`。
+#:
+#: ⚠️ 「从左到右依次是」这句是**必需的** —— 实测漏了它，模型会在高分辨率下
+#: 自己重排顺序（出成 正/背/侧）。
 SHEET_TEMPLATE = """生成一张角色设定图（character design sheet），横幅 16:9 构图。
 画面布局：左侧是一张占画面约三分之一的大尺寸面部特写，
-右侧并排站立同一个角色的正面全身、侧面全身、背面全身三个视图。
+右侧并排站立同一个角色的正面全身、侧面全身、背面全身三个视图，
+从左到右依次是正面、侧面、背面。
 三个视图必须是完全同一个角色、同一套发型和服装，
-站姿自然，双手自然下垂。
+全身完整入画、从头顶到脚，站姿自然，双手自然下垂，
+人物居中、四周留白，不要画任何边框或分隔线。
 角色：{name}。{appearance}
 {style}
 整体为精致 3D 渲染质感，柔和影棚光，浅灰偏白背景，
@@ -62,14 +79,18 @@ SHEET_TEMPLATE = """生成一张角色设定图（character design sheet），�
 #: 默认风格/镜头段（与角色无关，可整体替换）
 SHEET_STYLE = "85mm 人像镜头，柔和珍珠质感轮廓光，高级时尚大片质感。"
 
-#: 负面提示词。`text/letters/words/chinese characters` 是**必须的** ——
-#: 否则模型会往图上写标注，而它写不对中文，产出一堆乱码。
-#: `duplicated character / inconsistent face / different person` 防的是
-#: "四个视角变成四个人"。
+#: 负面提示词。三组各有用途，**都不能删**：
+#:
+#: 一、防**乱码**：`text/letters/words/chinese characters/watermark/...`
+#:     —— 模型写不对中文，漏这组就往图上写标注。
+#: 二、防**四个视角变成四个人**：`duplicated character/inconsistent face/...`
+#: 三、防**边框与分隔线**：`border/frame/divider/outline`
+#:     —— 实测高分辨率下边上会出现一圈细黑框。
 SHEET_NEGATIVE = (
     "multiple panels beyond the layout, duplicated character, inconsistent face, "
     "different person, mismatched outfit, text, letters, words, chinese characters, "
     "watermark, signature, logo, caption, annotation, arrows, grid lines, "
+    "border, frame, thin border, black frame, picture frame, vignette, divider, "
     "extra limbs, extra fingers, deformed hands, bad anatomy, "
     "blurry, lowres, jpeg artifacts"
 )

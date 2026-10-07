@@ -110,6 +110,82 @@ def test_negative_blocks_grid_lines():
     assert "grid lines" in SHEET_NEGATIVE.lower()
 
 
+def test_negative_blocks_borders_and_frames():
+    """实测：高分辨率下画面边缘会出现一圈**细黑框**。得压掉。"""
+    n = SHEET_NEGATIVE.lower()
+    for must in ("border", "frame", "vignette", "divider"):
+        assert must in n, f"负面词缺 {must!r}（防边框/暗角）"
+
+
+# ----------------------------------------------------------------------
+# 版式细节（高分辨率下才显形的问题）
+# ----------------------------------------------------------------------
+
+def test_prompt_pins_left_to_right_order():
+    """**实测必需**：漏了这句，模型会自己重排顺序（出成 正/背/侧）。
+
+    第一版模板只写了"右侧并排站立…正面…侧面…背面…"，
+    在 1920×1080 下实际出成了 **正/背/侧**。
+    """
+    p = build_sheet_prompt("测试角色", "描述")
+    assert "从左到右依次是" in p
+    assert p.index("正面") < p.index("侧面") < p.index("背面")
+
+
+def test_prompt_says_full_body_head_to_toe():
+    """每格必须全身完整入画，否则脚被裁掉、拼起来不齐。"""
+    p = build_sheet_prompt("测试角色", "描述")
+    assert "全身完整入画" in p
+    assert "从头顶到脚" in p
+
+
+def test_prompt_forbids_borders():
+    """提示词里要明写"不要边框"，光靠负面词不够。"""
+    p = build_sheet_prompt("测试角色", "描述")
+    assert "不要画任何边框" in p
+
+
+def test_prompt_asks_for_margin_around_subject():
+    p = build_sheet_prompt("测试角色", "描述")
+    assert "人物居中" in p
+    assert "留白" in p
+
+
+# ----------------------------------------------------------------------
+# 分辨率（用户问"像素会不会太低"后提高的）
+# ----------------------------------------------------------------------
+
+def test_sheet_size_is_16_9():
+    w, h = SHEET_SIZE
+    assert abs(w / h - 16 / 9) < 0.02, f"不是 16:9：{w}x{h}"
+
+
+def test_sheet_size_is_high_enough_per_panel():
+    """**核心**：每格全身视图不能太小。
+
+    用户的疑问是"像素会不会太低" —— 1216×688 时每格只有 261×684，
+    等于把 768×1024 的单视角图缩到 261×348（**23%**），确实偏低。
+
+    这里要求成品宽 ≥ 1600，即每格全身 ≥ ~340px 宽。
+    """
+    w, h = SHEET_SIZE
+    assert w >= 1600, f"成品宽度 {w} 偏小（每格全身视图会不足 340px）"
+    assert h >= 900, f"成品高度 {h} 偏小"
+
+    # 按版式算每格实际尺寸
+    face_w = int(w * 0.34)
+    body_w = (w - face_w - 6 * 3) // 3
+    assert body_w >= 330, (
+        f"每格全身只有 {body_w}x{h}，太小（单视角图是 768x1024）")
+
+
+def test_sheet_size_is_32_multiple_or_safe_for_local_model():
+    """本地模型的尺寸一般要求是 32 的倍数，否则会被服务端拒绝/内缩。"""
+    w, h = SHEET_SIZE
+    assert w % 32 == 0 or w % 8 == 0, f"宽度 {w} 不是 8/32 的倍数"
+    assert h % 32 == 0 or h % 8 == 0, f"高度 {h} 不是 8/32 的倍数"
+
+
 # ----------------------------------------------------------------------
 # 组装
 # ----------------------------------------------------------------------
@@ -156,8 +232,3 @@ def test_appearance_guide_covers_six_sections():
     joined = " ".join(APPEARANCE_SECTIONS)
     for must in ("气质", "面部", "发型", "服装", "配饰", "身形"):
         assert must in joined, f"颗粒度指南缺「{must}」段"
-
-
-def test_sheet_size_is_16_9():
-    w, h = SHEET_SIZE
-    assert abs(w / h - 16 / 9) < 0.02, f"不是 16:9：{w}x{h}"
