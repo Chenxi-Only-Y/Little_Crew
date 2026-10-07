@@ -61,10 +61,19 @@ _NEGATIVE_PROMPT = (
 
 # 三种视图：key -> (视图短语, 宽, 高)
 # 全部**全身**、同一画幅 —— 画幅不一致会往参考图集里掺噪声。
+#
+# ⚠️ 侧面那条要写足：实测只写 `side view, profile` 时模型**常给 3/4 角**
+# （身子侧了但脸还朝前），三个视图就退化成"两个 3/4 + 一个正面"。
+# 补上 `full profile` + `90 degrees` + `facing sideways` 才稳定。
 _VIEWS: dict[str, tuple[str, int, int]] = {
-    "front": ("front view, facing the camera", 768, 1024),
+    "front": ("front view, facing the camera directly", 768, 1024),
     "three_quarter": ("three-quarter view, body turned 45 degrees", 768, 1024),
-    "side": ("side view, profile, facing left", 768, 1024),
+    # 侧面最难出：实测 `side view, profile` → 模型给 3/4；
+    # 加 `full profile / 90 degrees` 仍是 3/4；再补"只露一只眼 + 鼻梁轮廓"
+    # 这类**侧脸专有特征**才勉强压住。
+    "side": ("full profile side view, body turned 90 degrees, "
+             "head in profile facing sideways, only one eye visible, "
+             "nose and muzzle in profile, side silhouette", 768, 1024),
 }
 
 #: 生成顺序 / 挑主参考图的优先级（正面优先）

@@ -72,6 +72,26 @@ def test_built_prompt_pins_full_body(view):
     assert _VIEWS[view][0].split(",")[0] in p
 
 
+@pytest.mark.parametrize("view", ["front", "three_quarter", "side"])
+def test_view_phrase_pins_the_angle(view):
+    """每个视图的短语必须**把角度写足**。
+
+    ⚠️ 侧面最容易退化成 3/4：实测
+      `side view, profile, facing left`        → 模型给 3/4（脸朝前，身子侧了点）
+      `full profile / 90 degrees`              → 仍是 3/4
+      **再补"只露一只眼 / 鼻梁轮廓 / 侧影"**     → 才稳定出真侧脸
+    所以侧面必须带"侧脸专有特征"这类词，不能只写 view 名。
+    """
+    text = _VIEWS[view][0].lower()
+    if view == "side":
+        assert "full profile" in text, "侧面要写 full profile，否则会退化成 3/4"
+        assert "90 degrees" in text
+        assert "one eye" in text or "silhouette" in text, \
+            "侧面要补侧脸专有特征（只露一只眼/侧影），否则模型给 3/4"
+    else:
+        assert "view" in text
+
+
 # ----------------------------------------------------------------------
 # 提示词：不许出现"设定表"语义
 # ----------------------------------------------------------------------
