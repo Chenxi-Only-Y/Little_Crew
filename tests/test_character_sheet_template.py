@@ -72,14 +72,16 @@ def test_prompt_pins_natural_pose():
 def test_prompt_pins_background_and_quality():
     p = build_sheet_prompt("测试角色", "描述")
     assert "浅灰偏白" in p
-    assert "8K" in p
     assert "留白" in p
+    # ⚠️ 不断言 `8K` —— 用户问"为什么风格不一致"后查出来：
+    # 摄影词（85mm / 8K / 大片质感）会把画面拉向真人照片，与 CG 风格打架。
+    # 现在风格锁成"半写实 3D CG"，摄影词已被移除。见 test_character_sheet_style。
 
 
-def test_prompt_is_3d_render_style():
-    """用户要的是「精致 3D 渲染质感」。"""
+def test_prompt_is_3d_cg_style():
+    """用户要的是「精致 3D 渲染质感」（当前锁定方向：半写实 3D CG）。"""
     p = build_sheet_prompt("测试角色", "描述")
-    assert "3D 渲染" in p
+    assert "3D CG" in p or "虚幻引擎" in p
 
 
 # ----------------------------------------------------------------------

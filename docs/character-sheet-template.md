@@ -116,6 +116,7 @@
 multiple panels beyond the layout, duplicated character, inconsistent face,
 different person, mismatched outfit, text, letters, words, chinese characters,
 watermark, signature, logo, caption, annotation, arrows, grid lines,
+border, frame, thin border, black frame, picture frame, vignette, divider,
 extra limbs, extra fingers, deformed hands, bad anatomy,
 blurry, lowres, jpeg artifacts
 ```
@@ -127,6 +128,52 @@ blurry, lowres, jpeg artifacts
 | `text / letters / words / chinese characters / watermark / caption / annotation` | **乱码**。模型写不对中文，漏这组就往图上写标注 |
 | `duplicated character / inconsistent face / different person / mismatched outfit` | **四个视角变成四个人** |
 | `grid lines` | 版式靠提示词说，别让模型自己画分隔线 |
+| `border / frame / black frame / vignette / divider` | **边缘细黑框**（高分辨率下才显形） |
+
+---
+
+## 四·五、⚠️ 风格必须**单一、无矛盾**（用户问过"为什么风格不一致"）
+
+### 归因实验
+
+**实验一**：同一 seed、同一角色描述，**只换风格段** → 风格**跟着风格段变**。
+**实验二**：同一提示词、**只换 seed**（4 张）→ 风格**完全稳定**
+（脸型/毛孔质感/发丝/服装全一致），seed 只影响人物细节。
+
+**结论：风格漂移的主因是"每次换了风格词"，不是模型随机性。**
+
+### 旧默认值自相矛盾（实测踩过）
+
+```text
+"3D 写实"                        ← 要写实
+"85mm 人像镜头 / 8K / 大片质感"    ← 摄影词 → 拉向真人照片
+"类似 BJD 人偶的精致五官"          ← BJD 是**塑料娃娃**
+→ 三个方向互相拉扯 → 模型每次随机挑一个
+```
+
+三版对照结果（同 seed 同角色描述）：
+
+| 版本 | 风格段 | 结果 |
+|---|---|---|
+| A 旧默认 | 3D写实 + 85mm + BJD | ❌ 塑料感、腿被拉长 |
+| **B 纯 CG** | UE5 + 次表面散射 | ✅ **皮肤通透、比例正常** |
+| C 单锚点 | 只有一句 | 与 B 接近 |
+
+### 现在锁定的风格（三段同一套词，无摄影词）
+
+| 段 | 内容 |
+|---|---|
+| `{style_prefix}` | `半写实 3D CG 风格的` |
+| `{style}` | `虚幻引擎 5 渲染，次表面散射皮肤，柔和均匀的棚拍灯光。` |
+| `{render_tail}` | `整体为半写实 3D CG 游戏角色渲染，皮肤通透有真实感、保留次表面散射的通透质地，五官比例写实但保留动漫化的精致感，浅灰偏白影棚背景，柔和自然阴影，4K，精细发丝与布料材质，画面干净、大量留白。` |
+
+**两条规矩**（有测试守着，见 `tests/test_character_sheet_style.py`）：
+
+1. **不许跨方向混用** —— CG 词 / 摄影词 / 塑料娃娃词三组互斥，只能选一组。
+2. **不许在三段里重复风格名** —— 重复会过度加权。`{style_prefix}` 刻意
+   不带"角色"二字，否则会拼成"游戏角色**角色**设定图"。
+
+**改风格要整体替换三段，别混着加。**
 
 ---
 
