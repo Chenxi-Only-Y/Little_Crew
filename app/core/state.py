@@ -128,6 +128,17 @@ class CrewState(TypedDict, total=False):
     # 默认：{}
     character_reference_images: dict
 
+    # 每个角色的**16:9 角色设定表**本地路径（正脸放大 + 正/侧/背三视图）。
+    # 格式：{"角色名": "D:/.../sheettable_角色名.png"}
+    # 默认：{}
+    #
+    # ⚠️ 这是**给人看的展示交付物**，**不参与下游锚定** ——
+    # IP-Adapter 用的是 `character_reference_images` 里的逐视角独立图。
+    # 原因：CLIP 把整图编成**一个**向量，4 个视角会混在一起，
+    # 拿去生图会出现"画面被脸占据/生成多个副本/角度串味"。
+    # 见 `app/agents/stage2/character_sheet_template.py`。
+    character_sheets: dict
+
     # 整体画风参考图 URL（可选），用于锁定整体艺术风格。
     # 默认：""
     style_reference_image: str

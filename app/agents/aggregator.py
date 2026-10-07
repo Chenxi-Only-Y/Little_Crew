@@ -24,6 +24,8 @@ class Aggregator(BaseAgent):
             # 方案B 角色一致性产物
             "character_profiles": state.get("character_profiles"),
             "character_reference_images": state.get("character_reference_images"),
+            # 16:9 角色设定表（给人看的展示层，不参与锚定）
+            "character_sheets": state.get("character_sheets"),
             "style_reference_image": state.get("style_reference_image"),
             "consistency_score": state.get("consistency_score"),
             "character_consistency_report": state.get("character_consistency_report"),

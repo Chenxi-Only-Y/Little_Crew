@@ -23,8 +23,10 @@ import pytest
 from app.agents.stage2.character_sheet_template import (
     APPEARANCE_SECTIONS,
     SHEET_NEGATIVE,
+    SHEET_RENDER_TAIL,
     SHEET_SIZE,
     SHEET_STYLE,
+    SHEET_STYLE_PREFIX,
     SHEET_TEMPLATE,
     build_sheet_prompt,
 )
@@ -135,8 +137,9 @@ def test_prompt_pins_left_to_right_order():
 def test_prompt_says_full_body_head_to_toe():
     """每格必须全身完整入画，否则脚被裁掉、拼起来不齐。"""
     p = build_sheet_prompt("测试角色", "描述")
-    assert "全身完整入画" in p
-    assert "从头顶到脚" in p
+    assert "全身" in p
+    assert "从头顶到脚底全部入画" in p
+    assert "不裁脚" in p or "鞋必须完整可见" in p
 
 
 def test_prompt_forbids_borders():
@@ -147,7 +150,7 @@ def test_prompt_forbids_borders():
 
 def test_prompt_asks_for_margin_around_subject():
     p = build_sheet_prompt("测试角色", "描述")
-    assert "人物居中" in p
+    assert "水平居中" in p
     assert "留白" in p
 
 
@@ -215,12 +218,33 @@ def test_build_survives_empty_inputs():
     assert "{" not in p
 
 
-def test_template_has_exactly_three_placeholders():
-    """占位符只有 3 个，多了就是文档没跟上。"""
+def test_template_placeholders_are_exactly_the_documented_ones():
+    """占位符就这 5 个，多了就是文档/调用方没跟上。
+
+    `name` / `appearance` / `style` 由用户提供；
+    `style_prefix` / `render_tail` 有默认值（`SHEET_STYLE_PREFIX` /
+    `SHEET_RENDER_TAIL`），可覆盖。
+    """
     import re
 
     names = set(re.findall(r"\{(\w+)\}", SHEET_TEMPLATE))
-    assert names == {"name", "appearance", "style"}
+    assert names == {"name", "appearance", "style", "style_prefix", "render_tail"}
+
+
+def test_build_fills_every_placeholder():
+    """`build_sheet_prompt` 必须把**全部**占位符填掉，不留 `{}`。"""
+    p = build_sheet_prompt("测试角色", "描述")
+    assert "{" not in p and "}" not in p
+    assert SHEET_STYLE_PREFIX in p
+    assert SHEET_RENDER_TAIL in p
+
+
+def test_style_prefix_and_render_tail_are_overridable():
+    p = build_sheet_prompt("测试角色", "描述",
+                           style_prefix="水彩插画风", render_tail="唯美柔和。")
+    assert "水彩插画风" in p
+    assert "唯美柔和。" in p
+    assert SHEET_STYLE_PREFIX not in p
 
 
 # ----------------------------------------------------------------------

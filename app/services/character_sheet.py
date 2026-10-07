@@ -1,20 +1,32 @@
-"""角色设定表拼接：把**已经生成好的**独立视角图拼成 16:9 展示图。
+"""角色设定表的**拼接**与**切片**。
 
-## 为什么是"拼接"而不是"一次生成 16:9"
+## 两条相反的路线，各有一个致命短板（都实测过）
 
-| 做法 | 每个视角在成品里 |
-|---|---|
-| 一次生成 16:9 | 模型**直接画小**了 → 天生 ~200px，蕾丝/配饰细节**根本不存在** |
-| N 张独立生成 → 拼接 | 每张**先按 768×1024 画足**，再缩放进格子 → 每个 ~455×607 |
+**路线 1：一次生成 16:9**（`SHEET_TEMPLATE`）
+  · 优点：四个视角在**同一张图**里生成 → 一致性天然保证。
+  · 短板：一张图塞不下"大脸特写 + 三套精细服装" → 模型**随机丢配饰**。
+    实例：Y2K 少女的"灰百褶裙粉内衬、银色珠链、蕾丝及膝袜、粉白厚底鞋"
+    在 16:9 单图里全被简化成"白蕾丝短裙 + 光腿高跟鞋"。
 
-关键区别：一次生成是把信息**压缩**掉；拼接是把已经画足的高清图**排在一起**。
+**路线 2：N 格独立生成 → 拼接**（本模块）
+  · 优点：每格吃满 768×1024 + 完整提示词 → **配饰全保住**。
+  · 短板：四张各自生成 → **脸/服装会漂**（实测第 3 格与左边大图明显不是同一张脸）。
 
-## 下游不受影响（这是重点）
+## 所以正解是**混合**（用户 2026-10-07 选定）
 
-    生成 N 张独立高清图  ──┬──→ 存成 N 个文件      ← 给 IP-Adapter（纯净、高清）
-                           └──→ 拼成 16:9 sheet   ← 给人看（好看、一眼看全）
+    ① 一次生成 16:9 的四格设定表     ← 一致性天然保证（同一张图）
+    ② 按固定版式切出 4 格             ← 版式是我们定的，切割位置可精确计算
+    ③ 每格单独放大                    ← 补回细节分辨率
+
+`slice_sheet_panels()` 做第 ② 步。
+
+## 下游不受影响（重点）
+
+    生成 N 格高清图  ──┬──→ 存成 N 个文件      ← 给 IP-Adapter（纯净、高清）
+                       └──→ 拼成 16:9 sheet   ← 给人看（好看、一眼看全）
 
 拼图是**给人看的展示层**，不参与锚定，所以不存在"多视角污染 CLIP 特征"的问题。
+（"污染"那条只对**一次生成设定表直接当参考图**成立：CLIP 把整图编成**一个**向量。）
 
 ## 布局（用户给的参考图就是这个形制）
 
@@ -154,6 +166,80 @@ def compose_character_sheet(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out_path, "PNG", optimize=True)
     return out_path
+
+
+SHEET_PANEL_KEYS = ("face", "front", "side", "back")
+
+
+def slice_sheet_panels(
+    sheet_path: str | Path,
+    out_dir: str | Path,
+    *,
+    face_ratio: float = FACE_WIDTH_RATIO,
+    upscale: float = 1.0,
+    prefix: str = "panel",
+    trim: float = 0.0,
+) -> dict[str, Path]:
+    """把一张**一次生成**的 16:9 设定表按固定版式切成 4 格。
+
+    这是"混合路线"的第 ② 步：
+
+        ① 一次生成 16:9（一致性由"同一张图"保证）
+        ② **本函数**：按版式切出 脸 / 正 / 侧 / 背 四格
+        ③ 各格单独放大（`upscale`）
+
+    参数：
+        sheet_path: 设定表 PNG
+        out_dir:    切片输出目录
+        face_ratio: 脸栏占宽比例（须与生成时提示词里说的一致）
+        upscale:    放大倍数（1.0 = 不放大）。放大是插值，**不会长出新细节**，
+                    但便于单独查看/交付。
+        prefix:     输出文件名前缀
+        trim:       每边额外内缩的比例（0~0.1）。模型实测**不完全遵守**版式，
+                    偶尔人物会压到格边，内缩一点可以避开相邻格的串入。
+
+    返回：`{"face": Path, "front": Path, "side": Path, "back": Path}`
+
+    注意：切割位置是**按我们给的版式算的**，不是检测出来的。所以生成时必须用
+    `SHEET_TEMPLATE`（它把脸栏写成"约四分之一宽"）。
+    """
+    sheet_path = Path(sheet_path)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    with Image.open(sheet_path) as im:
+        sheet = im.convert("RGB")
+    W, H = sheet.size
+
+    face_w = int(W * face_ratio)
+    body_w = (W - face_w) // 3
+
+    def _trim(box: tuple[int, int, int, int]) -> tuple[int, int, int, int]:
+        if trim <= 0:
+            return box
+        x0, y0, x1, y1 = box
+        dx = int((x1 - x0) * trim)
+        dy = int((y1 - y0) * trim)
+        return (x0 + dx, y0 + dy, x1 - dx, y1 - dy)
+
+    boxes = {
+        "face": _trim((0, 0, face_w, H)),
+        "front": _trim((face_w, 0, face_w + body_w, H)),
+        "side": _trim((face_w + body_w, 0, face_w + body_w * 2, H)),
+        "back": _trim((face_w + body_w * 2, 0, W, H)),
+    }
+
+    out: dict[str, Path] = {}
+    for key, box in boxes.items():
+        panel = sheet.crop(box)
+        if upscale and upscale != 1.0:
+            nw = max(1, int(panel.width * upscale))
+            nh = max(1, int(panel.height * upscale))
+            panel = panel.resize((nw, nh), Image.LANCZOS)
+        p = out_dir / f"{prefix}_{key}.png"
+        panel.save(p, "PNG", optimize=True)
+        out[key] = p
+    return out
 
 
 if __name__ == "__main__":  # pragma: no cover - 手动试用

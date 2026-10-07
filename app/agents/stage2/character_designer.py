@@ -30,11 +30,14 @@
 
 import hashlib
 import json
+import logging
 from typing import Dict, List, Tuple
 
 from app.agents.base import BaseAgent
 from app.core.config import settings
 from app.core.state import CrewState
+
+logger = logging.getLogger("little_crew")
 
 # ------------------- 固定高质量 Prompt 模板 -------------------
 #
@@ -137,8 +140,10 @@ class CharacterDesigner(BaseAgent):
 
         profiles: Dict[str, dict] = {}
         reference_images: Dict[str, str] = {}
+        sheet_paths: Dict[str, str] = {}
         existing_profiles = dict(state.get("character_profiles") or {})
         existing_refs = dict(state.get("character_reference_images") or {})
+        existing_sheets = dict(state.get("character_sheets") or {})
 
         for char in characters:
             name = (char.get("name") or "").strip()
@@ -150,6 +155,8 @@ class CharacterDesigner(BaseAgent):
                     profiles[name] = existing_profiles.get(name, {})
                     if existing_refs.get(name):
                         reference_images[name] = existing_refs[name]
+                    if existing_sheets.get(name):
+                        sheet_paths[name] = existing_sheets[name]
                 else:
                     profile = self._extract_appearance_from_script(char, state)
                     profiles[name] = profile
@@ -157,6 +164,9 @@ class CharacterDesigner(BaseAgent):
                     best = self._select_best_reference(sheet)
                     if best:
                         reference_images[name] = best
+                    sp = self._generate_sheet_image(name, profile, state)
+                    if sp:
+                        sheet_paths[name] = sp
                 continue
 
             profile = self._extract_appearance_from_script(char, state)
@@ -167,10 +177,14 @@ class CharacterDesigner(BaseAgent):
             best = self._select_best_reference(sheet)
             if best:
                 reference_images[name] = best
+            sp = self._generate_sheet_image(name, profile, state)
+            if sp:
+                sheet_paths[name] = sp
 
         return {
             "character_profiles": profiles,
             "character_reference_images": reference_images,
+            "character_sheets": sheet_paths,
             "current_phase": self.name,
         }
 
@@ -339,6 +353,77 @@ class CharacterDesigner(BaseAgent):
                     "seed": seed, "error": str(exc),
                 })
         return results
+
+    # ---------------------------------------------------------------
+    # 2e：角色设定表（16:9，正脸放大 + 正/侧/背三视图）
+    # ---------------------------------------------------------------
+    def _generate_sheet_image(self, name: str, profile: dict,
+                              state: CrewState | None = None) -> str:
+        """额外生成一张 **16:9 角色设定表**（给人看的交付物）。
+
+        ## 为什么单独出一张，而不是拿逐视角图拼
+
+        用户 2026-10-07 选定了「16:9 单图」路线，取舍是：
+
+          · **一致性**：四个视角在**同一张图**里生成 → 天然同一个人。
+          · **代价**：一张 16:9 塞不下"大脸特写 + 三套精细服装"，
+            模型会**随机丢配饰**（实测 Y2K 少女的"灰百褶裙粉内衬 / 银色珠链 /
+            蕾丝及膝袜 / 粉白厚底鞋"常被简化掉）。
+
+        对照的另一条路（每格独立生成再拼接）配饰能全保住，但四张独立采样
+        → **脸会漂**。两条路都实测过，各有致命短板；用户选了"要一致性"。
+
+        ## 所以它**不参与下游锚定**
+
+        `character_reference_images` 仍是逐视角的独立图。
+        这张设定表只是**展示层**（也是 `character_sheets` 这个新键的内容）。
+
+        返回：本地文件路径；关闭时或失败时返回空串（**软失败，不阻断流程**）。
+        """
+        if not getattr(settings, "character_sheet_enabled", False):
+            return ""
+
+        appearance = str(profile.get("appearance") or "").strip()
+        if not appearance:
+            return ""
+
+        from app.agents.stage2.character_sheet_template import (
+            SHEET_NEGATIVE,
+            build_sheet_prompt,
+        )
+
+        # 与逐视角图一样，从 state 的 run_context 定归档归属
+        # （否则会落进 `_global/`，账号丢失）
+        from app.services.runtime_settings import capture as _ctx_capture
+        from app.services.runtime_settings import restore as _ctx_restore
+
+        ctx = _ctx_capture()
+        if state and state.get("run_context"):
+            from app.core.context import RunContext
+
+            ctx = RunContext.from_state(state).as_dict()
+        _ctx_restore(ctx)
+
+        prompt = build_sheet_prompt(name, appearance)
+        w = int(getattr(settings, "character_sheet_width", 1920) or 1920)
+        h = int(getattr(settings, "character_sheet_height", 1080) or 1080)
+        try:
+            _url, local_path, ok = get_image_service().generate(
+                {
+                    "shot_id": f"sheettable_{name}",
+                    "prompt": prompt,
+                    "negative_prompt": SHEET_NEGATIVE,
+                    # 固定 seed：同名角色重跑得到同一张设定表
+                    "seed": _seed_for(name, "sheettable"),
+                    "width": w,
+                    "height": h,
+                },
+                role="character_designer",
+            )
+            return local_path if ok and local_path else ""
+        except Exception as exc:  # noqa: BLE001  设定表是附加交付物，不该拖垮流程
+            logger.warning("[character_designer] 设定表生成失败（不影响其余流程）：%s", exc)
+            return ""
 
     # ---------------------------------------------------------------
     # 2d + 新增方法：_select_best_reference

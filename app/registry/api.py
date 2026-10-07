@@ -414,6 +414,11 @@ def allowed_settings() -> set[str]:
         # 有测试守着"被读的键必须可写"（见 test_silent_failures）。
         "local_gen_url", "local_image_steps", "local_video_steps", "local_gen_timeout",
         "ip_adapter_api_key",
+        # 角色设定表（16:9 正脸放大 + 三视图）。
+        # ⚠️ 又是同一类坑：`character_designer._generate_sheet_image` 运行时
+        # 读这三个键，漏掉它们会导致"设置页能改、保存却被静默丢弃"。
+        # 加进来时被 `test_runtime_read_keys_are_writable` 当场抓出。
+        "character_sheet_enabled", "character_sheet_width", "character_sheet_height",
         # 说明：`mock_llm` / `mock_image` / `mock_quality` / `mock_critics`
         # **有意不做成运行时设置**。它们是环境开关（决定"要不要真的调外部 API"），
         # 而 `providers.py` 把它们登记成 provider 模式字段、前端设置页会显示。

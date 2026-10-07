@@ -168,6 +168,21 @@ class Settings(BaseSettings):
     image_quality: str = "standard"   # standard | high | ultra（图片细节/清晰度）
     video_quality: str = "768P"       # 768P | 2K（视频分辨率，可由设置页选择；1080P 提供者不支持）
 
+    # ------------------- 角色设定表 -------------------
+    # 每个角色额外出一张「正脸放大 + 正/侧/背三视图」的 16:9 设定图。
+    #
+    # 默认**开**（用户 2026-10-07 选定）。这是一张**给人看的交付物**，
+    # 不参与下游锚定（下游仍用逐视角的独立图 —— 见
+    # `app/agents/stage2/character_sheet_template.py` 里"为什么设定表不能当
+    # IP-Adapter 参考图"的说明）。
+    #
+    # 代价：每个角色多一次出图（本机 Z-Image 1920×1080 约 63~77 秒）。
+    # 关掉它不影响流程其余部分。
+    character_sheet_enabled: bool = True
+    #: 设定表尺寸（16:9）。降低可显著提速：1536×864 约 43 秒，1216×688 约 29 秒。
+    character_sheet_width: int = 1920
+    character_sheet_height: int = 1080
+
     # ------------------- 路径 -------------------
     db_path: str = "./data/little_crew.db"
     output_dir: str = "./data/outputs"
