@@ -243,9 +243,32 @@ def _run_stream(job_input, session_id: str, user_id: str, user_input: str, proje
 #:   真实调用（例如让服务端去下载任意地址），所以同样不能任意注入。
 #:
 #: 这里只留**测试/调试真正需要**的几个中性键；其余一律丢弃并记警告。
+#:
+#: ⚠️ 2026-10-07 节点排查补漏：原先**漏了编排三键**
+#: `start_stage` / `end_stage` / `enabled_checkpoints` ——
+#: 而 `app/workflows/main_workflow.py` 一直在读它们
+#: （`_skipped_by_scope` 做区间跳过、`_checkpoint_on` 做确认点开关），
+#: 文档里也写着"实测 `start_stage=storyboarder` + seed 启动可用"
+#: （`docs/recon/01-usage.md:88`）。于是白名单把功能**整个拦掉**：
+#: 传了被静默丢弃 + 记一条 warning，表现为"设了没反应"。
+#:
+#: 这三个键是**中性**的，放进白名单安全：
+#:   · 只接受字符串（阶段名）与字符串列表（确认点 key）；
+#:   · 不涉及身份（`run_context` 仍然被拒）；
+#:   · 不会让服务端去取任意地址（不像 `images` / `character_reference_images`）。
+#: 它们**只影响"跳过哪些环节"与"开哪些确认点"** —— 正是"编排计划"该有的东西
+#: （见 `docs/recon/02-refactor-plan.md:157` 的 Plan 实体）。
+#:
+#: ⚠️ 已知不完善（**有意不在本次引入新抽象**）：分段比较用的是**阶段名**
+#: （`writer` / `director` / `photographer`），而新接入的节点名
+#: （`motion_compositor` 等）在 `_STAGE_ORDER` 里没有对应阶段名 →
+#: `end_stage` 管不住它们。这是"画布编排"要一起理顺的事
+#: （`docs/recon/04-frontend-rewrite.md` §5.3：`start_stage` = 从此节点开始）。
 _ALLOWED_SEED_KEYS = frozenset({
     "user_input", "topic", "style", "aspect_ratio", "video_seconds",
     "mock", "dry_run", "feedback", "notes",
+    # 编排三键（见上）
+    "start_stage", "end_stage", "enabled_checkpoints",
 })
 
 

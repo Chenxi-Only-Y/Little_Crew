@@ -278,10 +278,16 @@ def test_skipped_stages_are_reported_as_skipped(mock_env):
     leaked = [s for s in by_status.get("done", []) if s not in known]
     assert not leaked, f"事件里出现未翻译的工作流节点名：{leaked}"
 
-    # 未进图的 v2 新角色应被如实标为跳过
-    assert "previs_artist" in by_status.get("skipped", []), (
-        f"尚未进图的 v2 角色应标 skipped，实际 skipped={by_status.get('skipped')}"
-    )
+    # 本次没跑到（首轮就停在确认点）的**后期环节**应被如实标为跳过
+    #
+    # ⚠️ 这条原先断言的是 `previs_artist`，理由是"尚未进图的 v2 角色"。
+    # 它 2026-10-07 已经**真的进图了**（接在分镜确认之后），所以那个理由过期了
+    # —— 而且它恰好排在 `screenwriter` **之后**，`start_stage=screenwriter`
+    # 本来就不该跳过它。换成本轮确实跑不到、且语义稳定的后期环节。
+    for late in ("inpainter", "motion_compositor", "video_assessor"):
+        assert late in by_status.get("skipped", []), (
+            f"本轮没跑到的后期环节 {late} 应标 skipped，实际 skipped={by_status.get('skipped')}"
+        )
 
 
 def test_review_checkpoint_broadcasts_review_and_status(mock_env):
