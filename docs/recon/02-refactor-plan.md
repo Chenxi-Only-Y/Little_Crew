@@ -241,6 +241,49 @@ PROVIDERS: dict[str, ImageProvider] = {
 
 ---
 
+## 6.5 远期规划（用户 2026-10-07 明确"先保留，后续开发"）
+
+### 修图师 · Inpainting / Outpainting 修复
+
+**状态**：注册表里有这个职业与节点（`inpainter`，能力 `image_edit`，
+产出 `fixed_images`），**执行图里也会跑到它，但它直接跳过**并说明
+"修复后端未接入"。这是**有意为之**的占位 —— 用户原话：
+"修图师目前先保留，后续开发，流程直接跳过"。
+
+**为什么只能占位**（查证过，别被"能力已声明"骗了）：
+
+| 看起来有的 | 实际情况 |
+| --- | --- |
+| 提供者表里有 `z-image-inpaint`（本地·免费） | 只出现在**三个声明处**：`providers.py` 的 `ProviderSpec`、`cloud_cost.py` 的成本表、`local_probe.py` 的探测表 —— **没有任何代码调用它做修复** |
+| 设置里有"修复模型来源"（`image_provider_image_edit`） | 键存在、能存能读，但读到的值**没有任何消费点** |
+| `ImageService` 有 `image_edit` 能力 | `ImageService` **只有 `generate()`（文生图）**，没有 edit / inpaint 方法；`_local` 分支走的是 Z-Image **文生图**接口 |
+| 产物 `fixed_images` 已声明 | 它**从来没有被写入过**（`quality_assessor.run()` 只返回 `quality_report`）。这个空声明在本次改动**之前就存在** |
+
+**要做的话，两条路**：
+
+1. **本地**（免费，但要动 `D:\AI\local-gen` 那个外部项目）：
+   给它加一个 inpaint 路由（mask + 原图 → 修复图），本项目再补
+   `ImageService.inpaint()` 与 `inpainter` 节点实现。
+   ⚠️ `local-gen` 被用户划为**外部项目**，动它之前必须先问。
+2. **云端**（不动外部项目，但要花钱）：
+   接 dashscope 的 `qwen-image-edit`（提供者表里已声明，成本表里也有）。
+   这条只改本项目。
+
+**实现时要一起处理的三件事**：
+- `inpainter` 现在是"无条件跳过"，改成真干活后要**只修用户标记的图**
+  （修图很贵，不该对每张图都跑），并支持"没标记就跳过"；
+- `fixed_images` 要有真实写入者前，先把 `roles.py` 里 `inpainter`
+  的 `produces` 与实际对齐（现在是"声明了但落不了地"，已加注释说明）；
+- 修完之后 `aggregator` 要把 `fixed_images` 导出去（本次已加进白名单）。
+
+### 另外两件同批确认"暂时不做"的
+
+- **视频质检的逐帧检测**：现在只报"有几段可检"，**不给假分数**
+  （编一个"闪烁 0.9 合格"比不检查更糟）。真做要 ffmpeg 抽帧 + 帧间比较。
+- **BGM / 音效轨**（`music` 能力）：提供者表里是空的，`bgm_track` 留空并写明原因。
+
+---
+
 ## 7. 需要你拍板的决策点
 
 | # | 决策 | 选项 | 影响面 |

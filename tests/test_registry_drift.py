@@ -124,14 +124,40 @@ def test_generation_settings_report_implemented_flag():
     否则前端会把未接入的能力也标成"（必选）"并警告"不选会报错"
     ——而它们在代码里**没有任何调用点**，不选也不会报错。
     误导性的必选提示比不提示更糟：用户会去填一堆无用的配置。
+
+    ⚠️ 2026-10-07 更新：`tts` 从"未接入"变成**已接入**。
+    `voice_director` 节点接进执行图后真的会调 `tts.synthesize`，
+    所以它必须报 `implemented=True` —— 否则设置页又会告诉用户
+    "配音未接入、不必配置"，而图里照跑 TTS（这正是这次修掉的 bug）。
+
+    仍然**没有**接入的是 `music`（BGM/音效没有实现，已知空缺）。
     """
     rows = prov.generation_settings()
     by_cap = {r["capability"]: r for r in rows}
     assert all("implemented" in r for r in rows), "缺少 implemented 字段"
 
-    for cap in ("llm", "image_gen", "video_gen"):
-        assert by_cap[cap]["implemented"] is True, f"{cap} 是已接入的，应为 True"
-    for cap in ("tts",):
-        assert by_cap[cap]["implemented"] is False, (
-            f"{cap} 当前无调用点，implemented 应为 False（否则前端会误导用户）"
+    for cap in ("llm", "image_gen", "video_gen", "tts"):
+        assert by_cap[cap]["implemented"] is True, (
+            f"{cap} 已接入（有真实调用点），implemented 应为 True"
         )
+    # `music` 连"模式设置项"都没有（没有提供者、没有实现），
+    # 所以它不出现在这里 —— 这比"出现并标 False"更彻底。
+    assert "music" not in by_cap, (
+        "music 没有实现，不该出现在模式设置里（否则用户会去配一个无用的东西）"
+    )
+
+
+def test_implemented_capabilities_match_real_call_sites():
+    """`IMPLEMENTED_CAPABILITIES` 里的每项都必须**真有调用点**。
+
+    这条防止两个方向的不一致：
+      · 声明了已接入、代码里没人调 → 用户被迫配置无用的东西；
+      · 代码里在调、声明成未接入 → 用户以为不用配，跑起来才报错
+        （`tts` 就是这个方向，2026-10-07 修掉）。
+    """
+    from app.services import providers as prov
+
+    impl = prov.IMPLEMENTED_CAPABILITIES
+    assert "tts" in impl, "voice_director 真的在调 TTS，tts 必须算已接入"
+    # music 没有任何实现（BGM 轨留空并写明原因），不能进这个集合
+    assert "music" not in impl, "music 没有实现，不该声明为已接入"

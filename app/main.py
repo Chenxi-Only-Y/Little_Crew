@@ -1724,11 +1724,18 @@ def _run_video(session_id: str, user_id: str, user_input: str, images: list, scr
       · 产物按 `_global` 归类，落进错误的输出目录；
       · IP-Adapter 等"按用户"的缓存键退化成同一个值。
     实测过这类症状（产物落 `_global/`）。用 try/finally 保证线程结束前复位。
+
+    ⚠️ **`project` 也必须带上**（2026-10-07 节点排查发现）：原先只传
+    user/session，于是视频产物落进「未命名工程」目录 —— 同一工程的图片/配音
+    在 `{工程名}/`，视频却在 `未命名工程/`，按工程打包资产时视频就丢了。
+    工程名不在会话 payload 里，所以用 `project_from_checkpoint(session_id)`
+    从 checkpoint 的 State 里取回（那正是它存在的理由）。
     """
     from app.core.config import settings
     from app.services.runtime_settings import set_context as _rs_set_ctx
+    from app.services.task_runner import project_from_checkpoint
 
-    _rs_set_ctx(user_id, session_id)
+    _rs_set_ctx(user_id, session_id, project_from_checkpoint(session_id))
     store = get_session_store()
     try:
         out, produced = get_video_service().synthesize(

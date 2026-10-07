@@ -58,13 +58,25 @@ REVIEW_QUALITY_POINT = 9
 
 # ------------------- Agent 节点（含「分段角色」能力） -------------------
 
-# 分段顺序：用于判断 start_stage 之前应跳过哪些环节（13 环节完整流水线）。
-# 注意：quality_assessor / aggregator / distributor 为汇总/分发节点，不受 start/end 跳过，
-#       它们始终会运行（仅展示为环节）。
+# 分段顺序：用于判断 start_stage 之前应跳过哪些环节。
+#
+# ⚠️ 2026-10-07 节点排查补漏：原先**漏了新接入的 5 个环节**
+# （previs_artist / voice_director / inpainter / motion_compositor /
+#  video_assessor），而 `_skipped_by_scope` 对**不在表里的名字恒返回 False**
+# —— 于是 `end_stage="storyboarder"` 时它们照跑：预演要调 LLM、
+# 配音要逐镜起 TTS 子进程、动态合成还要提交几分钟的后台视频任务。
+# 与"AI 只执行到指定环节"的语义相反，而且会**花钱**。
+#
+# 注意：quality_assessor / aggregator / distributor 是汇总/分发节点，
+# 有意不受 start/end 跳过（它们始终运行，仅展示为环节）。
 _STAGE_ORDER = [
     "writer", "critics", "screenwriter", "character_designer", "scene_designer",
-    "consistency_auditor", "storyboarder", "rhythm_director", "continuity_checker",
-    "director", "photographer", "quality_assessor", "aggregator",
+    "consistency_auditor", "storyboarder",
+    "previs_artist", "voice_director",          # 白模预演 + 配音
+    "rhythm_director", "continuity_checker", "director", "photographer",
+    "quality_assessor",
+    "inpainter", "motion_compositor", "video_assessor",   # 后期三环
+    "aggregator",
 ]
 
 
@@ -219,6 +231,27 @@ def _ctx(name: str):
     return _bind_context(globals()[name])
 
 
+def _redo_requested(state: CrewState) -> bool:
+    """人工是否要求**重新生成**这一步。
+
+    ## 为什么要单独一个函数
+
+    `route_simple_review` 把 `back`（返回上一步）也路由成 `redo` 送回该阶段
+    —— 语义上是对的（"上一步"就是要重做上一环）。但如果各阶段节点只判
+    `review_decision == "redo"`，那 `back` 就成了**空操作**：
+
+        回到确认点 → 内容一字未改 → 又停在同一个确认点
+        （用户看到同一个面板反复弹出，像卡死）
+
+    实测过：确认点 #5/#6/#7/#8 点「返回上一步」都会这样，只有
+    「通过 / 退回重做」能脱身。而前端 `ReviewPanel` 在**每个**确认点
+    都渲染了「返回上一步」按钮，所以这是用户点得到的。
+
+    修法：统一用这个函数判断，`redo` 与 `back` 都算"要重做"。
+    """
+    return state.get("review_decision") in ("redo", "back")
+
+
 def _make_stage_node(output_key: str, stage_name: str, agent_cls):
     """构造一个「分段」节点：
       - start_stage 更靠后 / end_stage 更靠前 -> 该环节跳过（AI 执行指定区间）
@@ -232,7 +265,11 @@ def _make_stage_node(output_key: str, stage_name: str, agent_cls):
             return {"current_phase": stage_name}
         # 人工重做：交还 agent（内部依据 feedback / force_redo 重新生成），
         # 确保 redo 不是“跳过”而是真正重新生成。
-        if state.get("review_decision") == "redo":
+        #
+        # ⚠️ 用 `_redo_requested`，**不能只判 == "redo"** —— 路由里
+        # 「返回上一步(back)」也被当作 redo 送回该阶段，若这里只认 "redo"，
+        # back 就成了空操作（回到确认点、内容一字未改，用户看着像卡死）。
+        if _redo_requested(state):
             return _attach_thinking(stage_name, agent_cls().run(state))
         # 已有且完整产物 -> 跳过
         if _is_complete(state.get(output_key)):
@@ -264,7 +301,7 @@ def node_character_designer(state: CrewState) -> dict:
     """方案B 角色设计师节点（已有角色资产但非重做时跳过，redo 时重新生成）。"""
     if _skipped_by_scope(state, "character_designer"):
         return {"current_phase": "character_designer"}
-    if state.get("character_profiles") and state.get("review_decision") != "redo":
+    if state.get("character_profiles") and not _redo_requested(state):
         return {"current_phase": "character_designer"}
     return _attach_thinking("character_designer", CharacterDesigner().run(state))
 
@@ -273,7 +310,7 @@ def node_scene_designer(state: CrewState) -> dict:
     """方案B 场景设计师节点（已有场景资产但非重做时跳过，redo 时重新生成）。"""
     if _skipped_by_scope(state, "scene_designer"):
         return {"current_phase": "scene_designer"}
-    if state.get("scene_design_profiles") and state.get("review_decision") != "redo":
+    if state.get("scene_design_profiles") and not _redo_requested(state):
         return {"current_phase": "scene_designer"}
     return _attach_thinking("scene_designer", SceneDesigner().run(state))
 
@@ -292,7 +329,7 @@ def node_rhythm_director(state: CrewState) -> dict:
     """方案B 剪辑指导/节奏导演节点（分镜完成后执行；已有 rhythm_plan 且非重做时跳过）。"""
     if _skipped_by_scope(state, "rhythm_director"):
         return {"current_phase": "rhythm_director"}
-    if state.get("rhythm_plan") and state.get("review_decision") != "redo":
+    if state.get("rhythm_plan") and not _redo_requested(state):
         return {"current_phase": "rhythm_director"}
     return _attach_thinking("rhythm_director", RhythmDirector().run(state))
 
@@ -301,7 +338,7 @@ def node_continuity_checker(state: CrewState) -> dict:
     """方案B 场记/连续性检查节点（节奏导演之后执行；仅检查不改动）。"""
     if _skipped_by_scope(state, "continuity_checker"):
         return {"current_phase": "continuity_checker"}
-    if state.get("continuity_report") and state.get("review_decision") != "redo":
+    if state.get("continuity_report") and not _redo_requested(state):
         return {"current_phase": "continuity_checker"}
     return _attach_thinking("continuity_checker", ContinuityChecker().run(state))
 
@@ -365,20 +402,46 @@ def _review(node_name: str, point: int, title: str, content, enabled: bool = Tru
 # 取值类型：dict 类字段清成 {}，其余(list)清成 []，使下游节点重新生成。
 _INVALIDATE_NOTE = "editor"
 
-# 哪些字段是 dict 类型
+# 哪些字段是 dict 类型（失效时清成 {} 而不是 []）
+#
+# ⚠️ 2026-10-07 节点排查补漏：原先漏了 `quality_report` 与
+# `character_consistency_report` —— 它们在 CrewState 里声明是 **dict**，
+# 却被清成 `[]`（类型错误）。后果实测：`review_quality_node` 里
+# `if not state.get("quality_report")` 会把 `[]` 当成"没有报告"，
+# **直接自动放行该确认点**（用户再也看不到质量确认）。
 _DICT_FIELDS = {
     "scene_reference_images", "scene_design_profiles",
     "character_reference_images", "character_profiles", "critic_report",
+    "quality_report", "character_consistency_report",
 }
 
+# 某个输入被编辑后，哪些下游产物必须失效重算
+#
+# ⚠️ 2026-10-07 排查修了三处（都有实测复现）：
+#
+# 1. `character_profiles` 原先**清空 character_reference_images** ——
+#    但它的生产者 `character_designer` 在确认点**上游**，本次遍历不会再经过它，
+#    于是参考图被**永久清空** → ImageGenerator 的 IP-Adapter 静默退化成普通
+#    文生图（角色一致性失效），而图片全量重生成（白花钱）。
+#    正确做法：**不失效参考图**（外貌文字改动由 prompts 重编译承接）。
+#
+# 2. `character_profiles` 原先**漏了 `prompts`** —— 提示词里注入了角色外貌
+#    （见 `prompt_refiner`），不清 prompts 的话 `prompt_compiler` 见产物完整
+#    就跳过，图片仍按**旧外貌**重生成 → 用户这次编辑对最终画面毫无效果。
+#
+# 3. `script` / `storyboard` 原先**漏了 `rhythm_plan`** —— 编辑剧本或分镜后
+#    节奏方案留着旧 `shot_id`，而 `node_rhythm_director` 见已有产物就跳过，
+#    于是 `result.rhythm_plan` 里的镜头号与最终分镜**完全不相交**。
 _DOWNSTREAM_BY_KEY = {
     "script": ["storyboard", "prompts", "images", "scene_reference_images",
                "scene_design_profiles", "character_reference_images",
                "character_profiles", "character_consistency_report",
-               "quality_report", "continuity_report"],
-    "character_profiles": ["character_reference_images", "character_consistency_report",
+               "quality_report", "continuity_report", "rhythm_plan"],
+    # 注意：**不清 character_reference_images**（原因见上面第 1 条）
+    "character_profiles": ["prompts", "character_consistency_report",
                            "images", "quality_report"],
-    "storyboard": ["prompts", "images", "quality_report", "continuity_report"],
+    "storyboard": ["prompts", "images", "quality_report", "continuity_report",
+                   "rhythm_plan"],
     "images": ["quality_report"],
 }
 
@@ -663,6 +726,9 @@ def node_previs_artist(state: CrewState) -> dict:
     所以这里**只返回产物**，不要自己拼 thinking_log（我第一版就编了个
     不存在的 `_append_thinking`，白查一轮）。
     """
+    if _skipped_by_scope(state, "previs_artist"):
+        return {"current_phase": "previs_artist"}
+
     from app.services.previs_artist import generate_previs_scene
 
     return generate_previs_scene(state)
@@ -684,6 +750,9 @@ def node_inpainter(state: CrewState) -> dict:
     为什么不假装能修：`ImageService` 只有 `generate()`，没有 inpaint 方法。
     详见 `app/services/post_production.py::inpaint`。
     """
+    if _skipped_by_scope(state, "inpainter"):
+        return {"current_phase": "inpainter"}
+
     from app.services.post_production import inpaint
 
     return inpaint(state)
@@ -694,6 +763,9 @@ def node_motion_compositor(state: CrewState) -> dict:
 
     只**提交**后台视频任务就返回 —— 视频要几分钟，不能在图里等。
     """
+    if _skipped_by_scope(state, "motion_compositor"):
+        return {"current_phase": "motion_compositor"}
+
     from app.services.post_production import composite_motion
 
     return composite_motion(state)
@@ -701,6 +773,9 @@ def node_motion_compositor(state: CrewState) -> dict:
 
 def node_video_assessor(state: CrewState) -> dict:
     """视频质检师：视频还没好就跳过（它在后台跑）。"""
+    if _skipped_by_scope(state, "video_assessor"):
+        return {"current_phase": "video_assessor"}
+
     from app.services.post_production import assess_video
 
     return assess_video(state)
@@ -716,6 +791,9 @@ def node_voice_director(state: CrewState) -> dict:
     只做**对白**；BGM 不做（`music` 能力在提供者表里是空的，已知空缺）。
     失败**不抛异常**（用户可以后期自己配），在条目里记 `status` / `reason`。
     """
+    if _skipped_by_scope(state, "voice_director"):
+        return {"current_phase": "voice_director"}
+
     from app.services.voice_director import synthesize_voice_track
 
     return synthesize_voice_track(state)

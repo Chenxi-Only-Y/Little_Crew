@@ -108,6 +108,19 @@ def _vec3(v: Any, default: tuple[float, float, float]) -> list[float]:
     return list(default)
 
 
+def _as_list(v: Any) -> list:
+    """把模型给的字段收成 list。
+
+    ⚠️ 为什么需要：模型有时把 `actors`/`props`/`shots` 给成**数字或 bool**
+    （实测 `{"actors": 1}`、`{"props": 3}`、`{"shots": true}`）。
+    直接 `enumerate(v or [])` 会抛 `TypeError: 'int' object is not iterable`，
+    而这个异常会**逃出**本模块"出错不抛异常"的声明 ——
+    一路冒到图节点，`task_runner` 把**整次运行**判成 error。
+    （预演只是锦上添花，不该拖垮流程。`white_model.py:312` 有同款保护。）
+    """
+    return v if isinstance(v, list) else []
+
+
 def normalize_scene(raw: Any) -> tuple[dict, list[str]]:
     """把模型输出归一化成 `PrevisScene`，返回 `(scene, 修复说明)`。
 
@@ -125,7 +138,7 @@ def normalize_scene(raw: Any) -> tuple[dict, list[str]]:
     ground = [_num(ground[0], 20, 4, 400), _num(ground[1], 20, 4, 400)]
 
     actors: list[dict] = []
-    for i, a in enumerate(raw.get("actors") or []):
+    for i, a in enumerate(_as_list(raw.get("actors"))):
         if not isinstance(a, dict):
             continue
         pose = a.get("pose")
@@ -150,7 +163,7 @@ def normalize_scene(raw: Any) -> tuple[dict, list[str]]:
         notes.append("所有人物的 y 已对齐到 0（脚底贴地）")
 
     props: list[dict] = []
-    for i, p in enumerate(raw.get("props") or []):
+    for i, p in enumerate(_as_list(raw.get("props"))):
         if not isinstance(p, dict):
             continue
         props.append({
@@ -163,7 +176,7 @@ def normalize_scene(raw: Any) -> tuple[dict, list[str]]:
         })
 
     shots: list[dict] = []
-    for si, sh in enumerate(raw.get("shots") or []):
+    for si, sh in enumerate(_as_list(raw.get("shots"))):
         if not isinstance(sh, dict):
             continue
         dur = _num(sh.get("duration"), 4.0, 0.5, 30.0)

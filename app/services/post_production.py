@@ -103,11 +103,20 @@ def composite_motion(state: dict) -> dict:
         if running is not None and running.is_alive():
             return {"video": existing, "current_phase": phase,
                     "motion_note": "视频正在生成中（后台任务已在跑）。"}
+        # ⚠️ **必须在这里（节点线程）capture 上下文**，再在线程入口 restore。
+        # 只传 user_id/session_id 会**丢掉工程名** → 视频产物落进
+        # 「未命名工程」目录，同一个工程的图片/配音在 `{工程名}/`，视频却在
+        # `未命名工程/`，按工程打包资产时视频就丢了。
+        # 这是实测出来的（图片保住了工程名、视频没有）。
+        # `image_generator` 用同一套 capture/restore（那边是 ThreadPoolExecutor）。
+        from app.services.runtime_settings import capture as _ctx_capture
+
+        ctx = _ctx_capture()
         t = threading.Thread(
             target=_run_video_job,
             args=(sid, str(state.get("user_id") or "local"),
                   str(state.get("user_input") or ""), images,
-                  state.get("script") or {}),
+                  state.get("script") or {}, ctx),
             daemon=True,
             name=f"video-{sid}",
         )
@@ -125,20 +134,27 @@ def composite_motion(state: dict) -> dict:
 
 
 def _run_video_job(session_id: str, user_id: str, user_input: str,
-                   images: list, script: dict) -> None:
+                   images: list, script: dict, ctx: dict | None = None) -> None:
     """后台线程：合成视频并写回会话 payload。
 
-    ⚠️ **必须在这里 `set_context`**：后台线程不继承请求上下文，而运行时设置
-    靠 threading.local / ContextVar。不设的话这一线程会用 `_global` 的设置 ——
-    用错 API Key、产物落进 `_global` 目录。`app/main.py::_run_video` 里有同款
-    说明（那边的注释是先例，我照抄逻辑而不是复制粘贴代码，因为那边耦合了
-    `_VIDEO_JOBS` 的 HTTP 侧登记）。
+    ⚠️ **必须在这里 `restore` 上下文**：后台线程不继承 threading.local，
+    而运行时设置与**产物归档路径**都靠它。不恢复的话这一线程会用 `_global`
+    的设置，且产物落进「未命名工程」目录。
+
+    `ctx` 由调用方（节点线程）用 `runtime_settings.capture()` 抓取 ——
+    它带 `project`（工程名），这正是产物归档需要的第二层分组。
+    （`app/main.py::_run_video` 是 HTTP 侧的同款实现，那边只 set_context
+    user/session，**同样丢了工程名**，是另一个待修点。）
     """
     from app.core.config import settings
+    from app.services.runtime_settings import restore as _rs_restore
     from app.services.runtime_settings import set_context as _rs_set_ctx
     from app.services.video import get_video_service
 
-    _rs_set_ctx(user_id, session_id)
+    if ctx:
+        _rs_restore(ctx)
+    else:
+        _rs_set_ctx(user_id, session_id)
     try:
         from app.services.session_store import get_session_store
 
@@ -261,15 +277,25 @@ def publish(state: dict) -> dict:
 
     **没有成片就跳过**（发行不是必需的）—— 返回说明而不是报错。
 
-    ⚠️ 字段名有个坑：`Distributor.run()` 读的是 **`state["video"]`**
+    ## 两个坑（都是实测出来的，别改回去）
+
+    **坑 1：字段名不一致。** `Distributor.run()` 读的是 **`state["video"]`**
     （见它自己的 docstring：`video: dict 最终视频（dir_or_path / produced，
     来自 payload.video）`），而图状态里那玩意儿叫 **`final_video`**。
-    所以这里要把 `final_video` **补成 `video`** 再交给它 ——
-    不然它内部会当成"没有视频"静默跳过（我第一版就漏了这层转换）。
+    所以要把 `final_video` **补成 `video`** 再交给它。
+
+    **坑 2：不能只看 `final_video` 就早退。** `final_video` 这个字段
+    **全项目没有任何生产者**（只有 `CrewState` 的声明和这里的读取）——
+    真正的视频在**会话 payload** 的 `video` 键里（异步任务写的）。
+    原先这里先判 `final_video` 空就 return，于是**图里的发行环节永远走
+    "跳过"分支**，会话里明明有视频也不发。
+    修法：**先取 payload 里的视频**，两者都空才算没成片。
     """
     phase = "distributor"
     final = state.get("final_video") or {}
-    if not final:
+    payload_video = _session_payload(state).get("video") or {}
+
+    if not final and not payload_video:
         logger.info("[distributor] 没有成片，跳过发行")
         return {
             "publish_results": {},
@@ -279,7 +305,6 @@ def publish(state: dict) -> dict:
                                  "或直接跳过。"),
         }
 
-    payload_video = _session_payload(state).get("video") or {}
     run_state = dict(state)
     if not run_state.get("video"):
         run_state["video"] = (

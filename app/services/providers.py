@@ -880,6 +880,13 @@ MODE_LABELS: dict[str, str] = {
 #: 不在本项目范围内），所以这个集合里也不会再有它。
 IMPLEMENTED_CAPABILITIES: frozenset[str] = frozenset({
     "llm", "image_gen", "image_edit", "video_gen",
+    # `tts` 于 2026-10-07 补上：`voice_director` 节点已接进执行图并**真的会调**
+    # （`app/services/voice_director.py` → `tts.synthesize`）。
+    # 原先这里没有它 → 设置页告诉用户"配音未接入、不必配置"，而图里照跑 TTS。
+    # **声明必须与实际一致**，否则是在误导用户。
+    #
+    # `music` 仍然没有：BGM/音效轨没有实现（已知空缺），所以不列。
+    "tts",
 })
 
 

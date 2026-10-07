@@ -182,6 +182,41 @@ class CrewState(TypedDict, total=False):
     # 默认：{}
     quality_report: dict
 
+    # ------------------- 后期三环的产物与说明 -------------------
+    # ⚠️ **这一段是补漏**。2026-10-07 的节点排查发现：`inpainter` /
+    # `motion_compositor` / `video_assessor` / `distributor` / `voice_director`
+    # 这几个节点返回的键**根本不在 CrewState 里**，而 LangGraph 对未声明的
+    # channel **静默丢弃**（`_algo.py`：`wrote to unknown channel …, ignoring it`）。
+    #
+    # 后果实测：
+    #   · `video_report` → 视频质检唯一的产出（几段可检 / 为何没检）全部消失；
+    #   · `*_note`（跳过原因）→ 节点被设计成"优雅跳过并**说明**"，
+    #     而说明本身被丢掉，用户只看到节点 done、拿不到任何原因；
+    #   · `fixed_images` → 注册表声明的产物永远落不了地。
+    #
+    # **教训**：往图里加节点时，返回的每个键都必须先在 CrewState 里声明，
+    # 否则"看起来跑通了、实际数据没了"。有测试守着（见
+    # `tests/test_state_fields.py::test_node_return_keys_are_declared`）。
+
+    # 视频质检报告。格式：{"clips": int, "dir_or_path": str, "checked": bool,
+    #                       "reason": str}；默认 {}
+    video_report: dict
+
+    # 修图师的产出（修复后的画面）。格式同 `images`；默认 []
+    fixed_images: list
+
+    # 各节点"为什么跳过"的说明。**必须能传到界面** —— 否则"优雅跳过"
+    # 对用户就是"莫名其妙没做"。
+    # 格式：str；默认 ""
+    motion_note: str
+    video_assessor_note: str
+    inpainter_note: str
+    distributor_note: str
+    voice_track_note: str
+
+    # 动态合成师是否强制重跑视频（已有视频时默认不重复生成）。默认 False
+    video_regenerate: bool
+
     # ------------------- 流程控制 -------------------
     current_phase: Annotated[str, _last_value]  # 当前阶段标识（用于进度展示，并行时取最后写入）
     review_point: int        # 当前人工确认点编号 (1 剧本 / 2 资产 / 3 分镜 / 4 图片)

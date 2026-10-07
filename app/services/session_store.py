@@ -41,9 +41,34 @@ class SessionStore:
             conn.commit()
 
     def save(self, session_id: str, user_id: str, user_input: str, status: str, phase: str, payload: Optional[Any]) -> None:
+        """写入/更新一条会话。
+
+        ## `payload=None` 的语义：**不改动已有 payload**
+
+        ⚠️ 这里曾经是"整列覆盖，None 就写 NULL"，那会造成**静默数据丢失**：
+
+        2026-10-07 节点排查实测到 —— 视频生成是**独立的异步后台任务**，
+        它把结果写进 `payload["video"]`；而工作流**每过一个节点**都会调
+        `save(..., payload=None)` 保存进度。于是：
+
+            节点线程: save(payload=None)        → payload 列被写成 NULL
+            视频线程: save(payload={"video":…}) → 视频登记写进去
+            下一个节点: save(payload=None)      → **视频登记被抹掉**
+
+        mp4 还在磁盘上，但 `/api/crew/status`、`assess_video`、发行都再也看不到它。
+        在 mock/本地（视频很快）下稳定触发；确认点暂停期间手动触发也必现。
+
+        修法：`None` 表示"只更新状态、别碰 payload"。
+        要**清空** payload 请显式传 `{}`（语义明确，不会误伤）。
+
+        ## 为什么不用读-改-写
+
+        那样会有并发丢失更新（视频线程与节点线程交错）。
+        让 SQL 的 `CASE WHEN` 保持原值，是原子的、不需要额外加锁。
+        """
+        payload_json = json.dumps(payload, ensure_ascii=False) if payload is not None else None
         import time
 
-        payload_json = json.dumps(payload, ensure_ascii=False) if payload is not None else None
         now = time.time()
         with self._lock, self.engine.begin() as conn:
             conn.execute(
@@ -52,7 +77,10 @@ class SessionStore:
                        VALUES(:sid, :uid, :uin, :st, :ph, :pl, :created, :updated)
                        ON CONFLICT(session_id) DO UPDATE SET
                          user_id=excluded.user_id, user_input=excluded.user_input, status=excluded.status,
-                         phase=excluded.phase, payload=excluded.payload, updated=excluded.updated"""
+                         phase=excluded.phase, updated=excluded.updated,
+                         -- payload 为空(None)时**保持原值**，不覆盖（见 docstring）
+                         payload=CASE WHEN :pl IS NULL THEN sessions.payload
+                                      ELSE excluded.payload END"""
                 ),
                 {"sid": session_id, "uid": user_id, "uin": user_input, "st": status, "ph": phase,
                  "pl": payload_json, "created": now, "updated": now},
