@@ -89,6 +89,7 @@ def compose_character_sheet(
     out_path: str | Path,
     *,
     face_from: str = "front",
+    face_path: str | Path | None = None,
     width: int = 1820,
     height: int | None = None,
     bg: tuple[int, int, int] = BG_COLOR,
@@ -99,13 +100,18 @@ def compose_character_sheet(
         view_paths: {"front": 路径, "side": ..., "back": ...}
                     **顺序即出图顺序**；缺哪个就少一格（不报错）。
         out_path:   输出 PNG 路径
-        face_from:  用哪个视角裁面部特写（默认正面）
+        face_from:  从哪个视角**裁**面部特写（默认正面）。
+                    仅当没给 `face_path` 时用。
+        face_path:  专用的面部特写图（如 `B_face.png`）。
+                    **给了就用它**，不再从全身图裁 —— 专用图取景更准。
         width:      成品宽度，默认 1820（16:9 → 高 1024）
 
     返回：生成的文件路径
 
     设计取舍：
-      · 脸特写**从已有全身图裁**（不另生成）→ 保证与全身是同一人；
+      · 脸特写优先用**专用图**；没有才从全身图裁。
+        两者都保证"与全身是同一角色"是**生成端**的责任（同一 appearance 描述）——
+        所以模板里必须明写"三个视图必须是完全同一角色"。
       · 其余视角等比缩放居中（letterbox）→ 不裁剪人物，不拉伸变形；
       · 找不到的视角直接跳过 → 部分失败时仍能出图。
     """
@@ -125,9 +131,14 @@ def compose_character_sheet(
     sheet = Image.new("RGB", (width, h), bg)
 
     # --- 左侧：面部特写 ---
-    face_src = dict(items).get(face_from) or items[0][1]
-    with Image.open(face_src) as im:
-        face = _face_crop(im.convert("RGB"))
+    # 优先用**专用脸图**（取景更准）；没有才从全身图裁。
+    if face_path and Path(face_path).exists():
+        with Image.open(face_path) as im:
+            face = im.convert("RGB")
+    else:
+        face_src = dict(items).get(face_from) or items[0][1]
+        with Image.open(face_src) as im:
+            face = _face_crop(im.convert("RGB"))
     fr, fx, fy = _contain(face, face_w, h - gap * 2)
     sheet.paste(fr, (gap + fx, gap + fy))
 
