@@ -40,7 +40,7 @@ from __future__ import annotations
 EXPECTED_NODES = {
     "story_planner", "screenwriter", "critics", "review_script",
     "art_brief_parser", "character_designer", "scene_designer",
-    "consistency_auditor", "review_assets", "storyboarder",
+    "review_assets", "storyboarder",
     "review_storyboard", "previs_artist", "voice_director", "rhythm_director",
     "continuity_checker",
     "prompt_compiler", "image_generator", "quality_assessor",
@@ -57,9 +57,10 @@ EXPECTED_EDGES = {
     ("critics", "review_critics"),
     ("art_brief_parser", "character_designer"),
     ("art_brief_parser", "scene_designer"),
-    ("character_designer", "consistency_auditor"),
-    ("scene_designer", "consistency_auditor"),
-    ("consistency_auditor", "review_assets"),
+    # 角色/场景设计师并行，汇聚点是「资产确认」
+    # （原先汇聚在已删除的「美术总监·一致性审查」上）
+    ("character_designer", "review_assets"),
+    ("scene_designer", "review_assets"),
     ("storyboarder", "review_storyboard"),
     # 白模预演师接线后新增；配音指导接入后改为 previs → voice → rhythm
     ("previs_artist", "voice_director"),
@@ -252,12 +253,13 @@ def test_reordering_edges_is_possible():
     from app.workflows.main_workflow import build_graph
 
     spec = gs.clone_spec(gs.default_spec())
-    # 让 consistency_auditor 直接进 review_assets 之前先过 storyboarder
+    # 重排：让 character_designer 先过 storyboarder 再进 review_assets
+    # （原先拿 consistency_auditor 做例子，该环节已删除）
     spec["edges"] = [
         e for e in spec["edges"]
-        if not (e["from"] == "consistency_auditor" and e["to"] == "review_assets")
+        if not (e["from"] == "character_designer" and e["to"] == "review_assets")
     ]
-    spec["edges"].append({"from": "consistency_auditor", "to": "storyboarder"})
+    spec["edges"].append({"from": "character_designer", "to": "storyboarder"})
     # 原来 storyboarder 进的 review_storyboard 改成先进 review_assets
     spec["edges"] = [
         e for e in spec["edges"]
@@ -273,5 +275,5 @@ def test_reordering_edges_is_possible():
     assert not errs, f"重排后图不合法：{[e.message for e in errs]}"
 
     g = build_graph(spec)
-    assert ("consistency_auditor", "storyboarder") in set(g.edges)
+    assert ("character_designer", "storyboarder") in set(g.edges)
     assert ("storyboarder", "review_assets") in set(g.edges)

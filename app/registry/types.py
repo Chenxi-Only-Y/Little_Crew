@@ -255,6 +255,11 @@ class Role:
         real_job: 对应的真人职业（展示用）
         node:     主节点 key（画布上这个职业的默认执行节点）
         panels:   该职业暴露的面板（首个应为主面板）
+        bundle:   **捆绑组 key**（空 = 不参与捆绑）。
+                  同组职业"要用就一起用" —— 这是**用户的业务约定**，
+                  不是从产物依赖自动推导的（按依赖推导会得出
+                  "所有节点都是一捆"，因为依赖太密，没用）。
+                  详见 `roles.py` 的 `BUNDLES` 说明。
         legacy_keys: 旧命名（数据已清空，仅留档）
     """
 
@@ -267,6 +272,7 @@ class Role:
     node: str
     panels: tuple[Panel, ...] = ()
     legacy_keys: tuple[str, ...] = ()
+    bundle: str = ""
 
     @property
     def main_panel(self) -> Panel | None:

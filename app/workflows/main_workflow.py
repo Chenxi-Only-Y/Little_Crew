@@ -34,7 +34,6 @@ from app.agents.planner import StoryPlanner
 from app.agents.stage2.character_designer import CharacterDesigner
 from app.agents.stage2.scene_designer import SceneDesigner
 from app.agents.stage2.art_brief_parser import ArtBriefParser
-from app.agents.stage2.consistency_auditor import ConsistencyAuditor
 from app.agents.writer import Screenwriter
 from app.agents.critics import ScriptCritic
 from app.agents.shot_composer import Storyboarder
@@ -71,7 +70,7 @@ REVIEW_QUALITY_POINT = 9
 # 有意不受 start/end 跳过（它们始终运行，仅展示为环节）。
 _STAGE_ORDER = [
     "writer", "critics", "screenwriter", "character_designer", "scene_designer",
-    "consistency_auditor", "storyboarder",
+    "storyboarder",
     "previs_artist", "voice_director",          # 白模预演 + 配音
     "rhythm_director", "continuity_checker", "director", "photographer",
     "quality_assessor",
@@ -118,7 +117,7 @@ def _is_complete(val) -> bool:
 _STAGE_LABEL = {
     "writer": "策划总监", "critics": "文学策划", "screenwriter": "编剧",
     "character_designer": "角色设计师", "scene_designer": "场景设计师",
-    "consistency_auditor": "美术总监·一致性", "storyboarder": "分镜师",
+    "storyboarder": "分镜师",
     "rhythm_director": "剪辑指导", "continuity_checker": "场记",
     "director": "技术指导", "photographer": "摄影师",
     "quality_assessor": "质检总监", "aggregator": "结果聚合",
@@ -148,11 +147,6 @@ def _stage_thinking(stage_name: str, out: dict) -> str:
     if stage_name == "scene_designer":
         refs = out.get("scene_reference_images") or {}
         return f"为 {len(refs)} 个场景各生成一张氛围参考图，确定舞台美术风格。"
-    if stage_name == "consistency_auditor":
-        score = out.get("consistency_score")
-        rep = out.get("character_consistency_report") or {}
-        fg = rep.get("flagged") or {}
-        return f"核对角色跨镜头一致性，整体评分 {round(score,1) if score is not None else '待定'}，标记问题角色 {len(fg.get('characters') or [])} 个。"
     if stage_name == "storyboarder":
         sb = out.get("storyboard") or []
         return f"把剧本切成 {len(sb)} 个镜头：确定景别、机位、动作与时长，形成分镜。"
@@ -343,18 +337,6 @@ def node_continuity_checker(state: CrewState) -> dict:
     return _attach_thinking("continuity_checker", ContinuityChecker().run(state))
 
 
-def node_consistency_auditor(state: CrewState) -> dict:
-    """方案B 一致性审查节点（资产确认点前，为角色参考图/风格打分）。
-
-    无角色资产（被跳过）时直接空放行，避免无意义计算。
-    """
-    if not state.get("character_reference_images") and not state.get("story_outline"):
-        return {
-            "consistency_score": None,
-            "character_consistency_report": {},
-            "current_phase": "consistency_auditor",
-        }
-    return _attach_thinking("consistency_auditor", ConsistencyAuditor().run(state))
 
 
 def node_aggregator(state: CrewState) -> dict:
@@ -826,7 +808,7 @@ def _register_node_fns() -> None:
             REVIEW_NODE_FNS_BY_KEY[key] = fn
 
     for name in ("story_planner", "screenwriter", "critics", "art_brief_parser",
-                 "character_designer", "scene_designer", "consistency_auditor",
+                 "character_designer", "scene_designer",
                  "storyboarder", "rhythm_director", "continuity_checker",
                  "prompt_compiler", "image_generator", "quality_assessor",
                  "previs_artist", "voice_director",

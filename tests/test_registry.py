@@ -27,10 +27,12 @@ def test_scale():
         16 → **19**（2026-10-07，用户"缺的 agent 也补上"）：
         `inpainter` 修图师、`motion_compositor` 动态合成师、`video_assessor` 视频质检师。
         同日「质检总监」→「图像质检师」是**改名**（key 不变），不改变数量。
+        「美术总监·一致性审查」是**系统节点**（没有独立 Role），它被删除后
+        职业数不变（19），系统节点数从 2 变成 **1**（只剩美术设定包解析）。
     """
     assert len(api.all_departments()) == 7
     assert len(api.all_roles()) == 19
-    assert len(api.all_nodes()) == len(api.all_roles()) + 2  # +2 个系统节点
+    assert len(api.all_nodes()) == len(api.all_roles()) + 1  # +1 个系统节点（美术设定包解析）
     assert len(api.snapshot()["artifacts"]) > 20
     assert len(api.all_checkpoints()) >= 9
 

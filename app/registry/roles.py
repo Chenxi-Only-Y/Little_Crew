@@ -311,6 +311,47 @@ def _config_namespace(key: str) -> str:
 # 说明：Node 需要显式声明 produces/consumes（画布端口与连线校验的依据）。
 # 一个 Role 对应一个主节点；节点也可以不对应任何职业（见 §5 系统节点）。
 
+# ==================================================================
+# 三、职业捆绑组（用户 2026-10-07 指定）
+# ==================================================================
+#
+# ## 这是什么
+#
+# 把若干职业捆成一组：**要用就一起用**。用于"在画布上选一段运行"的交互
+# —— 选中组里任一职业时整组一起选中（它们互相依赖，单跑没意义）。
+#
+# ## 为什么必须**手工指定**，不能自动推导
+#
+# 试过按"有产物依赖就捆绑"自动推导 —— **结果是全部节点变成一捆**：
+# 依赖太密（摄影师吃分镜、场记吃摄影师、剪辑吃摄影师…），
+# 传递闭包会吞掉全图。所以这是**业务判断**，只能人工定。
+#
+# ## 与部门（Department）的区别
+#
+#   · 部门   = **组织归属**，一个职业只属于一个部门；
+#   · 捆绑组 = **使用约束**，可以跨部门
+#     —— 如「策划」组里的 `storyboarder`（策划部）与
+#     `continuity`（动态部）必须一起用。
+#
+# ## ⚠️ 目前只是**数据**，还没有约束力
+#
+# "在画布上选一段运行"（`start_stage`/`end_stage` 的替代方案）还没做，
+# 所以这里只把分组声明出来 + 下发到快照，**没有**执行期校验。
+# 做那个功能时再据此自动带上同组职业。
+BUNDLES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    # (key, label, 成员职业 key)
+    ("planning", "策划", ("showrunner", "script_editor", "screenwriter", "storyboarder")),
+    ("imagery", "图片", ("photographer", "quality_assessor", "inpainter")),
+    ("video", "视频", ("motion_compositor", "video_assessor", "editor")),
+    ("continuity", "场记与技术指导", ("continuity", "technical_director")),
+)
+
+#: 职业 key → 捆绑组 key
+BUNDLE_BY_ROLE: dict[str, str] = {
+    role_key: bkey for bkey, _label, keys in BUNDLES for role_key in keys
+}
+
+
 ROLES: tuple[Role, ...] = (
     # ---------------- 基建 ----------------
     Role(
@@ -328,6 +369,7 @@ ROLES: tuple[Role, ...] = (
         dept="infra", real_job="技术指导",
         duty="模型选型、视频生成参数优化",
         node="technical_director",
+        bundle="continuity",
         panels=(
             Panel("technical_director:main", "模型与参数", "main", "technical_director"),
         ),
@@ -339,6 +381,7 @@ ROLES: tuple[Role, ...] = (
         dept="planning", real_job="策划总监",
         duty="定调、统筹全流程、市场定位",
         node="showrunner",
+        bundle="planning",
         panels=(
             Panel("showrunner:main", "统筹与定位", "main", "showrunner"),
             Panel("showrunner:console", "全流程总览", "console", "showrunner"),
@@ -350,6 +393,7 @@ ROLES: tuple[Role, ...] = (
         dept="planning", real_job="文学策划",
         duty="剧本评估、修改意见、IP 改编",
         node="script_editor",
+        bundle="planning",
         panels=(
             Panel("script_editor:main", "剧本评估", "main", "script_editor"),
             Panel("script_editor:report", "逐项意见与历史", "report", "script_editor"),
@@ -361,6 +405,7 @@ ROLES: tuple[Role, ...] = (
         dept="planning", real_job="编剧",
         duty="生成结构化剧本、分镜脚本",
         node="screenwriter",
+        bundle="planning",
         panels=(Panel("screenwriter:main", "剧本", "main", "screenwriter"),),
     ),
     Role(
@@ -368,6 +413,7 @@ ROLES: tuple[Role, ...] = (
         dept="planning", real_job="分镜师",
         duty="拆解机位、景别、运动、时长、走位",
         node="storyboarder",
+        bundle="planning",
         panels=(Panel("storyboarder:main", "分镜表", "main", "storyboarder"),),
     ),
     # ---------------- 资产 ----------------
@@ -397,6 +443,7 @@ ROLES: tuple[Role, ...] = (
         dept="imaging", real_job="摄影师",
         duty="提示词编写、ControlNet 控制、批量生图",
         node="photographer",
+        bundle="imagery",
         panels=(
             Panel("photographer:main", "画面", "main", "photographer"),
             Panel("photographer:gallery", "抽卡结果", "gallery", "photographer"),
@@ -414,6 +461,7 @@ ROLES: tuple[Role, ...] = (
         # 这条 duty 原先写"抽卡筛选、**修复崩坏画面**"，与修图师重复。
         duty="抽卡筛选静态图，检查崩坏、手部畸形、风格统一",
         node="quality_assessor",
+        bundle="imagery",
         panels=(
             Panel("quality_assessor:main", "质检总览", "main", "quality_assessor"),
             Panel("quality_assessor:report", "逐镜详情与重拍", "report", "quality_assessor"),
@@ -440,6 +488,7 @@ ROLES: tuple[Role, ...] = (
         # 等真正接上 inpaint 路由（或 dashscope 的 qwen-image-edit）才能干活。
         duty="Inpainting/Outpainting 修复 AI 生图瑕疵，扩图，精修关键帧",
         node="inpainter",
+        bundle="imagery",
         panels=(
             Panel("inpainter:main", "修复与扩图", "main", "inpainter"),
             Panel("inpainter:gallery", "修复前后对比", "gallery", "inpainter"),
@@ -468,6 +517,7 @@ ROLES: tuple[Role, ...] = (
         # 当前**没有融合后端**（ComfyUI 节点未接），所以它会**优雅跳过**并说明。
         duty="将静态图与白模视频对齐，融合生成视频（Depth + IP-Adapter）",
         node="motion_compositor",
+        bundle="video",
         panels=(
             Panel("motion_compositor:main", "融合与对齐", "main", "motion_compositor"),
             Panel("motion_compositor:timeline", "融合结果", "timeline", "motion_compositor"),
@@ -483,6 +533,7 @@ ROLES: tuple[Role, ...] = (
         # 没有视频时**优雅跳过** —— 见 `app/services/post_production.py::assess_video`。
         duty="检查融合视频是否有闪烁、变形、崩坏，筛选最佳片段",
         node="video_assessor",
+        bundle="video",
         panels=(
             Panel("video_assessor:main", "视频质检", "main", "video_assessor"),
             Panel("video_assessor:report", "问题片段", "report", "video_assessor"),
@@ -494,6 +545,7 @@ ROLES: tuple[Role, ...] = (
         duty="角色一致性、场景连贯性、道具连贯性检查",
         # 注意：职业 key 是 continuity（配置键用），节点 key 沿用 v1 的 continuity_checker
         node="continuity_checker",
+        bundle="continuity",
         panels=(
             Panel("continuity:main", "连贯性检查", "main", "continuity_checker"),
             Panel("continuity:report", "问题清单", "report", "continuity_checker"),
@@ -525,6 +577,7 @@ ROLES: tuple[Role, ...] = (
         dept="post", real_job="剪辑师",
         duty="音画对齐、转场、字幕、输出",
         node="editor",
+        bundle="video",
         panels=(
             Panel("editor:main", "时间线", "main", "editor"),
             Panel("editor:timeline", "剪辑时间线", "timeline", "editor"),
@@ -638,10 +691,17 @@ ROLE_NODE_SPECS: dict[str, dict] = {
         agent_class="ImageGenerator",
     ),
     "quality_assessor": dict(
-        consumes=("images", "prompts", "character_reference_images"),
+        # `scene_reference_images` 是 2026-10-07 加的：原先由已删除的
+        # 「美术总监·一致性审查」消费（它比对角色/场景参考图）。
+        consumes=("images", "prompts", "character_reference_images",
+                  "scene_reference_images"),
         # ⚠️ 原先这里还产出 `fixed_images`（修复后的画面）—— 那是**修图师的活**，
         # 2026-10-07 拆给 `inpainter`。留着会让"谁产修复图"有两个答案。
-        produces=("quality_report", "consistent_takes"),
+        # `consistency_score` / `character_consistency_report` 原先是
+        # 「美术总监·一致性审查」声明的产出，**其实一直由本节点在算**
+        # （`quality_assessor.py:88-89`）—— 那是重复声明。该环节删除后归到这里。
+        produces=("quality_report", "consistent_takes",
+                  "consistency_score", "character_consistency_report"),
         capability=("image_edit",),
         config=(
             ConfigField("quality_threshold", "合格阈值", "number", "global", default=0.5),
@@ -854,13 +914,12 @@ SYSTEM_NODES: tuple[Node, ...] = tuple(
             agent_class="ArtBriefParser",
             config=_llm_fields("art_brief_parser"),
         ),
-        Node(
-            key="consistency_auditor", label="美术总监·一致性审查", dept="assets",
-            consumes=("character_reference_images", "scene_reference_images"),
-            produces=("consistency_score", "character_consistency_report"),
-            legacy_keys=("consistency_auditor",),
-            agent_class="ConsistencyAuditor",
-        ),
+        # ⚠️ 「美术总监·一致性审查」**已删除**（用户 2026-10-07）：
+        #   它的产出（整体一致性评分 / 角色跨镜头一致性报告）与「图像质检师」
+        #   **完全重复**（后者本来就在算，见 quality_assessor.py:88-89），
+        #   而且它在摄影师**之前**跑，只能比"参考图之间"，算不出真正的
+        #   跨镜头一致性 —— 那本该在出图之后算。
+        #   这两个产出已归到 quality_assessor（见下面的 ROLE_NODE_SPECS）。
     )
 )
 

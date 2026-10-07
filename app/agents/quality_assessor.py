@@ -28,9 +28,11 @@ import sys
 from typing import Dict, List, Optional
 
 from app.agents.base import BaseAgent
-from app.agents.stage2.consistency_auditor import (
-    _try_load_clip,
+# CLIP 辅助函数已抽到共享模块（原先那个 Agent 与本职责任重复，已删除）
+# 见 app/services/clip_similarity.py 的说明
+from app.services.clip_similarity import (
     _cosine_similarity as _cosine,
+    _try_load_clip,
 )
 from app.core.config import settings
 from app.core.state import CrewState

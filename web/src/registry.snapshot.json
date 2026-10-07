@@ -1,5 +1,43 @@
 {
   "schema_version": 2,
+  "bundles": [
+    {
+      "key": "planning",
+      "label": "策划",
+      "roles": [
+        "showrunner",
+        "script_editor",
+        "screenwriter",
+        "storyboarder"
+      ]
+    },
+    {
+      "key": "imagery",
+      "label": "图片",
+      "roles": [
+        "photographer",
+        "quality_assessor",
+        "inpainter"
+      ]
+    },
+    {
+      "key": "video",
+      "label": "视频",
+      "roles": [
+        "motion_compositor",
+        "video_assessor",
+        "editor"
+      ]
+    },
+    {
+      "key": "continuity",
+      "label": "场记与技术指导",
+      "roles": [
+        "continuity",
+        "technical_director"
+      ]
+    }
+  ],
   "departments": [
     {
       "key": "infra",
@@ -271,6 +309,7 @@
       "duty": "搭建、迭代、维护主工作流（LangGraph 节点图），定义节点接口与数据格式",
       "real_job": "工作流架构师",
       "node": "workflow_architect",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -295,6 +334,7 @@
       "duty": "模型选型、视频生成参数优化",
       "real_job": "技术指导",
       "node": "technical_director",
+      "bundle": "continuity",
       "legacy_keys": [
         "director"
       ],
@@ -315,6 +355,7 @@
       "duty": "定调、统筹全流程、市场定位",
       "real_job": "策划总监",
       "node": "showrunner",
+      "bundle": "planning",
       "legacy_keys": [
         "writer",
         "story_planner"
@@ -342,6 +383,7 @@
       "duty": "剧本评估、修改意见、IP 改编",
       "real_job": "文学策划",
       "node": "script_editor",
+      "bundle": "planning",
       "legacy_keys": [
         "critics"
       ],
@@ -368,6 +410,7 @@
       "duty": "生成结构化剧本、分镜脚本",
       "real_job": "编剧",
       "node": "screenwriter",
+      "bundle": "planning",
       "legacy_keys": [],
       "panels": [
         {
@@ -386,6 +429,7 @@
       "duty": "拆解机位、景别、运动、时长、走位",
       "real_job": "分镜师",
       "node": "storyboarder",
+      "bundle": "planning",
       "legacy_keys": [],
       "panels": [
         {
@@ -404,6 +448,7 @@
       "duty": "角色三视图、角色圣经",
       "real_job": "角色设计师",
       "node": "character_designer",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -428,6 +473,7 @@
       "duty": "场景概念图、白模场景搭建（3D）",
       "real_job": "场景设计师",
       "node": "scene_designer",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -452,6 +498,7 @@
       "duty": "提示词编写、ControlNet 控制、批量生图",
       "real_job": "摄影师",
       "node": "photographer",
+      "bundle": "imagery",
       "legacy_keys": [
         "image_generator"
       ],
@@ -478,6 +525,7 @@
       "duty": "抽卡筛选静态图，检查崩坏、手部畸形、风格统一",
       "real_job": "质检师",
       "node": "quality_assessor",
+      "bundle": "imagery",
       "legacy_keys": [],
       "panels": [
         {
@@ -502,6 +550,7 @@
       "duty": "Inpainting/Outpainting 修复 AI 生图瑕疵，扩图，精修关键帧",
       "real_job": "修图师",
       "node": "inpainter",
+      "bundle": "imagery",
       "legacy_keys": [],
       "panels": [
         {
@@ -526,6 +575,7 @@
       "duty": "搭白模、摆走位、录机位、导出预演视频（3D）",
       "real_job": "预演师",
       "node": "previs_artist",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -550,6 +600,7 @@
       "duty": "将静态图与白模视频对齐，融合生成视频（Depth + IP-Adapter）",
       "real_job": "动态合成师",
       "node": "motion_compositor",
+      "bundle": "video",
       "legacy_keys": [],
       "panels": [
         {
@@ -574,6 +625,7 @@
       "duty": "检查融合视频是否有闪烁、变形、崩坏，筛选最佳片段",
       "real_job": "视频质检师",
       "node": "video_assessor",
+      "bundle": "video",
       "legacy_keys": [],
       "panels": [
         {
@@ -598,6 +650,7 @@
       "duty": "角色一致性、场景连贯性、道具连贯性检查",
       "real_job": "场记",
       "node": "continuity_checker",
+      "bundle": "continuity",
       "legacy_keys": [
         "continuity_checker"
       ],
@@ -624,6 +677,7 @@
       "duty": "TTS 音色选型、情感提示词、BGM/音效匹配",
       "real_job": "配音指导",
       "node": "voice_director",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -648,6 +702,7 @@
       "duty": "节奏把控、镜头组接指导",
       "real_job": "剪辑指导",
       "node": "rhythm_director",
+      "bundle": "",
       "legacy_keys": [
         "rhythm_director"
       ],
@@ -668,6 +723,7 @@
       "duty": "音画对齐、转场、字幕、输出",
       "real_job": "剪辑师",
       "node": "editor",
+      "bundle": "video",
       "legacy_keys": [
         "aggregator"
       ],
@@ -694,6 +750,7 @@
       "duty": "多平台分发、数据回收、运营策略",
       "real_job": "发行运营",
       "node": "distributor",
+      "bundle": "",
       "legacy_keys": [],
       "panels": [
         {
@@ -1819,12 +1876,15 @@
       "kind": "agent",
       "produces": [
         "quality_report",
-        "consistent_takes"
+        "consistent_takes",
+        "consistency_score",
+        "character_consistency_report"
       ],
       "consumes": [
         "images",
         "prompts",
-        "character_reference_images"
+        "character_reference_images",
+        "scene_reference_images"
       ],
       "capability": [
         "image_edit"
@@ -2570,29 +2630,6 @@
           "help": "本地 provider（ollama/vllm）无需填写"
         }
       ]
-    },
-    {
-      "key": "consistency_auditor",
-      "label": "美术总监·一致性审查",
-      "dept": "assets",
-      "kind": "agent",
-      "produces": [
-        "consistency_score",
-        "character_consistency_report"
-      ],
-      "consumes": [
-        "character_reference_images",
-        "scene_reference_images"
-      ],
-      "capability": [],
-      "can_skip": true,
-      "iter_group": null,
-      "legacy_keys": [
-        "consistency_auditor"
-      ],
-      "agent_class": "ConsistencyAuditor",
-      "workflow_node": "consistency_auditor",
-      "config": []
     }
   ],
   "checkpoints": [
@@ -2678,7 +2715,6 @@
     "script_editor",
     "scene_designer",
     "storyboarder",
-    "consistency_auditor",
     "technical_director",
     "previs_artist",
     "video_assessor",
@@ -2948,12 +2984,15 @@
         "label": "图像质检师",
         "produces": [
           "quality_report",
-          "consistent_takes"
+          "consistent_takes",
+          "consistency_score",
+          "character_consistency_report"
         ],
         "consumes": [
           "images",
           "prompts",
-          "character_reference_images"
+          "character_reference_images",
+          "scene_reference_images"
         ],
         "can_skip": true
       },
@@ -3076,18 +3115,6 @@
         ],
         "consumes": [
           "art_brief"
-        ],
-        "can_skip": true
-      },
-      "consistency_auditor": {
-        "label": "美术总监·一致性审查",
-        "produces": [
-          "consistency_score",
-          "character_consistency_report"
-        ],
-        "consumes": [
-          "character_reference_images",
-          "scene_reference_images"
         ],
         "can_skip": true
       }

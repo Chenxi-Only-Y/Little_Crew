@@ -22,6 +22,7 @@ from app.registry.roles import (
     NODE_BY_KEY,
     ROLE_BY_KEY,
     ROLES,
+    BUNDLES,
 )
 from app.registry.types import Checkpoint, Department, Node, Panel, Role
 
@@ -533,6 +534,14 @@ def snapshot(*, include_state_map: bool = True) -> dict[str, Any]:
     dep_map = {a.key: a.state_key for a in ARTIFACT_BY_KEY.values() if a.state_key}
     return {
         "schema_version": 2,
+        # 职业捆绑组（用户 2026-10-07 指定）：同组"要用就一起用"。
+        # ⚠️ 放在**顶层**而不是 `validation_spec` 里 —— 那一段是**校验**用的，
+        # 而捆绑组是使用约束，不参与拓扑校验。
+        # 由 `roles.py` 的 BUNDLES 派生（单一数据源，不在这里重写）。
+        "bundles": [
+            {"key": bkey, "label": blabel, "roles": list(rkeys)}
+            for bkey, blabel, rkeys in BUNDLES
+        ],
         "departments": [
             {"key": d.key, "label": d.label, "order": d.order, "desc": d.desc}
             for d in all_departments()
@@ -550,6 +559,9 @@ def snapshot(*, include_state_map: bool = True) -> dict[str, Any]:
                 "duty": r.duty,
                 "real_job": r.real_job,
                 "node": r.node,
+                # 捆绑组 key（空 = 不参与）。"要用就一起用"的业务约定，
+                # 见 roles.py 的 BUNDLES 说明。
+                "bundle": r.bundle,
                 "legacy_keys": list(r.legacy_keys),
                 "panels": [
                     {"key": p.key, "label": p.label, "kind": p.kind, "node": p.node}

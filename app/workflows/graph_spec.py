@@ -42,7 +42,7 @@ from typing import Any, Callable
 #: 业务节点：`_ctx("node_xxx")` 包一层，把阶段名注入 state
 BUSINESS_NODE_FNS: tuple[str, ...] = (
     "story_planner", "screenwriter", "critics", "art_brief_parser",
-    "character_designer", "scene_designer", "consistency_auditor",
+    "character_designer", "scene_designer",
     "storyboarder", "rhythm_director", "continuity_checker",
     "prompt_compiler", "image_generator", "quality_assessor",
     # 白模预演师：出 3D 预演**初稿**（人工在 #/previs 微调）。
@@ -109,7 +109,13 @@ def default_spec() -> dict:
             {"key": "art_brief_parser", "kind": "business"},
             {"key": "character_designer", "kind": "business"},
             {"key": "scene_designer", "kind": "business"},
-            {"key": "consistency_auditor", "kind": "business"},
+            # ⚠️ 「美术总监·一致性审查」**已删除**（用户 2026-10-07）。
+            # 它的两个产出（`consistency_score` / `character_consistency_report`）
+            # 由「图像质检师」产出 —— 而后者**本来就在算这两个键**
+            # （`quality_assessor.py:88-89`），所以原先是一次**重复计算**。
+            # 而且图像质检师在出图**之后**跑，跨镜头一致性本来就该在那时算
+            # （美术总监在摄影师之前，只能比"参考图之间"）。
+            # 汇聚点随之从它移到「资产确认」（review_assets）。
             {"key": "storyboarder", "kind": "business"},
             # 白模预演师：注册表里它本来就声明在第 11 步、能力 render_3d、
             # 产出 previs —— 但 `workflow_node` 为空，**从没进过执行图**。
@@ -155,9 +161,10 @@ def default_spec() -> dict:
             {"from": "critics", "to": "review_critics"},
             {"from": "art_brief_parser", "to": "character_designer"},
             {"from": "art_brief_parser", "to": "scene_designer"},
-            {"from": "character_designer", "to": "consistency_auditor"},
-            {"from": "scene_designer", "to": "consistency_auditor"},
-            {"from": "consistency_auditor", "to": "review_assets"},
+            # 角色/场景设计师**并行**，汇聚点是「资产确认」（原先汇聚在
+            # 已删除的美术总监上）
+            {"from": "character_designer", "to": "review_assets"},
+            {"from": "scene_designer", "to": "review_assets"},
             {"from": "storyboarder", "to": "review_storyboard"},
             # 分镜确认 → 预演初稿 → **配音** → 节奏/连贯性
             {"from": "previs_artist", "to": "voice_director"},

@@ -121,8 +121,8 @@ def test_apply_switch_off_a_node_keeps_spec_valid():
 def test_apply_reorder_edges_keeps_spec_valid():
     """**重排连线**：应用后结构校验必须过（用户要的"重排"）。"""
     ops = [
-        {"op": "remove_edge", "from": "consistency_auditor", "to": "review_assets"},
-        {"op": "set_edge", "from": "consistency_auditor", "to": "storyboarder"},
+        {"op": "remove_edge", "from": "character_designer", "to": "review_assets"},
+        {"op": "set_edge", "from": "character_designer", "to": "storyboarder"},
         {"op": "remove_edge", "from": "storyboarder", "to": "review_storyboard"},
         {"op": "set_edge", "from": "storyboarder", "to": "review_assets"},
         {"op": "set_branch", "from": "review_assets", "router": "review_assets",
@@ -137,7 +137,7 @@ def test_apply_reorder_edges_keeps_spec_valid():
     from app.workflows.main_workflow import build_graph
 
     g = build_graph(spec)
-    assert ("consistency_auditor", "storyboarder") in set(g.edges)
+    assert ("character_designer", "storyboarder") in set(g.edges)
 
 
 def test_apply_does_not_mutate_original_spec():
