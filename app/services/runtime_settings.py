@@ -284,15 +284,31 @@ def user() -> str:
 
 
 def capture() -> dict:
-    """抓取当前线程的上下文（供跨线程恢复）。"""
+    """抓取当前线程的上下文（供跨线程恢复）。
+
+    ⚠️ 键名是 **`user`**（不是 `user_id`）。`RunContext.as_dict()` 用的是
+    `user_id` —— 两者**不能混用**，见 `restore()` 的说明。
+    """
     return {"user": user(), "session_id": run_session(), "project": run_project()}
 
 
 def restore(ctx: dict | None) -> None:
-    """在当前线程恢复由 `capture()` 抓取的上下文（None 则不动）。"""
+    """在当前线程恢复由 **`capture()`** 抓取的上下文（None 则不动）。
+
+    ⚠️ 只认 `capture()` 的格式（键 **`user`**）。传 `RunContext.as_dict()`
+    （键是 `user_id`）会**静默失效**：`ctx.get("user")` 取到 None →
+    `set_user(None)` → 删掉线程本地的用户 → 上下文变成 `_global`。
+
+    为了不再踩，这里**两种键名都认**（`user` 优先，回退 `user_id`）。
+    实测过这个坑：角色设计师在图里 `restore(run_context.as_dict())` 之后
+    `user()` 仍是 `_global`，产物落进 `_global/{工程}/资产/character_designer/`。
+    """
     if not ctx:
         return
-    set_context(ctx.get("user"), ctx.get("session_id"), ctx.get("project"))
+    user = ctx.get("user")
+    if user is None:
+        user = ctx.get("user_id")          # 兼容 RunContext.as_dict()
+    set_context(user, ctx.get("session_id"), ctx.get("project"))
 
 
 def get(name: str, default=None):

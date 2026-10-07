@@ -38,10 +38,14 @@ import pytest
 # 若放到 fixture 里再改，依赖它的模块可能已经拿到旧值。
 #
 # 用 `tempfile.gettempdir()` 拼路径而**不** `mkdtemp()` —— 后者会立刻建目录，
-# 而多数测试根本不写产出，跑完就留一堆空目录。这里让目录**按需创建**
+# 而多数测试不写产出，跑完就留一堆空目录。这里让**产出目录**按需创建
 # （`asset_paths` / 输出代码都会 `mkdir(parents=True, exist_ok=True)`）。
-# ============================================================================
+#
+# ⚠️ 但**根目录本身必须存在** —— sqlite 打开 `{root}/test.db` 时不会帮你建父目录，
+# 否则报 `sqlite3.OperationalError: unable to open database file`
+# （我第一版就是栽在这：10 个测试文件在 collection 阶段就 ERROR）。
 _TMP_ROOT = Path(tempfile.gettempdir()) / "littlecrew-tests"
+_TMP_ROOT.mkdir(parents=True, exist_ok=True)
 os.environ["LITTLE_CREW_PROPOSALS_DIR"] = str(_TMP_ROOT / "proposals")
 #: 产出归档根：`data/outputs/{账号}/{工程名}/{部门}/{职业}/{会话}/…`
 os.environ["OUTPUT_DIR"] = str(_TMP_ROOT / "outputs")

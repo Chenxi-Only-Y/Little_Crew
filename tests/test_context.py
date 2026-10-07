@@ -171,9 +171,30 @@ def test_images_archived_under_session(tmp_path, monkeypatch):
     # 必须关掉 HITL：否则流程停在第一个确认点（interrupt），根本走不到出图
     monkeypatch.setattr(settings, "hitl", False)
 
+    # ⚠️ 必须把 `run_context` 写进 State —— 这才**贴近生产**
+    # （`task_runner.start_run` 就是这么写的，且 seed 覆盖不了它）。
+    #
+    # 原先这里只 `rs.set_context(...)` 就跑图，靠 thread-local 穿过整张图。
+    # 那条路**不成立**：`_bind_context` 在每个节点入口
+    # `bind(RunContext.from_state(state))`，state 里没有 `run_context` 时它
+    # 回退到线程本地并**覆盖**调用方设的值 —— 于是第一个节点之后
+    # thread-local 就变成 `_global` 了。
+    #
+    # 2026-10-07 暴露：角色设计师改成真出图（不再返回外网占位 URL）后，
+    # 它的三张图落进 `_global/`，这条断言才红。同时查出**真因**并修掉：
+    # `runtime_settings.restore()` 只认 `capture()` 的键名 `user`，
+    # 而 `RunContext.as_dict()` 给的是 `user_id` → 静默失效（见那里的注释）。
+    from app.core.context import RunContext
+
     rs.set_context("tester", "sess-arch")
     try:
-        res = run_once({"user_input": "归档路径测试", "session_id": "sess-arch"})
+        res = run_once({
+            "user_input": "归档路径测试",
+            "session_id": "sess-arch",
+            "run_context": RunContext(
+                user_id="tester", session_id="sess-arch", project="",
+            ).as_dict(),
+        })
     finally:
         rs.set_context(None, None)
 

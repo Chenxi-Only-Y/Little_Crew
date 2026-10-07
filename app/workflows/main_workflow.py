@@ -203,6 +203,12 @@ def _bind_context(fn):
     在多 worker / 线程池下会丢。把它放进 State 并在这里统一绑定，
     既让"谁在跑"成为可传递的事实，又不必改动每个 Agent 的签名。
 
+    **前提**：`state` 里要有 `run_context`（`task_runner` 按已认证用户写入）。
+    有它时全链路正确 —— 实测带 `run_context` 跑一次，6 张图（含 3 张角色图）
+    全部落到 `{账号}/{工程名}/…`。
+    没有它时 `from_state` 回退到线程本地（老调用方/测试的用法），
+    而线程本地的 user 在流程图线程里可能是 `_global`。
+
     见 `app/core/context.py`。
     """
     from functools import wraps

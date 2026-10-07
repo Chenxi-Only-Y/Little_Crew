@@ -3,23 +3,32 @@
 方案B 角色一致性：在大纲阶段后、分镜/提示词之前，为每个角色生成**标准参考图**，
 供下游 IP-Adapter / 提示词锚定使用。
 
-输入：story_outline.characters（含 role/description/style）
-     / script（兜底，可从中提取角色名与相关外貌信息）
-处理：
-  - 为每个角色生成 3 种姿态的标准参考图（正面标准照 / 侧面3/4照 / 半身表情照）
-  - 使用固定高质量 Prompt 模板（front view, neutral expression, white background, ...）
-  - 复用 `app/services/image.py` 的 `get_image_service().generate(prompt)`
-  - 从多张图中挑最佳作为主参考图
-输出：
-  - character_reference_images: {"角色名": "https://.../character_xxx.png"}
-  - character_profiles:        {"角色名": {"appearance","clothing","accessories", ...}}
+## 产出规范（2026-10-07 用户拍板，别再凭感觉改）
 
-Mock 模式（settings.mock_image=True）：直接返回 picsum 占位 URL，零成本可用。
+| 项 | 规定 | 为什么 |
+|---|---|---|
+| **视图** | **正面 / 3/4 侧 / 侧面**，三个都**全身** | 用户选的是"AI 参考多角度"，不是建模用的严格三视图（正/侧/背）。用途是给 IP-Adapter 拉特征，所以**角度多样 + 画幅一致**比"正交三视图"更有用 |
+| **图内文字** | **不要**（提示词排除 + 负面词压制） | 原提示词里的 `character design sheet` 在训练数据里就是**带文字标注的多格设定表**，模型会往图上写字 —— 而它画不出中文，产出一堆乱码（实测："脑强恕得蛇"）。参考图本该是干净纯图 |
+| **尺寸** | **768×1024 竖幅** | 全身立绘是竖构图；原 512×512 方形把全身压得很小 |
+| **seed** | **由角色名派生**（固定） | 原 `seed: None` → 同一角色重跑一次就换一张脸，与"一致性"直接冲突 |
+| **负面提示词** | 必给（见 `_NEGATIVE_PROMPT`） | 排除多视图/文字/水印/多手多脚等 |
+| **命名** | `char_{角色名}_{视图}.png`，视图 = `front` / `three_quarter` / `side` | 原 `half_body_expression` 既不是视图、画幅又跟另两张不一致，会往参考图集里掺噪声 |
 
-注意：角色本身没有独立 API，本 Agent 通过复用 image_service 生成参考图，
-因此这里不混用 LLM，只做「文本提取 + 图像生成 + 挑图」。
+## 输出
+
+  - `character_reference_images: {"角色名": "主参考图 URL"}`（三个视图里挑，**正面优先**）
+  - `character_profiles:        {"角色名": {"appearance", "clothing", "accessories", ...}}`
+
+## Mock 模式
+
+`settings.mock_image=True` 时走**本地**占位图（image_service 自己的 mock 分支），
+**不再**用 `picsum.photos` —— 那是外网，离线跑就是一串碎图。
+
+注意：角色本身没有独立 API，本 Agent 复用 `image_service` 生成参考图，
+因此不混用 LLM，只做「文本提取 + 图像生成 + 挑图」。
 """
 
+import hashlib
 import json
 from typing import Dict, List, Tuple
 
@@ -28,30 +37,61 @@ from app.core.config import settings
 from app.core.state import CrewState
 
 # ------------------- 固定高质量 Prompt 模板 -------------------
-# 「角色设计图」三姿态模板。base 部分为固定高质量词；姿态/表情按需替换。
+#
+# ⚠️ 刻意**不用** `character design sheet` / `reference sheet` 这类词 ——
+# 它们在训练数据里指向"带文字标注的多格设定表"，会诱使模型往图上写字。
+# 这里要的是**单张、干净、全身立绘**。
 _PROMPT_TEMPLATE = (
-    "A character design sheet of {name}, {appearance}, {pose}, {expression}, "
-    "white background, concept art, high quality, 4k"
+    "full body character illustration of {name}, {appearance}, "
+    "{view}, standing, full body in frame head to toe, "
+    "plain light grey background, soft even studio lighting, "
+    "clean lineart, flat cel shading, character concept art, "
+    "single figure, no text, no annotation, high quality"
 )
 
-# 三种姿态：key -> (pose 短语, expression 短语, 宽高)
-_POSES = {
-    "front": ("front view", "neutral expression", 512, 512),
-    "three_quarter": ("three-quarter side view", "calm expression", 512, 512),
-    "half_body_expression": ("half-body shot, head and shoulders", "expressive face", 512, 512),
+#: 负面提示词：压制设定表/多视图/文字/常见崩坏
+_NEGATIVE_PROMPT = (
+    "multiple views, turnaround, character sheet, reference sheet, grid, "
+    "collage, panels, split image, text, letters, words, chinese characters, "
+    "watermark, signature, logo, caption, annotation, arrows, "
+    "cropped, out of frame, close-up, portrait only, "
+    "extra limbs, extra fingers, deformed hands, bad anatomy, "
+    "blurry, lowres, jpeg artifacts, busy background"
+)
+
+# 三种视图：key -> (视图短语, 宽, 高)
+# 全部**全身**、同一画幅 —— 画幅不一致会往参考图集里掺噪声。
+_VIEWS: dict[str, tuple[str, int, int]] = {
+    "front": ("front view, facing the camera", 768, 1024),
+    "three_quarter": ("three-quarter view, body turned 45 degrees", 768, 1024),
+    "side": ("side view, profile, facing left", 768, 1024),
 }
 
-# 姿态优先级：挑选主参考图时据此排序（正面标准照优先）
-_POSE_ORDER = ["front", "three_quarter", "half_body_expression"]
+#: 生成顺序 / 挑主参考图的优先级（正面优先）
+_VIEW_ORDER = ["front", "three_quarter", "side"]
 
-# 每个角色生成多少张
-_POSES_PER_CHARACTER = 3
+#: 兼容旧名：历史上用过 `half_body_expression`（半身表情照）
+_LEGACY_VIEW_ALIASES = {"half_body_expression": "front"}
+
+# 每个角色生成几张
+_VIEWS_PER_CHARACTER = len(_VIEW_ORDER)
 
 
-def _build_prompt(name: str, appearance: str, pose_key: str) -> str:
-    """按固定模板拼装单个姿态的生成 prompt。"""
-    pose, expression, _, _ = _POSES.get(pose_key, _POSES["front"])
-    return _PROMPT_TEMPLATE.format(name=name, appearance=appearance, pose=pose, expression=expression)
+def _seed_for(name: str, view_key: str) -> int:
+    """由**角色名 + 视图**派生固定 seed。
+
+    为什么不用 `None`：那样每次重跑同一角色都会**换一张脸**，
+    与"角色一致性"的目标直接冲突。同名同视图 → 同一个 seed → 同一张图。
+    （不同角色之间也会自然不同，因为名字进了哈希。）
+    """
+    h = hashlib.sha256(f"{name}::{view_key}".encode("utf-8")).hexdigest()
+    return int(h[:8], 16)          # 32 位正整数，diffusers 接受
+
+
+def _build_prompt(name: str, appearance: str, view_key: str) -> str:
+    """按固定模板拼装单个视图的生成 prompt。"""
+    view, _, _ = _VIEWS.get(view_key, _VIEWS["front"])
+    return _PROMPT_TEMPLATE.format(name=name, appearance=appearance, view=view)
 
 
 class CharacterDesigner(BaseAgent):
@@ -104,7 +144,7 @@ class CharacterDesigner(BaseAgent):
                 else:
                     profile = self._extract_appearance_from_script(char, state)
                     profiles[name] = profile
-                    sheet = self._generate_character_sheet(name, profile)
+                    sheet = self._generate_character_sheet(name, profile, state)
                     best = self._select_best_reference(sheet)
                     if best:
                         reference_images[name] = best
@@ -114,7 +154,7 @@ class CharacterDesigner(BaseAgent):
             if edited_appearance and name == target_char:
                 profile["appearance"] = edited_appearance  # 覆盖为编辑后的外貌
             profiles[name] = profile
-            sheet = self._generate_character_sheet(name, profile)
+            sheet = self._generate_character_sheet(name, profile, state)
             best = self._select_best_reference(sheet)
             if best:
                 reference_images[name] = best
@@ -231,54 +271,87 @@ class CharacterDesigner(BaseAgent):
     # ---------------------------------------------------------------
     # 2a + 新增方法：_generate_character_sheet
     # ---------------------------------------------------------------
-    def _generate_character_sheet(self, name: str, profile: dict) -> List[dict]:
-        """为单个角色生成 3 种姿态的标准参考图。
+    def _generate_character_sheet(self, name: str, profile: dict,
+                                  state: CrewState | None = None) -> List[dict]:
+        """为单个角色生成 3 个视图的标准参考图。
 
-        每个姿态产出 {"pose": key, "url", "local_path", "ok"}。
-        mock 模式下直接返回 picsum 占位 URL。
+        每个视图产出 {"view": key, "url", "local_path", "ok", "seed"}。
+        （`pose` 键保留作兼容，值与 `view` 相同。）
+
+        mock 模式交给 `image_service` 自己的 mock 分支（**本地**生成占位图），
+        不再拼 `picsum.photos` 的 URL —— 那是外网，离线就是碎图。
         """
         appearance = profile.get("appearance", "")
+        # ⚠️ 产出的**归档归属**必须正确，否则角色图落进 `_global/`（账号丢失），
+        # 与同一次运行的分镜图被劈成两个目录。
+        #
+        # 取上下文的优先级：
+        #   1. `state["run_context"]` —— **权威**（`task_runner` 按已认证用户写入，
+        #      且 seed 覆盖不了它）。实测带它跑 → 6 张图全部落到 `{账号}/{工程名}/…`。
+        #   2. 回退 `capture()` —— 老调用方/测试的用法（只 `set_context` 不写
+        #      `run_context`）。**必须在进入本方法时就抓**，晚了线程本地可能已变。
+        from app.services.runtime_settings import capture as _ctx_capture
+        from app.services.runtime_settings import restore as _ctx_restore
+
+        ctx = _ctx_capture()
+        if state and state.get("run_context"):
+            from app.core.context import RunContext
+
+            ctx = RunContext.from_state(state).as_dict()
+
         results: List[dict] = []
-        for pose_key in _POSE_ORDER:
-            prompt_text = _build_prompt(name, appearance, pose_key)
-            if settings.mock_image:
-                # 需求：mock 返回占位图 URL
-                seed = f"{name}-{pose_key}"
-                url = f"https://picsum.photos/seed/{seed}/512/512"
-                results.append({"pose": pose_key, "url": url, "local_path": "", "ok": True})
-                continue
-            shot_id = f"char_{name}_{pose_key}"
-            _, width, height = pose_key, _POSES[pose_key][2], _POSES[pose_key][3]
+        for view_key in _VIEW_ORDER:
+            _ctx_restore(ctx)
+            prompt_text = _build_prompt(name, appearance, view_key)
+            _, width, height = _VIEWS[view_key]
+            seed = _seed_for(name, view_key)
+            shot_id = f"char_{name}_{view_key}"
             prompt = {
                 "shot_id": shot_id,
                 "prompt": prompt_text,
+                # 固定负面词：压掉设定表/多视图/文字/崩坏（见 _NEGATIVE_PROMPT）
+                "negative_prompt": _NEGATIVE_PROMPT,
+                # 固定 seed：同名同视图 → 同一个人（原先 None → 每次换脸）
+                "seed": seed,
                 "width": width,
                 "height": height,
-                "seed": None,
             }
             try:
                 url, local_path, ok = get_image_service().generate(prompt, role="character_designer")
                 results.append({
-                    "pose": pose_key, "url": url, "local_path": local_path, "ok": bool(ok),
+                    "view": view_key, "pose": view_key,
+                    "url": url, "local_path": local_path,
+                    "ok": bool(ok), "seed": seed,
                 })
             except Exception as exc:  # noqa: BLE001
-                results.append({"pose": pose_key, "url": "", "local_path": "", "ok": False, "error": str(exc)})
+                results.append({
+                    "view": view_key, "pose": view_key,
+                    "url": "", "local_path": "", "ok": False,
+                    "seed": seed, "error": str(exc),
+                })
         return results
 
     # ---------------------------------------------------------------
     # 2d + 新增方法：_select_best_reference
     # ---------------------------------------------------------------
     def _select_best_reference(self, sheet: List[dict]) -> str:
-        """从多张生成图中挑最佳作为主参考图。
+        """从多张生成图中挑**主参考图**。
 
-        规则：取状态 ok 的图里，按姿态优先级最靠前的；都失败则返回空。
-        （真正的“视觉质量/一致性”评估由 quality_assessor / consistency_reviewer 负责，
-        这里先按姿态优先级选，保证至少有 1 张可用。）
+        规则：取状态 ok 的图里，按 `_VIEW_ORDER` 优先级最靠前的
+        （**正面全身优先** —— 正面信息最全，最适合给 IP-Adapter 当锚定）。
+        都失败则返回空。
+
+        （真正的"视觉质量/一致性"评估由 quality_assessor 负责，
+        这里先按视图优先级选，保证至少有 1 张可用。）
         """
         ok = [s for s in sheet if s.get("ok") and s.get("url")]
         if not ok:
             return ""
-        ok.sort(key=lambda s: _POSE_ORDER.index(s.get("pose")) if s.get("pose") in _POSE_ORDER else 99)
+        def _rank(s: dict) -> int:
+            v = s.get("view") or s.get("pose") or ""
+            v = _LEGACY_VIEW_ALIASES.get(v, v)
+            return _VIEW_ORDER.index(v) if v in _VIEW_ORDER else 99
+        ok.sort(key=_rank)
         return ok[0]["url"]
 
 
