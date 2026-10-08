@@ -1693,11 +1693,10 @@ async def _encode_whitebox_video(
     # 现在走统一规则（`app/services/asset_paths.py`）：
     #
     #     {outputs}/{账号}/{项目名}/{部门}/{职业}/{会话}/whitebox-{id}.mp4
-    #     {outputs}/{账号}/{项目名}/{部门}/{职业}/{会话}/whitebox-{id}/00000.png...
     #
+    # **只有 mp4 留下**：编码过程中帧写在同级的 `whitebox-{id}/00000.png…`
+    # 临时目录里，但在 `finally` 里 `rmtree` 掉了（帧占位置且没有保留价值）。
     # 归属职业取 `previs_artist`（白模预演师）——这就是它的产出者。
-    # 帧与成片放同一层：`.png` 与 `.mp4` 靠扩展名区分，
-    # 而帧用一个以成片同名的子目录隔开，避免多批次互相覆盖。
     from app.services import asset_paths
 
     role = "previs_artist"
