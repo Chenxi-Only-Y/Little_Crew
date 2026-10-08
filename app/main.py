@@ -1634,6 +1634,49 @@ async def upload_whitebox_video(request: Request):
       上传会消耗额度、且**7 天后过期**。让用户能先只看编码结果，
       而不是一按导出就必然产生一次上传。
     """
+    # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_PUBLIC_PATHS` 里，
+    # 所以本端点自动要求有效 token——不需要（也不能）在这里手动调它。
+    #
+    # 注：`settings` / `rs` / `whitebox_video` 的 import 都在
+    # `_encode_whitebox_video` 里（函数体搬过去了，import 也得跟着搬）。
+
+    form = await request.form()
+    raw_frames = [v for k, v in form.multi_items() if k == "frames"]
+    if not raw_frames:
+        raise HTTPException(status_code=400, detail="没有收到任何帧（表单字段应为 frames）。")
+    do_upload = str(form.get("upload") or "") in ("1", "true", "yes")
+    fps = int(str(form.get("fps") or 24))
+
+    # ⚠️ **必须在这里设运行时上下文**，否则产物落进 `_global/`（账号丢失）。
+    #
+    # 实测（2026-10-08）：导出白模视频得到
+    #     outputs/_global/未命名工程/白模/previs_artist/no-session-20261008-14/
+    # 账号与会话都丢了。原因：`asset_paths.asset_dir` 读 thread-local 的
+    # `current_user()/current_session()/current_project()`，而本端点虽然做了认证
+    # （`auth_guard` 中间件），**却从没把 uid 写进 thread-local**。
+    #
+    # 这和之前 `character_designer` 那个 `_global` 是**同一类 bug**：
+    # 认证 ≠ 上下文。项目里其它需要归档的端点都用
+    # `rs.set_user(uid)` + `finally: rs.set_user(None)`（见 944/997/1048/1204 行）。
+    from app.services import runtime_settings as _rs
+
+    _uid = _auth_user(request)
+    _rs.set_user(_uid)
+    try:
+        return await _encode_whitebox_video(
+            form, raw_frames, do_upload=do_upload, fps=fps,
+        )
+    finally:
+        _rs.set_user(None)
+
+
+async def _encode_whitebox_video(
+    form, raw_frames, *, do_upload: bool, fps: int,
+):
+    """真正干活的部分（上下文已由调用方设好）。"""
+
+    # ⚠️ 这些 import 必须在这里 —— 函数体从 `upload_whitebox_video` 搬过来时
+    # 忘了搬 import，实测直接 400 `name 'encode_frames_to_mp4' is not defined`。
     from app.core.config import settings
     from app.services import runtime_settings as rs
     from app.services.whitebox_video import (
@@ -1642,17 +1685,6 @@ async def upload_whitebox_video(request: Request):
         probe_duration,
         upload_for_video_generation,
     )
-
-    # 鉴权：`auth_guard` 是全局中间件，`/api/video` 不在 `_PUBLIC_PATHS` 里，
-    # 所以本端点自动要求有效 token——不需要（也不能）在这里手动调它。
-    #
-
-    form = await request.form()
-    raw_frames = [v for k, v in form.multi_items() if k == "frames"]
-    if not raw_frames:
-        raise HTTPException(status_code=400, detail="没有收到任何帧（表单字段应为 frames）。")
-    do_upload = str(form.get("upload") or "") in ("1", "true", "yes")
-    fps = int(str(form.get("fps") or 24))
 
     # 白模视频（预演导出的帧序列）此前落在 `outputs/whitebox/{随机 uuid}/`，
     # **完全没有归类**——既看不出属于哪个账号，也看不出是哪个职业产出的，
