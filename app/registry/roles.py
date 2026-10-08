@@ -785,6 +785,19 @@ ROLE_NODE_SPECS: dict[str, dict] = {
                         help="3D 体块预演：用体块摆走位、调机位，导出参考视频。"
                              "不产生 API 费用（渲染在前端完成，逐帧导出）"),
             ConfigField("previs_size", "预演画布尺寸", "text", "global", default="1280x720"),
+            # ⚠️ 必须声明文字模型三键 —— 白模规格是**让 LLM 生成 JSON** 的
+            # （`white_model_prompt.generate_spec(..., role="previs_artist")`）。
+            #
+            # 漏了这三个键的实际后果（2026-10-08 实测）：
+            #   `role="previs_artist"` 取不到专属密钥 → 回退全局 `llm_api_key`
+            #   （`.env` 里是空的）→ `/api/previs/white-model` 直接 400：
+            #   "LLM 客户端未初始化（provider=deepseek, role=previs_artist）"；
+            #   而且设置页里**根本找不到**能填 `previs_artist` 密钥的地方
+            #   → 白模生成功能对用户完全不可用。
+            #
+            # `previs_artist` 是**最后一个**补上这三键的 LLM 节点。
+            # 有测试守着"凡是需要 LLM 的节点都必须声明这三键"。
+            *_llm_fields("previs_artist"),
         ),
     ),
     "continuity": dict(

@@ -60,13 +60,27 @@ JOINT_PARENT: dict[str, str | None] = {
 #: 且轮廓清晰（白模是给视频模型看空间结构的，圆润的有机网格反而更难读）。
 SHAPES = ("capsule", "taperedCylinder", "box", "sphere")
 
+#: 关节**没有专门限位时**的兜底范围（弧度）。±3.2 rad ≈ ±183°，基本等于不限。
+#:
+#: 为什么需要它：`pelvis` 是**根关节**（`JOINT_PARENT['pelvis'] is None`）——
+#: 它是骨架原点，**没有父关节可绕之旋转**，所以上面那张表刻意不给它条目。
+#: 但 `JOINT_PARENT` 有 19 项、这张表只有 18 项，**两张表键不一致**，
+#: 任何"遍历 JOINT_PARENT 去查 LIMITS"的代码都会 `KeyError: 'pelvis'`。
+DEFAULT_JOINT_LIMIT: tuple[tuple[float, float], tuple[float, float], tuple[float, float]] = (
+    (-3.2, 3.2), (-3.2, 3.2), (-3.2, 3.2),
+)
+
 #: 每个关节的**旋转轴顺序**与限位（弧度）。超出即夹住。
 #:
 #: 这张表是 v2 schema 的核心。旧 schema 允许直接写"关节偏移"，
 #: 而横向偏移会被前向运动学逐级累加，于是手臂撇成"八"字——
 #: **让位置可直写就是这个 bug 的根源**。v2 只允许写**旋转**，
 #: 位置一律由旋转 + 段长推导，所以那种畸形在结构上不可能出现。
-JOINT_LIMITS: dict[str, tuple[tuple[float, float], tuple[float, float], tuple[float, float]]] = {
+#:
+#: 下面是**手写的具体限位**（有生理含义的那些关节）。
+#: 真正的公开常量是 `JOINT_LIMITS`（见下面"归一化"那段），它保证
+#: **每个 `JOINT_PARENT` 里的关节都有条目**。
+_JOINT_LIMITS_EXPLICIT: dict[str, tuple[tuple[float, float], tuple[float, float], tuple[float, float]]] = {
     #            绕 X（前后摆动）      绕 Y（扭转）          绕 Z（左右张开）
     "spine": ((-0.6, 0.6), (-0.6, 0.6), (-0.4, 0.4)),
     "chest": ((-0.5, 0.5), (-0.6, 0.6), (-0.35, 0.35)),
@@ -86,6 +100,20 @@ JOINT_LIMITS: dict[str, tuple[tuple[float, float], tuple[float, float], tuple[fl
     "kne_r": ((0.0, 2.4), (-0.2, 0.2), (-0.2, 0.2)),
     "ank_r": ((-0.8, 0.8), (-0.4, 0.4), (-0.3, 0.3)),
     "foot_r": ((-0.3, 0.3), (-0.3, 0.3), (-0.3, 0.3)),
+}
+
+#: 公开的限位表：**保证 `JOINT_PARENT` 里每个关节都有条目**。
+#:
+#: ⚠️ 直接下标 `JOINT_LIMITS[name]` 是安全的；手写表里没有的（如根关节
+#: `pelvis`）会拿到 `DEFAULT_JOINT_LIMIT`。
+#:
+#: 加这层是因为踩过一个 bug：`white_model_prompt.py` 在**模块导入时**
+#: 遍历 `JOINT_PARENT` 去下标 `JOINT_LIMITS["pelvis"]`，
+#: 直接 `KeyError` → `/api/previs/white-model` 一进来就 500（0.0 秒），
+#: **白模生成功能完全不可用**。而那两张表此前是手写且不一致的。
+JOINT_LIMITS: dict[str, tuple[tuple[float, float], tuple[float, float], tuple[float, float]]] = {
+    name: _JOINT_LIMITS_EXPLICIT.get(name, DEFAULT_JOINT_LIMIT)
+    for name in JOINT_PARENT
 }
 
 #: 关节名的中文标注（写进提示词，帮助模型理解）
