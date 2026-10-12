@@ -1,0 +1,13 @@
+{
+  "outDir": "D:\\AI\\_previs_out\\act_walk",
+  "resolution": { "width": 416, "height": 480 },
+  "character": {
+    "height_cm": 168, "build": "slim", "head_ratio": 7.6,
+    "shoulder_width_m": 0.40, "hair": "long_straight"
+  },
+  "shot": {
+    "shot_size": "full", "angle_deg": 3, "azimuth_deg": 28, "lens_mm": 50,
+    "duration_sec": 1.0, "action": "walk",
+    "camera_movement": "static", "path": "static"
+  }
+}

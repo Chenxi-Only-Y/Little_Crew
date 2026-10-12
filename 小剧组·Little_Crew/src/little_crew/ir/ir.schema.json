@@ -1,0 +1,405 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://little-crew.dev/schemas/little_crew.ir/v1/graph.schema.json",
+  "title": "Little Crew Unified IR — Graph",
+  "description": "统一中间表示（Unified IR）图定义。语义图与 ComfyUI 执行图编译自本结构。规范版本 little_crew.ir/v1。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["irVersion", "graphId", "scope", "nodes", "edges"],
+  "properties": {
+    "irVersion": {
+      "const": "little_crew.ir/v1",
+      "description": "规范版本。参与缓存键；主版本变更表示不兼容。"
+    },
+    "graphId": {
+      "type": "string",
+      "pattern": "^G-[A-Za-z0-9_-]+$",
+      "description": "图标识。约定：G-ep{ep}-sh{nnn} 或 G-ep{ep}-sc{nnn} 或 G-ep{ep}。"
+    },
+    "scope": {
+      "enum": ["project", "episode", "scene", "shot"],
+      "description": "图粒度。编译时通常以 shot 为粒度产出执行图。"
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    },
+    "constraints": {
+      "type": "array",
+      "description": "图级约束（跨节点）。节点级约束另有 node.semantic.constraintRefs。",
+      "items": { "$ref": "#/$defs/constraint" }
+    },
+    "bindings": {
+      "type": "object",
+      "description": "资产绑定表。键为实体 ID（如 CHAR-0007），值为该实体的可用资产。",
+      "additionalProperties": { "$ref": "#/$defs/binding" }
+    },
+    "provenance": { "$ref": "#/$defs/provenance" }
+  },
+  "$defs": {
+
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "description": "节点 ID。小写字母开头，仅含小写字母/数字/下划线。"
+    },
+
+    "dtype": {
+      "enum": [
+        "STRING", "INT", "FLOAT", "BOOLEAN",
+        "MODEL", "CLIP", "VAE", "CONDITIONING", "LATENT",
+        "IMAGE", "MASK", "VIDEO", "AUDIO",
+        "LORA", "IPADAPTER", "CONTROL_NET",
+        "SEQUENCE", "ANY_STRUCT"
+      ],
+      "description": "端口数据类型。前 12 个与 ComfyUI 原生类型一致；LORA/IPADAPTER/CONTROL_NET 为平台扩展；SEQUENCE 表示语义层的批处理序列（编译期展开）。"
+    },
+
+    "nodeKind": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "description": "命名空间化节点类型，决定编译规则。形如 <domain>.<op>，例如 prompt.text、identity.lora、sample.ksampler。未登记的 kind 编译报 UNKNOWN_KIND。"
+    },
+
+    "portRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "port"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/nodeId" },
+        "port": { "type": "string", "minLength": 1 }
+      },
+      "description": "端口引用：值来自另一个节点的输出端口。"
+    },
+
+    "bindingRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding"],
+      "properties": {
+        "binding": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_.-]+)?$",
+          "description": "形如 CHAR-0007 或 CHAR-0007.anchorSet.front。"
+        }
+      },
+      "description": "资产引用：值来自 graph.bindings。"
+    },
+
+    "inputValue": {
+      "description": "节点输入值：标量 / 数组 / 端口引用 / 资产引用。",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "integer" },
+        { "type": "boolean" },
+        { "type": "null" },
+        { "type": "array" },
+        { "$ref": "#/$defs/portRef" },
+        { "$ref": "#/$defs/bindingRef" }
+      ]
+    },
+
+    "executionSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sideEffect", "recoveryMode"],
+      "description": "节点执行语义。编译与运行时据此裁决重试、恢复与幂等。",
+      "properties": {
+        "sideEffect": {
+          "enum": ["pure", "read", "write", "external"],
+          "description": "pure=无副作用可任意重放；read=只读；write=写本地/存储；external=调用外部付费服务（重试需幂等键）。"
+        },
+        "idempotency": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source", "inputField"],
+              "properties": {
+                "source": { "const": "runtime_node" },
+                "inputField": { "type": "null" }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source", "inputField"],
+              "properties": {
+                "source": { "const": "input" },
+                "inputField": { "type": "string", "minLength": 1 }
+              }
+            }
+          ],
+          "description": "幂等身份来源。external 副作用的节点必须声明。"
+        },
+        "resultLookup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "outputField"],
+          "properties": {
+            "mode": { "enum": ["none", "idempotency_key", "provider_receipt"] },
+            "outputField": { "type": ["string", "null"] }
+          },
+          "description": "崩溃后回收既有结果的查寻方式。mode=provider_receipt 时 outputField 必填。"
+        },
+        "recoveryMode": {
+          "enum": ["replay", "reconcile", "manual"],
+          "description": "崩溃恢复策略：replay=直接重放；reconcile=先对账再决定；manual=需人工介入。"
+        },
+        "maxAutomaticAttempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        },
+        "backoffClass": {
+          "enum": ["none", "bounded_exponential"],
+          "default": "bounded_exponential"
+        },
+        "failureStage": {
+          "enum": [
+            "trigger", "input", "script_execution", "asset_access",
+            "agent_authoring", "media_generation", "assembly",
+            "tool_execution", "human_interaction", "control",
+            "artifact_persistence", "delivery_verification", "export",
+            "subworkflow", "plugin_execution"
+          ]
+        },
+        "estimatedVramMb": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "预估显存需求（MB），供 GPU 调度器做并发决策。"
+        },
+        "estimatedCostCny": {
+          "type": "number",
+          "minimum": 0,
+          "description": "预估单次执行成本（元）。external 节点应声明，供预算门控。"
+        }
+      }
+    },
+
+    "semanticAnnotation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "语义挂载点。执行层忽略，验收层与一致性层读取。用于把语义意图绑定到具体计算节点。",
+      "properties": {
+        "characterRef": { "type": "string", "pattern": "^CHAR-[0-9]{4}$" },
+        "sceneRef": { "type": "string", "pattern": "^SC-E[0-9]{3}-[0-9]{3}$" },
+        "propRefs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^PROP-[0-9]{4}$" }
+        },
+        "shotRef": { "type": "string", "pattern": "^SH-E[0-9]{3}-S[0-9]{3}-[0-9]{3}$" },
+        "constraintRefs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^cr_[a-z_]+_[0-9A-Za-z]+$" }
+        },
+        "intent": { "type": "string", "maxLength": 500 },
+        "opaque": {
+          "type": "boolean",
+          "default": false,
+          "description": "反向编译无法识别 class_type 时置 true，不参与语义校验但参与缓存与执行。"
+        }
+      }
+    },
+
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nodeId" },
+        "kind": { "$ref": "#/$defs/nodeKind" },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/inputValue" }
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/inputValue" },
+          "description": "非端口参数（widget 值）。编译时按规则映射到目标的非连接输入。"
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["dtype"],
+            "properties": { "dtype": { "$ref": "#/$defs/dtype" } }
+          }
+        },
+        "execution": { "$ref": "#/$defs/executionSemantics" },
+        "semantic": { "$ref": "#/$defs/semanticAnnotation" },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "title": { "type": "string", "maxLength": 120 },
+            "ui": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "画布坐标等纯展示信息。规范化时被剔除，不参与哈希。"
+            }
+          }
+        }
+      }
+    },
+
+    "edge": {
+      "oneOf": [
+        { "$ref": "#/$defs/dataEdge" },
+        { "$ref": "#/$defs/constraintEdge" }
+      ]
+    },
+
+    "dataEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "from", "to"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "data" },
+        "from": { "$ref": "#/$defs/endpoint" },
+        "to": { "$ref": "#/$defs/endpoint" },
+        "dtype": { "$ref": "#/$defs/dtype" }
+      },
+      "description": "数据边：编译为执行图的端口连接。"
+    },
+
+    "constraintEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "from", "to", "assertion"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "constraint" },
+        "from": { "$ref": "#/$defs/endpoint" },
+        "to": { "$ref": "#/$defs/endpoint" },
+        "assertion": { "$ref": "#/$defs/assertion" },
+        "enforcement": {
+          "enum": ["hard", "soft", "audit"],
+          "default": "hard",
+          "description": "hard=失败阻断后续阶段；soft=告警并记录；audit=仅记录证据不判定。"
+        }
+      },
+      "description": "约束边：不编译为连接，但生成可执行断言。这是 IR 区别于普通工作流 JSON 的本质。"
+    },
+
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "port"],
+      "properties": {
+        "node": { "$ref": "#/$defs/nodeId" },
+        "port": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "assertion": {
+      "description": "断言算子。op 决定其余字段的适用性。",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op"],
+      "properties": {
+        "op": {
+          "enum": [
+            "identity_similarity",
+            "token_contains_all",
+            "token_excludes_all",
+            "frame_count",
+            "duration_range",
+            "resolution_exact",
+            "hash_equals",
+            "face_count",
+            "aspect_ratio",
+            "audio_loudness_range",
+            "custom"
+          ]
+        },
+        "threshold": { "type": "number" },
+        "against": { "type": "string" },
+        "tokens": { "type": "array", "items": { "type": "string" } },
+        "expected": { "type": ["integer", "number", "string", "array"] },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "tolerance": { "type": "number", "description": "数值容差，用于 frame_count / duration_range 等。" },
+        "operator": { "type": "string", "description": "custom 断言的处理函数名。" }
+      }
+    },
+
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "assertion"],
+      "properties": {
+        "ref": { "type": "string", "pattern": "^cr_[a-z_]+_[0-9A-Za-z]+$" },
+        "assertion": { "$ref": "#/$defs/assertion" },
+        "enforcement": { "enum": ["hard", "soft", "audit"], "default": "hard" },
+        "description": { "type": "string", "maxLength": 300 }
+      }
+    },
+
+    "binding": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "实体资产绑定。字段随实体类型而异（角色/场景/道具）。",
+      "properties": {
+        "anchorSet": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "锚点图 URI 表，如 {front: '...', side: '...'}。"
+        },
+        "anchorGeneration": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "锚点集代数。变更即触发依赖产物 stale。"
+        },
+        "loraFile": { "type": "string" },
+        "loraStrength": { "type": "number", "minimum": 0, "maximum": 2 },
+        "embeddingId": { "type": "string", "description": "一致性嵌入向量 ID。" },
+        "sceneCard": { "type": "object", "additionalProperties": true },
+        "layoutHash": { "type": "string", "description": "场景陈设快照哈希。" }
+      }
+    },
+
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "parentGraphId": { "type": "string" },
+        "authorAgent": { "type": "string" },
+        "authorAgentVersion": { "type": "string" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "规范化时被剔除，不参与哈希。"
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "规范化序列化后的内容哈希。由 canonicalize() 产出。"
+        },
+        "seedDerivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "projectSeed": { "type": "integer" },
+            "episodeIdx": { "type": "integer" },
+            "sceneIdx": { "type": "integer" },
+            "shotIdx": { "type": "integer" },
+            "attempt": { "type": "integer", "minimum": 0 }
+          },
+          "description": "种子派生链。seed 不进哈希，但派生参数进哈希以保证可复现。"
+        }
+      }
+    }
+  }
+}

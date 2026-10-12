@@ -1,0 +1,14 @@
+{
+  "outDir": "D:\\AI\\_previs_out\\shot04",
+  "resolution": { "width": 832, "height": 480 },
+  "character": {
+    "height_cm": 168, "build": "slim", "head_ratio": 7.6,
+    "shoulder_width_m": 0.40, "hair": "long_straight",
+    "arm_spread": 7.0, "arm_bend": 10.0, "stance_width": 1.0
+  },
+  "shot": {
+    "shot_size": "full", "angle_deg": 2, "azimuth_deg": 18, "lens_mm": 50,
+    "duration_sec": 5.0, "camera_movement": "dolly_in",
+    "path": "walk_forward", "move_scale": 0.15, "path_scale": 0.45
+  }
+}

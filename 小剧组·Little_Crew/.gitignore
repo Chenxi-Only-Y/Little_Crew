@@ -1,0 +1,101 @@
+# ============================================================================
+#  .gitignore —— 小剧组·Little_Crew
+#  规则依据：STRUCTURE.md §1 目录职责表
+# ============================================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- 测试与类型检查缓存 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---- 密钥与本地配置（STRUCTURE.md §2.3）----
+# 真实凭据绝不入库；模板 .env.example 必须入库
+config/.env
+config/.env.local
+config/.env.*.local
+*.pem
+*.key
+
+# ---- 产物与日志（不入库）----
+outputs/
+logs/
+*.log
+
+# ---- 调研目录中的第三方源码快照 ----
+# 理由：可重新下载的派生物，且属于他人版权内容。
+# 调研报告（docs/03-*.md）与原始 README / LICENSE 快照仍然入库作为证据。
+research/**/src-*/
+
+# ---- 调研目录中的第三方媒体样片 ----
+# `research/h3-controlnet/` 的 39.42 MB 是**阿里发布的官方样片**，
+# 判据与上面的 `src-*/` 相同：可重新下载 + 属他人版权（MiniMax H3
+# Community License，非本项目的 Apache-2.0）。
+#
+# ⚠️ **只排除媒体，不排除 README** —— 那篇 README 记录了
+# 「从样片读出来的结论」，是策划书 §3.8.4 可行性依据的来源说明，
+# 必须入库（见该目录 README 的「媒体文件不入库」一节）。
+research/h3-controlnet/*.mp4
+research/h3-controlnet/*.png
+
+# ---- 大体积调研原文：只保留报告与一手来源 ----
+# awesome-* 是他人维护的索引，体积大且可重新获取
+research/model-survey/awesome-minimax-H3.md
+
+# ---- 外部工具链的兜底防线（STRUCTURE.md §1.1）----
+# 规则要求外部工具放项目外（如 D:\AI\ComfyUI_windows_portable）。
+# 下面几条是**兜底**：万一有人把它解压进了项目目录，
+# 也不会让数 GB 二进制进入 git 历史（一旦进入几乎无法干净移除）。
+ComfyUI*/
+ComfyUI_windows_portable/
+comfyui*/
+models/
+checkpoints/
+loras/
+*.safetensors
+*.ckpt
+*.pth
+*.gguf
+*.7z
+
+# ---- 临时文件 ----
+*.tmp
+*.bak
+*.orig
+~$*
+.DS_Store
+Thumbs.db
+
+# ---- 保留空目录结构（覆盖上面的整体忽略）----
+!outputs/.gitkeep
+!logs/.gitkeep
+!config/env/.gitkeep

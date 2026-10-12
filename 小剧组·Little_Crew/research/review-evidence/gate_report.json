@@ -1,0 +1,11 @@
+{
+  "okTotal": 6,
+  "okPassed": 6,
+  "falsePositive": 0,
+  "badTotal": 8,
+  "badBlocked": 8,
+  "recall": 1.0,
+  "falsePositiveRate": 0.0,
+  "precision": 1.0,
+  "operatorSet": "deterministic-only (similarity ops excluded: no local model)"
+}

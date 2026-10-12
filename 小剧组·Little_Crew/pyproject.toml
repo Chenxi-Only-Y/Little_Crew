@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "little-crew"
+# ⚠️ PEP 440 规范化写法（alpha.1 -> a1）。
+# 人类可读的版本号是 0.4.0-alpha.29，单一来源在 src/little_crew/version.py。
+# 两处必须同步：version.py 的 VERSION / PEP440_VERSION 与本行。
+version = "0.4.0a29"
+description = "小剧组 · Little Crew —— 基于多智能体协作的 AIGC 漫剧生成平台（统一 IR、ComfyUI 编译层、三层智能体协议）"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "小剧组 · Little Crew" }]
+keywords = ["aigc", "comfyui", "multi-agent", "comic-drama", "little-crew", "unified-ir"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# 运行期零第三方依赖：核心层必须能独立运行与独立测试。
+# 这是刻意的设计约束 —— 见 ARCHITECTURE.md「依赖铁律」。
+dependencies = []
+
+[project.optional-dependencies]
+# 后续层（runtime / api / web）会引入的依赖，按需启用
+dev = [
+    "pytest>=8.0",
+]
+runtime = [
+    "httpx>=0.27",       # ComfyUI HTTP
+    "websockets>=12.0",  # ComfyUI 进度推送
+]
+
+#: 命令行入口。
+#:
+#: ⚠️ **入口点必须在这里声明**，否则"安装后能用"这条就不成立 ——
+#: 用户只能靠 `python -m little_crew.cli`，而那要求他先知道包名与模块路径。
+#: CLI 是用户第一个碰到的面，不该要求他先读源码。
+[project.scripts]
+little-crew = "little_crew.cli.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/little_crew"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/little_crew", "tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",   # 行宽由 formatter 处理
+    "B008",   # 数据类默认值里调用工厂函数是刻意的
+]
