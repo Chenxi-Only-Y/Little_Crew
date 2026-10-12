@@ -1,0 +1,112 @@
+# ============================================================
+# 小剧组 (Little Crew) — Git 忽略规则
+# 绝不让密钥 / 运行产物 / 本地环境进仓库。
+# ============================================================
+
+# ---- 密钥与本地环境 ----
+.env
+!.env.example
+*.local
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+build/
+dist/
+*.egg
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+.venv*/
+
+# ---- 数据与运行产物 ----
+# 整个 data/ 都是运行时状态 / 本地草稿，绝不提交
+/data/*.db
+/data/outputs/
+/data/*.key
+/.little_crew.key
+# 兜底：忽略 data 下的一切（含本地数据库、加密密钥、开发草稿、验证 token）
+data/
+*.sqlite
+*.sqlite3
+*.db
+
+# ---- 日志 ----
+*.log
+log/
+logs/
+
+# ---- IDE / 编辑器 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# ---- 测试与缓存 ----
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# ---- 首屏背景视频 ----
+# 体积大，属于本地素材，不入库。
+# 生成方式：ffmpeg 从 4K 原片裁 10s / 1080p / 30fps / 无声 / faststart
+# 放在 web/public/ 下，Vite 会原样托管到 /hero-bg.mp4
+web/public/hero-bg.mp4
+web/public/hero-bg.jpg
+
+# ---- 调研中间产物 ----
+# 子任务抓取的网页 / 文档（_research/ 与 tmpres/），不入库
+_research/
+tmpres/
+
+# ---- 模型 / 工具类大文件：绝不允许进项目 ----
+# 本项目边界：项目目录只放代码。模型权重与工具放外部目录
+# （D:\AI\little-crew-tools\，见 scripts/setup_tools.ps1 与 README）。
+# 下面这些是"万一有人手滑"的兜底 —— 不是计划要忽略，而是**不该出现**。
+*.gguf
+*.safetensors
+*.onnx
+*.pth
+*.ckpt
+*.pt
+models/
+hf_cache/
+.cache/
+little-crew-tools/
+
+# ---- 一次性脚本 / 探针（**我犯过三次的错**）----
+# 我做验证、排查、复现时会写临时脚本，它们**不该进仓库**。
+# 已经误提交过：show_flow.py（第 1 次）、check_previs_ui.cjs（第 2 次）、
+# 审计 subagent 的 _adv_* / _repro_* 探针一批（第 3 次）。
+# 靠"提交前记得看一眼 git status"是不可靠的，所以从机制上拦住。
+#
+# 命名约定：临时脚本一律用这些前缀，或放在 scripts/tmp/ 下。
+/_audit*.py
+/_adv_*.py
+/_repro*.py
+/_verify_*.py
+/_probe*.py
+/_chk_*.py
+/_dbg_*.py
+/_adm_*.py
+/check_*.cjs
+/check_*.mjs
+/check_*.js
+/probe_*.py
+/dbg_*.py
+/chk_*.py
+/list_*.py
+/show_*.py
+/verify_*.py
+/flow_*.py
+/calc_*.py
+/compare_*.py
+/audit_*.py
+/repro_*.py
+/scripts/tmp/

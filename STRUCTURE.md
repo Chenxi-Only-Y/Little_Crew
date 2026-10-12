@@ -70,8 +70,37 @@ Little_Crew/
 ├── README.md                     【入口】给人看的门面
 ├── pyproject.toml                【依赖与工具配置】不接受其他同类文件
 ├── .gitignore
-└── LICENSE
+├── LICENSE
+└── legacy/                       【前代实现 v0.3.0】不参与本项目的构建与测试
+    ├── app/  web/                LangGraph 后端 + React 导演台
+    ├── tests/                    它自己的测试（689 项）
+    ├── docs/  scripts/  data/    它的文档、脚本、运行时数据
+    ├── .github/  .streamlit/     CI 与 Streamlit 配置
+    ├── Dockerfile  docker-compose.yml  start.bat
+    └── pytest.ini                ⚠️ 必须在 legacy/ 内跑测试（见下方说明）
 ```
+
+#### 关于 `legacy/`（2026-10-12 新增）
+
+`legacy/` 是**同仓库的历史归档**：v0.3.0（基于 LangGraph 的前代实现）。
+v0.4.0 提为仓库主体时，它被整体移到此处。
+
+| | |
+|---|---|
+| **参与本项目吗** | ❌ **不参与** —— 不在层序守卫与 `tests/run_all.py` 的范围内 |
+| **它自己的测试** | ✅ 仍然可跑：`cd legacy && ..\.venv\Scripts\python.exe -m pytest -q` |
+| **为什么放这里而不是删掉** | 它是前代成果；其中的 `web/`（React 导演台）与 `app/services/tts.py` 等**后续可能复用** |
+
+⚠️ **它的测试必须在 `legacy/` 内跑**，因为它的测试有两处「假定自己在根」：
+`import app.*` 需要 `legacy/` 在 `sys.path` 上，而 `Path("app/...")`
+相对 **CWD** 解析。`legacy/pytest.ini` 已配好 `pythonpath = .`，
+所以**只要 `cd legacy` 就全对，不需要改任何测试代码**。
+
+> **一条踩过的教训**：最初以为要把测试里的 `app/` 改成 `legacy/app/` ——
+> **完全没必要，而且改坏了**（正则把目录名吞掉过）。
+> 判据是：**如果两个东西的相对关系没变，就不要动它们的相对引用。**
+> 移进子目录后，`app/` 与 `tests/` 仍在同一层，相对关系没变。
+
 
 ### 1.0 这一节由**机器强制**执行
 

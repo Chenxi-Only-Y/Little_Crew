@@ -263,6 +263,13 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 目录（§1 目录职责表逐条对应）
     "src", "tests", "config", "docs", "research", "outputs", "logs",
+    # 前代实现（v0.3.0，LangGraph 版）。
+    #
+    # ⚠️ 它**不是本项目的一部分**，是**同仓库的历史归档** ——
+    # 2026-10-12 把 v0.4.0 提为仓库主体时，把 v0.3.0 整体移到这里。
+    # 它有自己的 src/tests/docs（在 legacy/ 内部），但**不参与本项目的
+    # 层序检查与测试**：本项目的守卫只认自己的 src/ 与 tests/。
+    "legacy",
     # 入库的顶层文件
     "README.md", "STRUCTURE.md", "ARCHITECTURE.md", "CHANGELOG.md",
     "pyproject.toml", ".gitignore",
@@ -271,7 +278,16 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 三者必须一致，所以它必须在白名单里（2026-10-12 补）
     "LICENSE",
     # 允许存在但不入库的本地状态
+    #
+    # ⚠️ `.pytest_cache` / `.ruff_cache` / `.mypy_cache` **必须在这里**：
+    # 它们由工具**自动创建在项目根**，不是人手放的。不进白名单的话，
+    # 开发机上跑一次 pytest 就会让守卫失败 —— 而那是**假警报**，
+    # 假警报会训练人忽略守卫，比没有守卫更糟。
+    #
+    # （2026-10-12 实测踩到：把项目搬进仓库根后，旧项目留在根上的
+    #  `.pytest_cache` 立刻触发了违规。）
     ".venv", ".idea", ".vscode", ".git",
+    ".pytest_cache", ".ruff_cache", ".mypy_cache",
 })
 
 #: 一次性脚本的命名特征 —— 出现在项目里即为违规。

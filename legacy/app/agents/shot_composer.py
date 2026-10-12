@@ -11,6 +11,7 @@ from app.agents._utils import call_deepseek, parse_json
 from app.agents.base import BaseAgent
 from app.core.config import settings
 from app.core.state import CrewState
+from app.services.shot_video_plan import TRANSITION_VALUES, normalize_transition
 
 _MOCK_STORYBOARD = [
     {"shot_id": "S1-01", "scene_id": "S1", "shot_type": "远景", "camera": "固定机位",
@@ -42,13 +43,43 @@ SYSTEM_PROMPT = (
     '  "description": "本镜头画面文学描述",\n'
     '  "duration_s": 4.0,\n'
     '  "dialogue": "本镜台词(可为空字符串)",\n'
-    '  "transition": "转场方式"\n'
+    '  "transition": "本镜与**上一镜**的衔接方式，只能取：'
+    + "|".join(TRANSITION_VALUES)
+    + '"\n'
     "}\n"
+    "\n⚠️ `transition` 是**受控取值**，不能写别的词。含义：\n"
+    '  · "连续" —— 本镜顺着上一镜往下（同一机位、同一场景的连续动作）。\n'
+    "            只有这种情况，下游才会把**上一镜的最后一帧**当作本镜的起始画面。\n"
+    '  · "切"   —— 硬切，换构图或换场景（最常用）。\n'
+    '  · "淡入" —— 从黑/白淡入。\n'
+    '  · "淡出" —— 淡出到黑/白。\n'
+    '  · "叠化" —— 与上一镜叠化过渡。\n'
+    "第一镜无论怎么写都不会衔接（它没有上一镜）。\n"
+    "**别为了凑数把镜头都写成「连续」** —— 只有画面真的顺着上一镜往下时才用，\n"
+    "否则会把上一镜的尾帧硬套到本镜上，画面反而错。\n"
 )
 
 
 def _safe_dump(obj) -> str:
     return json.dumps(obj, ensure_ascii=False)
+
+
+def _normalize_transitions(shots: list) -> list:
+    """把每个镜头的 `transition` 归一到受控取值，原样保序返回。
+
+    为什么在这里做（而不是等下游判）：
+      · 这个值决定"要不要用上一镜尾帧当首帧"，是**生成行为**的开关；
+      · 存进 `storyboard` 后前端/剪辑器也会看到，归一后大家看到的是同一个词；
+      · 只归一不改别的字段 —— 不做任何"猜测式改写"。
+    """
+    out = []
+    for s in shots or []:
+        if not isinstance(s, dict):
+            continue
+        s = dict(s)
+        s["transition"] = normalize_transition(s.get("transition"))
+        out.append(s)
+    return out
 
 
 class Storyboarder(BaseAgent):
@@ -67,7 +98,8 @@ class Storyboarder(BaseAgent):
             return {"storyboard": [], "error": "缺少 script", "current_phase": "storyboarder"}
 
         if settings.mock_llm:  # mock 分支：返回占位分镜
-            return {"storyboard": _MOCK_STORYBOARD, "current_phase": "storyboarder"}
+            return {"storyboard": _normalize_transitions(list(_MOCK_STORYBOARD)),
+                    "current_phase": "storyboarder"}
 
         try:
             user_msg = _safe_dump(script)
@@ -78,7 +110,10 @@ class Storyboarder(BaseAgent):
                 data = data.get("storyboard") or data.get("shots")
             if not isinstance(data, list):
                 raise ValueError(f"分镜返回非数组：{type(data).__name__}")
-            storyboard = self._enforce_shot_count(data)
+            # ⚠️ 归一 `transition` 再交给下游：LLM 不一定守受控取值，
+            # 而这个值直接决定"要不要拿上一镜尾帧当首帧"。
+            # 不归一的话一个拼错的值会让衔接行为不可预期。
+            storyboard = _normalize_transitions(self._enforce_shot_count(data))
         except Exception as exc:  # noqa: BLE001
             return {"storyboard": [], "error": f"分镜构建失败：{type(exc).__name__}: {exc}", "current_phase": "storyboarder"}
 

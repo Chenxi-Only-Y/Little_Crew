@@ -1,112 +1,101 @@
-# ============================================================
-# 小剧组 (Little Crew) — Git 忽略规则
-# 绝不让密钥 / 运行产物 / 本地环境进仓库。
-# ============================================================
-
-# ---- 密钥与本地环境 ----
-.env
-!.env.example
-*.local
+# ============================================================================
+#  .gitignore —— 小剧组·Little_Crew
+#  规则依据：STRUCTURE.md §1 目录职责表
+# ============================================================================
 
 # ---- Python ----
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
 *.egg-info/
 .eggs/
 pip-wheel-metadata/
-build/
-dist/
-*.egg
 
 # ---- 虚拟环境 ----
 .venv/
 venv/
 env/
-.venv*/
+ENV/
 
-# ---- 数据与运行产物 ----
-# 整个 data/ 都是运行时状态 / 本地草稿，绝不提交
-/data/*.db
-/data/outputs/
-/data/*.key
-/.little_crew.key
-# 兜底：忽略 data 下的一切（含本地数据库、加密密钥、开发草稿、验证 token）
-data/
-*.sqlite
-*.sqlite3
-*.db
+# ---- 测试与类型检查缓存 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
 
-# ---- 日志 ----
-*.log
-log/
-logs/
-
-# ---- IDE / 编辑器 ----
+# ---- IDE ----
 .idea/
 .vscode/
 *.swp
-.DS_Store
+*.swo
+*~
 
-# ---- 测试与缓存 ----
-.pytest_cache/
-.mypy_cache/
-htmlcov/
-.coverage
+# ---- 密钥与本地配置（STRUCTURE.md §2.3）----
+# 真实凭据绝不入库；模板 .env.example 必须入库
+config/.env
+config/.env.local
+config/.env.*.local
+*.pem
+*.key
 
-# ---- 首屏背景视频 ----
-# 体积大，属于本地素材，不入库。
-# 生成方式：ffmpeg 从 4K 原片裁 10s / 1080p / 30fps / 无声 / faststart
-# 放在 web/public/ 下，Vite 会原样托管到 /hero-bg.mp4
-web/public/hero-bg.mp4
-web/public/hero-bg.jpg
+# ---- 产物与日志（不入库）----
+outputs/
+logs/
+*.log
 
-# ---- 调研中间产物 ----
-# 子任务抓取的网页 / 文档（_research/ 与 tmpres/），不入库
-_research/
-tmpres/
+# ---- 调研目录中的第三方源码快照 ----
+# 理由：可重新下载的派生物，且属于他人版权内容。
+# 调研报告（docs/03-*.md）与原始 README / LICENSE 快照仍然入库作为证据。
+research/**/src-*/
 
-# ---- 模型 / 工具类大文件：绝不允许进项目 ----
-# 本项目边界：项目目录只放代码。模型权重与工具放外部目录
-# （D:\AI\little-crew-tools\，见 scripts/setup_tools.ps1 与 README）。
-# 下面这些是"万一有人手滑"的兜底 —— 不是计划要忽略，而是**不该出现**。
-*.gguf
-*.safetensors
-*.onnx
-*.pth
-*.ckpt
-*.pt
-models/
-hf_cache/
-.cache/
-little-crew-tools/
-
-# ---- 一次性脚本 / 探针（**我犯过三次的错**）----
-# 我做验证、排查、复现时会写临时脚本，它们**不该进仓库**。
-# 已经误提交过：show_flow.py（第 1 次）、check_previs_ui.cjs（第 2 次）、
-# 审计 subagent 的 _adv_* / _repro_* 探针一批（第 3 次）。
-# 靠"提交前记得看一眼 git status"是不可靠的，所以从机制上拦住。
+# ---- 调研目录中的第三方媒体样片 ----
+# `research/h3-controlnet/` 的 39.42 MB 是**阿里发布的官方样片**，
+# 判据与上面的 `src-*/` 相同：可重新下载 + 属他人版权（MiniMax H3
+# Community License，非本项目的 Apache-2.0）。
 #
-# 命名约定：临时脚本一律用这些前缀，或放在 scripts/tmp/ 下。
-/_audit*.py
-/_adv_*.py
-/_repro*.py
-/_verify_*.py
-/_probe*.py
-/_chk_*.py
-/_dbg_*.py
-/_adm_*.py
-/check_*.cjs
-/check_*.mjs
-/check_*.js
-/probe_*.py
-/dbg_*.py
-/chk_*.py
-/list_*.py
-/show_*.py
-/verify_*.py
-/flow_*.py
-/calc_*.py
-/compare_*.py
-/audit_*.py
-/repro_*.py
-/scripts/tmp/
+# ⚠️ **只排除媒体，不排除 README** —— 那篇 README 记录了
+# 「从样片读出来的结论」，是策划书 §3.8.4 可行性依据的来源说明，
+# 必须入库（见该目录 README 的「媒体文件不入库」一节）。
+research/h3-controlnet/*.mp4
+research/h3-controlnet/*.png
+
+# ---- 大体积调研原文：只保留报告与一手来源 ----
+# awesome-* 是他人维护的索引，体积大且可重新获取
+research/model-survey/awesome-minimax-H3.md
+
+# ---- 外部工具链的兜底防线（STRUCTURE.md §1.1）----
+# 规则要求外部工具放项目外（如 D:\AI\ComfyUI_windows_portable）。
+# 下面几条是**兜底**：万一有人把它解压进了项目目录，
+# 也不会让数 GB 二进制进入 git 历史（一旦进入几乎无法干净移除）。
+ComfyUI*/
+ComfyUI_windows_portable/
+comfyui*/
+models/
+checkpoints/
+loras/
+*.safetensors
+*.ckpt
+*.pth
+*.gguf
+*.7z
+
+# ---- 临时文件 ----
+*.tmp
+*.bak
+*.orig
+~$*
+.DS_Store
+Thumbs.db
+
+# ---- 保留空目录结构（覆盖上面的整体忽略）----
+!outputs/.gitkeep
+!logs/.gitkeep
+!config/env/.gitkeep
