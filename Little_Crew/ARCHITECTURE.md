@@ -53,7 +53,7 @@
 ## 2. 代码分层：11 个包
 
 ```
-小剧组·Little_Crew/
+Little_Crew/
 ├── src/little_crew/
 │   ├── version.py              [0] 版本与标识的单一来源（包根豁免层序）
 │   ├── ir/                     [0] 叶子：统一 IR 规范与规范化

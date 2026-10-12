@@ -89,7 +89,7 @@ python tests\test_e2e_comfy.py
 ## 目录结构
 
 ```
-小剧组·Little_Crew/
+Little_Crew/
 ├── src/little_crew/          【源码】唯一的代码位置，按层组织
 │   ├── version.py           [0] 叶子  版本单一来源
 │   ├── config.py            [0] 叶子  运行期配置读取
