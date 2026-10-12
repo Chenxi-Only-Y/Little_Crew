@@ -110,7 +110,7 @@
 ## 四、复现方式
 
 ```powershell
-cd "D:\AI\ds.8\小剧组·Little_Crew"
+cd "D:\AI\ds.8\Little_Crew"
 python research\consistency-calibration\measure_consistency.py outputs\episode_p3
 ```
 

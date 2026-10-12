@@ -23,12 +23,12 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, r"D:\AI\ds.8\小剧组·Little_Crew\src")
+sys.path.insert(0, r"D:\AI\ds.8\Little_Crew\src")
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from little_crew.review import Gate, GateVerdict, Observation
 
-ROOT = Path(r"D:\AI\ds.8\小剧组·Little_Crew")
+ROOT = Path(r"D:\AI\ds.8\Little_Crew")
 OUT = ROOT / "outputs"
 EV = ROOT / "research" / "blender-previs" / "p3-evidence"
 
