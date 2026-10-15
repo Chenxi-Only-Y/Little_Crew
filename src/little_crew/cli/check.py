@@ -195,9 +195,42 @@ def _d_http_contract() -> None:
         st, j = s.call("/v1/compile", "POST", {})
         check("D8 缺参数 -> 400（**客户端错，不是服务器错**）",
               st == 400, f"{st} {j}")
-        st, j = s.call("/v1/compile", "POST", {"ir": {"bad": 1}})
-        check("D9 ★ 编译失败也是 400（**业务结果**，不是 500）",
-              st == 400 and not j.get("ok", True), f"{st} {str(j)[:70]}")
+
+        # ★ 编译失败 -> 400。**用注入的假编译器，不依赖 ComfyUI 在不在跑。**
+        #
+        # ⚠️ 这里踩过一个真坑：早期用真实 IR 去打这个接口，于是本测试
+        # **只在 ComfyUI 运行时才通过** —— 别人 clone 下来跑必然失败，
+        # 而那与"契约对不对"毫无关系。
+        #
+        # 更值得记的是**服务端的判序错误**（已修）：它先查 ComfyUI、
+        # 后校验 IR，于是没跑 ComfyUI 时连"IR 明显无效"都报 500。
+        # **输入不合法这个结论与依赖在不在无关**，任何时候都该先答。
+        from little_crew.api import server as _srv
+
+        def _bad_ir(_ir):
+            raise _srv._CompileFailed("IR 缺少必填字段 'irVersion'")
+
+        def _no_comfy(_ir):
+            raise RuntimeError("ComfyUI 不可用：连接超时")
+
+        old_impl = s.api._compile_impl
+        try:
+            s.api._compile_impl = _bad_ir
+            st, j = s.call("/v1/compile", "POST", {"ir": {"irVersion": "x"}})
+            check("D9 ★★ 编译失败 -> **400**（业务结果，非服务器错误）",
+                  st == 400 and j.get("ok") is False, f"{st} {str(j)[:70]}")
+            check("D9b 失败响应带 `ok:false`（与成功响应对称）",
+                  j.get("ok") is False, str(sorted(j)))
+            check("D9c 且给出可操作的 hint",
+                  bool(j.get("hint")), str(j.get("hint"))[:60])
+
+            # 环境不可用必须是 **5xx**，与 4xx 区分开
+            s.api._compile_impl = _no_comfy
+            st, j = s.call("/v1/compile", "POST", {"ir": {"irVersion": "x"}})
+            check("D9d ★★ 环境不可用 -> 500（与「你的输入错了」区分开）",
+                  st == 500, f"{st} {str(j)[:60]}")
+        finally:
+            s.api._compile_impl = old_impl
 
         # ---- 空任务表 ----
         st, j = s.call("/v1/runs")

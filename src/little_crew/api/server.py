@@ -175,53 +175,82 @@ class _Handlers:
                 "localGen": env_value("LOCAL_GEN_ENDPOINT", "") or "(默认)"}
 
     @staticmethod
-    def compile(body: Mapping[str, Any]) -> dict[str, Any]:
-        from little_crew.capability.capability import probe_from_object_info
-        from little_crew.compiler.compiler import ComfyCompiler, CompileError
-        from little_crew.config import env_value
-        from little_crew.models.spec import Backend, BackendKind
-        from little_crew.runtime.channels.comfy import ComfyChannel
+    def compile(body: Mapping[str, Any],
+                compile_impl: Any = None) -> dict[str, Any]:
+        """编译 IR（**不提交**）。
 
+        `compile_impl` 可注入 —— 让 HTTP 契约（400 还是 500）**不依赖
+        ComfyUI 是否在跑**。见 `ApiServer._compile_impl`。
+
+        ⚠️ **判序很重要：先校验 IR，再查环境。**
+        早期版本先查 ComfyUI、后校验 IR —— 结果在没跑 ComfyUI 的机器上，
+        连"IR 明显无效"都会报 **500（服务端挂了）**，而正确答案是
+        **400（你的输入错了）**。客户端据此会去查服务端，方向完全错。
+
+        **语义上**：调用方给的输入不合法，这个结论**与依赖在不在无关**，
+        所以任何时候都该先答它。
+        """
         ir = body.get("ir")
         if not isinstance(ir, Mapping):
             # 与编译失败同样**对称地**返回 ok:false（而不是抛异常变成 500）
             return {"ok": False, "error": "请求体缺少 `ir`（对象）"}
 
-        ep = (env_value("COMFYUI_ENDPOINT", "")
-              or "http://127.0.0.1:8188").rstrip("/")
-        ch = ComfyChannel(Backend(kind=BackendKind.COMFYUI, endpoint=ep,
-                                  is_local_by_default=True),
-                          endpoint=ep, timeout_s=120)
-        ok, why = ch.available()
-        if not ok:
-            raise RuntimeError(f"ComfyUI 不可用：{why}")
-
-        m = probe_from_object_info(ch.probe_catalog(), endpoint=ep,
-                                   comfy_version="unknown")
+        impl = compile_impl or _real_compile
         try:
-            res = ComfyCompiler(m).compile(ir)
-        except (CompileError, ValueError, KeyError, TypeError) as e:
+            return impl(ir)
+        except _CompileFailed as e:
             # **编译失败是业务结果，不是服务器错误** ——
             # 调用方给了一个编不过的 IR，那是 4xx 语义。
             #
-            # 捕获范围刻意宽（`CompileError` / `ValueError` / `KeyError` /
-            # `TypeError`）：IR 不合法的表现有好几种 ——
-            # 缺必填字段走 `canonicalize` 抛 `ValueError`，
-            # 结构问题走编译器抛 `CompileError`。
-            # **它们对调用方是同一件事**（"你给的 IR 有问题"），
-            # 所以必须统一呈现；漏掉一种就会变成 500，
-            # 让客户端把"我的输入错了"读成"服务端挂了"。
-            #
             # ⚠️ 失败响应也带 `ok: False` —— 与成功响应**对称**。
-            # 不对称的代价：客户端要写 `if resp.get("ok", True) and "error" not in resp`
+            # 不对称的代价：客户端要写
+            # `if resp.get("ok", True) and "error" not in resp`
             # 这种"猜"的逻辑，而少写一个分支就变成"把失败当成功"。
             return {"ok": False, "error": str(e),
                     "hint": "检查 IR 的必填字段与节点类型；"
                             "`POST /v1/compile` 只编译不提交，可安全反复试"}
-        return {"ok": True, "graphHash": res.graph_hash,
-                "irHash": res.ir_hash, "nodeCount": len(res.graph),
-                "notices": [n.as_dict() for n in res.notices],
-                "graph": res.graph}
+
+
+class _CompileFailed(Exception):
+    """编译失败的**规范化**异常 —— 把多种原因收敛成一种呈现。
+
+    IR 不合法的表现有好几种：缺必填字段走 `canonicalize` 抛 `ValueError`，
+    结构问题走编译器抛 `CompileError`，节点类型错抛 `KeyError`/`TypeError`。
+
+    **它们对调用方是同一件事**（"你给的 IR 有问题"），所以必须统一呈现；
+    漏掉一种就会变成 500，让客户端把"我的输入错了"读成"服务端挂了"。
+    """
+
+
+def _real_compile(ir: Mapping[str, Any]) -> dict[str, Any]:
+    """真实编译路径：连 ComfyUI 取能力矩阵，然后编译。"""
+    from little_crew.capability.capability import probe_from_object_info
+    from little_crew.compiler.compiler import ComfyCompiler, CompileError
+    from little_crew.config import env_value
+    from little_crew.models.spec import Backend, BackendKind
+    from little_crew.runtime.channels.comfy import ComfyChannel
+
+    ep = (env_value("COMFYUI_ENDPOINT", "")
+          or "http://127.0.0.1:8188").rstrip("/")
+    ch = ComfyChannel(Backend(kind=BackendKind.COMFYUI, endpoint=ep,
+                              is_local_by_default=True),
+                      endpoint=ep, timeout_s=120)
+    ok, why = ch.available()
+    if not ok:
+        # ⚠️ **环境不可用是 5xx**（服务端的依赖没起来），与 4xx 区分开
+        raise RuntimeError(f"ComfyUI 不可用：{why}")
+
+    m = probe_from_object_info(ch.probe_catalog(), endpoint=ep,
+                               comfy_version="unknown")
+    try:
+        res = ComfyCompiler(m).compile(ir)
+    except (CompileError, ValueError, KeyError, TypeError) as e:
+        raise _CompileFailed(str(e)) from e
+
+    return {"ok": True, "graphHash": res.graph_hash,
+            "irHash": res.ir_hash, "nodeCount": len(res.graph),
+            "notices": [n.as_dict() for n in res.notices],
+            "graph": res.graph}
 
     @staticmethod
     def episode(body: Mapping[str, Any], run: Run) -> dict[str, Any]:
@@ -308,6 +337,12 @@ class ApiServer:
         self.port = port
         self.runs = RunRegistry()
         self.handlers = _Handlers()
+        #: `/v1/compile` 的实际编译实现。**可替换** ——
+        #:
+        #: 为什么留这个缝：HTTP 契约测试（"编译失败是 400 还是 500"）
+        #: **不该依赖 ComfyUI 是否在跑**。否则别人 clone 下来跑测试必失败，
+        #: 而那与契约对不对毫无关系。
+        self._compile_impl: Any = _real_compile
 
     # ---- 路由 ----
 
@@ -327,7 +362,8 @@ class ApiServer:
             return 200, self.handlers.env(body)
 
         if method == "POST" and parts == ["v1", "compile"]:
-            out = self.handlers.compile(body)
+            out = self.handlers.compile(body,
+                                        compile_impl=self._compile_impl)
             # 编译失败 -> 400（**客户端给了编不过的 IR**，不是服务器故障）
             return (200 if out.get("ok") else 400), out
 
