@@ -10,12 +10,33 @@
 
 优先级（高 -> 低）
 ------------------
-    1. 进程环境变量       —— 部署方/CI 的显式覆盖
-    2. `config/.env`      —— 本机配置
-    3. 调用方给的默认值
+    1. 进程环境变量          —— 部署方/CI 的显式覆盖
+    2. `config/.env`         —— 本项目"随部署变化"的配置
+    3. **项目外秘密文件**     —— 见下
+    4. 调用方给的默认值
 
 **环境变量优先于文件**是刻意的：容器/CI 里通常只能设环境变量，
 若文件反而优先，那些环境就无法覆盖本机配置。
+
+为什么还有第 3 层（项目外秘密）
+-------------------------------
+`config/.env` 虽然在项目内且被 `.gitignore` 排除，但它**位置在项目里** ——
+而项目迟早会被打包、压缩、复制、分享。凭据放在项目里，
+**安全性就依赖"`.gitignore` 恰好写对了"**，一次 `git add -f` 或
+一次拷走整个目录就漏了。
+
+项目外那份**从位置上就不可能进版本库**，不依赖任何规则记得写。
+
+默认路径 `D:\\AI\\_secrets\\little-crew.env`，可用 `LC_SECRETS_FILE`
+环境变量指向别处（换机器/多项目共用时用得上）。
+
+**顺序说明**：`config/.env` 在秘密文件**之前** ——
+因为本机配置应当能覆盖共享秘密（例如临时换个模型试），
+反之则会让"改 `.env` 不生效"变成一个难查的问题。
+
+⚠️ **取值只看"非空"**：空值**不**参与遮蔽。否则 `.env.example`
+拷成 `.env` 后满屏的 `KEY=` 会挡住秘密文件里的真值 ——
+而那种失败的表现是"明明配了却读不到"，极难排查。
 """
 
 from __future__ import annotations
@@ -25,7 +46,7 @@ from pathlib import Path
 from typing import Iterable, Mapping
 
 __all__ = ["env_value", "load_env", "parse_env", "env_path",
-           "describe", "repo_root"]
+           "describe", "repo_root", "secrets_path", "load_secrets"]
 
 
 def parse_env(text: str) -> dict[str, str]:
@@ -113,11 +134,20 @@ def load_env(root: Path | None = None) -> dict[str, str]:
 
 def env_value(key: str, default: str = "",
               root: Path | None = None) -> str:
-    """取一个配置值：**进程环境变量 > `.env` > default**。"""
+    """取一个配置值。
+
+    优先级：**进程环境变量 > `config/.env` > 项目外秘密文件 > default**。
+
+    ⚠️ 只有**非空**值才参与遮蔽 —— 理由见模块文档末尾。
+    """
     v = os.environ.get(key)
     if v:
         return v
-    return load_env(root).get(key, default) or default
+    for src in (load_env(root), load_secrets(root)):
+        got = src.get(key, "")
+        if got:
+            return got
+    return default
 
 
 def describe(keys: Iterable[str],
@@ -126,16 +156,80 @@ def describe(keys: Iterable[str],
 
     `source` 字段是关键：**"没配" 与 "配成空串" 是两回事**，
     而只看值看不出来。前者该走默认，后者往往是个错误。
+
+    `source` 取值：`env`（进程环境）/ `file`（`config/.env`）/
+    `secrets`（项目外秘密文件）/ `unset`（三处都没有）。
+
+    ⚠️ **`value` 字段会带上真实值，包括密钥。** 它只该用在
+    **本机排查**里，不要打印到日志、不要放进 CI 输出、不要写进报告。
+    要安全地看，用 `mask=True`。
     """
-    file_vals = load_env(root)
+    file_vals, secret_vals = load_env(root), load_secrets(root)
     out: list[dict[str, str]] = []
     for k in keys:
         if os.environ.get(k):
             src, val = "env", os.environ[k]
-        elif k in file_vals:
+        elif file_vals.get(k):
             src, val = "file", file_vals[k]
+        elif secret_vals.get(k):
+            src, val = "secrets", secret_vals[k]
         else:
-            src, val = "unset", ""
+            # 区分「键存在但为空」与「键根本没有」：前者常见于
+            # 从 .env.example 拷来的模板，后者是真没配。
+            src = ("file" if k in file_vals
+                   else "secrets" if k in secret_vals else "unset")
+            val = ""
         out.append({"key": k, "source": src, "value": val,
                     "empty": "yes" if (src != "unset" and not val) else "no"})
     return out
+
+
+def masked(keys: Iterable[str], root: Path | None = None) -> list[dict[str, str]]:
+    """与 `describe` 同样说明来源，但**值只留头尾**，可安全打印。
+
+    密钥的排查只需要知道"配没配、从哪来、像不像"，不需要看到全文。
+    """
+    out = []
+    for d in describe(keys, root):
+        v = d["value"]
+        if not v:
+            shown = ""
+        elif len(v) <= 10:
+            shown = v[:2] + "*" * (len(v) - 2)
+        else:
+            shown = f"{v[:6]}…{v[-4:]}（{len(v)} 字符）"
+        out.append({**d, "value": shown})
+    return out
+
+
+#: 项目外秘密文件的默认位置 —— **刻意在项目之外**。
+#:
+#: 为什么不放 `config/`：那样"不进版本库"就只靠 `.gitignore` 记得写对。
+#: 放在项目外，从**位置**上就不可能被提交。
+_DEFAULT_SECRETS = Path(r"D:\AI\_secrets\little-crew.env")
+
+
+def secrets_path(root: Path | None = None) -> Path:
+    """项目外秘密文件的路径。
+
+    用 `LC_SECRETS_FILE` 覆盖默认位置（换机器 / 多项目共用一份时用）。
+    """
+    override = os.environ.get("LC_SECRETS_FILE", "").strip()
+    return Path(override) if override else _DEFAULT_SECRETS
+
+
+def load_secrets(root: Path | None = None) -> dict[str, str]:
+    """读项目外秘密文件。**不存在就返回空字典，不抛异常。**
+
+    不抛的理由与 `load_env` 相同：缺它是"这台机器没配秘密"，
+    应当走默认值或由真正需要它的地方给出具体报错，
+    而不是让所有命令（包括 `--help`）都失败。
+    """
+    p = secrets_path(root)
+    if not p.is_file():
+        return {}
+    try:
+        return parse_env(p.read_text(encoding="utf-8"))
+    except OSError:
+        return {}
+

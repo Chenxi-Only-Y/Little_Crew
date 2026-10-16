@@ -171,11 +171,54 @@ Little_Crew/
 
 | 类型 | 位置 | 命名 | 是否入库 | 例子 |
 |---|---|---|---|---|
-| **① 秘密凭据** | `config/.env` | 固定名 `.env` | ❌ 绝不入库 | `DEEPSEEK_API_KEY=sk-...`<br>`COMFYUI_ENDPOINT=http://127.0.0.1:8188` |
-| **② 秘密模板** | `config/.env.example` | 固定名 | ✅ 入库（值为空或占位） | `DEEPSEEK_API_KEY=`<br>`COMFYUI_ENDPOINT=http://127.0.0.1:8188` |
+| **①a 秘密凭据（首选）** | **项目外** `D:\AI\_secrets\` | `little-crew.env` | ❌ 且**位置在项目外** | `LLM_API_KEY=sk-...` |
+| **①b 部署专用覆盖** | `config/.env`（可选） | 固定名 `.env` | ❌ 绝不入库 | `COMFYUI_ENDPOINT=http://127.0.0.1:8188` |
+| **② 秘密模板** | `config/.env.example` | 固定名 | ✅ 入库（值为空或占位） | `LLM_API_KEY=` |
 | **③ 项目可调参数** | `config/project.toml` | `*.toml` | ✅ 入库 | 分辨率档位、单镜时长上限、预算、并发数、种子基点 |
 | **④ 环境能力快照** | `config/env/<name>.json` | `<环境名>.json` | ✅ 入库 | `local-4060.json`（`/object_info` 的探测结果，用于离线测试） |
 | **⑤ 代码常量** | 源码内该层的 `constants` 模块 | — | ✅ 入库 | 编译规则表、IR Schema、授权事实目录、断言算子 |
+
+### 2.0 ⚠️ 凭据为什么放**项目外**（2026-10-16 修订）
+
+本文原先写"秘密凭据 → `config/.env`，靠 `.gitignore` 排除"。
+**那个方案不够** —— 它把凭据的安全性**押在"`.gitignore` 恰好写对了"**上：
+
+| 风险 | `.gitignore` 挡得住吗 |
+|---|---|
+| `git add -f config/.env` | ❌ 挡不住（`-f` 就是强制） |
+| 把整个项目目录**拷给别人** / 压成 zip | ❌ 完全不相关 —— 文件被原样带走 |
+| 打包进 Docker 镜像 | ❌ 要另一套 `.dockerignore` 记得写对 |
+| 某次重构 `.gitignore` 时手滑删掉一行 | ❌ 而且**不会立刻显形**，要等下次 `git add -A` |
+
+**所以改成：凭据放项目外，从位置上就不可能进版本库。**
+
+```
+D:\AI\_secrets\little-crew.env     ← 凭据（本项目之外）
+D:\AI\_secrets\little-crew.env.example  ← 模板（可入库/可分享）
+```
+
+**加载方式**（`src/little_crew/config.py`）：
+
+| 优先级 | 来源 | 用途 |
+|---|---|---|
+| 1 | 进程环境变量 | 部署方 / CI 的显式覆盖 |
+| 2 | `config/.env` | 本项目"随部署变化"的配置（**可覆盖**秘密文件） |
+| 3 | **项目外秘密文件** | 凭据主位置。用 `LC_SECRETS_FILE` 可改路径 |
+| 4 | 调用方默认值 | |
+
+**为什么 `config/.env` 排在秘密文件之前**：本机配置应当能覆盖共享凭据
+（例如临时换个模型试），反之会让"改 `.env` 不生效"变成难查的问题。
+
+**⚠️ 取值只看"非空"**：空值**不**参与遮蔽。否则把 `.env.example`
+拷成 `.env` 后满屏的 `KEY=` 会挡住秘密文件里的真值 ——
+而那种失败的表现是"**明明配了却读不到**"，极难排查。
+
+**排查**：`config.masked(keys)` 给出「值从哪来 + 掩码后的值」，
+可安全打印（`describe()` 会带真值，**只该在本机用**）。
+
+**这条由机器强制**：`tests/test_architecture.py` 的存储守卫检查
+①项目根不得出现 `_secrets/` 或 `.env`、②`secrets_path()` 必须指向项目外、
+③`.gitignore` 必须含 `.env`。
 
 ### 2.1 为什么 secrets 用 `.env` 而参数用 `.toml`
 
@@ -214,17 +257,17 @@ Little_Crew/
 
 | 位置 | 写法 | 说明 |
 |---|---|---|
-| `src/little_crew/version.py` | `VERSION = "0.4.0-alpha.31"` | **单一来源**，人类可读 |
+| `src/little_crew/version.py` | `VERSION = "0.4.0-alpha.32"` | **单一来源**，人类可读 |
 | 同上 | `PEP440_VERSION = "0.4.0a1"` | 打包体系要求的点号写法 |
 | `pyproject.toml` | `version = "0.4.0a1"` | 必须用 PEP 440 写法 |
-| `config/project.toml` | `version = "0.4.0-alpha.31"` | 供运行时读取与界面展示 |
-| `CHANGELOG.md` | `## [0.4.0-alpha.31]` | 每次发版追加一节 |
+| `config/project.toml` | `version = "0.4.0-alpha.32"` | 供运行时读取与界面展示 |
+| `CHANGELOG.md` | `## [0.4.0-alpha.32]` | 每次发版追加一节 |
 
 **三类"版本"必须严格区分，不可互相代替：**
 
 | 类别 | 例子 | 是否参与缓存键 |
 |---|---|---|
-| **应用版本** | `0.4.0-alpha.31` | ❌ **绝不** |
+| **应用版本** | `0.4.0-alpha.32` | ❌ **绝不** |
 | **协议版本** | `little_crew.ir/v1`、`little_crew.compile/v1`、`little_crew.catalog/v1`、`little_crew.interfaces/v1` | ✅ **必须** |
 | **业务版本** | 模型/权重/引擎版本 | ✅ 作为产物时效清单字段 |
 

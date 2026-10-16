@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 import ast
+import os
 import sys
 from pathlib import Path
 
@@ -146,6 +147,71 @@ def parse_imports(path: Path) -> tuple[list[str], list[str]]:
     return targets, uses_syspath
 
 
+def _check_config_precedence() -> list[str]:
+    """钉住配置取值的三条规则（改动会让它们变红）。
+
+    ⚠️ 这三条都**看着像细节、错了却极难排查**，所以必须有测试：
+
+    ① **非空才遮蔽**：空值不参与。否则把 `.env.example` 拷成 `.env`
+       后满屏的 `KEY=` 会挡住项目外秘密文件里的真值 ——
+       表现是"明明配了却读不到"。
+    ② **`config/.env` 优先于秘密文件**：本机配置要能覆盖共享凭据。
+    ③ **秘密文件必须能缺失**：缺它应当走默认值，
+       **不能让所有命令（含 `--help`）都失败**。
+    """
+    import tempfile
+    from pathlib import Path as _P
+
+    sys.path.insert(0, str(ROOT / "src"))
+    from little_crew import config as C
+
+    bad: list[str] = []
+    with tempfile.TemporaryDirectory() as td:
+        tmp = _P(td)
+        (tmp / "config").mkdir()
+        (tmp / "pyproject.toml").write_text("", encoding="utf-8")
+        secrets = tmp / "secrets.env"
+        secrets.write_text("K=realsecret\nONLY=sec\n", encoding="utf-8")
+
+        saved = os.environ.pop("K", None), os.environ.pop("ONLY", None)
+        os.environ["LC_SECRETS_FILE"] = str(secrets)
+        try:
+            # ① 空值不遮蔽
+            (tmp / "config" / ".env").write_text("K=\n", encoding="utf-8")
+            got = C.env_value("K", "dflt", root=tmp)
+            if got != "realsecret":
+                bad.append(
+                    f"空值遮蔽了秘密文件：K 取到 {got!r}，应为 'realsecret'。"
+                    f"`config/.env` 里的 `K=` 是**空串**，不该赢过秘密文件的真值"
+                    f"（否则 .env.example 拷成 .env 就会让配置失效）")
+
+            # ② .env 的非空值优先
+            (tmp / "config" / ".env").write_text("K=fromdotenv\n",
+                                                 encoding="utf-8")
+            got = C.env_value("K", "dflt", root=tmp)
+            if got != "fromdotenv":
+                bad.append(
+                    f"`config/.env` 没有优先于秘密文件：K 取到 {got!r}，"
+                    f"应为 'fromdotenv'（本机配置要能覆盖共享凭据）")
+
+            # ③ 秘密文件缺失不抛异常
+            os.environ["LC_SECRETS_FILE"] = str(tmp / "nope.env")
+            try:
+                got = C.env_value("ONLY", "dflt", root=tmp)
+            except Exception as e:                              # noqa: BLE001
+                bad.append(f"秘密文件缺失时抛了异常：{type(e).__name__}: {e}"
+                           f"（应当安静地走默认值）")
+            else:
+                if got != "dflt":
+                    bad.append(f"秘密文件缺失时应取默认值，实取 {got!r}")
+        finally:
+            os.environ.pop("LC_SECRETS_FILE", None)
+            for k, v in zip(("K", "ONLY"), saved):
+                if v is not None:
+                    os.environ[k] = v
+    return bad
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -265,10 +331,16 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     "src", "tests", "config", "docs", "research", "outputs", "logs",
     # 前代实现（v0.3.0，LangGraph 版）。
     #
-    # ⚠️ 它**不是本项目的一部分**，是**同仓库的历史归档** ——
-    # 2026-10-12 把 v0.4.0 提为仓库主体时，把 v0.3.0 整体移到这里。
+    # ⚠️ 它**不是本项目的一部分**，是**同仓库的历史归档**。
+    # 2026-10-12 把 v0.4.0 提为仓库主体时，v0.3.0 整体移到这里。
     # 它有自己的 src/tests/docs（在 legacy/ 内部），但**不参与本项目的
-    # 层序检查与测试**：本项目的守卫只认自己的 src/ 与 tests/。
+    # 层序检查与测试** —— 守卫只认本项目自己的 src/ 与 tests/。
+    #
+    # ⚠️ **本机真源（ds.8）里没有这个目录**，它只存在于仓库副本（ds.6）。
+    # 白名单必须包含它，否则**同一份文件在仓库里会挂、在真源里却过** ——
+    # 而那正是踩过的坑（同步文件时把这条冲掉了，仓库副本立刻 FAIL）。
+    # 白名单多列一个不存在的目录是**无害**的：检查是"根里的条目 ∈ 白名单"，
+    # 不是"白名单 ⊆ 根里的条目"。
     "legacy",
     # 入库的顶层文件
     "README.md", "STRUCTURE.md", "ARCHITECTURE.md", "CHANGELOG.md",
@@ -279,13 +351,9 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     "LICENSE",
     # 允许存在但不入库的本地状态
     #
-    # ⚠️ `.pytest_cache` / `.ruff_cache` / `.mypy_cache` **必须在这里**：
-    # 它们由工具**自动创建在项目根**，不是人手放的。不进白名单的话，
-    # 开发机上跑一次 pytest 就会让守卫失败 —— 而那是**假警报**，
-    # 假警报会训练人忽略守卫，比没有守卫更糟。
-    #
-    # （2026-10-12 实测踩到：把项目搬进仓库根后，旧项目留在根上的
-    #  `.pytest_cache` 立刻触发了违规。）
+    # ⚠️ 三个 `*_cache` **必须在这里**：它们由工具**自动创建在项目根**，
+    # 不是人手放的。不进白名单的话，开发机上跑一次 pytest 就会让守卫失败 ——
+    # 而那是**假警报**，假警报会训练人忽略守卫，比没有守卫更糟。
     ".venv", ".idea", ".vscode", ".git",
     ".pytest_cache", ".ruff_cache", ".mypy_cache",
 })
@@ -306,7 +374,13 @@ def _check_storage() -> list[str]:
         name = entry.name
         if name in ALLOWED_ROOT_ENTRIES:
             continue
-        if name.startswith(TEMP_FILE_PREFIXES):
+        # 秘密目录有**专门**的提示：说"一次性脚本"会把人引到错的方向
+        # （他该做的是把凭据挪出项目，不是"用完即删"）。
+        if "secret" in name.lower() or name in (".env", ".env.local"):
+            bad.append(
+                f"项目根出现疑似秘密文件 {name!r} —— 秘密凭据必须放"
+                f"项目**外**（如 D:\\AI\\_secrets），见 STRUCTURE.md §2")
+        elif name.startswith(TEMP_FILE_PREFIXES):
             bad.append(
                 f"项目根有一次性脚本 {name!r} —— 验证脚本不入库，"
                 f"应放项目外（如 D:\\AI\\_dsh_tmp）或用完即删")
@@ -365,23 +439,67 @@ def _check_storage() -> list[str]:
                     f"research/ 里有包结构文件 {p.relative_to(ROOT)} —— "
                     f"research 不是 Python 包（第三方快照 src-*/ 已豁免）")
 
+    # ---- ④ 秘密凭据必须住在项目**外** ----
+    #
+    # `config/.env` 虽然在项目内且被 `.gitignore` 排除，但它位置在项目里 ——
+    # 而项目迟早会被打包、压缩、复制、分享，**凭据的安全性就只依赖
+    # "`.gitignore` 恰好写对了"**。一次 `git add -f`，或一次"拷走整个目录"
+    # 就漏了。项目外那份**从位置上就不可能进版本库**。
+    #
+    # 所以这条守卫检查的不是"值有没有泄露"，而是**位置对不对** ——
+    # 位置对了，泄露在结构上就不可能发生。
+    secrets = ROOT / "_secrets"
+    if secrets.exists():
+        bad.append(
+            "项目根出现 _secrets/ —— 秘密凭据必须放项目**外**"
+            "（如 D:\\AI\\_secrets）。放在项目里，不进版本库就只靠 "
+            ".gitignore 记得写对，而项目迟早会被整体拷走/打包")
+
+    # 默认秘密文件的位置也必须是项目外的绝对路径
+    try:
+        sys.path.insert(0, str(ROOT / "src"))
+        from little_crew.config import secrets_path
+        sp = secrets_path()
+        if sp.is_relative_to(ROOT):
+            bad.append(
+                f"config.secrets_path() 指向项目内（{sp}）—— "
+                f"默认值应是项目外的绝对路径（见 config.py 的 "
+                f"_DEFAULT_SECRETS）")
+    except Exception:                                          # noqa: BLE001
+        # 取不到不算违规：`config` 的导入失败由别的套件负责报。
+        # 守卫只报**它自己**能证明的问题，不制造假警报。
+        pass
+
+    # ---- ⑤ `.env` 必须在 .gitignore 里 ----
+    #
+    # 这条看似多余（写了不就行了），但它防的是**有人改 .gitignore 时
+    # 顺手删掉**。而删掉的后果不会立刻显形 —— 要等到某次 `git add -A`
+    # 之后，凭据已经在历史里了。
+    gi = ROOT / ".gitignore"
+    if gi.is_file() and (ROOT / "config" / ".env").is_file():
+        text = gi.read_text(encoding="utf-8", errors="replace")
+        if ".env" not in text:
+            bad.append(
+                "`.gitignore` 里没有 `.env` —— 而 `config/.env` 存在。"
+                "凭据文件必须被忽略，否则一次 git add -A 就进历史了")
+
     return bad
 
 
 def storage_main() -> int:
     """存储规范守卫的独立入口。"""
     print("=" * 74)
-    print("存储规范守卫（依据 STRUCTURE.md §1 目录职责表）")
+    print("存储规范守卫（依据 STRUCTURE.md §1 目录职责表 + §2.0 凭据政策）")
     print("=" * 74)
     print(f"项目根: {ROOT}")
     print(f"白名单: {len(ALLOWED_ROOT_ENTRIES)} 个条目")
     print()
-    problems = _check_storage()
+    problems = _check_storage() + _check_config_precedence()
     if not problems:
-        print("结果：PASS（项目根与 outputs/ 均符合规范）")
+        print("结果：PASS（项目根合规 · 凭据在项目外 · 配置取值规则成立）")
         print("=" * 74)
         return 0
-    print(f"发现 {len(problems)} 处存储违规：")
+    print(f"发现 {len(problems)} 处违规：")
     for p in problems:
         print(f"  X {p}")
     print("=" * 74)
