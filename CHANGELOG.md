@@ -31,6 +31,72 @@
 
 ---
 
+## [0.4.0-alpha.36] — 2026-10-16（🔴 **修一个"别人 clone 下来跑不起来"的缺陷**）
+
+### 修正 Fixed —— `.gitignore` 的 `models/` 与 `env/` **误伤源码包**
+
+排查远端文件时发现 `src/little_crew/models/` 下**一个文件都没入库**：
+
+```
+git ls-files src/little_crew/models/template.py   ->  空
+远端 models/ 内容                                 ->  空
+本机 models/ 内容                                 ->  4 个文件
+```
+
+根因在 `.gitignore` 的"外部工具链兜底防线"里 —— 我写的这两条**没有锚定到根**，
+于是匹配**任意层级**的同名目录：
+
+| 规则 | 本意 | 实际误伤 |
+|---|---|---|
+| `models/` | 旧项目的**模型权重**目录 | **`src/little_crew/models/`** ← 整个源码包 |
+| `env/` | Python **虚拟环境**目录 | **`config/env/`** ← 环境快照（该入库） |
+
+**危害**：`registry.py` / `spec.py` / `template.py` / `__init__.py`
+四个文件从未进过仓库 —— **任何人 clone 下来 `import little_crew.models`
+直接失败，整个平台跑不起来。**
+
+**而本机一直"正常"**：文件在磁盘上，测试全过。
+**这个缺陷只对别人可见，对自己不可见。**
+
+### 验证方式 —— 用 `git archive` 模拟干净 clone
+
+以往"跑一遍测试"证明不了这件事，因为测试跑在**有那些文件的本机**。
+这次改用**只含已提交内容**的快照：
+
+```
+git archive HEAD -> 解包 -> 在其中跑全量测试
+结果：全部通过 —— 功能用例 1188/1188，外加架构守卫 PASS
+并在快照里 import little_crew.models.registry 成功（12 个模型）
+```
+
+> **教训：`git status` 干净 + 本机测试全过，不等于仓库是完整的。**
+> 要证明"别人能跑"，必须在**只有已提交内容**的环境里跑。
+> 这条以后应当进发版检查清单。
+
+### 方法论 —— 第三次踩"按名字排除"
+
+| 次 | 场景 | 被误伤 |
+|---|---|---|
+| 1 | robocopy `/XD models` 复制项目 | `src/little_crew/models/` |
+| 2 | robocopy `/XD env` | `config/env/` |
+| 3 | **`.gitignore` 的 `models/` 与 `env/`** | 同上两者 |
+
+**同一个错误犯了三次，成因完全相同：`models` 与 `env` 在这个项目里各有两种含义。**
+
+前两次是"复制时漏了"，**当场就暴露**；第三次是"从未入库"，
+**藏了一整天，而且只对别人暴露**。
+
+已改为 `/models/` 与 `/env/`（只匹配项目根），
+并补入 6 个该跟踪的文件（4 个源码 + 环境快照 + `.gitkeep`）。
+
+### 顺带发现的两件
+
+- `legacy/.env`（旧项目凭据）**确认被忽略** ✅ —— 由 `legacy/.gitignore` 管
+- 全仓库审计后，未跟踪的文件只剩三类**都该忽略**的：
+  `legacy/web/public/hero-bg.*`（大媒体）、`tsconfig.tsbuildinfo`（构建产物）
+
+---
+
 ## [0.4.0-alpha.35] — 2026-10-16（分镜师接 LLM · 发现一个**结构性**问题）
 
 ### 新增 Added —— `StoryboardArtistLlm`

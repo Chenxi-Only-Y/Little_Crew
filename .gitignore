@@ -18,8 +18,8 @@ pip-wheel-metadata/
 # ---- 虚拟环境 ----
 .venv/
 venv/
-env/
-ENV/
+/env/
+/ENV/
 
 # ---- 测试与类型检查缓存 ----
 .pytest_cache/
@@ -78,7 +78,7 @@ research/model-survey/awesome-minimax-H3.md
 ComfyUI*/
 ComfyUI_windows_portable/
 comfyui*/
-models/
+/models/
 checkpoints/
 loras/
 *.safetensors
