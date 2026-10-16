@@ -26,6 +26,7 @@ from little_crew.agent.messages import (
     Verdict,
 )
 from little_crew.agent.orchestrator import (
+    PASS_THRESHOLD,
     CrewOrchestrator,
     check_no_self_signoff,
     merge_reviews,
@@ -174,27 +175,48 @@ def _merge_rules() -> None:
           v is Verdict.REVISE and not inval,
           f"verdict={v.value}")
 
-    # ---- A1b/A1c：2026-10-16 口径变更后的另两条分支 ----
+    # ---- A1b/A1c/A1d：口径变更后的分支 ----
     #
-    # 旧行为是"取最严"：任何审核方说 REVISE 就 REVISE。
-    # 那对确定性门禁是对的，但对**语义审核方**会把流程永久堵死 ——
-    # 一个尽责的剧评人几乎永远不会说"完全没问题"。
+    # 2026-10-16 定下的**双判据**：
+    #   ① 无 `BLOCKER` 级意见  ② 权威总分 >= `PASS_THRESHOLD`(80)
+    #   **两条都满足才 PASS。**
     #
-    # 新口径：**只有 `BLOCKER` 阻断**，其余是 `advisory`（仍进证据链）。
-    # 下面两条把新口径钉住 —— 没有它们，"advisory 不阻断"就是没被验证的宣称。
-    adv = _fb(Verdict.REVISE, _score(60, 80, 75),
+    # 下面四条把双判据的每个分支都钉住 —— 没有它们，
+    # "advisory 不阻断"与"分数不够也不通过"都是**没被验证的宣称**。
+    #
+    # ⚠️ A1b 的分**必须在线上**：它验的是"只有 advisory 不阻断"，
+    # 若分数低于阈值就会因为**另一条判据**而 REVISE，测的就不是本场景了。
+    adv = _fb(Verdict.REVISE, _score(85, 85, 80),
               [_issue(D.QUALITY, Severity.MAJOR, "节奏可以更紧", "压缩两句")],
               reviewer="story_editor")
-    v2, _, iss2, hints2, inval2 = merge_reviews([good, adv], phase="draft")
-    check("A1b ★ **只有 advisory 意见 -> PASS**（不阻断，但意见仍保留）",
+    v2, t2, iss2, hints2, inval2 = merge_reviews([good, adv], phase="draft")
+    check("A1b ★ **只有 advisory 意见 + 分数够 -> PASS**（不阻断，意见仍保留）",
           v2 is Verdict.PASS and not inval2 and len(iss2) == 1
           and len(hints2) == 0,
-          f"verdict={v2.value} issues={len(iss2)} hints={len(hints2)}")
+          f"verdict={v2.value} total={t2:.1f} issues={len(iss2)} hints={len(hints2)}")
     check("A1c advisory 意见**不被丢弃**（记录进证据链）",
           any(i.severity is Severity.MAJOR for i in iss2),
           str([i.severity.value for i in iss2]))
     check("A1d 但没有返工指令（不阻断就不该让人返工）",
           hints2 == (), f"{len(hints2)} 条")
+
+    # A1e：无阻断意见但**分数不够** -> 仍 REVISE（新判据的独立分支）
+    low = _fb(Verdict.PASS, _score(55, 60, 50), reviewer="story_editor")
+    v3, t3, _, _, inval3 = merge_reviews([good, low], phase="draft")
+    check("A1e ★ **无阻断意见但分数低于通过线 -> REVISE**"
+          f"（阈值 {PASS_THRESHOLD:.0f}）",
+          v3 is Verdict.REVISE and not inval3 and t3 < PASS_THRESHOLD,
+          f"verdict={v3.value} total={t3:.1f}")
+
+    # A1f：分数够**也不能**掩盖阻断级问题（两条判据是「与」不是「或」）
+    hi_block = _fb(Verdict.REVISE, _score(95, 95, 95),
+                   [_issue(D.COMPLIANCE, Severity.BLOCKER, "含违规内容", "删掉")],
+                   [RepairHint(graph_id="G", op="modify_shot", args={"scene": "S1"})],
+                   reviewer="story_editor")
+    v4, t4, _, _, _ = merge_reviews([good, hi_block], phase="draft")
+    check("A1f ★ **高分不能掩盖 BLOCKER**（硬约束违规优先于分数）",
+          v4 is Verdict.REVISE and t4 >= PASS_THRESHOLD,
+          f"verdict={v4.value} total={t4:.1f}")
 
     check("A2 同维度取较低分（保守）",
           total < good.score.total, f"total={total} vs 单份 {good.score.total}")
