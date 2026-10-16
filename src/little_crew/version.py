@@ -49,14 +49,14 @@ PROJECT_SLUG = "little-crew"
 PACKAGE_NAME = "little_crew"
 
 #: 人类可读的版本号。**发行流程只改这一处。**
-VERSION = "0.4.0-alpha.30"
+VERSION = "0.4.0-alpha.31"
 
 #: 版本阶段。用于运行时行为分支（如 alpha 阶段打印更激进的告警）
 VERSION_STAGE = "alpha"
 
 #: PEP 440 规范化后的版本。规范用连字符（alpha.1），
 #: 而 Python 打包体系要求用点（a1）；两者指向同一版本。
-PEP440_VERSION = "0.4.0a30"
+PEP440_VERSION = "0.4.0a31"
 
 #: 兼容惯例：与本模块 VERSION 保持同步
 __version__ = VERSION
