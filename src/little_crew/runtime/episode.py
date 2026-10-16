@@ -641,21 +641,25 @@ class EpisodeRunner:
 
     #: 动作名 -> 白模序列目录名。**不在表里的动作退回 `act_stand`。**
     #:
-    #: 为什么用映射而不是直接用动作名：白模的 8 个动作模板
-    #: （`build_character.ACTION_TEMPLATES`）比镜头的 `action` 字段粗，
-    #: 需要一个显式的对应关系，否则名字对不上就静默退回站姿。
-    PREVIS_ACTIONS: Mapping[str, str] = {
-        "walk": "act_walk",
-        "run": "act_run",
-        "sit_down": "act_sit_down",
-        "sit": "act_sit_down",
-        "stand": "act_stand",
-        "wave": "act_wave",
-        "recoil": "act_recoil",
-        "look_back": "act_look_back",
-        "point_forward": "act_point_forward",
-        "point": "act_point_forward",
-    }
+    #: 镜头动作 -> **白模渲染模板名**。
+    #:
+    #: ⚠️ **权威定义已下移到 `agent/messages.py`** —— 它定义的是
+    #: `Shot.action` 能取什么值，而 `Shot` 在消息层。
+    #: 这里保留这个名字是**别名**，避免破坏既有调用方
+    #: （`episode.py` 自身与测试都用 `EpisodeRunner.PREVIS_ACTIONS`）。
+    #:
+    #: 为什么下移：`agent/storyboard_llm.py` 要用它校验 LLM 输出，
+    #: 而 `agent`(层 6) 不能 import `runtime`(层 8)。**不要把这份表抄回来** ——
+    #: 两份真相比一份错更难查。
+    #:
+    #: 做成 property 而不是类属性：`episode.py` 全篇用**函数内延迟导入**
+    #: （避免顶层循环 import），而类属性在**定义时**求值 ——
+    #: 那会强制在模块顶层导入 `messages`，破坏这套约定。
+    @property
+    def PREVIS_ACTIONS(self) -> Mapping[str, str]:     # noqa: N802 - 保持原名
+        from little_crew.agent.messages import PREVIS_ACTIONS as _PA
+
+        return _PA
 
     def _previs_frame_for(self, shot: Any) -> Path | None:
         """给一个镜头挑白模控制帧。**确定性且有理由，不是随便挑。**

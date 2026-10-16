@@ -120,6 +120,13 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         stubs["screenwriter"] = ScreenwriterLlm(client=writer)
         stubs["dramaturge"] = DramaturgeLlm(client=reviewer)
+        # ⚠️ **换实现要成对换**：分镜师按规则桩的产出形态（正则解析
+        # `[场N]`/`@角色`）设计的，而 LLM 编剧产出的是 `scenes` 结构化
+        # 数组 —— 桩读不懂，结果是"跑满 3 轮但分镜 0 个"。
+        from little_crew.agent.storyboard_llm import StoryboardArtistLlm
+
+        # 分镜师是**创作**职位，用生成方同族即可（它不是审核方）
+        stubs["storyboard_artist"] = StoryboardArtistLlm(client=writer)
     else:
         print("  编剧：规则桩（确定性）")
     orch = CrewOrchestrator(

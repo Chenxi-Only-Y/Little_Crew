@@ -566,6 +566,34 @@ class ScriptDraft(Message):
         return d
 
 
+#: 镜头动作 -> **白模渲染模板名**的映射。
+#
+#: ⚠️ 这张表是 `Shot.action` 字段的**合法取值定义**，所以它属于消息层，
+#: 不属于执行层。
+#
+#: 踩过的坑：它原本定义在 `runtime/episode.py` 的 `EpisodeRunner.PREVIS_ACTIONS`。
+#: 后来 `agent/storyboard_llm.py` 需要它来校验 LLM 的输出 ——
+#: 而 `agent`(层 6) **不能** import `runtime`(层 8)，守卫立刻报反向依赖。
+#: **正确的反应不是放宽守卫，而是把东西放到对的地方**：
+#: 它定义的是 `Shot.action` 能取什么值，而 `Shot` 就在本模块。
+#:
+#: 为什么用映射而不是直接用动作名：白模的 8 个动作模板
+#: （`build_character.ACTION_TEMPLATES`）比镜头的 `action` 字段粗，
+#: 需要一个显式的对应关系，否则名字对不上就**静默退回站姿**。
+PREVIS_ACTIONS: Mapping[str, str] = {
+    "walk": "act_walk",
+    "run": "act_run",
+    "sit_down": "act_sit_down",
+    "sit": "act_sit_down",
+    "stand": "act_stand",
+    "wave": "act_wave",
+    "recoil": "act_recoil",
+    "look_back": "act_look_back",
+    "point_forward": "act_point_forward",
+    "point": "act_point_forward",
+}
+
+
 @dataclass
 class Shot(Message):
     """一个镜头。
