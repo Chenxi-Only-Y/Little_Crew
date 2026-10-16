@@ -160,13 +160,42 @@ def main() -> int:
 
 def _merge_rules() -> None:
     good = _fb(Verdict.PASS, _score(85, 85, 80))
+    # ⚠️ 阻断级问题**必须带返工指令** —— 否则会触发作废规则
+    # （"拦住了问题却不给怎么改" -> ESCALATE，需人工介入）。
+    # 那条规则是对的，所以夹具要写实：真报 blocker 的审核方会给指令。
     strict = _fb(Verdict.REVISE, _score(50, 80, 70),
-                 [_issue(D.CONSISTENCY, Severity.MAJOR, "服装不一致", "改米色")],
+                 [_issue(D.CONSISTENCY, Severity.BLOCKER, "服装不一致", "改米色")],
+                 [RepairHint(graph_id="G", op="modify_shot",
+                             args={"scene": "S1"})],
                  reviewer="story_editor")
 
     v, total, issues, hints, inval = merge_reviews([good, strict], phase="draft")
-    check("A1 裁定取最严（一份说改就必须改）", v is Verdict.REVISE and not inval,
+    check("A1 ★ 有 **BLOCKER** 级意见 -> REVISE（一份说必须改就必须改）",
+          v is Verdict.REVISE and not inval,
           f"verdict={v.value}")
+
+    # ---- A1b/A1c：2026-10-16 口径变更后的另两条分支 ----
+    #
+    # 旧行为是"取最严"：任何审核方说 REVISE 就 REVISE。
+    # 那对确定性门禁是对的，但对**语义审核方**会把流程永久堵死 ——
+    # 一个尽责的剧评人几乎永远不会说"完全没问题"。
+    #
+    # 新口径：**只有 `BLOCKER` 阻断**，其余是 `advisory`（仍进证据链）。
+    # 下面两条把新口径钉住 —— 没有它们，"advisory 不阻断"就是没被验证的宣称。
+    adv = _fb(Verdict.REVISE, _score(60, 80, 75),
+              [_issue(D.QUALITY, Severity.MAJOR, "节奏可以更紧", "压缩两句")],
+              reviewer="story_editor")
+    v2, _, iss2, hints2, inval2 = merge_reviews([good, adv], phase="draft")
+    check("A1b ★ **只有 advisory 意见 -> PASS**（不阻断，但意见仍保留）",
+          v2 is Verdict.PASS and not inval2 and len(iss2) == 1
+          and len(hints2) == 0,
+          f"verdict={v2.value} issues={len(iss2)} hints={len(hints2)}")
+    check("A1c advisory 意见**不被丢弃**（记录进证据链）",
+          any(i.severity is Severity.MAJOR for i in iss2),
+          str([i.severity.value for i in iss2]))
+    check("A1d 但没有返工指令（不阻断就不该让人返工）",
+          hints2 == (), f"{len(hints2)} 条")
+
     check("A2 同维度取较低分（保守）",
           total < good.score.total, f"total={total} vs 单份 {good.score.total}")
     check("A3 去重后意见数为 1", len(issues) == 1, f"{len(issues)} 条")
@@ -307,7 +336,16 @@ def _cycle_revise_then_pass() -> None:
 
     hint = RepairHint(graph_id="G-ep001", op="adjust_prompt",
                       args={"scene": "SC-E001-001", "line": 10})
-    iss = [_issue(D.CONSISTENCY, Severity.MAJOR, "服装与上镜不一致", "改为米色风衣")]
+    # ⚠️ **`BLOCKER`，不是 `MAJOR`**（2026-10-16 口径变更后调整）。
+    #
+    # 2026-10-16 起：**只有 `BLOCKER` 级意见阻断流程**，其余是 advisory。
+    # 所以"这一轮该 REVISE"必须由 `BLOCKER` 表达 —— 用 `MAJOR` 的话
+    # 第 1 轮就会直接 PASS，本场景（先改后过）就不成立了。
+    #
+    # 判据是**"该修 vs 可以更好"**：
+    #   · 服装与上镜不一致 —— **该修**（观众会看出来）-> BLOCKER
+    #   · "这句对白可以更凝练" —— 可以更好 -> MAJOR，advisory
+    iss = [_issue(D.CONSISTENCY, Severity.BLOCKER, "服装与上镜不一致", "改为米色风衣")]
 
     o = _orch().bind("screenwriter", sw).bind(
         "dramaturge", SeqReviewer("script.critique",
@@ -344,7 +382,10 @@ def _cycle_revise_then_pass() -> None:
 def _cycle_no_progress() -> None:
     sw = ScreenwriterStub()
     hint = RepairHint(graph_id="G", op="adjust_prompt", args={"line": 1})
-    iss = [_issue(D.QUALITY, Severity.MAJOR, "节奏拖沓", "压缩")]
+    # ⚠️ `BLOCKER` —— 本场景要验"**始终不通过**会停在轮次上限"，
+    # 所以那条意见必须是**阻断级**的（2026-10-16 起只有 BLOCKER 阻断）。
+    # 用 `MAJOR` 的话第 1 轮就 PASS，测的就不是本场景了。
+    iss = [_issue(D.QUALITY, Severity.BLOCKER, "节奏拖沓", "压缩")]
     always = _fb(Verdict.REVISE, _score(60, 70, 50), iss, [hint])
     o = _orch(max_rounds=3).bind("screenwriter", sw).bind(
         "dramaturge", ReviewerStub(always, "script.critique")

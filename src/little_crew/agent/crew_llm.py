@@ -336,6 +336,10 @@ _DIM_MAP = {
     "turn": "COMPLETENESS",
 }
 
+#: 结构三要素的键 —— 算完整性时做分母（一场三类）。
+#: **从提示词的口径来**：剧评人只被要求看这三件事。
+_STRUCTURE_KEYS: tuple[str, ...] = ("conflict", "cost", "turn")
+
 
 def _script_repair_op() -> str:
     """剧本阶段"改一场"对应的返工操作 —— **从权威表推导，不写死**。
@@ -482,7 +486,31 @@ class DramaturgeLlm:
                 str(raw.get("dimension") or "").strip().lower(), "COMPLETENESS")
             dim = getattr(Dimension, dim_name, Dimension.COMPLETENESS)
             issues.append(ReviewIssue(
-                severity=Severity.MAJOR,
+                # ⚠️ **严重度按口径指派，不由模型自报**（2026-10-16 定）。
+                #
+                # 口径：**只有 `BLOCKER` 阻断流程**，其余是 `advisory`
+                # （仍进证据链，但不停下）。理由见
+                # `orchestrator.BLOCKING_SEVERITY` 的说明。
+                #
+                # 那**结构缺陷算哪一档**？——`BLOCKER`。
+                #
+                # ⚠️ 我一开始把这里定成 `MAJOR`（"不阻断但记录"），
+                # 结果两个测试套件立刻失败：编剧**故意**在首稿留结构缺陷，
+                # 剧评人抓出来，返工修好 —— 那是**设计的闭环**。
+                # 定成不阻断，等于第 1 轮就放行，闭环形同虚设。
+                #
+                # **真正的判据不是"确定性 vs 语义"，而是"该修 vs 可以更好"**：
+                #
+                #   · 缺冲突/代价/转折 —— **该修**，且设计上就会去修 -> BLOCKER
+                #   · "用词可以更好"、"节奏可以更紧" —— **可以更好**
+                #     -> MAJOR/MINOR，advisory
+                #
+                # 剧评人的提示词**只让它看那三件事**，所以它报的都是前者。
+                # 将来若让它报文风建议，那些才该是 `MAJOR`。
+                #
+                # **不让模型自己选严重度**：它对"多严重"的判断不稳定，
+                # 而严重度直接决定流程走不走得下去 —— 那必须可复现。
+                severity=Severity.BLOCKER,
                 dimension=dim,
                 location=IssueLocation(scene=sid),
                 problem=f"{sid}：{problem}",
@@ -508,29 +536,35 @@ class DramaturgeLlm:
 
     def _score(self, data: Mapping[str, Any], draft: Any,
                issues: list[ReviewIssue]) -> QcScore:
-        """评分。
+        """评分 —— **完全由代码算，不取模型自报的总分**（2026-10-16 口径）。
 
-        ⚠️ **不让模型直接给总分。** 理由是：总分会掩盖"哪一维坏了"，
-        而返工需要的是维度信息。所以各维由**问题数**推导，
-        只让模型提供主观的 `quality`。
+        ⚠️ 为什么不用模型自报的分（原先会取 `data['quality']`）：
 
-        评分口径与规则桩保持一致（100 分制、同样五个维度），
+        **LLM 报的数字信噪比低** —— 同一份稿两次调用可能给 70 与 85，
+        而门禁最需要的性质是**可复现**。让模型做它不擅长的算术，
+        会把不可复现性引进整套判定。
+
+        分工：**模型做判断（有没有冲突），代码做算术（几分）。**
+        这与 `blind.py` 的处理同源。
+
+        评分口径与规则桩一致（100 分制、同样五个维度）——
         否则"换成 LLM 后分数变了"会被误读成质量变化，
         而实际只是换了把尺子。
+
+        完整性按**每场三类要素**折算：一场 3 分（冲突/代价/转折），
+        缺陷数按 `issues` 计。剧评人只报它真正看到的问题，
+        所以这个折算反映的是**"被指出的缺陷密度"**，
+        而不是"客观质量"—— 后者本就没有可复现的定义。
         """
         n = max(len(draft.scenes), 1)
         bad = len(issues)
-        quality_raw = data.get("quality")
-        try:
-            quality = float(quality_raw) * 100.0 if (
-                quality_raw is not None and float(quality_raw) <= 1.0
-            ) else float(quality_raw) if quality_raw is not None else 75.0
-        except (TypeError, ValueError):
-            quality = 75.0
+        completeness = max(0.0, 100.0 - 100.0 * bad / (n * len(_STRUCTURE_KEYS)))
+        # 文字编辑没跑时一致性无从判断 —— **给中性分而不是满分**：
+        # 满分会让"没人看过"看起来像"检查过了没问题"。
         return QcScore(dimensions={
-            Dimension.COMPLETENESS: round(max(0.0, 100.0 - 100.0 * bad / (n * 3)), 1),
-            Dimension.CONSISTENCY: 88.0,
-            Dimension.QUALITY: round(max(0.0, min(100.0, quality)), 1),
+            Dimension.COMPLETENESS: round(completeness, 1),
+            Dimension.CONSISTENCY: 80.0,
+            Dimension.QUALITY: round(max(0.0, 100.0 - 60.0 * bad / (n * 3)), 1),
             Dimension.FEASIBILITY: 88.0,
             Dimension.COMPLIANCE: 92.0,
         }, phase="draft")

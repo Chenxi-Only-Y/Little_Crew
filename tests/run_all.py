@@ -40,7 +40,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 43),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 70),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
-    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 38),
+    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 41),
     ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 74),
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），

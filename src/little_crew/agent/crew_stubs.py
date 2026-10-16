@@ -364,7 +364,16 @@ class DramaturgeRules:
                 label = dict((k, l) for k, l, _ in _STRUCTURE_RULES)[key]
                 msg = dict((k, m) for k, _, m in _STRUCTURE_RULES)[key]
                 issues.append(ReviewIssue(
-                    severity=Severity.MAJOR,
+                    # ⚠️ **`BLOCKER`，不是 `MAJOR`**（2026-10-16 口径）。
+                    #
+                    # 只有 `BLOCKER` 阻断流程（见
+                    # `orchestrator.BLOCKING_SEVERITY`）。而"缺冲突/代价/转折"
+                    # 是**该修的缺陷** —— 编剧首稿故意留它，剧评人抓出来，
+                    # 返工修好，那是**设计的闭环**。
+                    # 定成不阻断会让第 1 轮就放行，闭环形同虚设。
+                    #
+                    # 判据是**"该修 vs 可以更好"**，不是"确定性 vs 语义"。
+                    severity=Severity.BLOCKER,
                     dimension=D.COMPLETENESS,
                     location=IssueLocation(scene=sid),
                     problem=f"{sid} 缺少「{label}」：{msg}",

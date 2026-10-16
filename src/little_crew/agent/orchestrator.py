@@ -159,6 +159,12 @@ class CycleResult:
     accepted: bool = False
     #: 未接受时的说明
     reason: str = ""
+    #: 轮次用尽后是否应**升级人工**（2026-10-16 口径）。
+    #:
+    #: 非空时值为 `ESCALATE` 的字面量 —— 让调用方能区分
+    #: **"还在改"**（只是没改完，可继续）与 **"改不动了"**（需要人看）。
+    #: 用字符串而不是枚举，是为了让 `CycleResult` 的序列化保持简单。
+    exhausted: str = ""
 
     @property
     def round_count(self) -> int:
@@ -192,6 +198,39 @@ _VERDICT_RANK = {
     Verdict.REJECT: 2,
     Verdict.ESCALATE: 3,
 }
+
+
+#: **什么算「阻断」** —— 只有 `BLOCKER` 级意见才让流程停下。
+#:
+#: ## 为什么需要这条定义（2026-10-16 补）
+#:
+#: 此前 `accepted` 等价于「**零意见**」：
+#:
+#:     def accepted(self): return self.verdict is Verdict.PASS
+#:
+#: 那对**确定性门禁**是对的（分辨率不对就该拦），但对**语义审核方**是不可能的：
+#:
+#: > **一个尽责的剧评人几乎永远不会说「完全没问题」。**
+#: > 它总能指出"这里节奏可以更好"。
+#:
+#: 于是"有意见 → REVISE → 不 accepted"导致**任何一轮都过不了**，
+#: 流水线在剧本阶段就停住（实测：`--llm` 跑一集永远 `分镜 0 个`）。
+#:
+#: ## 两类判断必须分开
+#:
+#: | 类型 | 例子 | 它说的是 | 有否决权吗 |
+#: |---|---|---|---|
+#: | **确定性门禁** | 分辨率、时长、角色数、格式 | 「**违规**」（客观、可复现） | ✅ **有** |
+#: | **语义批评** | 剧评人、文字编辑 | 「**可以更好**」（主观、连续） | ❌ **无** |
+#:
+#: 用同一套"最严合并"处理两者，等于**用主观意见把客观流程堵死**。
+#:
+#: ## 不阻断 ≠ 丢弃
+#:
+#: `advisory` 意见**仍然进入 `issues` 与证据链** —— 只是不让流程停下。
+#: 这与 §5.9.3 里「L2 一致性描述子只做 `audit`」的判据**同源**：
+#: 测得出趋势、但定不出阈值的度量，不该用来阻断。
+BLOCKING_SEVERITY: Severity = Severity.BLOCKER
 
 
 def merge_reviews(
@@ -244,8 +283,34 @@ def merge_reviews(
     total_w = sum(w.get(d, 0.0) for d in merged_dim) or 1.0
     total = sum(float(v) * w.get(d, 0.0) for d, v in merged_dim.items()) / total_w
 
-    # ---- 3) 裁定：取最严 ----
-    verdict = max((r.verdict for r in reviews), key=lambda v: _VERDICT_RANK[v])
+    # ---- 3) 裁定 ----
+    #
+    # ⚠️ **从「取最严」改为「按阻断级意见判定」**（2026-10-16，口径变更）。
+    #
+    # 旧行为：`max(verdicts, key=rank)` —— 任何审核方说 REVISE 就 REVISE。
+    # 新行为：
+    #   ① 有 `ESCALATE` 或作废     -> ESCALATE（判定不可信，最高优先）
+    #   ② 有 `REJECT`              -> REJECT
+    #   ③ 有 **`BLOCKER` 级意见**   -> REVISE
+    #   ④ 其余（含 `major`/`minor` 级意见） -> PASS，意见转 `advisory`
+    #
+    # 为什么改：见 `BLOCKING_SEVERITY` 的说明 ——
+    # 「零意见才通过」对语义审核方是不可能的，会把流程永久堵死。
+    #
+    # ⚠️ **没有放松确定性门禁**：门禁报的问题本来就是 `BLOCKER`
+    # （分辨率/时长/合规违规是客观事实），所以它们**照旧阻断**。
+    # 放松的只是"主观上可以更好"这一类。
+    blocking = tuple(
+        iss for r in reviews for iss in r.issues
+        if _SEV_RANK[iss.severity] >= _SEV_RANK[BLOCKING_SEVERITY]
+    )
+    hard = max((r.verdict for r in reviews), key=lambda v: _VERDICT_RANK[v])
+    if hard in (Verdict.ESCALATE, Verdict.REJECT):
+        verdict = hard                      # 作废/驳回优先，不受阻断级影响
+    elif blocking:
+        verdict = Verdict.REVISE
+    else:
+        verdict = Verdict.PASS              # 只有 advisory 意见 —— 不阻断
 
     # ---- 4) 意见去重（同维度同定位视为重复，保留更严的） ----
     seen: dict[tuple, ReviewIssue] = {}
@@ -641,11 +706,25 @@ class CrewOrchestrator:
                                    reason=f"第 {r} 轮裁定 {verdict.value}")
             # REVISE → 进入下一轮
 
-        return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
-                           reason=f"达到轮次上限 {limit} 仍未通过；"
-                                  f"最后一轮权威总分 "
-                                  f"{rounds[-1].total:.1f}"
-                                  if rounds else "无有效轮次")
+        # ---- 轮次用尽仍未通过 -> **ESCALATE，不是 REVISE**（2026-10-16 口径）----
+        #
+        # 为什么升级人工而不是"再改一轮"：
+        # **第 N 轮还不通过，说明这不是「再改一次就好」的问题。**
+        # 继续耗轮次只会重复同样的失败，而每轮都要付费调模型。
+        #
+        # 这条也把 `ESCALATE` 的语义补齐了 —— 在此之前它只由
+        # "判定不可信"（作废/同族自证）触发；现在**"改不动"也升级**。
+        # 两者共同点：**继续自动处理不会有更好的结果**。
+        last = rounds[-1] if rounds else None
+        why = ("无有效轮次" if last is None
+               else f"最后一轮权威总分 {last.total:.1f}"
+                    f"（{last.verdict.value}）")
+        return CycleResult(
+            rounds=tuple(rounds), final=None, accepted=False,
+            #: 让调用方能区分"还在改"（REVISE）与"改不动了"（ESCALATE）
+            exhausted=Verdict.ESCALATE.value,
+            reason=f"达到轮次上限 {limit} 仍未通过，升级人工；{why}",
+        )
 
     # ---- 可观测性 ------------------------------------------------------
 
