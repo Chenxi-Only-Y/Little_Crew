@@ -286,6 +286,18 @@ LICENSE_CATALOG: Mapping[str, LicenseInfo] = {
     "qwen3-vl-max": LicenseInfo(
         "Alibaba Cloud Model Studio ToS", commercial_use=True, verified=False,
         note="⚠️ 服务条款未逐条核实。审核模型的数据留存条款需单独确认"),
+    #: 小米 MiMo —— **跨模型族盲读的审核方**。
+    #:
+    #: ⚠️ 与 deepseek **同理不写 verified** —— 我们没逐条读过小米的服务条款。
+    #: 写 verified=True 就是编造事实，会让门禁在最该拦住的地方放行。
+    #:
+    #: 它存在的另一个理由：平台要求审核方与生成方**不同族**
+    #: （见 docs/00 §5.9），而它扮演的正是那个审核方。
+    "mimo": LicenseInfo(
+        "Xiaomi MiMo API ToS", commercial_use=True, verified=False,
+        note="⚠️ 服务条款未逐条核实（小米 MiMo 开放平台）。"
+             "注意它是**纯 API 服务、无开源权重** —— "
+             "商用前需确认「生成内容的商用权」与「数据留存」两条"),
     "local-llm": LicenseInfo(
         APACHE_2_0, commercial_use=True, verified=False,
         note="⚠️ 本地 LLM 的实际授权取决于**部署方选用哪个权重**"

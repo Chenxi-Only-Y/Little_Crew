@@ -59,6 +59,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--dry-run", action="store_true",
                     help="不出图，只跑到分镜与桥接")
+    ap.add_argument("--llm", action="store_true",
+                    help="编剧与剧评人改用**真实 LLM**（其余职位仍用规则桩）——"
+                         "需要 API key；产出不是确定性的")
+    ap.add_argument("--llm-model", default="deepseek-v4",
+                    help="`--llm` 时**生成方**（编剧）用哪个注册表模型")
+    ap.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
+                    help="`--llm` 时**审核方**（剧评人）用哪个模型 —— "
+                         "⚠️ 必须与 --llm-model 不同族（跨模型族盲读的硬要求）")
     ap.add_argument("--workdir", default="outputs/episode_E100")
     ap.add_argument("--fresh", action="store_true", help="清空工作目录")
     ap.add_argument("--no-video", action="store_true",
@@ -86,7 +94,34 @@ def main(argv: list[str] | None = None) -> int:
     print()
 
     # ---------- 装配剧组 ----------
+    #
+    # `--llm` 时**只换编剧**，其余职位仍用规则桩。
+    # 为什么一次只换一个：接真模型的问题几乎都出在提示词与输出结构上，
+    # 而"五个一起换"会让归因变成猜 —— 出了问题不知道是谁的。
     stubs = default_crew_stubs()
+    if args.llm:
+        from little_crew.agent.crew_llm import DramaturgeLlm, ScreenwriterLlm
+        from little_crew.agent.llm import LlmClient
+
+        writer = LlmClient(args.llm_model)
+        reviewer = LlmClient(args.llm_reviewer)
+        for label, cl in (("编剧", writer), ("剧评人", reviewer)):
+            d = cl.describe()
+            print(f"  {label}：**真实 LLM**（{d['displayName']} / "
+                  f"{d['apiKeyMasked']}）")
+            if not d["configured"]:
+                print(f"  ❌ {label}未配置密钥（{d['apiKeyEnv']}）—— "
+                      f"三处都取不到。见 STRUCTURE.md §2.0")
+                return 1
+        # ⚠️ 两者必须不同族 —— 同族会让门禁退化成自我签收（且不报错）
+        if writer.model_id == reviewer.model_id:
+            print(f"  ❌ 编剧与剧评人用了同一个模型（{writer.model_id}）—— "
+                  f"跨模型族盲读要求两者不同族")
+            return 1
+        stubs["screenwriter"] = ScreenwriterLlm(client=writer)
+        stubs["dramaturge"] = DramaturgeLlm(client=reviewer)
+    else:
+        print("  编剧：规则桩（确定性）")
     orch = CrewOrchestrator(
         max_rounds=3,
         model_families={"screenwriter": "deepseek", "storyboard_artist": "deepseek",

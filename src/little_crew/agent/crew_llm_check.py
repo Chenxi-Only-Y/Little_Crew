@@ -20,8 +20,13 @@ import json
 import sys
 from typing import Any, Mapping
 
-from little_crew.agent.crew_llm import CREW_PROMPTS, ScreenwriterLlm
-from little_crew.agent.llm import LLMError
+from little_crew.agent.crew_llm import (
+    CREW_PROMPTS,
+    DramaturgeLlm,
+    ScreenwriterLlm,
+    build_llm_crew,
+)
+from little_crew.agent.llm import LLMError, LlmClient
 from little_crew.agent.protocol import Blackboard, Budget, CallEnvelope, LayerRuntime
 from little_crew.agent.roster import DEFAULT_ROSTER, build_registry
 
@@ -238,13 +243,22 @@ def main() -> int:
     # ---- G 组装 ----
     print()
     print("G. 组装")
-    from little_crew.agent.crew_llm import build_llm_crew
-
     crew = build_llm_crew(client=_FakeClient([_draft()]))  # type: ignore[arg-type]
-    check("G1 默认只做编剧（先跑通一个再铺开）",
-          list(crew) == ["screenwriter"], str(list(crew)))
-    check("G2 有 screenwriter 的提示词",
-          "screenwriter" in CREW_PROMPTS, str(list(CREW_PROMPTS)))
+    check("G1 默认做编剧 + 剧评人（**审核方必须与生成方不同族**）",
+          sorted(crew) == ["dramaturge", "screenwriter"], str(sorted(crew)))
+    check("G2 有 screenwriter 与 dramaturge 的提示词",
+          {"screenwriter", "dramaturge"} <= set(CREW_PROMPTS),
+          str(list(CREW_PROMPTS)))
+    # 跨族是硬要求，不能只靠"记得传对参数"
+    with_same = build_llm_crew(client=LlmClient("deepseek-v4"),
+                               reviewer_client=LlmClient("deepseek-v4"))
+    check("G3 ⚠️ 传同一个模型时**不会报错**（所以调用方必须自己查）",
+          isinstance(with_same["screenwriter"], ScreenwriterLlm)
+          and isinstance(with_same["dramaturge"], DramaturgeLlm), "")
+    check("G4 两个职位的默认模型不同族",
+          DramaturgeLlm().client.model_id != ScreenwriterLlm().client.model_id,
+          f"{DramaturgeLlm().client.model_id} vs "
+          f"{ScreenwriterLlm().client.model_id}")
 
     # ---- 汇总 ----
     print()

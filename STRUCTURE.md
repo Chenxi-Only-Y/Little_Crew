@@ -257,17 +257,17 @@ D:\AI\_secrets\little-crew.env.example  ← 模板（可入库/可分享）
 
 | 位置 | 写法 | 说明 |
 |---|---|---|
-| `src/little_crew/version.py` | `VERSION = "0.4.0-alpha.33"` | **单一来源**，人类可读 |
+| `src/little_crew/version.py` | `VERSION = "0.4.0-alpha.34"` | **单一来源**，人类可读 |
 | 同上 | `PEP440_VERSION = "0.4.0a1"` | 打包体系要求的点号写法 |
 | `pyproject.toml` | `version = "0.4.0a1"` | 必须用 PEP 440 写法 |
-| `config/project.toml` | `version = "0.4.0-alpha.33"` | 供运行时读取与界面展示 |
-| `CHANGELOG.md` | `## [0.4.0-alpha.33]` | 每次发版追加一节 |
+| `config/project.toml` | `version = "0.4.0-alpha.34"` | 供运行时读取与界面展示 |
+| `CHANGELOG.md` | `## [0.4.0-alpha.34]` | 每次发版追加一节 |
 
 **三类"版本"必须严格区分，不可互相代替：**
 
 | 类别 | 例子 | 是否参与缓存键 |
 |---|---|---|
-| **应用版本** | `0.4.0-alpha.33` | ❌ **绝不** |
+| **应用版本** | `0.4.0-alpha.34` | ❌ **绝不** |
 | **协议版本** | `little_crew.ir/v1`、`little_crew.compile/v1`、`little_crew.catalog/v1`、`little_crew.interfaces/v1` | ✅ **必须** |
 | **业务版本** | 模型/权重/引擎版本 | ✅ 作为产物时效清单字段 |
 

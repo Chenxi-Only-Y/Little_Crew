@@ -45,7 +45,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），
     # 那些必须能被**确定性地**断言，不能靠"我看模型像是改了"。
-    ("LLM 职位机制", [sys.executable, "-m", "little_crew.agent.crew_llm_check"], 30),
+    ("LLM 职位机制", [sys.executable, "-m", "little_crew.agent.crew_llm_check"], 32),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 60),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),

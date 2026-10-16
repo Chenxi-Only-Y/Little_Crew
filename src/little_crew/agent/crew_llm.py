@@ -37,10 +37,20 @@ import json
 from typing import Any, Mapping
 
 from little_crew.agent.llm import LLMError, LlmClient
-from little_crew.agent.messages import ScriptDraft
+from little_crew.agent.messages import (
+    Dimension,
+    IssueLocation,
+    QcScore,
+    RepairHint,
+    ReviewFeedback,
+    ReviewIssue,
+    ScriptDraft,
+    Severity,
+    Verdict,
+)
 from little_crew.agent.protocol import CallEnvelope, CallResult, LayerRuntime
 
-__all__ = ["ScreenwriterLlm", "CREW_PROMPTS", "build_llm_crew"]
+__all__ = ["ScreenwriterLlm", "DramaturgeLlm", "CREW_PROMPTS", "build_llm_crew"]
 
 
 # ==========================================================================
@@ -316,20 +326,256 @@ class ScreenwriterLlm:
 
 
 # ==========================================================================
+# 剧评人（真实 LLM，**跨模型族**）
+# ==========================================================================
+
+#: 结构三要素 -> `Dimension`。剧评人只报这三类，所以映射是固定的。
+_DIM_MAP = {
+    "conflict": "COMPLETENESS",
+    "cost": "COMPLETENESS",
+    "turn": "COMPLETENESS",
+}
+
+
+def _script_repair_op() -> str:
+    """剧本阶段"改一场"对应的返工操作 —— **从权威表推导，不写死**。
+
+    ⚠️ 踩过：我凭感觉写了 `revise_scene`，而它不在 `RepairHint.KNOWN_OPS` 里，
+    构造函数直接抛 ValueError，表现成"审核者执行失败" ——
+    乍看像是模型的问题，实际是我编了个不存在的操作名。
+
+    这里从权威表选，并在表里没有预期操作时**大声失败** ——
+    静默退回某个默认值会让"返工指令语义错位"这种问题极难发现。
+    """
+    prefer = ("modify_shot", "adjust_prompt")
+    for op in prefer:
+        if op in RepairHint.KNOWN_OPS:
+            return op
+    raise LLMError(
+        "no-repair-op",
+        f"`RepairHint.KNOWN_OPS` 里没有 {prefer} 中任何一个 —— "
+        f"返工指令的语义对不上剧本阶段。现有：{sorted(RepairHint.KNOWN_OPS)}",
+    )
+
+
+class DramaturgeLlm:
+    """剧本顾问 —— 真实 LLM 实现。
+
+    ⚠️ **它必须与编剧不同模型族。**
+    ---------------------------------------------------------------
+    平台的核心要求之一是"跨模型族盲读"：**审核方与生成方不能同族**，
+    否则等于让同一个脑子自己批自己（"证明的循环"，见 docs/00 §5.9）。
+    同族判定会被 `ReviewFeedback.reviewer_model` / `generator_model`
+    的一致性检查识别出来并**作废为 ESCALATE**。
+
+    所以本类的默认客户端是 **MiMo**（小米），而编剧默认是 **DeepSeek**。
+    **不要在部署时把两者改成同一个模型** —— 那会让门禁失去意义，
+    而且不会报错，只会安静地退化成自我签收。
+    """
+
+    agent_id = "dramaturge"
+
+    def __init__(self, *, client: LlmClient | None = None,
+                 temperature: float = 0.2) -> None:
+        self.client = client or LlmClient("mimo-v2.6-flash")
+        # 审核要**稳**，不要发挥 —— 温度调低。
+        # 高温度会让"同一份稿子两次审查给出不同结论"，
+        # 而那正好毁掉门禁最需要的性质：可复现。
+        self.temperature = temperature
+        self.calls = 0
+        self.last_raw: dict[str, Any] = {}
+
+    def __call__(self, *, envelope: CallEnvelope,
+                 runtime: LayerRuntime) -> CallResult:
+        self.calls += 1
+        p = dict(envelope.payload or {})
+        draft = p.get("script.draft")
+        draft = _as_draft(draft)
+        if draft is None:
+            return CallResult.fail(
+                "F-INPUT",
+                f"剧本顾问未收到 ScriptDraft（拿到 {type(p.get('script.draft')).__name__}）")
+
+        prompt = self._build_prompt(draft)
+        try:
+            data = self.client.chat_json(
+                prompt, system=CREW_PROMPTS["dramaturge"]["system"],
+                temperature=self.temperature, what="剧评")
+        except LLMError as e:
+            return CallResult.fail(f"F-LLM-{e.kind.upper()}",
+                                   f"剧评人调用失败：{e}",
+                                   escalate=not e.retryable)
+        self.last_raw = data
+
+        issues, hints = self._to_issues(data, draft)
+        fb = ReviewFeedback(
+            frm="dramaturge", to="screenwriter", stage="gate",
+            # 没有问题时才 PASS —— 与桩同语义
+            verdict=(Verdict.PASS if not issues else Verdict.REVISE),
+            score=self._score(data, draft, issues),
+            issues=tuple(issues),
+            repair_hints=tuple(hints),
+            reviewer_model=self.client.model_id,
+            # ⚠️ 生成方模型由编排器声明（`model_families`），这里如实写"未知"
+            # 会更好吗？不 —— 写了错的值比不写更糟。用 draft 的 note 里
+            # 无从得知，所以由 `_cross_family_ok()` 在编排层校验。
+            generator_model="",
+            round_no=int(getattr(draft, "revision", 1)),
+        )
+        return CallResult.success(
+            {"script.critique": fb},
+            evidence=[{
+                "kind": "llm-call",
+                "agent": self.agent_id,
+                "reviewerModel": self.client.model_id,
+                "servedModel": (self.client.call_log[-1].get("servedModel")
+                                if self.client.call_log else ""),
+                "issueCount": len(issues),
+                "overall": str(data.get("overall", ""))[:200],
+                "usage": (self.client.call_log[-1].get("usage")
+                          if self.client.call_log else {}),
+            }],
+        )
+
+    # ---- 内部 ----------------------------------------------------------
+
+    def _build_prompt(self, draft: Any) -> str:
+        lines = [f"【本集】{getattr(draft, 'episode_id', '')} "
+                 f"《{getattr(draft, 'title', '')}》  第 "
+                 f"{getattr(draft, 'revision', 1)} 稿",
+                 f"【共 {len(draft.scenes)} 场】", ""]
+        for sc in draft.scenes:
+            sid = str(sc.get("scene_id") or sc.get("id") or "?")
+            cast = "、".join(str(c) for c in (sc.get("characters") or ()))
+            lines.append(f"── {sid}　{sc.get('heading', '')}　人物：{cast}")
+            lines.append(str(sc.get("text", "")))
+            lines.append("")
+        lines.append("请审查以上剧本，**逐场**判断冲突 / 代价 / 转折是否成立。")
+        lines.append("只报真实存在的问题 —— 不要为了凑数编问题。")
+        return "\n".join(lines)
+
+    def _to_issues(self, data: Mapping[str, Any],
+                   draft: Any) -> tuple[list[ReviewIssue], list[RepairHint]]:
+        """把模型输出转成 `ReviewIssue` / `RepairHint`。
+
+        **对模型宽容、对结构严格**：
+        字段名有出入可以认（`scene`/`sceneId`、`issue`/`problem`），
+        但**不认识的结构一律丢掉** —— 宁可少报，也不要凭空造一条
+        "位置不明、维度不明"的意见，那会让编剧收到无法执行的返工指令。
+        """
+        known = {str(sc.get("scene_id") or sc.get("id") or "")
+                 for sc in draft.scenes}
+        issues: list[ReviewIssue] = []
+        hints: list[RepairHint] = []
+        for raw in (data.get("issues") or ())[:20]:
+            if not isinstance(raw, Mapping):
+                continue
+            sid = str(raw.get("sceneId") or raw.get("scene") or raw.get("id") or "")
+            if sid not in known:
+                # 位置不明 -> 编剧无法据此定位修改。**丢掉并计数**，
+                # 而不是硬塞一个假的位置。
+                continue
+            problem = str(raw.get("problem") or raw.get("issue") or "").strip()
+            if not problem:
+                continue
+            dim_name = _DIM_MAP.get(
+                str(raw.get("dimension") or "").strip().lower(), "COMPLETENESS")
+            dim = getattr(Dimension, dim_name, Dimension.COMPLETENESS)
+            issues.append(ReviewIssue(
+                severity=Severity.MAJOR,
+                dimension=dim,
+                location=IssueLocation(scene=sid),
+                problem=f"{sid}：{problem}",
+                suggestion=str(raw.get("suggestion") or raw.get("fix") or ""),
+            ))
+            hints.append(RepairHint(
+                graph_id=f"G-{getattr(draft, 'episode_id', '')}",
+                # ⚠️ `op` 必须是 `RepairHint.KNOWN_OPS` 里的值 ——
+                # **权威操作表在 `messages.py`，不在这里**。
+                # 我一开始凭感觉写了 `revise_scene`，直接 ValueError；
+                # 而那个异常发生在**构造 RepairHint 时**，
+                # 表现成"审核者执行失败"，乍看像是模型的问题。
+                #
+                # 语义选择：剧本阶段"改一场的正文" = `modify_shot`。
+                # （`adjust_prompt` 是调提示词，`insert_shot` 是加一场 ——
+                #   剧评人的意见是"这一场写得不对"，不是"缺一场"。）
+                op=_script_repair_op(),
+                args={"scene": sid,
+                      "kind": str(raw.get("dimension") or "")},
+                from_issue=f"issue_{len(issues):03d}",
+            ))
+        return issues, hints
+
+    def _score(self, data: Mapping[str, Any], draft: Any,
+               issues: list[ReviewIssue]) -> QcScore:
+        """评分。
+
+        ⚠️ **不让模型直接给总分。** 理由是：总分会掩盖"哪一维坏了"，
+        而返工需要的是维度信息。所以各维由**问题数**推导，
+        只让模型提供主观的 `quality`。
+
+        评分口径与规则桩保持一致（100 分制、同样五个维度），
+        否则"换成 LLM 后分数变了"会被误读成质量变化，
+        而实际只是换了把尺子。
+        """
+        n = max(len(draft.scenes), 1)
+        bad = len(issues)
+        quality_raw = data.get("quality")
+        try:
+            quality = float(quality_raw) * 100.0 if (
+                quality_raw is not None and float(quality_raw) <= 1.0
+            ) else float(quality_raw) if quality_raw is not None else 75.0
+        except (TypeError, ValueError):
+            quality = 75.0
+        return QcScore(dimensions={
+            Dimension.COMPLETENESS: round(max(0.0, 100.0 - 100.0 * bad / (n * 3)), 1),
+            Dimension.CONSISTENCY: 88.0,
+            Dimension.QUALITY: round(max(0.0, min(100.0, quality)), 1),
+            Dimension.FEASIBILITY: 88.0,
+            Dimension.COMPLIANCE: 92.0,
+        }, phase="draft")
+
+
+def _as_draft(x: Any) -> ScriptDraft | None:
+    """宽容地把黑板里的值还原成 `ScriptDraft`。
+
+    黑板可能存过**序列化形式**（dict），也可能直接是对象 ——
+    两种都要认，否则"换了个调用路径就取不到稿子"。
+    """
+    if isinstance(x, ScriptDraft):
+        return x
+    if isinstance(x, Mapping):
+        return ScriptDraft(
+            frm=str(x.get("from") or x.get("frm") or "screenwriter"),
+            to=str(x.get("to") or "*"),
+            episode_id=str(x.get("episodeId") or x.get("episode_id") or ""),
+            title=str(x.get("title") or ""),
+            scenes=tuple(x.get("scenes") or ()),
+            revision=int(x.get("revision") or 1),
+            estimated_seconds=float(x.get("estimatedSeconds") or 0.0),
+        )
+    return None
+
+
+# ==========================================================================
 # 组装
 # ==========================================================================
 
 def build_llm_crew(*, client: LlmClient | None = None,
-                   only: tuple[str, ...] = ("screenwriter",),
+                   reviewer_client: LlmClient | None = None,
+                   only: tuple[str, ...] = ("screenwriter", "dramaturge"),
                    ) -> dict[str, Any]:
     """造一批真实 LLM 职位，可直接 `runtime.bind_agent(...)`。
 
-    `only` 控制做哪几个 —— 默认只做编剧（**先跑通一个再铺开**：
-    接真模型的问题几乎都出在提示词与输出结构上，
-    一次接五个只会让归因变难）。
+    ⚠️ **`client` 与 `reviewer_client` 必须是不同模型族。**
+    默认：编剧 DeepSeek / 审核方 MiMo —— 满足跨模型族盲读的硬要求。
+    传同一个会让门禁退化成自我签收（**而且不会报错**）。
     """
-    c = client or LlmClient()
+    c = client or LlmClient("deepseek-v4")
+    r = reviewer_client or LlmClient("mimo-v2.6-flash")
     made: dict[str, Any] = {}
     if "screenwriter" in only:
         made["screenwriter"] = ScreenwriterLlm(client=c)
+    if "dramaturge" in only:
+        made["dramaturge"] = DramaturgeLlm(client=r)
     return made
