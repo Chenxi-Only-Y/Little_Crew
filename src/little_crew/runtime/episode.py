@@ -261,7 +261,8 @@ class AssemblyEditorRules:
                  artifacts: Mapping[str, Sequence[str]],
                  ir_hashes: Mapping[str, str],
                  cache_stats: Mapping[str, Any],
-                 gate: Mapping[str, Any] | None = None
+                 gate: Mapping[str, Any] | None = None,
+                 prompts: Mapping[str, str] | None = None,
                  ) -> tuple[EpisodeManifest, DeliveryEvidence]:
         entries: list[dict[str, Any]] = []
         flat: list[str] = []
@@ -277,6 +278,11 @@ class AssemblyEditorRules:
                 "durationSec": float(s.get("durationSec", 0.0)),
                 "characters": list(s.get("characters", ())),
                 "artifacts": files,
+                #: **我们当初要求的是什么**（外观并入后的镜头描述）。
+                #:
+                #: 只存哈希是不够的：哈希能验"这张图没被换过"，
+                #: 但验不了"图上画的是不是我要的"。两者缺一不可。
+                "prompt": (prompts or {}).get(sid, ""),
                 #: 有产物才算"已出图" —— 清单要能反映真实缺口
                 "ready": bool(files),
             })
@@ -393,7 +399,18 @@ class EpisodeRunner:
         self.characters = self._design_characters(script_draft)
 
         # ---- 3) 桥接 ----
+        # ⚠️ **提示词要进证据链**（2026-10-17 补）。
+        #
+        # 在此之前，清单每镜只记了 `artifacts`（文件名）+ `irHashes`（哈希）。
+        # 也就是说：**能证明"这张图是我产的"，但不能证明"我当初要的是什么"**。
+        # 对一个把"可审计"当核心的项目，这是缺半边 —— 哈希只能验真伪，
+        # 验不了"要求与实际是否相符"。
+        #
+        # 只存**文字层**的提示词（外观并入后的镜头描述）：那是本项目控制得住
+        # 的那一层；模板/风格后缀是编译期常量，由 `irHash` 覆盖。
+        self._prompts_seen: dict[str, str] = {}
         irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
+        _prompts = self._prompts_seen
         if limit is not None:
             irs = irs[:planned]
 
@@ -472,7 +489,7 @@ class EpisodeRunner:
                 "secondsSaved": batch.seconds_saved,
                 "secondsSpent": batch.seconds_spent,
             },
-            gate=gate_dict)
+            gate=gate_dict, prompts=_prompts)
 
         failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
                         "reason": o.reason[:200]} for o in batch.failed)
@@ -507,7 +524,15 @@ class EpisodeRunner:
             script_rounds=cycle.round_count,
             script_verdict=(cycle.rounds[-1].verdict.value
                             if cycle.rounds else ""),
-                  failure_kind=cycle.failure_kind,
+                  # ⚠️ **出图失败优先于剧本分类**（2026-10-17 实测）：
+                  # 24 镜全 500 的那次，报告写的是 `below-threshold`（剧本分数不够）
+                  # —— 而真正卡住交付的是**渲染服务挂了**。两者该做的事完全不同。
+                  #
+                  # 判据：只要有镜头渲染失败，**下一个动作就是查出图**，
+                  # 所以它压过剧本分类。剧本的裁定仍在 `script_verdict` 里，
+                  # 信息没丢，只是 `failure_kind` 回答的是"下一步做什么"。
+                  failure_kind=("render-failed" if failed
+                                else cycle.failure_kind),
             shot_count=manifest.shot_count, planned_shots=planned,
             rendered=len(batch.rendered), cache_hits=len(batch.cache_hits),
             failed=len(failed), total_seconds=manifest.total_seconds,
@@ -973,6 +998,14 @@ class EpisodeRunner:
         from little_crew.agent.ir_bridge import shot_to_ir
 
         text = self._with_appearance(shot)
+        # 记下"我们要求的是什么"（**并入外观之后**的描述）——
+        # 那才是真正决定画面内容的文本。写进实例字典而不是改签名：
+        # `_bridge` 的签名被测试 monkeypatch 依赖，改它等于改契约。
+        try:
+            self._prompts_seen[str(getattr(shot, "shot_id", ""))] = str(
+                getattr(text, "description", "") or "")
+        except Exception:                                # noqa: BLE001
+            pass
         ir = shot_to_ir(
             text, episode_id=self.episode_id,
             checkpoint=self.engine_checkpoint, steps=self.engine_steps,
@@ -1018,8 +1051,20 @@ class EpisodeRunner:
                 return shot
 
             import dataclasses
+            import re
 
-            merged = f"{shot.description}（{'；'.join(frags)}）"
+            # ⚠️ **去掉 `@名字` 标记**（2026-10-17 从证据链里发现的）。
+            #
+            # `@名字` 是**剧本解析约定**（`_characters_of()` 靠它认角色），
+            # 不是画面内容。留着它会原样进提示词：
+            #
+            #     实测：`@少女 独自走在山坡上采花…（少女：…）`
+            #
+            # 模型看到的是一个无意义的 `@` 符号 —— 轻则被忽略，
+            # 重则被当成"另一个人"的标记。**解析标记不该漏进产物。**
+            desc = re.sub(r"@([^\s@（）,，。；;]+)", r"\1",
+                          str(shot.description or ""))
+            merged = f"{desc}（{'；'.join(frags)}）"
             return dataclasses.replace(shot, description=merged)
         except Exception:                                     # noqa: BLE001
             # 外观合并失败**不该毁掉整集** —— 退化成没有外观的提示词，

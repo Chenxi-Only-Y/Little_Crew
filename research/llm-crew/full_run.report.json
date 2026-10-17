@@ -1,0 +1,2937 @@
+{
+  "episodeId": "E100",
+  "ok": true,
+  "scriptRounds": 3,
+  "scriptVerdict": "REVISE",
+  "failureKind": "below-threshold",
+  "plannedShots": 24,
+  "rendered": 24,
+  "cacheHits": 0,
+  "failed": 0,
+  "coverage": 1.0,
+  "totalSeconds": 150.0,
+  "wallSeconds": 1122.54,
+  "playable": true,
+  "video": {
+    "ok": true,
+    "failure": "none",
+    "reason": "全部镜头合成成功",
+    "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\episode_full\\delivery\\episode.master.mp4",
+    "clipsBuilt": 24,
+    "clipsTotal": 24,
+    "coverage": 1.0,
+    "seconds": 150.0,
+    "wallSeconds": 4.76,
+    "bytes": 4562876
+  },
+  "videoPath": "D:\\AI\\ds.8\\Little_Crew\\outputs\\episode_full\\delivery\\episode.master.mp4",
+  "characters": {
+    "kind": "character.library",
+    "episodeId": "E100",
+    "seed": "b79391d0e646fb88",
+    "count": 7,
+    "sheets": [
+      {
+        "kind": "character.sheet",
+        "name": "父亲",
+        "characterId": "CHAR-069A",
+        "appearance": {
+          "hair_style": "蓬松微卷中长发",
+          "hair_color": "墨绿挑染",
+          "eye_color": "琥珀",
+          "build": "娇小匀称",
+          "outfit": "亚麻长裙",
+          "outfit_accent": "胸前别一支干花",
+          "signature": "右耳戴一只小银环",
+          "age_band": "中年"
+        },
+        "promptFragment": "中年，娇小匀称身形，墨绿挑染蓬松微卷中长发，琥珀眼睛，身穿亚麻长裙，胸前别一支干花，右耳戴一只小银环",
+        "scenes": [
+          "SC-E100-002"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "旅人",
+        "characterId": "CHAR-12E5",
+        "appearance": {
+          "hair_style": "齐肩内扣短发",
+          "hair_color": "墨绿挑染",
+          "eye_color": "灰蓝",
+          "build": "纤细高挑",
+          "outfit": "靛蓝染布短褂",
+          "outfit_accent": "领口一枚铜扣",
+          "signature": "惯常把袖口捏在手里",
+          "age_band": "青年"
+        },
+        "promptFragment": "青年，纤细高挑身形，墨绿挑染齐肩内扣短发，灰蓝眼睛，身穿靛蓝染布短褂，领口一枚铜扣，惯常把袖口捏在手里",
+        "scenes": [
+          "SC-E100-001",
+          "SC-E100-003",
+          "SC-E100-004"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "村人乙",
+        "characterId": "CHAR-328B",
+        "appearance": {
+          "hair_style": "及腰直长发",
+          "hair_color": "乌黑",
+          "eye_color": "酒红",
+          "build": "结实挺拔",
+          "outfit": "亚麻长裙",
+          "outfit_accent": "胸前别一支干花",
+          "signature": "鬓角有一缕天生的浅色发",
+          "age_band": "少年"
+        },
+        "promptFragment": "少年，结实挺拔身形，乌黑及腰直长发，酒红眼睛，身穿亚麻长裙，胸前别一支干花，鬓角有一缕天生的浅色发",
+        "scenes": [
+          "SC-E100-005"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "母亲",
+        "characterId": "CHAR-568F",
+        "appearance": {
+          "hair_style": "齐肩内扣短发",
+          "hair_color": "银灰",
+          "eye_color": "灰蓝",
+          "build": "纤细高挑",
+          "outfit": "深灰呢料外套",
+          "outfit_accent": "腰间系麻绳",
+          "signature": "左手腕有一道旧疤",
+          "age_band": "中年"
+        },
+        "promptFragment": "中年，纤细高挑身形，银灰齐肩内扣短发，灰蓝眼睛，身穿深灰呢料外套，腰间系麻绳，左手腕有一道旧疤",
+        "scenes": [
+          "SC-E100-002"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "村人甲",
+        "characterId": "CHAR-7273",
+        "appearance": {
+          "hair_style": "齐肩内扣短发",
+          "hair_color": "银灰",
+          "eye_color": "深褐",
+          "build": "结实挺拔",
+          "outfit": "亚麻长裙",
+          "outfit_accent": "下摆绣一道细边",
+          "signature": "惯常把袖口捏在手里",
+          "age_band": "老年"
+        },
+        "promptFragment": "老年，结实挺拔身形，银灰齐肩内扣短发，深褐眼睛，身穿亚麻长裙，下摆绣一道细边，惯常把袖口捏在手里",
+        "scenes": [
+          "SC-E100-005"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "老奶奶",
+        "characterId": "CHAR-BB1A",
+        "appearance": {
+          "hair_style": "侧分长直发",
+          "hair_color": "深栗棕",
+          "eye_color": "灰蓝",
+          "build": "丰盈端庄",
+          "outfit": "米色长风衣",
+          "outfit_accent": "袖口卷起两道",
+          "signature": "左手腕有一道旧疤",
+          "age_band": "老年"
+        },
+        "promptFragment": "老年，丰盈端庄身形，深栗棕侧分长直发，灰蓝眼睛，身穿米色长风衣，袖口卷起两道，左手腕有一道旧疤",
+        "scenes": [
+          "SC-E100-003"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "少女",
+        "characterId": "CHAR-DEF0",
+        "appearance": {
+          "hair_style": "齐肩内扣短发",
+          "hair_color": "深栗棕",
+          "eye_color": "墨绿",
+          "build": "结实挺拔",
+          "outfit": "深蓝粗布工装",
+          "outfit_accent": "下摆绣一道细边",
+          "signature": "右耳戴一只小银环",
+          "age_band": "少年"
+        },
+        "promptFragment": "少年，结实挺拔身形，深栗棕齐肩内扣短发，墨绿眼睛，身穿深蓝粗布工装，下摆绣一道细边，右耳戴一只小银环",
+        "scenes": [
+          "SC-E100-001",
+          "SC-E100-002",
+          "SC-E100-003",
+          "SC-E100-004",
+          "SC-E100-005"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      }
+    ]
+  },
+  "reason": "全部镜头就绪",
+  "failures": [],
+  "manifest": {
+    "kind": "episode.master",
+    "episodeId": "E100",
+    "title": "薰衣草",
+    "stage": "image",
+    "pendingStages": [
+      "video",
+      "audio"
+    ],
+    "shotCount": 24,
+    "totalSeconds": 150.0,
+    "shots": [
+      {
+        "shotId": "SH-E100-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "04502b88_img_20261017_183702_a3d7a3.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "d83cd330_img_20261017_183734_bdb7ed.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "65000e80_img_20261017_183806_70f6ec.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "df3e31e7_img_20261017_183841_3a9318.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S01-005",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "durationSec": 8.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "7cc75a13_img_20261017_183913_4be25a.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S02-001",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "父亲",
+          "少女",
+          "母亲"
+        ],
+        "artifacts": [
+          "1f6786be_img_20261017_183945_73705a.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "durationSec": 6.0,
+        "characters": [
+          "父亲",
+          "少女"
+        ],
+        "artifacts": [
+          "ffcbd71b_img_20261017_184017_de057a.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "母亲",
+          "父亲"
+        ],
+        "artifacts": [
+          "1530919e_img_20261017_184050_c41e71.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "truck_left",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "artifacts": [
+          "9e8d752a_img_20261017_184121_fe2ab5.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S02-005",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "c4048132_img_20261017_184153_62df8d.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S03-001",
+        "sceneId": "S03",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "artifacts": [
+          "2f166076_img_20261017_184225_bfe61a.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S03-002",
+        "sceneId": "S03",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "e036a29f_img_20261017_184256_dbca01.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S03-003",
+        "sceneId": "S03",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "durationSec": 6.0,
+        "characters": [
+          "老奶奶",
+          "少女"
+        ],
+        "artifacts": [
+          "e36a4b04_img_20261017_184327_d2bf14.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S03-004",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "23534ec8_img_20261017_184358_5090ad.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S04-001",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "c3f2ae15_img_20261017_184431_eb1913.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S04-002",
+        "sceneId": "S04",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "861e712f_img_20261017_184503_2dbba1.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S04-003",
+        "sceneId": "S04",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "5dca716b_img_20261017_184535_c5b961.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S04-004",
+        "sceneId": "S04",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "3ef93b34_img_20261017_184606_29e235.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S04-005",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "artifacts": [
+          "a2c6fec9_img_20261017_184639_550d8c.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S05-001",
+        "sceneId": "S05",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "fe115b23_img_20261017_184711_1cd696.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S05-002",
+        "sceneId": "S05",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "村人甲",
+          "村人乙"
+        ],
+        "artifacts": [
+          "6ba71004_img_20261017_184744_6ce5aa.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S05-003",
+        "sceneId": "S05",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "durationSec": 6.0,
+        "characters": [
+          "村人甲",
+          "少女"
+        ],
+        "artifacts": [
+          "b92fc3b7_img_20261017_184818_25251a.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S05-004",
+        "sceneId": "S05",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "69b91836_img_20261017_184850_e75830.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S05-005",
+        "sceneId": "S05",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "durationSec": 8.0,
+        "characters": [
+          "少女",
+          "村人甲",
+          "村人乙"
+        ],
+        "artifacts": [
+          "183d4b98_img_20261017_184924_754d9b.png"
+        ],
+        "ready": true
+      }
+    ],
+    "createdAt": 1792234178.9442399
+  },
+  "evidence": {
+    "kind": "delivery.evidence",
+    "episodeId": "E100",
+    "artifactCount": 24,
+    "artifacts": [
+      "04502b88_img_20261017_183702_a3d7a3.png",
+      "d83cd330_img_20261017_183734_bdb7ed.png",
+      "65000e80_img_20261017_183806_70f6ec.png",
+      "df3e31e7_img_20261017_183841_3a9318.png",
+      "7cc75a13_img_20261017_183913_4be25a.png",
+      "1f6786be_img_20261017_183945_73705a.png",
+      "ffcbd71b_img_20261017_184017_de057a.png",
+      "1530919e_img_20261017_184050_c41e71.png",
+      "9e8d752a_img_20261017_184121_fe2ab5.png",
+      "c4048132_img_20261017_184153_62df8d.png",
+      "2f166076_img_20261017_184225_bfe61a.png",
+      "e036a29f_img_20261017_184256_dbca01.png",
+      "e36a4b04_img_20261017_184327_d2bf14.png",
+      "23534ec8_img_20261017_184358_5090ad.png",
+      "c3f2ae15_img_20261017_184431_eb1913.png",
+      "861e712f_img_20261017_184503_2dbba1.png",
+      "5dca716b_img_20261017_184535_c5b961.png",
+      "3ef93b34_img_20261017_184606_29e235.png",
+      "a2c6fec9_img_20261017_184639_550d8c.png",
+      "fe115b23_img_20261017_184711_1cd696.png",
+      "6ba71004_img_20261017_184744_6ce5aa.png",
+      "b92fc3b7_img_20261017_184818_25251a.png",
+      "69b91836_img_20261017_184850_e75830.png",
+      "183d4b98_img_20261017_184924_754d9b.png"
+    ],
+    "irHashes": {
+      "SH-E100-S01-001": "sha256:ceb6cf2182f9e31f654a2582e66fdac7c5ec7618061c656d33db510cc954504c",
+      "SH-E100-S01-002": "sha256:85b81e7f3fcd89592ed30e9edfeb1ec8a719598bef12658086b6c1ed67d1676b",
+      "SH-E100-S01-003": "sha256:60e4df710175cfef00280b0f28efecf6fec939fe01427b068076cbd30a649940",
+      "SH-E100-S01-004": "sha256:941a6d176cc9302646e1e1df264dc9f0b838af3349fa2946ff75d158cec0212c",
+      "SH-E100-S01-005": "sha256:20258480187e4cac39eb866ff7c237fa6cce0a2ab2e43dcb9a29f30f3488e9b8",
+      "SH-E100-S02-001": "sha256:a988aeac1548b15139197032f1707a5da91bb3d73cdebc448598080669c4d903",
+      "SH-E100-S02-002": "sha256:19c048dc31cc54d650dc89eceae6d3ff1ef6462c2aaf3266d97098f5454320da",
+      "SH-E100-S02-003": "sha256:dbfb5d448dad3f3a21862cd9f30c699a352a505bcc56641b7d9fc56b0c905086",
+      "SH-E100-S02-004": "sha256:65863fb3d34d85ab8e7ce411a845e308cf4349703caf6adf0cb5c2e0cb74770a",
+      "SH-E100-S02-005": "sha256:5f8e51042753b45b74328330dd8b576211e010cc4518e1eb4f4eb9059d528bdc",
+      "SH-E100-S03-001": "sha256:83f0cdb1f6d066ba829b1305687142019f694c30be837fd39fdf6dcffa1c2b59",
+      "SH-E100-S03-002": "sha256:ef97a0cd3b5938e616b71a317633fd9dd7d7a8111cee8ea7ed83d9f5884b64ee",
+      "SH-E100-S03-003": "sha256:d9d35efae32a45fcc95a00ef10cbba8745864efb8b9f95fe973b2abfa90a70e2",
+      "SH-E100-S03-004": "sha256:8ea7d5135531ca08455a9b939fe4428a297ee59dc64c650ee47df0273ded63ae",
+      "SH-E100-S04-001": "sha256:0a8f37c7853d707c8bd29db38b18532f1e566e34220b606c6373584120a82386",
+      "SH-E100-S04-002": "sha256:297e63c6ddfacfe52375ce96f813116358922137d0b3e7f9d55aa098604a6a1b",
+      "SH-E100-S04-003": "sha256:749427aa9358570ee27847999e7290bdc831eaead4433af3cae3cea507357d5a",
+      "SH-E100-S04-004": "sha256:4d47bd015bea99254ce2fe64959d208c206fc2c4fdfbc289bbeab711d134a71c",
+      "SH-E100-S04-005": "sha256:0b2d837f9c1b8c42d6ccece21e61159fe79e954aece9c9b67c7565dd57c07e28",
+      "SH-E100-S05-001": "sha256:87e03c3b55aa84a3d7b53334646dad610a4f342ca22898a1580a2ab8b46e5705",
+      "SH-E100-S05-002": "sha256:433be703e2ec1107fc2466e6388c669e8b7d79b0defacb30810cd56fcf20b84e",
+      "SH-E100-S05-003": "sha256:eb5d9f574065c9d85e987655608bab89e9433d6ba55a5b05ae4e736a7f3e61ef",
+      "SH-E100-S05-004": "sha256:47348a4b717444e61bc003da7f14556af67e4289317d9dcdc6a7d767f209a841",
+      "SH-E100-S05-005": "sha256:81b193b296b30e58bd737e0e532b4e50a3b3c570d2279d67da12bd413bfef06c"
+    },
+    "cache": {
+      "hits": 0,
+      "rendered": 24,
+      "secondsSaved": 0.0,
+      "secondsSpent": 774.5
+    },
+    "checks": {
+      "allShotsHaveArtifacts": true,
+      "allShotsWithinDurationLimit": true,
+      "manifestNonEmpty": true,
+      "artifactsUnique": true,
+      "hasContentHashChain": true
+    },
+    "allChecksPassed": true,
+    "gate": {
+      "results": [
+        {
+          "artifactId": "SH-E100-S01-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 1.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.714416,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S02-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S01-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.778557,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S05-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "lighting"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S01-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.800499,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S01-004",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-004",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-004",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-004",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.761041,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S01-005",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-005",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-005",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-005",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.737944,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S02-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S02-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S02-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S02-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 3.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S02-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.714416,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S02-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S02-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S02-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S02-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.731482,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S02-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S02-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S02-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S02-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.723106,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S02-004",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S02-004",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S02-004",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S02-004",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.743992,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S02-005",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S02-005",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S02-005",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S02-005",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.726664,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S05-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "lighting"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S03-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S03-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S03-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S03-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.756013,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S03-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S03-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S03-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S03-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.772399,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S03-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S03-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S03-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S03-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.777448,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S03-004",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S03-004",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S03-004",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S03-004",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.784622,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S04-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S04-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S04-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S04-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.722361,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S04-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S04-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S04-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S04-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.781349,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S04-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S04-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S04-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S04-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.800194,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S05-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "lighting"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S04-004",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S04-004",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S04-004",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S04-004",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.773576,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S04-005",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S04-005",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S04-005",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S04-005",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": false,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.679382,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S05-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "与 SH-E100-S05-005 的相似度 0.679 < 0.700（差 0.021）—— **跨镜漂移**",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [
+            "审计级不通过 1 条（仅观测，用于阈值标定）：cr_cross_shot_SH-E100-S04-005(pairwise_similarity)"
+          ],
+          "counts": {
+            "total": 3,
+            "passed": 2,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S05-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S05-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S05-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 1.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S05-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.777243,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S05-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S05-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S05-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 3.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S05-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.765214,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S05-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S05-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S05-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S05-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.761041,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S05-004",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S05-004",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S05-004",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 1.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S05-004",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.731354,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S05-005",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S05-005",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S05-005",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 3.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S05-005",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": false,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.679382,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S04-005",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "与 SH-E100-S04-005 的相似度 0.679 < 0.700（差 0.021）—— **跨镜漂移**",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [
+            "审计级不通过 1 条（仅观测，用于阈值标定）：cr_cross_shot_SH-E100-S05-005(pairwise_similarity)"
+          ],
+          "counts": {
+            "total": 3,
+            "passed": 2,
+            "blocking": 0,
+            "hard": 2
+          }
+        }
+      ],
+      "skippedConstraints": [
+        "SH-E100-S01-001/cr_dur_SH-E100-S01-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-001/cr_blind_SH-E100-S01-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S01-002/cr_dur_SH-E100-S01-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-002/cr_blind_SH-E100-S01-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S01-003/cr_dur_SH-E100-S01-003(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-003/cr_blind_SH-E100-S01-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S01-004/cr_dur_SH-E100-S01-004(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-004/cr_blind_SH-E100-S01-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S01-005/cr_dur_SH-E100-S01-005(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-005/cr_blind_SH-E100-S01-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S02-001/cr_dur_SH-E100-S02-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S02-001/cr_blind_SH-E100-S02-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S02-002/cr_dur_SH-E100-S02-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S02-002/cr_blind_SH-E100-S02-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S02-003/cr_dur_SH-E100-S02-003(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S02-003/cr_blind_SH-E100-S02-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S02-004/cr_dur_SH-E100-S02-004(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S02-004/cr_blind_SH-E100-S02-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S02-005/cr_dur_SH-E100-S02-005(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S02-005/cr_blind_SH-E100-S02-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S03-001/cr_dur_SH-E100-S03-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S03-001/cr_blind_SH-E100-S03-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S03-002/cr_dur_SH-E100-S03-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S03-002/cr_blind_SH-E100-S03-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S03-003/cr_dur_SH-E100-S03-003(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S03-003/cr_blind_SH-E100-S03-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S03-004/cr_dur_SH-E100-S03-004(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S03-004/cr_blind_SH-E100-S03-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S04-001/cr_dur_SH-E100-S04-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S04-001/cr_blind_SH-E100-S04-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S04-002/cr_dur_SH-E100-S04-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S04-002/cr_blind_SH-E100-S04-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S04-003/cr_dur_SH-E100-S04-003(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S04-003/cr_blind_SH-E100-S04-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S04-004/cr_dur_SH-E100-S04-004(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S04-004/cr_blind_SH-E100-S04-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S04-005/cr_dur_SH-E100-S04-005(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S04-005/cr_blind_SH-E100-S04-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S05-001/cr_dur_SH-E100-S05-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S05-001/cr_blind_SH-E100-S05-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S05-002/cr_dur_SH-E100-S05-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S05-002/cr_blind_SH-E100-S05-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S05-003/cr_dur_SH-E100-S05-003(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S05-003/cr_blind_SH-E100-S05-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S05-004/cr_dur_SH-E100-S05-004(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S05-004/cr_blind_SH-E100-S05-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S05-005/cr_dur_SH-E100-S05-005(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S05-005/cr_blind_SH-E100-S05-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']"
+      ],
+      "availableObservations": [
+        "bytes",
+        "characterCount",
+        "consistencySignature",
+        "height",
+        "method",
+        "name",
+        "otherShotId",
+        "pairwise",
+        "plannedDurationSec",
+        "similarity",
+        "weakestDimension",
+        "width"
+      ],
+      "counts": {
+        "shots": 24,
+        "kept": 24,
+        "retry": 0,
+        "escalate": 0,
+        "skipped": 48
+      }
+    },
+    "gatePassed": true,
+    "createdAt": 1792234178.9442399
+  }
+}

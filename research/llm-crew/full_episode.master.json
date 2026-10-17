@@ -1,0 +1,375 @@
+{
+  "kind": "episode.master",
+  "episodeId": "E100",
+  "title": "薰衣草",
+  "stage": "image",
+  "pendingStages": [
+    "video",
+    "audio"
+  ],
+  "shotCount": 24,
+  "totalSeconds": 150.0,
+  "shots": [
+    {
+      "shotId": "SH-E100-S01-001",
+      "sceneId": "S01",
+      "shotSize": "full",
+      "cameraMovement": "truck_left",
+      "durationSec": 6.0,
+      "characters": [
+        "少女"
+      ],
+      "artifacts": [
+        "04502b88_img_20261017_183702_a3d7a3.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S01-002",
+      "sceneId": "S01",
+      "shotSize": "medium",
+      "cameraMovement": "static",
+      "durationSec": 5.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "d83cd330_img_20261017_183734_bdb7ed.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S01-003",
+      "sceneId": "S01",
+      "shotSize": "medium_close",
+      "cameraMovement": "dolly_in",
+      "durationSec": 7.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "65000e80_img_20261017_183806_70f6ec.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S01-004",
+      "sceneId": "S01",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 6.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "df3e31e7_img_20261017_183841_3a9318.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S01-005",
+      "sceneId": "S01",
+      "shotSize": "full",
+      "cameraMovement": "dolly_out",
+      "durationSec": 8.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "7cc75a13_img_20261017_183913_4be25a.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S02-001",
+      "sceneId": "S02",
+      "shotSize": "medium_full",
+      "cameraMovement": "static",
+      "durationSec": 5.0,
+      "characters": [
+        "父亲",
+        "少女",
+        "母亲"
+      ],
+      "artifacts": [
+        "1f6786be_img_20261017_183945_73705a.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S02-002",
+      "sceneId": "S02",
+      "shotSize": "medium",
+      "cameraMovement": "dolly_in",
+      "durationSec": 6.0,
+      "characters": [
+        "父亲",
+        "少女"
+      ],
+      "artifacts": [
+        "ffcbd71b_img_20261017_184017_de057a.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S02-003",
+      "sceneId": "S02",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 5.0,
+      "characters": [
+        "母亲",
+        "父亲"
+      ],
+      "artifacts": [
+        "1530919e_img_20261017_184050_c41e71.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S02-004",
+      "sceneId": "S02",
+      "shotSize": "medium_close",
+      "cameraMovement": "truck_left",
+      "durationSec": 6.0,
+      "characters": [
+        "少女",
+        "母亲"
+      ],
+      "artifacts": [
+        "9e8d752a_img_20261017_184121_fe2ab5.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S02-005",
+      "sceneId": "S02",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 7.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "c4048132_img_20261017_184153_62df8d.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S03-001",
+      "sceneId": "S03",
+      "shotSize": "full",
+      "cameraMovement": "static",
+      "durationSec": 6.0,
+      "characters": [
+        "旅人",
+        "少女"
+      ],
+      "artifacts": [
+        "2f166076_img_20261017_184225_bfe61a.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S03-002",
+      "sceneId": "S03",
+      "shotSize": "medium",
+      "cameraMovement": "dolly_in",
+      "durationSec": 5.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "e036a29f_img_20261017_184256_dbca01.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S03-003",
+      "sceneId": "S03",
+      "shotSize": "medium_close",
+      "cameraMovement": "static",
+      "durationSec": 6.0,
+      "characters": [
+        "老奶奶",
+        "少女"
+      ],
+      "artifacts": [
+        "e36a4b04_img_20261017_184327_d2bf14.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S03-004",
+      "sceneId": "S03",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 5.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "23534ec8_img_20261017_184358_5090ad.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S04-001",
+      "sceneId": "S04",
+      "shotSize": "full",
+      "cameraMovement": "truck_left",
+      "durationSec": 7.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "c3f2ae15_img_20261017_184431_eb1913.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S04-002",
+      "sceneId": "S04",
+      "shotSize": "medium",
+      "cameraMovement": "static",
+      "durationSec": 5.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "861e712f_img_20261017_184503_2dbba1.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S04-003",
+      "sceneId": "S04",
+      "shotSize": "medium_close",
+      "cameraMovement": "dolly_in",
+      "durationSec": 6.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "5dca716b_img_20261017_184535_c5b961.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S04-004",
+      "sceneId": "S04",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 7.0,
+      "characters": [
+        "少女",
+        "旅人"
+      ],
+      "artifacts": [
+        "3ef93b34_img_20261017_184606_29e235.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S04-005",
+      "sceneId": "S04",
+      "shotSize": "medium_full",
+      "cameraMovement": "dolly_out",
+      "durationSec": 8.0,
+      "characters": [
+        "旅人",
+        "少女"
+      ],
+      "artifacts": [
+        "a2c6fec9_img_20261017_184639_550d8c.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S05-001",
+      "sceneId": "S05",
+      "shotSize": "medium",
+      "cameraMovement": "static",
+      "durationSec": 6.0,
+      "characters": [
+        "少女"
+      ],
+      "artifacts": [
+        "fe115b23_img_20261017_184711_1cd696.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S05-002",
+      "sceneId": "S05",
+      "shotSize": "full",
+      "cameraMovement": "truck_left",
+      "durationSec": 7.0,
+      "characters": [
+        "少女",
+        "村人甲",
+        "村人乙"
+      ],
+      "artifacts": [
+        "6ba71004_img_20261017_184744_6ce5aa.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S05-003",
+      "sceneId": "S05",
+      "shotSize": "medium_close",
+      "cameraMovement": "dolly_in",
+      "durationSec": 6.0,
+      "characters": [
+        "村人甲",
+        "少女"
+      ],
+      "artifacts": [
+        "b92fc3b7_img_20261017_184818_25251a.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S05-004",
+      "sceneId": "S05",
+      "shotSize": "close",
+      "cameraMovement": "static",
+      "durationSec": 7.0,
+      "characters": [
+        "少女"
+      ],
+      "artifacts": [
+        "69b91836_img_20261017_184850_e75830.png"
+      ],
+      "ready": true
+    },
+    {
+      "shotId": "SH-E100-S05-005",
+      "sceneId": "S05",
+      "shotSize": "full",
+      "cameraMovement": "dolly_out",
+      "durationSec": 8.0,
+      "characters": [
+        "少女",
+        "村人甲",
+        "村人乙"
+      ],
+      "artifacts": [
+        "183d4b98_img_20261017_184924_754d9b.png"
+      ],
+      "ready": true
+    }
+  ],
+  "createdAt": 1792234178.9442399
+}
