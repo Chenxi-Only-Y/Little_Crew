@@ -51,14 +51,14 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 于是剧评人换完整性公式时漏了 import，1205 项测试全过、
     # 直到真实一集连崩 3 次才暴露。**"能构造"不等于"能工作"。**
     ("LLM 剧评人", [sys.executable, "-m", "little_crew.agent.dramaturge_llm_check"], 17),
-    ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 60),
+    ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
-    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 80),
+    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 95),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
     ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 38),

@@ -381,6 +381,83 @@ def _bump(ir):
     return o
 
 
+# ---------- I. cast_consistent_with_text（2026-10-17 新增算子）----------
+#
+# ## 这一段守什么
+#
+# 跑整集时发现的**真实缺陷**：某镜 `characters = ["少女","旅人"]`，
+# 而描述写的是"少女 **独自** 走在山坡上采花"。
+# 外观块按角色表注入两份外貌 -> 模型画出两个人 ->
+# **画面错了，而分辨率/时长/哈希全部通过。**
+#
+# 这类矛盾**不需要看图**：比对"文字说了几个人"与"结构声明了几个人"就够。
+#
+# ## 刻意不查的方向
+#
+# 「描述提到某个角色但他不在角色表里」——看似该查，其实**经常合法**：
+# `她想起母亲` 里的母亲并不在画面里。默认查它会产生大量误报，
+# 而**误报会让断言失去信任**（一条不被信的断言比没有更糟）。
+# 所以那个方向做成 `checkUnlisted` 显式开启。
+
+def _i_cast_text() -> None:
+    from little_crew.review.ops import cast_consistent_with_text as f
+
+    def run(chars, desc, **exp):
+        return f(exp, {"characters": chars, "description": desc})
+
+    # ---- 核心：复现真实缺陷 ----
+    r = run(["少女", "旅人"], "少女 独自走在山坡上采花")
+    check("I1 ★ 描述说「独自」而角色表 2 人 -> 不通过（复现真实缺陷）",
+          not r.passed, r.detail[:80])
+    check("I2 失败说明写清了「会画出两个人」这个后果",
+          "2 个人" in r.detail or "画出" in r.detail, r.detail[:100])
+
+    # ---- 不该误报 ----
+    check("I3 描述说「独自」且角色表 1 人 -> 通过",
+          run(["少女"], "少女 独自走在山坡上采花").passed)
+    check("I4 ★「一个人影」不算「独自」（避免误报）",
+          run(["少女", "旅人"], "远处有一个人影").passed,
+          run(["少女", "旅人"], "远处有一个人影").detail)
+    check("I5 无任何标记的多角色镜头 -> 通过",
+          run(["少女", "旅人"], "两人在田里干活").passed)
+
+    # ---- 显式人数 ----
+    r2 = run(["少女"], "两个人并肩站着")
+    check("I6 描述写「两个人」但角色表 1 人 -> 不通过", not r2.passed, r2.detail[:70])
+    check("I7 描述写「两个人」且角色表 2 人 -> 通过",
+          run(["少女", "旅人"], "两个人并肩站着").passed)
+    check("I8 描述写「三个人」但角色表 2 人 -> 不通过",
+          not run(["少女", "旅人"], "三个人围坐").passed)
+
+    # ---- 缺观测：不通过（铁律①）----
+    r3 = f({}, {"description": "少女独自走"})
+    check("I9 缺 characters -> 不通过（缺观测不等于通过）",
+          not r3.passed and "缺失" in r3.detail, r3.detail[:70])
+    r4 = f({}, {"characters": ["少女"]})
+    check("I10 缺 description -> 不通过", not r4.passed)
+
+    # ---- 可选方向：checkUnlisted ----
+    r5 = f({"checkUnlisted": True},
+           {"characters": ["少女"], "description": "少女看见母亲站在门口",
+            "castNames": ["少女", "母亲"]})
+    check("I11 ★ checkUnlisted 开启 -> 提到但未列入 -> 不通过",
+          not r5.passed and "母亲" in r5.detail, r5.detail[:70])
+    check("I12 checkUnlisted 关闭（默认）-> 同一情形通过（不误报）",
+          f({}, {"characters": ["少女"], "description": "少女看见母亲站在门口"}).passed)
+    r6 = f({"checkUnlisted": True}, {"characters": ["少女"],
+                                    "description": "少女站着"})
+    check("I13 checkUnlisted 开启但没给 castNames -> 不通过（缺观测）",
+          not r6.passed, r6.detail[:70])
+
+    # ---- 字符串形式的 characters ----
+    check("I14 characters 是逗号分隔字符串也能解析",
+          not run("少女，旅人", "少女独自走").passed)
+
+    # ---- 算子已注册、可经门禁调用 ----
+    from little_crew.review.constraint import REGISTRY
+    check("I15 算子已注册到 REGISTRY", "cast_consistent_with_text" in REGISTRY.names())
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -395,6 +472,7 @@ def main() -> int:
     _b_operators()
     _c_verdicts()
     _d_enforcement()
+    _i_cast_text()
     _e_determinism()
     _f_ir_binding()
     # L3 盲读算子 + 门禁对它的响应

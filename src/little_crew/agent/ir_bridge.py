@@ -321,6 +321,30 @@ def shot_to_ir(
     # 标 hard 会让每一条都被判"无法判定"而升级人工（见 review/observe.py）。
     constraints: list[dict[str, Any]] = []
 
+    # ⓪ **角色表与镜头描述是否自洽**（2026-10-17 加）
+    #
+    # ## 为什么这条必须存在
+    #
+    # 实测：某镜 `characters = ["少女","旅人"]`，而描述写的是
+    # "少女 **独自** 走在山坡上采花"。外观块按**角色表**注入两份外貌，
+    # 模型就画出两个人 —— **画面错了，而分辨率/时长/哈希全部通过**。
+    #
+    # 这类矛盾不需要看图，只要比对"文字说了几个人"与"结构声明了几个人"。
+    #
+    # ## 为什么先设 `audit` 而不是 `hard`
+    #
+    # **冷启动期先收集数据。** 这条检查是新加的，我们还不知道它在真实
+    # 内容上会以多高的比例命中。直接设 `hard` 会让一批本来能跑的镜头
+    # 突然被拦 —— 而"新加的门禁让流水线停摆"不是严谨，是莽撞。
+    #
+    # 正确顺序：`audit` 跑几集 -> 量出真实发生率 -> 再决定升不升 `hard`。
+    # （这与 `PASS_THRESHOLD` 的标定是同一套纪律：**先有分布，再有阈值**。）
+    constraints.append({
+        "ref": f"cr_cast_{shot.shot_id}",
+        "assertion": {"op": "cast_consistent_with_text"},
+        "enforcement": "audit",
+    })
+
     # ① 分辨率必须与请求一致 —— 编译出的 latent 尺寸错是最常见的静默故障
     w, h = (int(resolution[0]), int(resolution[1]))
     constraints.append({

@@ -64,6 +64,13 @@ OPERATOR_NEEDS: Mapping[str, frozenset[str]] = {
     # 见上面 `OPERATOR_NEEDS` 的说明。本机没有 VLM key 时，
     # 正确结局是**如实跳过**，不是全部拦下。
     "blind_read_verdict": frozenset({"blindVerdict"}),
+    # ---- 语义自洽：文本 vs 结构 ----
+    #
+    # 这两个字段**不从产物文件量**，而是来自镜头计划
+    # （`GateRunner.run(context_by_shot=...)`）。
+    # 必须在这里登记，否则预检认为"不需要观测" -> 交给算子 ->
+    # 算子判"缺观测"不通过 -> 每一镜都被拦。
+    "cast_consistent_with_text": frozenset({"characters", "description"}),
 }
 
 #: 带 `field` 参数的算子：真正需要的字段由 `expected["field"]` 决定。

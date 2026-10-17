@@ -525,3 +525,150 @@ def ensure_registered() -> None:
                if n not in REGISTRY.names()]
     if missing:
         raise AssertionError_(f"内置算子未注册：{missing}")
+
+
+# ---------------------------------------------------------------------------
+# 语义自洽类（文本 vs 结构）
+# ---------------------------------------------------------------------------
+
+#: 「画面上只有一个人」的中文标记。
+#:
+#: ⚠️ **刻意不收录 `一个人`** —— 它在 `一个人影`、`像一个人那样站着`
+#: 这类句子里并不表示"独自"。误报会让人不再信这条断言，
+#: 而**一条不被信的断言比没有更糟**（它制造"已检查"的假象）。
+_SOLO_MARKERS: tuple[str, ...] = (
+    "独自", "孤身", "只身", "单独一人", "孤零零", "形单影只",
+    "alone", "by herself", "by himself",
+)
+
+#: 显式人数 → 数字。用于「描述写三人、角色表只有两人」这类矛盾。
+_COUNT_MARKERS: tuple[tuple[str, int], ...] = (
+    ("两个人", 2), ("二人", 2), ("两人", 2),
+    ("三个人", 3), ("三人", 3),
+    ("四个人", 4), ("四人", 4),
+    ("五个人", 5), ("五人", 5),
+)
+
+
+def _cast_of(observed: Mapping[str, Any]) -> list[str] | None:
+    """从观测里取角色表。取不到返回 None（交给 `_missing`）。"""
+    raw = observed.get("characters", None)
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        return [x.strip() for x in raw.replace(",", "，").split("，") if x.strip()]
+    try:
+        return [str(x) for x in raw]
+    except TypeError:
+        return None
+
+
+@register("cast_consistent_with_text", version="1")
+def cast_consistent_with_text(expected: Mapping[str, Any],
+                              observed: Mapping[str, Any]) -> AssertionOutcome:
+    """**角色表与镜头描述是否自洽。**
+
+    ## 为什么需要它（真实缺陷）
+
+    2026-10-17 跑整集时发现：某镜 `characters = ["少女"]`，
+    描述写的是"少女 **独自** 走在山坡上采花" —— 而另一镜
+    `characters = ["旅人", "少女"]`。桩路径更直接：
+
+        角色 ['少女', '旅人']   而描述写"少女 独自 走在山坡上采花"
+
+    外观块按**角色表**注入两个角色的外貌描述，模型自然画出两个人。
+    **画面错了，而所有确定性检查（分辨率/时长/哈希）全部通过。**
+
+    这类矛盾**是机器能查出来的** —— 不需要看图，只要比对
+    "文字说了几个人"与"结构声明了几个人"。
+
+    ## 判据（两向都查）
+
+    | 方向 | 例子 | 处置 |
+    |---|---|---|
+    | 描述说"独自"，角色表 > 1 | `独自` + `["少女","旅人"]` | **不通过** |
+    | 描述给显式人数，与角色表不符 | `两个人` + `["少女"]` | **不通过** |
+
+    ## 刻意**不**查的方向（可作为 `checkUnlisted` 开启）
+
+    「描述里提到了某个角色，但他不在这镜的角色表里」——
+    看似该查，其实**经常是合法的**：`她想起母亲` 里的母亲并不在画面里。
+    把它默认打开会产生大量误报，而**误报会让断言失去信任**。
+
+    ## 期望参数
+
+    | 参数 | 默认 | 说明 |
+    |---|---|---|
+    | `soloMarkers` | 内置 | 覆盖"独自"类标记 |
+    | `countMarkers` | 内置 | 覆盖人数标记 |
+    | `checkUnlisted` | `false` | 开启"提到但未列"检查（需要 `castNames` 观测） |
+
+    ## 观测参数
+
+    | 字段 | 必需 | 说明 |
+    |---|---|---|
+    | `characters` | ✅ | 本镜角色表（列表或逗号分隔字符串） |
+    | `description` | ✅ | 镜头描述文本 |
+    | `castNames` | 仅 `checkUnlisted` | 全集角色名册 |
+    """
+    chars = _cast_of(observed)
+    desc = observed.get("description", None)
+    if chars is None:
+        return _missing("cast_consistent_with_text 需要 observed['characters']")
+    if not isinstance(desc, str):
+        return _missing("cast_consistent_with_text 需要 observed['description']")
+
+    solo = tuple(expected.get("soloMarkers") or _SOLO_MARKERS)
+    counts = expected.get("countMarkers") or _COUNT_MARKERS
+    n = len(chars)
+
+    # ---- ① 描述说"独自"，结构却是多人 ----
+    hits = [m for m in solo if m in desc]
+    if hits and n > 1:
+        return AssertionOutcome(
+            passed=False,
+            observed={"characters": n, "names": chars,
+                      "soloMarkers": hits, "direction": "solo-vs-many"},
+            detail=(f"描述写「{hits[0]}」（暗示画面只有 1 人），"
+                    f"但角色表有 {n} 人：{chars}。"
+                    f"外观会按角色表注入 {n} 份描述，模型会画出 {n} 个人 —— "
+                    f"**画面与意图不符，而分辨率/时长/哈希全都查不出来**"),
+        )
+
+    # ---- ② 描述给了显式人数，与角色表不符 ----
+    for token, want in counts:
+        if token in desc and want != n:
+            return AssertionOutcome(
+                passed=False,
+                observed={"characters": n, "names": chars,
+                          "explicitCount": want, "token": token,
+                          "direction": "explicit-count"},
+                detail=(f"描述写「{token}」（{want} 人），"
+                        f"但角色表是 {n} 人：{chars}"),
+            )
+
+    # ---- ③ 可选：提到但未列 ----
+    if expected.get("checkUnlisted"):
+        roster = [str(x) for x in (observed.get("castNames") or ())]
+        if not roster:
+            return _missing(
+                "checkUnlisted 已开启，但缺少 observed['castNames'] —— "
+                "没有名册就无法判断「提到了谁、该不该在画面里」")
+        unlisted = [nm for nm in roster if nm in desc and nm not in chars]
+        if unlisted:
+            return AssertionOutcome(
+                passed=False,
+                observed={"characters": n, "names": chars,
+                          "mentionedNotListed": unlisted},
+                detail=(f"描述提到了未列入角色表的人：{unlisted}。"
+                        f"若他们确实不该在画面里，描述该改写；"
+                        f"若该在，角色表缺了他们（外观不会注入）"),
+            )
+
+    return AssertionOutcome(
+        passed=True,
+        observed={"characters": n, "names": chars,
+                  "soloMarkers": hits, "direction": "consistent"},
+        detail=f"{n} 人，描述无矛盾标记",
+    )
+

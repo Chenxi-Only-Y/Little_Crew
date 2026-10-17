@@ -1152,6 +1152,11 @@ class EpisodeRunner:
                 "characterCount": len(getattr(s, "characters", ()) or ()),
                 "plannedDurationSec": float(
                     getattr(s, "duration_sec", 0.0) or 0.0),
+                #: `cast_consistent_with_text` 要的两个字段（2026-10-17）。
+                # 它们是**文字层**的，产物文件里量不出来 ——
+                # 只能从镜头计划带进来。
+                "characters": list(getattr(s, "characters", ()) or ()),
+                "description": str(getattr(s, "description", "") or ""),
             }
             # ---- L3：跨模型族盲读（C3 的第三层）----
             #

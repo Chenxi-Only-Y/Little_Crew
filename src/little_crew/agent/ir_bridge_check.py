@@ -55,6 +55,41 @@ def _shot(**kw: Any) -> Shot:
     return Shot(**base)
 
 
+# ---------- 约束：角色表 vs 描述意图（2026-10-17）----------
+#
+# 这三条守的是"**约束真的被生成了、而且级别是对的**"。
+# 算子本身的行为由 `review/check.py` I 段验；
+# 这里验的是**它有没有跟着镜头进 IR** —— 生成了但没进 IR 等于没写。
+#
+# ⚠️ 特别守 `enforcement == "audit"`：
+# 实测这套检查在演示素材上 **2 镜命中 1 镜**（50%）。
+# 设成 `hard` 会让一半镜头被拦 —— 那不是严谨，是莽撞。
+# 先 audit 量发生率，再决定升不升。
+
+def _cast_constraint() -> None:
+    shot = _shot()
+    ir = shot_to_ir(shot, episode_id="E900")
+    cons = list(ir.get("constraints") or ())
+    refs = [c.get("ref", "") for c in cons]
+    mine = [c for c in cons
+            if (c.get("assertion") or {}).get("op") == "cast_consistent_with_text"]
+    check("J1 ★ 镜头 IR 里含「角色表 vs 描述」约束",
+          len(mine) == 1, f"refs={refs}")
+    if mine:
+        check("J2 该约束是 audit 级（冷启动先观测，不拦）",
+              mine[0].get("enforcement") == "audit",
+              str(mine[0].get("enforcement")))
+        check("J3 引用名带镜头 id（可追溯到具体镜头）",
+              str(shot.shot_id) in str(mine[0].get("ref", "")),
+              str(mine[0].get("ref")))
+    check("J4 其余约束不受影响（分辨率/时长仍在）",
+          any((c.get("assertion") or {}).get("op") == "resolution_matches"
+              for c in cons)
+          and any((c.get("assertion") or {}).get("op") == "duration_within"
+                  for c in cons),
+          f"{[ (c.get('assertion') or {}).get('op') for c in cons ]}")
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -72,6 +107,7 @@ def main() -> int:
     _determinism()
     _batch()
     _anchors()
+    _cast_constraint()
     _section_scheduler_default()
 
     print()
