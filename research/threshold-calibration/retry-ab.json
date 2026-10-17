@@ -1,0 +1,82 @@
+{
+  "n": 5,
+  "rows": [
+    {
+      "run": 1,
+      "rounds": 3,
+      "scenes": 8,
+      "scores": [
+        49.11,
+        59.57,
+        59.9
+      ],
+      "best": 59.9,
+      "accepted": false,
+      "retries": 0,
+      "invalidated": ""
+    },
+    {
+      "run": 2,
+      "rounds": 2,
+      "scenes": 4,
+      "scores": [
+        57.65,
+        76.65
+      ],
+      "best": 76.65,
+      "accepted": true,
+      "retries": 0,
+      "invalidated": ""
+    },
+    {
+      "run": 3,
+      "rounds": 3,
+      "scenes": 6,
+      "scores": [
+        49.410000000000004,
+        47.4,
+        49.410000000000004
+      ],
+      "best": 49.410000000000004,
+      "accepted": false,
+      "retries": 0,
+      "invalidated": ""
+    },
+    {
+      "run": 4,
+      "rounds": 2,
+      "scenes": 7,
+      "scores": [
+        49.410000000000004,
+        69.19
+      ],
+      "best": 69.19,
+      "accepted": true,
+      "retries": 0,
+      "invalidated": ""
+    },
+    {
+      "run": 5,
+      "rounds": 3,
+      "scenes": 3,
+      "scores": [
+        48.14,
+        64.9,
+        59.9
+      ],
+      "best": 64.9,
+      "accepted": false,
+      "retries": 0,
+      "invalidated": ""
+    }
+  ],
+  "zeros": 0,
+  "accepted": 2,
+  "retries": 0,
+  "before": {
+    "zeros": 2,
+    "n": 5,
+    "mean": 42.0,
+    "std": 38.4
+  }
+}

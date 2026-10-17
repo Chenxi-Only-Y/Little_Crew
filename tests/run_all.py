@@ -45,7 +45,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），
     # 那些必须能被**确定性地**断言，不能靠"我看模型像是改了"。
-    ("LLM 职位机制", [sys.executable, "-m", "little_crew.agent.crew_llm_check"], 32),
+    ("LLM 职位机制", [sys.executable, "-m", "little_crew.agent.crew_llm_check"], 38),
     # ⚠️ 这一套的存在理由（2026-10-17 的教训）：`crew_llm_check` 只碰
     # `DramaturgeLlm().client`，**从不调用它的 `__call__`** ——
     # 于是剧评人换完整性公式时漏了 import，1205 项测试全过、

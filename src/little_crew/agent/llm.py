@@ -18,12 +18,17 @@
 --------
 **零第三方依赖**：标准库 ``urllib``，与 ``HttpChannel`` 同源。
 
-**不做重试**：重试策略应由调用方按*业务*语义决定（改提示词重试？
-换模型重试？还是直接升级人工？）。在这里盲目重试只会把 API 账单翻倍，
-且掩盖"提示词本身有问题"这类真实缺陷。本层只**如实报告失败**。
+**只重试传输层失败，不重试语义失败**
+重试"提示词有问题"没有意义 —— 重试一万次也是同一份账单。
+但重试**网络抖动**是必须的，否则一次抖动就会让一整轮判定作废
+（实测：C 组 5 次里 2 次整轮作废、分数 0.0，根因就是调用失败）。
+
+区分靠 `LLMError.retryable`：它只对 **429 / 5xx / 网络异常**为真，
+对 **4xx 请求错误**为假。`_post_with_retry` 只对前者退避重试。
 
 **失败必须可分辨**：`LLMError` 带 ``retryable`` 与 ``kind``，
 让上层能区分"网络抖了一下"（可重试）与"提示词/额度问题"（重试无意义）。
+**重试次数进 `call_log`** —— 那是可靠性指标，藏起来就等于宣称"我们从不失败"。
 
 **结构化输出要宽容但可核**：模型会在 JSON 外面套 ```json 围栏、
 加解释性前言。`extract_json` 容忍这些，但**取不到就报错**，
@@ -195,16 +200,42 @@ class LlmClient:
 
     def __init__(self, model_id: str = DEFAULT_MODEL_ID, *,
                  api_key: str | None = None, timeout_s: int = 120,
-                 temperature: float = 0.7) -> None:
+                 temperature: float = 0.7,
+                 max_retries: int = 2, backoff_s: float = 0.8) -> None:
         self.spec = model_spec_for(model_id)
         self.model_id = model_id
         self.timeout_s = timeout_s
         self.temperature = temperature
+        #: **仅对 `retryable=True` 的失败**重试这么多次（0 = 不重试）。
+        #:
+        #: ## 为什么必须重试（2026-10-17 实测）
+        #:
+        #: 条件对比实验里，C 组（都市悬疑）**5 次中有 2 次整轮判定作废**、
+        #: 分数 0.0。查下去不是"剧本写得差"，而是**评审调用失败** ——
+        #: 而 `review_artifact` 遇到任一审核者失败就中止整轮：
+        #:
+        #:     if not out.ok:
+        #:         return (), f"审核者 {rid} 执行失败：{out.error}"
+        #:
+        #: **一次网络抖动 = 一整轮判定作废 = 浪费掉这一轮的全部 token。**
+        #:
+        #: ## 这与"本层不重试"的设计说明不冲突
+        #:
+        #: 那句话的原意是：**重试"语义"失败没有意义**（提示词有问题，
+        #: 重试一万次也一样）。而 `retryable` 字段恰好编码的就是这个区分 ——
+        #: 它只对 **429 / 5xx / 网络异常**为真，对 **4xx 请求错误**为假。
+        #:
+        #: 所以现在：**传输层失败重试，语义失败不重试。**
+        #: 那正是当初想做而没做的那一刀。
+        self.max_retries = max(0, int(max_retries))
+        self.backoff_s = max(0.0, float(backoff_s))
         #: 显式传入优先（测试注入用）；否则按 `api_key_env` 解析
         self.api_key = (api_key if api_key is not None
                         else resolve_api_key(self.spec))
         self.call_log: list[dict[str, Any]] = []
         self.calls = 0
+        #: 累计重试次数（进证据链用：能看出"这次跑得不顺"）
+        self.retries = 0
 
     # ---- 能力自述 ------------------------------------------------------
 
@@ -291,9 +322,39 @@ class LlmClient:
             raise LLMError("template", f"请求体模板渲染失败: {e}") from e
 
         url = backend.endpoint.rstrip("/") + backend.path
-        reply = self._post(url, body, timeout_s or self.timeout_s)
+        reply = self._post_with_retry(url, body, timeout_s or self.timeout_s)
         self.calls += 1
         return reply
+
+    def _post_with_retry(self, url: str, body: Mapping[str, Any],
+                         timeout_s: int) -> "LLMReply":
+        """**只重试 `retryable=True` 的失败**（429 / 5xx / 网络异常）。
+
+        语义失败（4xx、JSON 结构不对、没有 key）**一次都不重试** ——
+        重试它们只是把同一份账单再交一遍。
+
+        退避是 `backoff_s × 2**第几次` —— 第二次失败等得更久一点。
+        不做无限重试：`max_retries` 默认 2，总共最多 3 次尝试。
+        """
+        attempt = 0
+        while True:
+            try:
+                return self._post(url, body, timeout_s)
+            except LLMError as e:
+                if not e.retryable or attempt >= self.max_retries:
+                    raise
+                attempt += 1
+                self.retries += 1
+                delay = self.backoff_s * (2 ** (attempt - 1))
+                #: 记进账本 —— 证据链能看出"这次跑得不顺"。
+                #: **不记成成功**：重试次数是**可靠性指标**，藏起来就等于
+                #: 宣称"我们的调用从不失败"。
+                self.call_log.append({
+                    "modelId": self.model_id, "servedModel": "",
+                    "elapsedS": 0.0, "chars": 0,
+                    "retry": attempt, "retryAfterS": round(delay, 2),
+                    "retryKind": e.kind, "retryReason": str(e)[:120]})
+                time.sleep(delay)
 
     def chat_json(self, prompt: str, *, system: str = "",
                   temperature: float | None = None,

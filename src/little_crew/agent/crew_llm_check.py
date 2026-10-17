@@ -92,6 +92,101 @@ def _draft(*, n: int = 1, body: str = "正文内容", title: str = "标题",
     return d
 
 
+
+# ---------- 传输层重试（2026-10-17）----------
+#
+# ## 为什么这一段必须有
+#
+# 条件对比实验里 C 组 5 次中 2 次**整轮判定作废**、分数 0.0。
+# 根因不是剧本差，而是**评审调用失败** —— 而 `review_artifact`
+# 遇到任一审核者失败就中止整轮：
+#
+#     if not out.ok:
+#         return (), f"审核者 {rid} 执行失败：{out.error}"
+#
+# **一次网络抖动 = 一整轮作废 = 这一轮的 token 全白花。**
+#
+# `LLMError.retryable` 早就有了，但**从来没有真的重试过** ——
+# 只被用来决定 `escalate`。这一段钉住三件事：
+#   ① 可重试的失败**真的会重试**（且次数有上限）
+#   ② 不可重试的失败**一次都不重试**（重试语义失败只是重复交账单）
+#   ③ 抖动一次之后成功 -> 上层完全看不到失败
+
+def _retry() -> None:
+    from little_crew.agent.llm import LLMError, LLMReply, LlmClient
+
+    print()
+    print("H. 传输层重试")
+
+    # ① 可重试失败 -> 重试到上限后抛出
+    c = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    n = {"i": 0}
+
+    def always_net(*_a, **_k):
+        n["i"] += 1
+        raise LLMError("network", "连接被重置", retryable=True)
+
+    c._post = always_net                       # type: ignore[method-assign]
+    try:
+        c.chat("hi")
+    except LLMError as e:
+        check("H1 可重试失败 -> 重试到上限（1 + max_retries 次尝试）",
+              n["i"] == 3, f"尝试 {n['i']} 次")
+        check("H2 重试次数被记进账本（可靠性指标不能藏）",
+              c.retries == 2 and len(c.call_log) == 2,
+              f"retries={c.retries} log={len(c.call_log)}")
+        check("H3 最终仍抛出（不把失败吞成成功）", e.retryable, "")
+
+    # ② 不可重试 -> 一次都不重试
+    c2 = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    n2 = {"i": 0}
+
+    def always_4xx(*_a, **_k):
+        n2["i"] += 1
+        raise LLMError("http", "HTTP 400", retryable=False)
+
+    c2._post = always_4xx                      # type: ignore[method-assign]
+    try:
+        c2.chat("hi")
+    except LLMError:
+        pass
+    check("H4 ★ 不可重试失败 -> **一次都不重试**（语义失败重试等于重复交账）",
+          n2["i"] == 1 and c2.retries == 0,
+          f"尝试 {n2['i']} 次 retries={c2.retries}")
+
+    # ③ 抖动一次后成功 -> 上层看不到失败
+    c3 = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    n3 = {"i": 0}
+
+    def flaky(*_a, **_k):
+        n3["i"] += 1
+        if n3["i"] == 1:
+            raise LLMError("timeout", "超时", retryable=True)
+        return LLMReply(text="ok", model="m", served_model="s")
+
+    c3._post = flaky                           # type: ignore[method-assign]
+    r = c3.chat("hi")
+    check("H5 ★ 抖动一次后成功 -> 上层拿到正常结果",
+          r.text == "ok" and n3["i"] == 2 and c3.retries == 1,
+          f"text={r.text!r} 尝试={n3['i']}")
+
+    # ④ max_retries=0 时完全不重试（显式选择）
+    c4 = LlmClient("deepseek-v4", max_retries=0, backoff_s=0.0)
+    n4 = {"i": 0}
+
+    def always_net2(*_a, **_k):
+        n4["i"] += 1
+        raise LLMError("network", "x", retryable=True)
+
+    c4._post = always_net2                     # type: ignore[method-assign]
+    try:
+        c4.chat("hi")
+    except LLMError:
+        pass
+    check("H6 max_retries=0 -> 不重试（可显式关掉）", n4["i"] == 1,
+          f"尝试 {n4['i']} 次")
+
+
 # ==========================================================================
 def main() -> int:
     try:
@@ -239,6 +334,8 @@ def main() -> int:
           not r_f2.ok and r_f2.escalate, f"{r_f2.error_code} esc={r_f2.escalate}")
     check("F3 错误码带原始 kind",
           (r_f1.error_code or "").endswith("TIMEOUT"), str(r_f1.error_code))
+
+    _retry()
 
     # ---- G 组装 ----
     print()
