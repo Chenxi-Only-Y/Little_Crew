@@ -63,7 +63,8 @@ Little_Crew/
 │   ├── consistency-calibration/  L2 标定实验 + degradations/ 退化图
 │   ├── review-evidence/          M5 门禁测量脚本与报告
 │   ├── llm-crew/                 真实 LLM 职位跑通下游的证据（图 + 运行报告）
-│   └── threshold-calibration/    通过阈值的 10 次实测标定（raw/summary/README）
+│   ├── threshold-calibration/    通过阈值的 10 次实测标定（raw/summary/README）
+│   └── cast-consistency/         新算子的真实发生率测量（163 镜，0% 命中）
 ├── outputs/                      【产物】不入库（证据图不放这里，见 §1.0.2）
 ├── logs/                         【日志】不入库
 ├── ARCHITECTURE.md               【架构总纲】代码怎么分层、依赖方向

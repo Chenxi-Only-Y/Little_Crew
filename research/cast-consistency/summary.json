@@ -1,0 +1,27 @@
+{
+  "nSources": 3,
+  "runsPerSource": 2,
+  "validRuns": 6,
+  "totalShots": 163,
+  "soloMarkedShots": 1,
+  "soloViolations": 0,
+  "explicitCountMismatches": 0,
+  "allViolations": 0,
+  "incidenceRate": 0.0,
+  "soloIncidence": 0.0,
+  "bySource": {
+    "薰衣草": {
+      "shots": 48,
+      "fired": 0
+    },
+    "都市悬疑": {
+      "shots": 64,
+      "fired": 0
+    },
+    "山野奇谭": {
+      "shots": 51,
+      "fired": 0
+    }
+  },
+  "examples": []
+}

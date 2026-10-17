@@ -1,0 +1,2240 @@
+[
+  {
+    "source": "薰衣草",
+    "ok": true,
+    "scriptAccepted": true,
+    "scriptRounds": 3,
+    "shotCount": 23,
+    "wallSeconds": 336.3,
+    "shots": [
+      {
+        "shotId": "SH-M001-S01-001",
+        "shotSize": "full",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "全景。天刚亮的薰衣草田，薄雾缠在山腰，紫色花垄一直铺到远处。阿薰蹲在田垄间，手指掐断花茎，露水打湿了裤脚，竹篮里的花堆成小丘。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S01-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "中近景。阿薰直起腰，抬手抹了下额角，望向山脚那条空荡荡的土路，抿了下嘴，又低头继续采花。晨光从侧面照在她脸上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S02-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "阿薰",
+          "买菜妇人"
+        ],
+        "nChars": 2,
+        "description": "中全景。集市布摊上码着一束束薰衣草，阿薰站在摊后。买菜妇人挑了一束，皱眉丢下两枚硬币转身走。阿薰没吭声，把硬币收进围裙口袋。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S02-002",
+        "shotSize": "medium",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "中景。背着旧帆布包的旅人停在摊前，拿起一束花凑近闻了闻，开口说话。阿薰点头，日光下摊布上的紫色花束很扎眼。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S02-003",
+        "shotSize": "close",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "近景。旅人付了钱却没走，盯着阿薰的脸看，说「你长得像一个人」。阿薰把手里的花往篮子里一丢，侧过脸回他一句，眼神防备。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S03-001",
+        "shotSize": "full",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "全景。黄昏的薰衣草田边，阿薰挑着空篮沿田埂走来，旅人站在田边等着，夕阳把两人的影子拉得很长。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S03-002",
+        "shotSize": "medium",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "中景。旅人摊开手跟上来，边走边说「我在找一个人，三十年前从这座山下去的」。阿薰脚步没停，扁担在肩上轻轻晃。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S03-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "中近景。旅人说出「他姓陈，左眉上有道疤」，阿薰的扁担晃了一下，她站住回头看他，暮色里眉头皱起。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S04-001",
+        "shotSize": "medium",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "中景。黄昏土路上，旅人拦住阿薰的去路，说「我在车站等了他三个月」。阿薰把扁担往地上一顿，抬眼盯着他。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S04-002",
+        "shotSize": "close",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "近景。阿薰指着旅人，声音发紧：「我妈说他下山第三天就摔断了腿——你连他出了什么事都不知道。」旅人的脸一下子白了。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S04-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "阿薰",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "中近景。旅人张了张嘴没发出声，肩膀微微后缩。阿薰冷笑一声，挑起担子转身走开，走出一段脚步慢了半拍，没回头。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S05-001",
+        "shotSize": "medium",
+        "characters": [
+          "阿薰",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "中景。夜里的灶房，灶火一跳一跳映在墙上。阿薰蹲在灶前添柴，母亲在案板前切菜，暖红火光笼着两人。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S05-002",
+        "shotSize": "close",
+        "characters": [
+          "母亲"
+        ],
+        "nChars": 1,
+        "description": "近景。母亲切菜的手停住，刀刃压在萝卜上半天没动，低声说「你爸」。灶火在她脸边忽明忽暗。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S05-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "阿薰",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "中近景。阿薰猛地抬头追问，母亲背对着她继续切菜，刀起刀落，攥紧围裙角，眼睛盯着灶火说「我找了他二十年」。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S06-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "中全景。祖母的旧屋，油灯昏黄。阿薰蹲在地上翻出旧木箱，樟脑味仿佛扑面，箱底压着一本旧相册。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S06-002",
+        "shotSize": "close",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "近景。阿薰翻到相册中间，手停住。黑白照片上祖母站在薰衣草田里，身边一个左眉有浅疤的年轻人。她把照片翻过来，背面一行褪色钢笔字。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S06-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "阿薰"
+        ],
+        "nChars": 1,
+        "description": "中近景。阿薰攥着照片坐了很久，油灯爆了个灯花，光在她脸上跳了一下，她一动不动。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S07-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "旅人",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "中全景。夜里堂屋门口，旅人站在门槛外没进来。母亲从灶房出来，看见他，手里的抹布掉在地上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S07-002",
+        "shotSize": "close",
+        "characters": [
+          "母亲",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "近景。母亲突然吼出来「你还有脸来？尸首是我认的」，胸口剧烈起伏。旅人往后退了一步，又站住。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S07-003",
+        "shotSize": "medium",
+        "characters": [
+          "阿薰",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "中景。阿薰把照片拍在桌上，指着照片问「背面写着『等我回来』——他到底回没回来」。母亲看着照片，嘴唇抖了抖，没说话。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S08-001",
+        "shotSize": "medium",
+        "characters": [
+          "旅人",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "中景。院门外，月光照着旅人半张脸，他说「让我去给他烧张纸吧，就一次」。母亲手里攥着一包干粮，指节发白。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S08-002",
+        "shotSize": "close",
+        "characters": [
+          "母亲"
+        ],
+        "nChars": 1,
+        "description": "近景。母亲张了张嘴几乎要点头，又硬生生咽回去，把干粮往他怀里一塞，说「纸不用你烧」。月光下她的手在抖。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M001-S08-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "母亲",
+          "阿薰"
+        ],
+        "nChars": 2,
+        "description": "中近景。母亲转身往屋里走，到门槛又停住，背对着说「后山，往东第三棵松树底下」，跨进门把门板掩上一半。阿薰站在门里，看见母亲的手按在门板上很久没松开。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      }
+    ]
+  },
+  {
+    "source": "薰衣草",
+    "ok": true,
+    "scriptAccepted": true,
+    "scriptRounds": 3,
+    "shotCount": 25,
+    "wallSeconds": 570.5,
+    "shots": [
+      {
+        "shotId": "SH-M002-S01-001",
+        "shotSize": "full",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "清晨天未亮透，薰衣草田笼罩在蓝灰色薄雾中。少女蹲在田垄间剪花，露水打湿裤脚，田边木牌字迹斑驳。远处田埂上，一个灰外套背包人影静静站立。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S01-002",
+        "shotSize": "medium",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "少女直起腰，用袖子蹭了蹭木牌上被风雨磨掉的字，只剩“祖母”二字依稀可辨。她忽然看见田埂上的旅人，剪刀往桶里一丢，抄起扁担横在身前。旅人灰外套上沾着泥点，背包带子松垮。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S01-003",
+        "shotSize": "close",
+        "characters": [
+          "旅人"
+        ],
+        "nChars": 1,
+        "description": "旅人从兜里摸出一张旧车票，票面泛黄，日期模糊但能辨出三十年前。他手指粗糙，捏着车票递向前，眼神疲惫而恳切。背景是虚化的薰衣草田和晃动的木牌。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S02-001",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "旅人盯着木牌，少女把扁担往地上一顿，两人隔着田埂对峙。晨光从山脊后透出，把两人的影子拉长在花田上。少女眉头紧锁，旅人嘴唇微动。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S02-002",
+        "shotSize": "close",
+        "characters": [
+          "旅人"
+        ],
+        "nChars": 1,
+        "description": "旅人从背包侧兜摸出一小把干薰衣草，颜色灰败，花瓣脆裂。他低头看着干花，肩膀微微塌下，低声说话。晨光打在他侧脸，眼角皱纹很深。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S02-003",
+        "shotSize": "medium",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "少女手指在扁担上收紧，指节发白。旅人终于低声说出“她姓沈”，少女眼神一震。太阳完全跃出山脊，金色光线铺满薰衣草田，两人僵立在田埂上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S03-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "黄昏堂屋，灶火映红墙壁。少女把花桶搁在门口，母亲蹲在灶前添柴，火苗从灶口舔出。屋内陈设简朴，墙上挂着旧年画，光线昏黄温暖。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S03-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "母亲"
+        ],
+        "nChars": 1,
+        "description": "母亲添柴的手停住，火苗映在她脸上忽明忽暗。她猛地盖上灶盖，站起来去舀水，水瓢磕在缸沿上发出脆响。她背对少女，肩膀绷紧。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S03-003",
+        "shotSize": "close",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "少女盯着母亲的背影，眼神里满是怀疑和追问。灶火的光在她脸上跳动，她嘴唇紧抿，手攥着衣角。背景是昏暗的堂屋和灶台。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S04-001",
+        "shotSize": "medium",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "深夜祖母旧屋，月光从窗缝漏进来。少女摸黑撬开樟木箱铜扣，箱盖弹起，陈年薰衣草味弥漫。她跪坐在地上，翻出铁皮盒，里面有一张旧照片。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S04-002",
+        "shotSize": "close",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "少女捏着照片，照片上祖母年轻时的模样和身边穿白衬衫的年轻人清晰可见。她翻到背面，看到洇开的字迹“阿沅，等我回来”。月光照亮她震惊的脸。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S04-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "少女听见堂屋传来脚步声，慌忙把照片塞进衣兜，箱子来不及归位，只虚掩盖子。她侧身看向旧屋门口，月光下门缝透出走廊的微光。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S05-001",
+        "shotSize": "medium",
+        "characters": [
+          "母亲",
+          "少女"
+        ],
+        "nChars": 2,
+        "description": "母亲推开门，看见虚掩的箱盖，脸一下白了。少女站在箱子旁，把照片攥在背后。旧屋昏暗，只有走廊灯光斜照进来，两人影子投在墙上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S05-002",
+        "shotSize": "close",
+        "characters": [
+          "母亲"
+        ],
+        "nChars": 1,
+        "description": "母亲伸手要照片，手悬在半空抖得厉害，终于垂下去。她坐到床沿上，别过脸，眼里有火又含泪，声音沙哑地说出“那个人……是你父亲”。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S05-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "少女把照片拍在箱盖上，冷笑质问。母亲突然抬头，一巴掌拍在箱盖上，声音哑了。少女抓起照片转身就走，母亲在背后喊她名字，她没回头。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S06-001",
+        "shotSize": "full",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "夜色中的薰衣草田，月光洒在花穗上泛着银光。少女从田埂那头跑来，手里举着照片，衣角被风吹起，远处田边坐着裹灰外套的旅人。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S06-002",
+        "shotSize": "medium",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "少女把照片举到旅人脸前，旅人接过去，手指在照片上停了好久。月光下他眼圈渐红，嘴唇动了动，终于承认“是我”。少女站在他面前，呼吸急促。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S06-003",
+        "shotSize": "close",
+        "characters": [
+          "旅人"
+        ],
+        "nChars": 1,
+        "description": "旅人翻过照片，看见背面洇开的字迹，眼泪涌出。他攥着照片，声音颤抖地说出“阿沅……是你祖母。我是她弟弟”。月光照亮他脸上的泪痕和深深的皱纹。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S06-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "nChars": 2,
+        "description": "少女后退一步，盯着旅人，问出“那你为什么三十年不回来”。旅人攥着照片低头，肩膀微微颤抖。夜色中薰衣草田静默，远处山影模糊。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S07-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "深夜堂屋，油灯昏黄。母亲坐在桌边，桌上摊着一封拆开的信。少女推门进来，把照片放在信旁边。屋内陈设简朴，墙上挂着旧照片和干花束。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S07-002",
+        "shotSize": "close",
+        "characters": [
+          "母亲"
+        ],
+        "nChars": 1,
+        "description": "母亲盯着照片，手按在信纸上，指节发白。她低声说出“你……是我在田边捡的”，眼泪掉在信纸上洇开。油灯光映着她颤抖的嘴唇。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S07-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "少女像被抽了一巴掌，扶住桌沿，声音发紧地问“那我呢？我是不是你生的”。母亲闭上眼点头，把信推过来。少女拿起信，纸很脆，字迹歪歪扭扭。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S08-001",
+        "shotSize": "close",
+        "characters": [
+          "少女"
+        ],
+        "nChars": 1,
+        "description": "少女展开信，祖母歪歪扭扭的字迹一笔一划很吃力。油灯光照亮信纸，少女读到“娃她妈”三个字时，手指微微发抖，抬头看向母亲。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S08-002",
+        "shotSize": "medium",
+        "characters": [
+          "母亲",
+          "少女"
+        ],
+        "nChars": 2,
+        "description": "母亲低着头，声音很轻地说出真相。少女把信折好，声音很轻地说“所以他不是我爸，他是把我抱回来的人”。母亲沉默，油灯火焰摇曳。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M002-S08-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "少女",
+          "母亲"
+        ],
+        "nChars": 2,
+        "description": "少女站起来说“我去告诉他，信我看了。然后——让他走”。母亲拉住她袖子问“那你还认我这个妈吗”。少女抽回袖子，没答，推门走进夜色。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      }
+    ]
+  },
+  {
+    "source": "都市悬疑",
+    "ok": true,
+    "scriptAccepted": true,
+    "scriptRounds": 3,
+    "shotCount": 32,
+    "wallSeconds": 413.0,
+    "shots": [
+      {
+        "shotId": "SH-M003-S01-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "凌晨两点的公寓客厅，只有桌上一盏台灯亮着。陈默坐在桌前，面前一杯凉透的茶。手机屏幕朝上，亮着陌生号码的来电，第七次震动。他低头盯着那串数字，拇指悬在屏幕上方。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S01-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "特写陈默的脸，台灯从侧面照出他下颌的阴影。他按下拒接，屏幕暗下去的一瞬映在他瞳孔里。他伸手把手机翻面扣在桌上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S01-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "手机贴着桌面第八次震动，嗡嗡声里桌面微微发颤。陈默端起凉茶起身走到水池前，把茶泼掉，杯底磕在瓷壁上。他背对镜头低声说了一句，门外门铃突然响起。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S02-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默走到公寓门边，走廊灯坏了，猫眼里只透出应急灯幽幽的绿光。他俯身凑近猫眼往外看，门外空无一人。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S02-002",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "门开一道缝，地上一个牛皮纸信封，边缘被雨洇湿一角。陈默弯腰快速把信封捡进来，反手把门锁上，背靠着门板喘了口气。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S02-003",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "桌前，陈默用美工刀挑开信封，一张泛黄的老照片滑出来。照片上两个男孩站在天台，一个在笑，一个低头往下看。刀尖划过他食指，血珠渗出。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S02-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "照片背面，血洇开一小片暗红，红痕里浮出几个极淡的铅笔字，歪斜细小。陈默的手指僵在照片边缘，指腹还带着血。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S03-001",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默把照片举到台灯下，暖黄光透过泛黄的相纸。铅笔字在光里显形：「你数过天台上有几块砖吗？」他眉头拧紧。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S03-002",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "手机在桌上震动，陈默本能转头去看，是运营商催费短信。他骂了一声，把手机扔到沙发上，转身走向厨房。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S03-003",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "厨房水龙头哗哗响，陈默低头冲手指。客厅传来一声轻响，像什么东西蹭过窗户。他关掉水，侧耳听，屋里一片安静。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S03-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默走回客厅，窗帘没拉严，留着一道缝。他伸手去拉，指尖刚碰到布面，对面楼里一道白光倏地亮起，直直照在他脸上，他眯起眼。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S04-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "白光刺得陈默偏过头，他一把扯严窗帘，布料哗地合拢。他转身冲进卧室翻出手电筒，又回到窗边。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S04-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默掀开窗帘一条缝，举起手电朝对面回照。光柱穿过夜色打在对面的窗上，那扇窗里什么也看不清。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S04-003",
+        "shotSize": "full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "对面突然爆出一团更强的白光，整面窗帘被照透，屋里亮如白昼。陈默像被扇了一巴掌，踉跄后退，手电脱手滚到墙角。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S04-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默抓起手机，屏幕先一步亮起，一条彩信。附件是从对面角度拍的：窗帘缝里他举着手电的半张脸，拍摄时间十秒前。下面一行字：「你照回来的光，我收到了。」",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S05-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默把手机摔在桌上，又立刻捡回来，翻看那张照片。他深吸一口气，强迫自己坐到椅子上，把照片翻到背面凑近台灯。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S05-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默用指甲刮照片背面的铅笔字，字迹不掉，像写进纸里。他忽然想起什么，打开手机相册往前翻。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S05-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "手机屏幕上是一张对面楼的夜景照，放大再放大，其中一扇窗里有个模糊的人形轮廓。他把两张照片并排放在桌上比对，手机又震了，一条文字：「别比了，那张里没有我。我在你后面。」",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S05-004",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默脊背一僵，缓缓回头。身后只有空荡荡的走廊和一面白墙，台灯的光在墙上拉出他长长的影子。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S06-001",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默盯着白墙看了十秒，确认没人，才转回身。门外传来金属摩擦声——钥匙插进锁孔。他浑身汗毛立起，蹑手蹑脚走到门边。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S06-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "钥匙在锁芯里慢慢转动，一格，又一格，卡住了。外面停了两秒，又试一次，转到底，锁舌咔地弹开一道缝，门缝透进一线光。陈默用肩膀死死抵住门，手摸到鞋柜上的美工刀攥紧。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S06-003",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "门外安静三秒，钥匙被抽走，脚步声往楼梯口去了。陈默喘着气低头，锁孔里留下半截断掉的钥匙，卡在锁芯里。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S06-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默转身想找工具，桌上那张照片背面在台灯余温下又浮出一行字：「你锁住的，是你自己。」他盯着那行字，脸色发白。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S07-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默用美工刀撬锁芯十分钟，锁芯纹丝不动。他抹了把汗，抓起外套决定从楼梯间绕到天台。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S07-002",
+        "shotSize": "full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默拉开门冲进楼梯间，身后铁门砰地被风带上。他往上跑，昏暗的楼道里每上一层，就听见再上一层有同样的铁门被带上的声音。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S07-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "五楼拐角，陈默停住，仰头朝上喊了一声「谁」。上面传来脚步声，不紧不慢，继续往上。他咬牙追上去。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S07-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "七楼天台门口，对面楼的强光从门缝射进来，正照在陈默脸上。手机同时响起，他接起来，听筒里一个经过变声的声音说：「你终于上来了。往下看。」",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S07-005",
+        "shotSize": "full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默走到天台边缘往下看。楼下地面，一个穿黑雨衣的人正仰头举着手机拍他，然后转身走进单元门。夜色里雨衣反着微光。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S08-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默趴在栏杆上，看着黑雨衣消失在单元门里。他转身要下楼，脚下一滑，天台地面是湿的。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S08-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "一串湿脚印从楼梯口延伸过来，停在他脚边。陈默蹲下细看，脚印的走向不是通向边缘，而是从边缘绕回楼梯口，像有人上来站了一会儿又下去。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S08-003",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "陈默顺着脚印走到楼梯口最后一步，愣住。那枚脚印的鞋底纹路和他脚上这双一模一样，连左脚后跟磨偏的角度都相同。他抬起自己的脚对着脚印比了比，严丝合缝。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M003-S08-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "手机又震，变声短信：「你刚才走的那一圈，我替你走过一遍了。感觉怎么样？」陈默握着手机站在湿漉漉的天台上，夜风吹动他的衣角。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      }
+    ]
+  },
+  {
+    "source": "都市悬疑",
+    "ok": true,
+    "scriptAccepted": true,
+    "scriptRounds": 3,
+    "shotCount": 32,
+    "wallSeconds": 421.2,
+    "shots": [
+      {
+        "shotId": "SH-M004-S01-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中景。凌晨的公寓客厅，只有桌上一盏台灯亮着，暖黄光晕落在凉透的茶杯上。陈默坐在桌边，手机屏幕朝上亮着陌生号码，他手指在杯沿上缓慢摩挲，目光盯着手机不接。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S01-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。陈默伸手把手机屏幕扣在木桌面上，震动声闷住。他撑着桌沿站起来，脸上是压着的烦躁，台灯光从下方照出他下颌的阴影。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S01-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中近景。陈默站在门边，眼睛贴着猫眼往外看。门缝透进走廊应急灯的幽绿冷光，映在他半边脸上。他眉头一皱，视线落在门下方。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S01-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。门内地板上，一只牛皮纸信封边缘被雨水洇湿一角。陈默蹲下又站起，手里捏着信封，翻到背面，圆珠笔小字「陈默收」清晰可见，他后背绷紧，脸色发白。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S02-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中景。台灯下，陈默坐在沙发上，从信封里抽出一张泛黄照片。照片上是两个男孩站在天台，颗粒感很重。他捏着照片，指节发白。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S02-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。照片背面一行褪色铅笔字：「你往下看的那天，我看见了。」陈默猛地抬头，瞳孔收缩，窗外一道车灯白光扫过他的脸，随即暗下去。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S02-003",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中全景。陈默冲到窗边，一把拉开窗帘。楼下巷口空无一人，湿漉漉的地面反着路灯。镜头横移，对面楼顶的摄像头红灯亮着，镜头正对着这扇窗。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S02-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中近景。陈默退回沙发坐下，把照片扣在桌上，双手交握却止不住发抖。台灯只照亮他半张脸，另半边沉在暗处，眼神发直。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S03-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中景。陈默抓起手机，翻到八通未接来电列表，拇指按下第七通回拨。听筒贴在耳边，他屏住呼吸，眼睛盯着桌面。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S03-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。手机屏幕显示通话记录「已接听 两秒」，陈默盯着那行字，脸色骤变。他站起来，难以置信地又拨一次，听筒里传来机械女声「您拨打的号码是空号」。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S03-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中近景。陈默冲到门边检查链条，链条挂着。镜头横移到他手边，锁孔周围有几道新鲜金属划痕，在灯下泛着亮。他退后一步，呼吸变重。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S03-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。手机在桌上震动，屏幕亮起来自那个空号的短信：「别查了。你哥不想你查。」陈默盯着屏幕，喉结滚动，手指僵在半空。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S04-001",
+        "shotSize": "full",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "全景。白天，老周照相馆内，玻璃门被推开，风铃晃动。陈默走进来，柜台后墙上挂满旧照片，暗房门口透出红光。老周从暗房探出头，手上沾着显影液。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S04-002",
+        "shotSize": "medium",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "中景。陈默站在柜台前发问，老周擦着手，眼神躲闪，往暗房方向偏头。柜台玻璃下压着泛黄的样片，日光灯白得发冷。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S04-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "中近景。陈默把泛黄照片拍在柜台上，手指点着照片边缘的钢印。老周低头盯着照片，喉结动了动，嘴唇抿紧。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S04-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "近景。陈默往前逼近一步，压低声音说「我哥死了十二年了」。老周的手明显抖了一下，显影液从指缝滴落，但他把嘴闭得更紧，别过头去。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S05-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "中景。陈默不再逼问，拉过一把木椅坐下，姿态放缓。老周站在柜台后，双手撑着台面，日光灯下两人之间隔着一柜旧相机。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S05-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "中近景。陈默把手机推到柜台边，屏幕上是社区医院缴费单照片。老周猛地抬头，脸上血色褪去，嘴唇开始哆嗦。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S05-003",
+        "shotSize": "close",
+        "characters": [
+          "陈默",
+          "老周"
+        ],
+        "nChars": 2,
+        "description": "近景。老周声音低下去，描述戴口罩男人「左手虎口有块疤」，随后突然抓住陈默手腕，眼神哀求。陈默抽回手，表情冷硬，说「钱你留着，监控给我」。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S06-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中景。夜晚，陈默坐在电脑前，屏幕冷光照亮他的脸。监控录像一帧帧播放，戴口罩的男人在柜台前掏钱。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S06-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。陈默放大画面：男人弯腰捡卡片，卡片正面朝上停了两秒——「正诚律师事务所」门禁卡。他手指点着屏幕，截图保存。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S06-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中近景。陈默打开文档，光标闪烁。屏幕上打出「我哥陈朗，十二年前从天台坠落……他让我往下看，我看了，然后他松了手。」他删了又写，手停在键盘上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S06-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。陈默敲下「我知道是谁了。」但没有发送。他合上电脑，台灯下盯着那张泛黄照片，窗外天色开始泛青。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S07-001",
+        "shotSize": "medium",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中景。天将亮，陈默在桌前把U盘和三份打印稿分别装进三个信封，信封上分别写着「市局刑警队」「晚报调查组」「我哥墓前」。他写到最后一个时苦笑。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S07-002",
+        "shotSize": "close",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "近景。陈默给空号发短信：「明天下午三点，正诚律所楼下咖啡厅，我一个人来。」发送后，他拔出手机卡，两手一掰，扔进垃圾桶。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S07-003",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默"
+        ],
+        "nChars": 1,
+        "description": "中全景。晨光从窗外透进来。陈默走到窗边，面对对面楼顶的摄像头，慢慢举起那张泛黄照片，让镜头看清。窗外天空是灰蓝色的。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-001",
+        "shotSize": "full",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "全景。白天，律所楼下咖啡厅，落地窗外是街道。周正西装革履坐在靠窗的桌边，左手虎口一道旧疤。陈默从门口走进来，在他对面坐下。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-002",
+        "shotSize": "medium",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "中景。周正开门见山说「照片是我寄的」，陈默把手机放在桌面，屏幕亮着录音界面。两人隔桌对视，咖啡杯冒着热气。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "中近景。陈默往前倾，手指点着手机屏幕上的门禁卡截图，逐条说出监控时间戳对不上、老周记得的那句话。周正的笑容一点点僵住。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-004",
+        "shotSize": "close",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "近景。周正突然伸手抢过手机，狠狠摔在地上，屏幕碎裂。他揪住陈默衣领，脸贴近，面目狰狞。陈默被按在桌面上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-005",
+        "shotSize": "close",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "近景。陈默低声说「我手机云备份实时上传，你摔的只是第二台」。周正愣住松手。陈默整理衣领，从口袋掏出另一部手机，屏幕显示「通话中——110」。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M004-S08-006",
+        "shotSize": "medium_full",
+        "characters": [
+          "陈默",
+          "周正"
+        ],
+        "nChars": 2,
+        "description": "中全景。周正后退两步转身想走，咖啡厅门口已经进来两个便衣。陈默站在桌边，碎裂的手机躺在地上，窗外街道照进白光。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      }
+    ]
+  },
+  {
+    "source": "山野奇谭",
+    "ok": true,
+    "scriptAccepted": false,
+    "scriptRounds": 3,
+    "shotCount": 26,
+    "wallSeconds": 347.5,
+    "shots": [
+      {
+        "shotId": "SH-M005-S01-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "全景。清晨的雾灵山密林，浓雾弥漫，能见度极低，老赵背着斧头从画面右侧走入，身影在雾中若隐若现，周围是高大的松树和湿漉漉的草丛。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S01-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中景。老赵停下脚步，用袖子擦脸，眉头紧锁，嘴里嘟囔着，背景是浓雾和模糊的树影。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S01-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。老赵脚下一滑，半截身子陷进草丛，他低头一看，露出惊讶的表情，镜头推近他脚下的青石井沿，上面刻满密密麻麻的字，石面冰凉崭新。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S01-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中近景。老赵猛地直起身，后背发凉，回头张望，身后只有他自己的脚印从林子那头延伸过来，新鲜清晰，他脸上露出恐惧的神色。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S02-001",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中景。老赵蹲在井边，用手指抠井沿上的刻字，石屑簌簌往下掉，他神情紧张，背景是雾气缭绕的树林。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S02-002",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。老赵捡起一块尖石，照着井沿上的字刻了一笔，刻痕出现时，井里那片天忽然暗了一瞬，云停住了，他吓得往后一坐，尖石脱手。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S02-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中近景。老赵喘着粗气站起来，盯着井沿上自己刚刻的那一笔正慢慢变浅，像被抹平，他头皮发麻，转身想走，却发现斧头不见了。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S03-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "全景。老赵顺着来路往回找斧头，走在密林小径上，雾气稍散，阳光透过树叶洒下斑驳光影，他四处张望。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S03-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中景。老赵看见前面有个人影，穿着和他一样的蓝布褂子，正蹲在地上摸斧头，他指着那人大喊。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S03-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。假老赵慢慢转过头，脸和老赵一模一样，但眼神空洞，咧嘴一笑，拎起斧头就往井边跑，老赵踉跄后退，撞在松树上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S03-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中近景。老赵追了两步，脚被藤蔓绊住，摔得满嘴泥，他爬起来再看，假老赵已经站在井边，把斧头扔进了井里。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S04-001",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中景。老赵冲到井边，井里那片天已经不见了，只剩黑漆漆的深洞，他趴着井沿往下喊，回声传上来。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S04-002",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。老赵一激灵，抬头看见井沿上多了一行字，是他自己的笔迹：“拿东西换。”他摸遍全身，只摸出半块干粮。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S04-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中近景。老赵把干粮扔进井里，等了一会儿，井底传来咀嚼声，然后斧头“嗖”地飞出来，插在他脚边。他拿起斧头，发现斧柄上多了三道刻痕，像被鹰爪抓过。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S05-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "全景。老赵扛着斧头往山外走，林子里静得没有一声鸟叫，几棵歪脖子树横在路上，他停下脚步，冲林子喊。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S05-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "中景。树叶哗啦啦响，走出一个白胡子老头，穿着旧道袍，手里拄着根竹杖，眯眼笑。老赵握紧斧头。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S05-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "特写。老头用竹杖点了点老赵的斧柄，伸出三根手指，老赵低头一看，斧柄上果然三道刻痕，他咬牙问：“哪三样？”老头说：“你的名，你的脸，你的路。”",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S06-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "全景。老头把老赵领到一座塌了半边的山神庙，庙里供着一尊没脸的神像，阳光从破洞照进来，尘埃飞舞。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S06-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "中景。老赵一屁股坐在门槛上，愁眉苦脸，老头站在旁边，从袖子里摸出一张黄纸。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S06-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "特写。老赵提笔要写，忽然停住，把笔一摔：“我不写！我下山自己找路！”老头叹口气：“那你走三步试试。”",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S07-001",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中景。老赵扛起斧头就走，数着步子，一步，两步，第三步刚落地，眼前的林子忽然变成一片悬崖，他收脚不及，整个人往前栽。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S07-002",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。老赵悬在半空，一把抓住崖边的树根，听见井里那个声音在耳边笑，他咬牙爬上来，瘫在地上。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S07-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "中近景。老赵低头一看，黄纸和笔就放在他脚边，纸上已经有一个淡淡的“赵”字，他盯着那个字，手抖得握不住笔。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S08-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "全景。黄昏，老赵回到井边，老头已经等在那里，天边泛着橘红色，井口泛着微光。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S08-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵",
+          "老头"
+        ],
+        "nChars": 2,
+        "description": "中景。老赵把写好的黄纸递过去，老头接过来看了看，扔进井里，井里那片天又出现了，云走得飞快，鹰俯冲下来叼走了黄纸。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M005-S08-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "特写。老赵觉得喉咙一紧，张嘴想说话却发不出声，他拎着斧头往山下走，走了十几步，忍不住回头看了一眼——井边站着一个人，穿着蓝布褂子，正冲他挥手，嘴型像是在喊“老赵”。老赵摸摸自己的脸，还在，但他已经想不起自己叫什么了。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      }
+    ]
+  },
+  {
+    "source": "山野奇谭",
+    "ok": true,
+    "scriptAccepted": true,
+    "scriptRounds": 3,
+    "shotCount": 25,
+    "wallSeconds": 422.5,
+    "shots": [
+      {
+        "shotId": "SH-M006-S01-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "晨雾弥漫的半山腰，湿漉漉的落叶松林间，老赵背着油锯从画面右侧走入，抬头张望，雾中隐约露出一圈青石井沿。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S01-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵蹲在青石井沿旁，卸下油锯搁在脚边，低头用指甲刮井沿上的苔藓，指腹被石棱划出一道血痕，他皱眉缩手。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S01-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵探头往井里看，井底没有水，映着一片流动的云和一只盘旋的鹰，鹰翅下露出一截带粉笔记号的松树梢，老赵瞳孔骤缩。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S01-004",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵猛地直起腰，油锯还在脚边，他四下张望坡上的松林，脸上满是困惑，晨雾在他身后缓缓流动。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S02-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "老赵抄起油锯沿山坡奔跑，迎面撞上气喘吁吁的李二，李二手里攥着一块玉片，两人在晨雾中的林间小道上撞个满怀。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S02-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "李二",
+          "老赵"
+        ],
+        "nChars": 2,
+        "description": "李二一把将玉片按在老赵划破的手指上，血渗进玉片，老赵后脖颈绷紧的筋慢慢松下来，李二盯着他的眼睛。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S02-003",
+        "shotSize": "medium",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "两人站在老松前，树根周围的泥土翻新湿润，粉笔记号还清晰，李二脸色阴沉地看着地面，老赵握着油锯欲上前。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S03-001",
+        "shotSize": "medium_full",
+        "characters": [
+          "李二",
+          "老赵"
+        ],
+        "nChars": 2,
+        "description": "李二家木屋里，桌上摆着玉片和两碗酒，李二坐在桌边，老赵坐在对面，窗外日光照进来，屋里烟雾缭绕。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S03-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "李二",
+          "老赵"
+        ],
+        "nChars": 2,
+        "description": "李二按住桌上的玉片，身体前倾，手指点着桌面，老赵伸手去够玉片，两人手在桌面上方对峙。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S03-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "老赵拍案而起，椅子向后倒去，他脸上带着怒气，李二坐着没动，玉片留在桌上，门口的光线勾勒出老赵的侧影。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S04-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "午后山林，老赵独自背着油锯沿小路上山，阳光透过树冠洒下斑驳光影，他兜里空空，表情倔强。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [
+          "独自"
+        ],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S04-002",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵站在井边老松前，树身上多出一圈刻痕，他猛地回头张望，林间空无一人，只有风吹动树叶。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S04-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵低头看自己的脚印，最后一枚旁边多出半枚朝后的脚印，他身体一僵，手不自觉地摸向肩上的油锯。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S04-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵拉响油锯，锯链飞转，声音在井口绕了一圈又原样传回，他侧耳倾听，脸上露出不安。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S05-001",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "黄昏的井边，老赵咬牙将油锯对准松树，推下第一刀，井里传来哗啦一声响，他动作一顿。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S05-002",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵回头，井底天空翻转，云倒着走，鹰从云底钻出，井口碎石全部立起悬浮，黄昏光线诡异。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S05-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵惊慌地摸向空兜，脸上血色褪尽，井里鹰开始转圈，他脚边的脚印齐齐翻面，脚尖朝井口。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S05-004",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵扑过去抓油锯，锯链卡进石缝，他用力拽了两下，井里鹰叫一声，他后脖颈一麻，眼前开始发黑。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S06-001",
+        "shotSize": "medium",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "夜色中，老赵半眯着眼摸到一块碎石，朝井里鹰的方向砸去，石头落入井中，天空裂开一道缝。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S06-002",
+        "shotSize": "close",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵连滚带爬后退，脚脖子被立起的脚印缠住，像手一样抓他，他挣断鞋带脱身，油锯还在井口卡着。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S06-003",
+        "shotSize": "medium_close",
+        "characters": [
+          "李二",
+          "老赵"
+        ],
+        "nChars": 2,
+        "description": "李二从林子里冲出，将玉片按在老赵眉心，玉片贴上后脚印松开，井沿崩掉一块，刻字缺角，李二拽着老赵。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S06-004",
+        "shotSize": "full",
+        "characters": [
+          "老赵"
+        ],
+        "nChars": 1,
+        "description": "老赵被李二拽着离开，回头看见油锯被井口慢慢吞入，锯链最后响了一声，夜色中井口恢复平静。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "1 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S07-001",
+        "shotSize": "full",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "夜色浓重，李二扶着老赵摸黑下山，老赵一只眼发黑看不清，两人沿山坡小路缓慢行走，一路沉默。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S07-002",
+        "shotSize": "medium_close",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "老赵在半坡忽然停住回头，坡上老松好好立着，树身刻痕消失，像什么都没发生过，李二不回头。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      },
+      {
+        "shotId": "SH-M006-S07-003",
+        "shotSize": "close",
+        "characters": [
+          "老赵",
+          "李二"
+        ],
+        "nChars": 2,
+        "description": "老赵从兜里掏出半截锯链，断口崭新，李二看了一眼，指着老赵发黑的眼，老赵张嘴想争，忽然愣住，脸上浮现茫然。",
+        "passed": true,
+        "direction": "consistent",
+        "soloMarkers": [],
+        "detail": "2 人，描述无矛盾标记"
+      }
+    ]
+  }
+]
