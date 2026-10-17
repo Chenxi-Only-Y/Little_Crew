@@ -79,7 +79,7 @@ ComfyUI*/
 ComfyUI_windows_portable/
 comfyui*/
 /models/
-checkpoints/
+/checkpoints/
 loras/
 *.safetensors
 *.ckpt

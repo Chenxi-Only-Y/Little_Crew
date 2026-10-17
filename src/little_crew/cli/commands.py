@@ -331,7 +331,7 @@ _SAMPLE_SCRIPT = """[场1] 山中·午后
 def cmd_episode(args: Any) -> int:
     """跑一集 —— 剧本 → 分镜 → 角色定妆 → 渲染 → 门禁 → 合成。"""
     from little_crew.agent.crew_stubs import default_crew_stubs
-    from little_crew.agent.orchestrator import CrewOrchestrator
+    FAILURE_ACTIONS, CrewOrchestrator
     from little_crew.models.spec import BackendKind
     from little_crew.runtime.cache import ContentCache
     from little_crew.runtime.cached_render import (CachingRenderer,
@@ -456,19 +456,8 @@ def cmd_episode(args: Any) -> int:
                     lines.append(f"    ⚠️ {rep[:96]}")
     # **告诉用户该做什么**，而不是只告诉他没成。
     # 这三类的处置完全不同：重派 / 换族重审 / 返工。
-    _ACTION = {
-        "review-failed": "评审调用失败 —— **与产物无关**，重跑即可",
-        "review-invalid": "判定作废 —— 换一个模型族的审核方重审",
-        "blocked": "仍有阻断级问题 —— 需要返工",
-        "below-threshold": "没有硬伤但分数不够 —— 可返工或放宽阈值",
-        "script-failed": "编剧阶段失败 —— 重试",
-        "script-invalid": "编剧产出格式非法 —— 需要改提示词",
-        "storyboard-failed": "分镜阶段失败 —— 需要改提示词",
-        "rejected": "被明确驳回 —— 需要人工介入",
-        "escalated": "已升级人工",
-    }
-    if res.failure_kind in _ACTION:
-        lines.append(f"  处置   {_ACTION[res.failure_kind]}")
+    if res.failure_kind in FAILURE_ACTIONS:
+        lines.append(f"  处置   {FAILURE_ACTIONS[res.failure_kind]}")
     lines.append(f"  结果   {'✅ ' if res.ok else '⚠️ '}{res.reason}")
 
     # 报告落盘（`--json` 只是把它也打到 stdout）

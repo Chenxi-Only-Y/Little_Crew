@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import ast
 import os
+import fnmatch
 import sys
 from pathlib import Path
 
@@ -211,6 +212,67 @@ def _check_config_precedence() -> list[str]:
                     os.environ[k] = v
     return bad
 
+
+# ---------------------------------------------------------------------------
+# 存储守卫 ⑥：`.gitignore` 不得误伤源码包
+# ---------------------------------------------------------------------------
+#
+# ## 这条守卫是怎么来的
+#
+# 2026-10-17 真实事故：`.gitignore` 里写了裸的 `models/`，
+# 而 gitignore 的**裸名字会匹配任意深度** —— 于是
+# `src/little_crew/models/` 被整体忽略，**4 个源文件从未入库**。
+# 任何人 clone 下来 `import little_crew.models` 直接失败。
+#
+# 更糟的是它**不会报错**：`git status` 干净、本机测试全过、
+# `git ls-files | grep models` 空空如也却被误判成"空目录"。
+# 是 `git archive` 干净快照验证才抓到的。
+#
+# ## 为什么必须机器守
+#
+# 因为这类错误的**表现形式是"什么都没发生"** ——
+# 只有把"规则会不会匹配到源码包"这件事跑一遍，才能看见它。
+# 靠人读 .gitignore 是看不出来的（`models/` 看起来完全合理）。
+#
+# ## 判据
+#
+# `.gitignore` 里**未锚定**（不以 `/` 开头）的目录规则，
+# 不允许匹配到 `src/little_crew/` 下的任何包目录名。
+
+def _check_gitignore_shadows_src() -> list[str]:
+    """`.gitignore` 里未锚定的规则不得匹配到源码包目录。**返回违规说明列表。**
+
+    沿用本文件既有约定：返回 list[str]，空列表 = 通过。
+    """
+    gi = ROOT / ".gitignore"
+    if not gi.is_file():
+        return [".gitignore 不存在，无法校验"]
+
+    src = ROOT / "src" / "little_crew"
+    if not src.is_dir():
+        return [f"找不到源码包目录 {src}"]
+    pkgs = sorted(p.name for p in src.iterdir()
+                  if p.is_dir() and p.name != "__pycache__")
+    if not pkgs:
+        return ["源码包目录为空，无法校验"]
+
+    patterns = [ln.strip() for ln in gi.read_text(encoding="utf-8").splitlines()
+                if ln.strip() and not ln.strip().startswith(("#", "!"))]
+
+    problems: list[str] = []
+    for pat in patterns:
+        if pat.startswith("/"):
+            continue                     # 已锚到根 -> 不会命中 src/ 下面
+        base = pat.rstrip("/")
+        if not base or "/" in base:
+            continue                     # 带子路径的不会命中包目录
+        for pkg in pkgs:
+            if pkg == base or fnmatch.fnmatchcase(pkg, base):
+                problems.append(
+                    f".gitignore 规则 `{pat}` 会误伤 src/little_crew/{pkg}/"
+                    f"（未锚定 -> 匹配任意深度）"
+                    f"；应改成 `/{pkg}/` 只忽略根目录的同名目录")
+    return problems
 
 def main() -> int:
     try:
@@ -494,9 +556,11 @@ def storage_main() -> int:
     print(f"项目根: {ROOT}")
     print(f"白名单: {len(ALLOWED_ROOT_ENTRIES)} 个条目")
     print()
-    problems = _check_storage() + _check_config_precedence()
+    problems = (_check_storage() + _check_config_precedence()
+                + _check_gitignore_shadows_src())
     if not problems:
-        print("结果：PASS（项目根合规 · 凭据在项目外 · 配置取值规则成立）")
+        print("结果：PASS（项目根合规 · 凭据在项目外 · 配置取值规则成立"
+              " · .gitignore 未误伤源码包）")
         print("=" * 74)
         return 0
     print(f"发现 {len(problems)} 处违规：")
