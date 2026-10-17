@@ -1,0 +1,500 @@
+{
+  "episodeId": "E100",
+  "ok": true,
+  "scriptRounds": 3,
+  "scriptVerdict": "REVISE",
+  "plannedShots": 2,
+  "rendered": 2,
+  "cacheHits": 0,
+  "failed": 0,
+  "coverage": 1.0,
+  "totalSeconds": 11.0,
+  "wallSeconds": 560.56,
+  "playable": false,
+  "video": null,
+  "videoPath": "",
+  "characters": {
+    "kind": "character.library",
+    "episodeId": "E100",
+    "seed": "87ab003a27694677",
+    "count": 7,
+    "sheets": [
+      {
+        "kind": "character.sheet",
+        "name": "父亲",
+        "characterId": "CHAR-069A",
+        "appearance": {
+          "hair_style": "利落齐耳短发",
+          "hair_color": "墨绿挑染",
+          "eye_color": "琥珀",
+          "build": "清瘦文弱",
+          "outfit": "白色衬衫配马甲",
+          "outfit_accent": "胸前别一支干花",
+          "signature": "颈间挂着细绳坠子",
+          "age_band": "中年"
+        },
+        "promptFragment": "中年，清瘦文弱身形，墨绿挑染利落齐耳短发，琥珀眼睛，身穿白色衬衫配马甲，胸前别一支干花，颈间挂着细绳坠子",
+        "scenes": [
+          "SC-E100-002",
+          "SC-E100-003"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "旅人",
+        "characterId": "CHAR-12E5",
+        "appearance": {
+          "hair_style": "侧分长直发",
+          "hair_color": "墨绿挑染",
+          "eye_color": "酒红",
+          "build": "丰盈端庄",
+          "outfit": "亚麻长裙",
+          "outfit_accent": "肩头搭一匹短披肩",
+          "signature": "左手腕有一道旧疤",
+          "age_band": "青年"
+        },
+        "promptFragment": "青年，丰盈端庄身形，墨绿挑染侧分长直发，酒红眼睛，身穿亚麻长裙，肩头搭一匹短披肩，左手腕有一道旧疤",
+        "scenes": [
+          "SC-E100-001",
+          "SC-E100-003",
+          "SC-E100-004"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "母亲",
+        "characterId": "CHAR-568F",
+        "appearance": {
+          "hair_style": "及腰直长发",
+          "hair_color": "浅亚麻",
+          "eye_color": "琥珀",
+          "build": "丰盈端庄",
+          "outfit": "深蓝粗布工装",
+          "outfit_accent": "下摆绣一道细边",
+          "signature": "鬓角有一缕天生的浅色发",
+          "age_band": "中年"
+        },
+        "promptFragment": "中年，丰盈端庄身形，浅亚麻及腰直长发，琥珀眼睛，身穿深蓝粗布工装，下摆绣一道细边，鬓角有一缕天生的浅色发",
+        "scenes": [
+          "SC-E100-002"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "同村青年",
+        "characterId": "CHAR-6794",
+        "appearance": {
+          "hair_style": "蓬松微卷中长发",
+          "hair_color": "浅亚麻",
+          "eye_color": "浅灰",
+          "build": "娇小匀称",
+          "outfit": "深灰呢料外套",
+          "outfit_accent": "袖口卷起两道",
+          "signature": "眉间有一颗小痣",
+          "age_band": "青年"
+        },
+        "promptFragment": "青年，娇小匀称身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿深灰呢料外套，袖口卷起两道，眉间有一颗小痣",
+        "scenes": [
+          "SC-E100-001"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "老奶奶",
+        "characterId": "CHAR-BB1A",
+        "appearance": {
+          "hair_style": "侧分长直发",
+          "hair_color": "浅亚麻",
+          "eye_color": "琥珀",
+          "build": "结实挺拔",
+          "outfit": "白色衬衫配马甲",
+          "outfit_accent": "下摆绣一道细边",
+          "signature": "右耳戴一只小银环",
+          "age_band": "老年"
+        },
+        "promptFragment": "老年，结实挺拔身形，浅亚麻侧分长直发，琥珀眼睛，身穿白色衬衫配马甲，下摆绣一道细边，右耳戴一只小银环",
+        "scenes": [
+          "SC-E100-003"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "族长",
+        "characterId": "CHAR-C646",
+        "appearance": {
+          "hair_style": "侧分长直发",
+          "hair_color": "乌黑",
+          "eye_color": "琥珀",
+          "build": "娇小匀称",
+          "outfit": "靛蓝染布短褂",
+          "outfit_accent": "腰间系麻绳",
+          "signature": "鬓角有一缕天生的浅色发",
+          "age_band": "中年"
+        },
+        "promptFragment": "中年，娇小匀称身形，乌黑侧分长直发，琥珀眼睛，身穿靛蓝染布短褂，腰间系麻绳，鬓角有一缕天生的浅色发",
+        "scenes": [
+          "SC-E100-003"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "少女",
+        "characterId": "CHAR-DEF0",
+        "appearance": {
+          "hair_style": "高马尾",
+          "hair_color": "暗红棕",
+          "eye_color": "灰蓝",
+          "build": "清瘦文弱",
+          "outfit": "深灰呢料外套",
+          "outfit_accent": "腰间系麻绳",
+          "signature": "眉间有一颗小痣",
+          "age_band": "少年"
+        },
+        "promptFragment": "少年，清瘦文弱身形，暗红棕高马尾，灰蓝眼睛，身穿深灰呢料外套，腰间系麻绳，眉间有一颗小痣",
+        "scenes": [
+          "SC-E100-001",
+          "SC-E100-002",
+          "SC-E100-003",
+          "SC-E100-004",
+          "SC-E100-005"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      }
+    ]
+  },
+  "reason": "全部镜头就绪",
+  "failures": [],
+  "manifest": {
+    "kind": "episode.master",
+    "episodeId": "E100",
+    "title": "薰衣草",
+    "stage": "image",
+    "pendingStages": [
+      "video",
+      "audio"
+    ],
+    "shotCount": 2,
+    "totalSeconds": 11.0,
+    "shots": [
+      {
+        "shotId": "SH-E100-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "f91343c8_img_20261017_113011_4c18df.png"
+        ],
+        "ready": true
+      },
+      {
+        "shotId": "SH-E100-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "5e297b33_img_20261017_113028_645d23.png"
+        ],
+        "ready": true
+      }
+    ],
+    "createdAt": 1792207830.303668
+  },
+  "evidence": {
+    "kind": "delivery.evidence",
+    "episodeId": "E100",
+    "artifactCount": 2,
+    "artifacts": [
+      "f91343c8_img_20261017_113011_4c18df.png",
+      "5e297b33_img_20261017_113028_645d23.png"
+    ],
+    "irHashes": {
+      "SH-E100-S01-001": "sha256:feb94ba4187d6c7010ce3f231ebf95559500927d66190f0e319b02b864d845e9",
+      "SH-E100-S01-002": "sha256:de1a73b9617f993cc986e04d28f5eaace9b709ba065e4976c20d74e159751015"
+    },
+    "cache": {
+      "hits": 0,
+      "rendered": 2,
+      "secondsSaved": 0.0,
+      "secondsSpent": 114.03
+    },
+    "checks": {
+      "allShotsHaveArtifacts": true,
+      "allShotsWithinDurationLimit": true,
+      "manifestNonEmpty": true,
+      "artifactsUnique": true,
+      "hasContentHashChain": true
+    },
+    "allChecksPassed": true,
+    "gate": {
+      "results": [
+        {
+          "artifactId": "SH-E100-S01-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 1.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.721368,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-002",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        },
+        {
+          "artifactId": "SH-E100-S01-002",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_res_SH-E100-S01-002",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E100-S01-002",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 1.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E100-S01-002",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.721368,
+                "min": 0.7,
+                "otherShotId": "SH-E100-S01-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 3,
+            "passed": 3,
+            "blocking": 0,
+            "hard": 2
+          }
+        }
+      ],
+      "skippedConstraints": [
+        "SH-E100-S01-001/cr_dur_SH-E100-S01-001(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-001/cr_blind_SH-E100-S01-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E100-S01-002/cr_dur_SH-E100-S01-002(duration_within) 未执行：缺观测 ['durationSec']",
+        "SH-E100-S01-002/cr_blind_SH-E100-S01-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']"
+      ],
+      "availableObservations": [
+        "bytes",
+        "characterCount",
+        "consistencySignature",
+        "height",
+        "method",
+        "name",
+        "otherShotId",
+        "pairwise",
+        "plannedDurationSec",
+        "similarity",
+        "weakestDimension",
+        "width"
+      ],
+      "counts": {
+        "shots": 2,
+        "kept": 2,
+        "retry": 0,
+        "escalate": 0,
+        "skipped": 4
+      }
+    },
+    "gatePassed": true,
+    "createdAt": 1792207830.303668
+  }
+}
