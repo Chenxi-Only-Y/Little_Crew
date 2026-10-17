@@ -1,0 +1,292 @@
+[
+  {
+    "idx": 901,
+    "source": "lavender",
+    "maxScenes": 2,
+    "accepted": true,
+    "rounds": 3,
+    "sceneCount": 2,
+    "firstScore": 38.4,
+    "finalScore": 67.9,
+    "bestScore": 67.9,
+    "wallSeconds": 277.9,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 38.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 67.9,
+        "scenesWithIssues": 1
+      }
+    ]
+  },
+  {
+    "idx": 902,
+    "source": "lavender",
+    "maxScenes": 2,
+    "accepted": false,
+    "rounds": 3,
+    "sceneCount": 2,
+    "firstScore": 61.9,
+    "finalScore": 41.4,
+    "bestScore": 61.9,
+    "wallSeconds": 131.0,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 61.9,
+        "scenesWithIssues": 1
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      }
+    ]
+  },
+  {
+    "idx": 903,
+    "source": "lavender",
+    "maxScenes": 2,
+    "accepted": false,
+    "rounds": 3,
+    "sceneCount": 2,
+    "firstScore": 44.4,
+    "finalScore": 41.4,
+    "bestScore": 44.4,
+    "wallSeconds": 356.0,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 44.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      }
+    ]
+  },
+  {
+    "idx": 904,
+    "source": "lavender",
+    "maxScenes": 2,
+    "accepted": false,
+    "rounds": 3,
+    "sceneCount": 2,
+    "firstScore": 41.4,
+    "finalScore": 41.4,
+    "bestScore": 44.4,
+    "wallSeconds": 216.3,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 44.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      }
+    ]
+  },
+  {
+    "idx": 905,
+    "source": "lavender",
+    "maxScenes": 2,
+    "accepted": false,
+    "rounds": 3,
+    "sceneCount": 2,
+    "firstScore": 41.4,
+    "finalScore": 41.4,
+    "bestScore": 44.4,
+    "wallSeconds": 264.1,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 44.4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 41.4,
+        "scenesWithIssues": 2
+      }
+    ]
+  },
+  {
+    "idx": 901,
+    "source": "suspense",
+    "maxScenes": 8,
+    "accepted": false,
+    "rounds": 1,
+    "sceneCount": 7,
+    "firstScore": 0.0,
+    "finalScore": 0.0,
+    "bestScore": 0.0,
+    "wallSeconds": 906.8,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "scenesWithIssues": 0
+      }
+    ]
+  },
+  {
+    "idx": 902,
+    "source": "suspense",
+    "maxScenes": 8,
+    "accepted": true,
+    "rounds": 3,
+    "sceneCount": 5,
+    "firstScore": 47.4,
+    "finalScore": 70.8,
+    "bestScore": 70.8,
+    "wallSeconds": 317.2,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 53.2,
+        "scenesWithIssues": 4
+      },
+      {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 70.8,
+        "scenesWithIssues": 2
+      }
+    ]
+  },
+  {
+    "idx": 903,
+    "source": "suspense",
+    "maxScenes": 8,
+    "accepted": true,
+    "rounds": 3,
+    "sceneCount": 8,
+    "firstScore": 61.06,
+    "finalScore": 67.15,
+    "bestScore": 67.15,
+    "wallSeconds": 340.2,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 61.06,
+        "scenesWithIssues": 4
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.12,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 67.15,
+        "scenesWithIssues": 4
+      }
+    ]
+  },
+  {
+    "idx": 904,
+    "source": "suspense",
+    "maxScenes": 8,
+    "accepted": true,
+    "rounds": 2,
+    "sceneCount": 8,
+    "firstScore": 62.02,
+    "finalScore": 72.28,
+    "bestScore": 72.28,
+    "wallSeconds": 242.4,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 62.02,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 72.28,
+        "scenesWithIssues": 3
+      }
+    ]
+  },
+  {
+    "idx": 905,
+    "source": "suspense",
+    "maxScenes": 8,
+    "accepted": false,
+    "rounds": 1,
+    "sceneCount": 8,
+    "firstScore": 0.0,
+    "finalScore": 0.0,
+    "bestScore": 0.0,
+    "wallSeconds": 41.7,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "scenesWithIssues": 0
+      }
+    ]
+  }
+]
