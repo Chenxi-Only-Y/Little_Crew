@@ -281,6 +281,24 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print("=" * 78)
     print(f"结果：{'✅ 跑通一集' if res.ok else '⚠️ 未完全跑通'} —— {res.reason}")
+    # **失败分类 + 处置建议**（2026-10-17）：
+    # 只说"未通过"会让读者把三种完全不同的情况混成一个 ——
+    #   评审服务抽风 / 判定作废 / 产物真的不够好
+    # 它们的处置分别 是"重跑 / 换族重审 / 返工"，差别很大。
+    _ACTION = {
+        "review-failed": "评审调用失败 —— **与产物无关**，重跑即可",
+        "review-invalid": "判定作废 —— 换一个模型族的审核方重审",
+        "blocked": "仍有阻断级问题 —— 需要返工",
+        "below-threshold": "没有硬伤但分数不够 —— 可返工或放宽阈值",
+        "script-failed": "编剧阶段失败 —— 重试",
+        "script-invalid": "编剧产出格式非法 —— 需要改提示词",
+        "storyboard-failed": "分镜阶段失败 —— 需要改提示词",
+        "rejected": "被明确驳回 —— 需要人工介入",
+        "escalated": "已升级人工",
+    }
+    if res.failure_kind:
+        print(f"  失败分类 {res.failure_kind}")
+        print(f"  处置     {_ACTION.get(res.failure_kind, '（未登记）')}")
     print(f"  覆盖率 {res.coverage:.0%}（{res.rendered + res.cache_hits}"
           f"/{res.planned_shots} 镜有产物）")
     print(f"  墙钟 {wall:.1f}s   成片时长 {res.total_seconds:.1f}s")

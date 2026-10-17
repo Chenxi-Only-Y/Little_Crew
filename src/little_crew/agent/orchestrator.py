@@ -159,6 +159,37 @@ class CycleResult:
     accepted: bool = False
     #: 未接受时的说明
     reason: str = ""
+        #: **失败分类**（2026-10-17 加）—— 让报告能区分"服务抽风"与"产物不行"。
+    #:
+    #: ## 为什么需要它
+    #:
+    #: 在此之前，未通过只有 `accepted=False` + 一句自由文本 `reason`。
+    #: 于是报告上**这三种完全不同的情况长得一模一样**：
+    #:
+    #: | 实际情况 | 该怎么做 | 报告上的样子 |
+    #: |---|---|---|
+    #: | 评审调用失败（网络/限流） | **重派**，与产物无关 | 未通过 |
+    #: | 判定作废（自报不自洽/同族） | 换审核方重审 | 未通过 |
+    #: | 产物真的不够好 | **返工** / 升级人工 | 未通过 |
+    #:
+    #: 实测里 C 组 5 次有 2 次是**第一种**，但报告只写"未通过、0 分"——
+    #: 读者会合理地认为"这个题材质量差"，而那完全是误读。
+    #:
+    #: ## 取值
+    #:
+    #: | 值 | 含义 | 建议动作 |
+    #: |---|---|---|
+    #: | `""` | 通过（无失败） | — |
+    #: | `script-failed` | 编剧阶段执行失败 | 重试 |
+    #: | `script-invalid` | 编剧产出格式非法 | 改提示词 |
+    #: | `review-failed` | **评审调用失败** | **重派**（与产物无关） |
+    #: | `review-invalid` | 判定作废（自报/同族） | 换族重审 |
+    #: | `rejected` | 被明确驳回 | 人工 |
+    #: | `escalated` | 已升级人工 | 人工 |
+    #: | `blocked` | 仍有阻断级问题 | 返工 |
+    #: | `below-threshold` | 分数不够（无阻断问题） | 返工/放宽 |
+    failure_kind: str = ""
+
     #: 轮次用尽后是否应**升级人工**（2026-10-16 口径）。
     #:
     #: 非空时值为 `ESCALATE` 的字面量 —— 让调用方能区分
@@ -367,6 +398,35 @@ def _best_round(rounds: Sequence["RoundResult"]) -> "RoundResult | None":
     if not usable:
         return None
     return max(usable, key=lambda r: r.total)
+
+def _exhausted_kind(rounds: Sequence["RoundResult"]) -> str:
+    """轮次用尽时的失败分类。**按优先级**取主因。
+
+    | 优先级 | 判据 | 抛出 |
+    |---|---|---|
+    | 1 | 末轮被判作废 | `review-invalid` |
+    | 2 | 末轮仍有 `BLOCKER` 级意见 | `blocked` |
+    | 3 | 其余（无阻断、分数不够） | `below-threshold` |
+
+    **为什么作废优先**：作废意味着"这一轮的结论不被采信"，
+    而不是"产物不合格"。若把它归进 `below-threshold`，
+    读者会以为"质量不够"，而实际是**审核链没给出可用判定**。
+    """
+    if not rounds:
+        return "below-threshold"
+    last = rounds[-1]
+    if last.invalidated_reason:
+        return "review-invalid"
+    # ⚠️ 用 `issues`（**合并后的权威列表**），不是遍历各家的 `reviews`。
+    # 两家审核者的意见已经按"取更严"合并过 —— 遍历原始 reviews 会漏掉
+    # 合并规则做过的事，也可能把已被合并掉的重复算两遍。
+    # （这个 bug 是 `orchestrator_check` H3 抓到的：夹具只填了 `issues`，
+    #   而实现读的是 `reviews`，于是 BLOCKER 永远判不出来。）
+    for iss in (last.issues or ()):
+        if _SEV_RANK.get(iss.severity, 0) >= _SEV_RANK[BLOCKING_SEVERITY]:
+            return "blocked"
+    return "below-threshold"
+
 
 
 def merge_reviews(
@@ -802,6 +862,7 @@ class CrewOrchestrator:
                                           verdict=Verdict.ESCALATE,
                                           invalidated_reason=f"编剧阶段失败：{out.error}"))
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
+                                   failure_kind="script-failed",
                                    reason=f"第 {r} 轮编剧阶段失败：{out.error}")
 
             new_draft = self.blackboard.value("script.draft")
@@ -814,6 +875,7 @@ class CrewOrchestrator:
                     invalidated_reason=f"编剧未产出可解析的 ScriptDraft"
                                        f"（得到 {type(new_draft).__name__}）"))
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
+                                   failure_kind="script-invalid",
                                    reason="编剧产出格式非法")
             draft = new_draft
 
@@ -829,6 +891,7 @@ class CrewOrchestrator:
                     outcomes=tuple(outcomes), verdict=Verdict.ESCALATE,
                     invalidated_reason=why))
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
+                                   failure_kind="review-failed",
                                    reason=why)
 
             # ---- 3) 合并 ----
@@ -844,6 +907,7 @@ class CrewOrchestrator:
             # ---- 4) 收工判定 ----
             if inval:
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
+                                   failure_kind="review-invalid",
                                    reason=inval)
             if verdict is Verdict.PASS:
                 self.blackboard.put("script.final", draft, owner=screenwriter)
@@ -852,6 +916,9 @@ class CrewOrchestrator:
                                    reason=f"第 {r} 轮通过（权威总分 {total:.1f}）")
             if verdict in (Verdict.REJECT, Verdict.ESCALATE):
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
+                                   failure_kind=(
+                                       "rejected" if verdict is Verdict.REJECT
+                                       else "escalated"),
                                    reason=f"第 {r} 轮裁定 {verdict.value}")
             # REVISE → 进入下一轮
 
@@ -884,6 +951,9 @@ class CrewOrchestrator:
         best = _best_round(rounds)
         return CycleResult(
             rounds=tuple(rounds),
+            # **轮次用尽时也要分类** —— 否则"服务抽风"与"改不好"混成一个"未通过"。
+            # 判据按优先级：作废 > 阻断问题 > 分数不够。
+            failure_kind=_exhausted_kind(rounds),
             # ⚠️ **`final` 仍为 `None`** —— 它的语义是"**通过了的**定稿"，
             # 未通过就不该有。想拿"最好的候选"用 `CycleResult.best`。
             final=None,

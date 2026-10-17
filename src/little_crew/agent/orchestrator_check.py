@@ -144,6 +144,7 @@ def main() -> int:
     _cycle_no_progress()
     _cycle_invalidation()
     _stage_failures()
+    _failure_kind()
     _trace()
 
     print()
@@ -455,6 +456,83 @@ def _cycle_invalidation() -> None:
     check("F3 同族审核 → 作废（不信「自己人说没问题」）",
           (not res2.accepted) and "模型族" in res2.reason, res2.reason[:70])
 
+    # ⚠️ **失败分类**（2026-10-17 加）：光有"未通过"太粗 ——
+    # "服务抽风"与"产物不行"在报告上必须分得开。
+    check("F4 自报不可信 -> failure_kind=review-invalid",
+          res.failure_kind == "review-invalid", res.failure_kind)
+    check("F5 同族审核 -> failure_kind=review-invalid",
+          res2.failure_kind == "review-invalid", res2.failure_kind)
+
+
+
+# ---------- H. 失败分类（2026-10-17）----------
+#
+# ## 这一段为什么存在
+#
+# 实测里 C 组 5 次有 2 次"未通过、0 分"，而根因是**评审调用失败** ——
+# 与产物质量无关。但报告只写"未通过"，读者会合理地误读成"题材质量差"。
+#
+# 所以 `CycleResult.failure_kind` 把失败按**该采取什么动作**分开：
+#   · `review-failed`   -> 重派（服务问题，与产物无关）
+#   · `review-invalid`  -> 换族重审
+#   · `blocked`         -> 返工（有硬伤）
+#   · `below-threshold` -> 返工或放宽（只是不够好）
+#
+# 这一段钉住**两个关键的优先级判断**，它们是这段逻辑里最容易搞反的地方。
+
+def _failure_kind() -> None:
+    from little_crew.agent.orchestrator import RoundResult, _exhausted_kind
+
+    def _rr(total: float, *, inval: str = "", issues=()) -> Any:
+        return RoundResult(round_index=1, draft=None, reviews=(), verdict=Verdict.REVISE,
+                           total=total, issues=tuple(issues),
+                           repair_hints=(), outcomes=(),
+                           invalidated_reason=inval)
+
+    # ① 无轮次
+    check("H1 无轮次 -> below-threshold",
+          _exhausted_kind(()) == "below-threshold")
+
+    # ② ★ 作废优先于分数：作废意味着"判定不被采信"，不是"产物不合格"
+    check("H2 ★ 末轮作废 -> review-invalid（不是 below-threshold）",
+          _exhausted_kind((_rr(0.0, inval="自报分不自洽"),)) == "review-invalid",
+          _exhausted_kind((_rr(0.0, inval="自报分不自洽"),)))
+
+    # ③ ★ 阻断问题优先于分数：有 BLOCKER 时该返工，不该被当成"差点分数"
+    blk = _issue(Dimension.COMPLETENESS, Severity.BLOCKER, "缺场次",
+                 "补一场交代")
+    check("H3 ★ 末轮有 BLOCKER -> blocked（不是 below-threshold）",
+          _exhausted_kind((_rr(45.0, issues=(blk,)),)) == "blocked",
+          _exhausted_kind((_rr(45.0, issues=(blk,)),)))
+
+    # ④ 只有 advisory -> 就是分数不够
+    adv = _issue(Dimension.QUALITY, Severity.MAJOR, "节奏拖")
+    check("H4 只有 MAJOR -> below-threshold",
+          _exhausted_kind((_rr(55.0, issues=(adv,)),)) == "below-threshold",
+          _exhausted_kind((_rr(55.0, issues=(adv,)),)))
+
+    # ⑤ 通过时分类为空（"没失败"不该有个失败码）
+    o = _orch().bind("screenwriter", ScreenwriterStub()).bind(
+        "dramaturge", ReviewerStub(
+            _fb(Verdict.PASS, _score(88, 88, 88)), "script.critique")
+    ).bind("story_editor", ReviewerStub(
+        _fb(Verdict.PASS, _score(88, 88, 88)), "style.guard"))
+    ok = o.run_script_cycle({"source.novel": "x"})
+    check("H5 通过 -> failure_kind 为空", ok.accepted and ok.failure_kind == "",
+          f"accepted={ok.accepted} kind={ok.failure_kind!r}")
+
+    # ⑥ 审核者调用失败 -> review-failed（**与产物无关**）
+    class _Boom:
+        def __call__(self, *, envelope: Any, runtime: Any) -> CallResult:
+            return CallResult.fail("F-BOOM", "模拟服务不可用")
+
+    o2 = _orch().bind("screenwriter", ScreenwriterStub()).bind(
+        "dramaturge", _Boom()).bind(
+        "story_editor", ReviewerStub(
+            _fb(Verdict.PASS, _score(85, 85, 85)), "style.guard"))
+    bad = o2.run_script_cycle({"source.novel": "x"})
+    check("H6 ★ 审核者调用失败 -> review-failed（服务问题，与产物无关）",
+          bad.failure_kind == "review-failed", bad.failure_kind)
 
 # ---------- G. 阶段失败 ----------
 

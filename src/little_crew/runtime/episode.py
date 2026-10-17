@@ -164,6 +164,16 @@ class EpisodeResult:
     ok: bool = False
     script_rounds: int = 0
     script_verdict: str = ""
+    #: **失败分类**（2026-10-17）—— 见 `CycleResult.failure_kind` 的说明。
+    #:
+    #: 存在的理由：`ok=False` 太粗。它把三种完全不同的情况混成一个"没成"：
+    #:   · `review-failed` —— 评审**调用失败**（重派就好，与产物无关）
+    #:   · `review-invalid` —— 判定作废（换族重审）
+    #:   · `below-threshold` / `blocked` —— 产物**真的不够好**（返工）
+    #:
+    #: 实测里 C 组 5 次有 2 次是第一种，而报告只写"未通过、0 分" ——
+    #: 读者会误以为"这个题材质量差"。
+    failure_kind: str = ""
     shot_count: int = 0
     planned_shots: int = 0
     rendered: int = 0
@@ -203,6 +213,7 @@ class EpisodeResult:
             "ok": self.ok,
             "scriptRounds": self.script_rounds,
             "scriptVerdict": self.script_verdict,
+            "failureKind": self.failure_kind,
             "plannedShots": self.planned_shots,
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
@@ -344,6 +355,7 @@ class EpisodeRunner:
                 script_rounds=cycle.round_count,
                 script_verdict=(cycle.rounds[-1].verdict.value
                                 if cycle.rounds else ""),
+                    failure_kind=cycle.failure_kind,
                 reason=f"剧本阶段未通过：{cycle.reason}",
                 wall_seconds=time.perf_counter() - t0)
 
@@ -361,6 +373,7 @@ class EpisodeRunner:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
                 script_rounds=cycle.round_count,
+                    failure_kind="storyboard-failed",
                 reason=f"分镜阶段失败：{out.error}",
                 wall_seconds=time.perf_counter() - t0)
 
@@ -494,6 +507,7 @@ class EpisodeRunner:
             script_rounds=cycle.round_count,
             script_verdict=(cycle.rounds[-1].verdict.value
                             if cycle.rounds else ""),
+                  failure_kind=cycle.failure_kind,
             shot_count=manifest.shot_count, planned_shots=planned,
             rendered=len(batch.rendered), cache_hits=len(batch.cache_hits),
             failed=len(failed), total_seconds=manifest.total_seconds,
