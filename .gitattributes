@@ -1,0 +1,38 @@
+# 换行符策略（2026-10-17 立）
+#
+# ## 为什么需要这个文件
+#
+# 仓库里的 blob 存的是 **LF**，而工作区里部分文件是 **CRLF**
+# （早期用编辑器/脚本生成时留下的）。搬 .git 之后 git 报了 41 个"已修改"，
+# 全部是**纯换行符差异** —— `git diff --ignore-cr-at-eol` 之后一条不剩。
+#
+# 这种噪声很危险：它让 `git status` 失去信号价值，
+# 真正的内容改动会淹在 41 个假改动里。
+#
+# ## 策略
+#
+# `text=auto` —— 由 git 自己判断哪些是文本；文本一律按 **LF** 存取。
+# 工作区是 CRLF 也算"没改"（git 归一后比较），于是噪声消失。
+#
+# **不写 `eol=crlf`**：那样会把仓库往 Windows 专属方向绑，
+# 而本项目要能 clone 到任何平台跑。
+
+* text=auto
+
+# 二进制：显式声明，避免被当文本做换行转换（会把文件搞坏）
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.gif  binary
+*.mp4  binary
+*.webm binary
+*.mp3  binary
+*.wav  binary
+*.zip  binary
+*.safetensors binary
+
+# 这些格式**必须**保持原样：改了换行符会破坏内容
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf

@@ -407,6 +407,10 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 入库的顶层文件
     "README.md", "STRUCTURE.md", "ARCHITECTURE.md", "CHANGELOG.md",
     "pyproject.toml", ".gitignore",
+    #: 换行符策略（2026-10-17）。仓库 blob 存 LF、工作区可能 CRLF，
+    #: 没有它 `git status` 会被纯换行符差异刷满（实测 41 个假改动），
+    #: 真改动淹没在噪声里 —— 那会让"看 git status"这件事失去意义。
+    ".gitattributes",
     # 许可：`README.md` 与 `pyproject.toml` 都声明 Apache-2.0，
     # 而**没有 LICENSE 文件的公开仓库在法理上等于未授予任何许可** ——
     # 三者必须一致，所以它必须在白名单里（2026-10-12 补）

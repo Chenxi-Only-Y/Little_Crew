@@ -72,6 +72,7 @@ Little_Crew/
 ├── README.md                     【入口】给人看的门面
 ├── pyproject.toml                【依赖与工具配置】不接受其他同类文件
 ├── .gitignore
+├── .gitattributes             【换行符策略】文本一律 LF，二进制显式声明
 └── LICENSE
 ```
 

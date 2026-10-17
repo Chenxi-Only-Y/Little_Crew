@@ -1,6 +1,6 @@
 # 小剧组 · Little Crew
 
-**当前版本 `0.4.0-alpha.46`** · Apache-2.0 · Python 3.12+
+**当前版本 `0.4.0-alpha.47`** · Apache-2.0 · Python 3.12+
 
 > 基于多智能体协作的 **AIGC 漫剧生成平台**
 >
@@ -88,11 +88,6 @@ python tests\test_e2e_comfy.py
 
 ## 目录结构
 
-**本仓库根目录就是本项目。** 另有一个 `legacy/` 存放**前代实现**
-（v0.3.0，基于 LangGraph 的早期版本）—— 同仓库的历史归档，
-**不参与本项目的构建与测试**；其中的 React 导演台（`legacy/web/`）
-等资产后续可能复用。
-
 ```
 Little_Crew/
 ├── src/little_crew/          【源码】唯一的代码位置，按层组织
@@ -114,8 +109,7 @@ Little_Crew/
 ├── outputs/  logs/          【产物与日志】不入库
 ├── STRUCTURE.md             【结构规范】文件放哪、配置怎么写
 ├── ARCHITECTURE.md          【架构总纲】分层与依赖
-├── pyproject.toml           【依赖配置】
-└── legacy/                  【前代实现 v0.3.0】不参与本项目构建与测试
+└── pyproject.toml           【依赖配置】
 ```
 
 **目录职责、配置五分类、新增文件决策流程** → 见 [`STRUCTURE.md`](STRUCTURE.md)
