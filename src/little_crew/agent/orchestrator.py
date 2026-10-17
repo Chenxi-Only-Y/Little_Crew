@@ -171,6 +171,29 @@ class CycleResult:
         return len(self.rounds)
 
     @property
+    def best(self) -> "RoundResult | None":
+        """**分数最高**的那一轮（可能不是最后一轮）。
+
+        ## 为什么需要它
+
+        10 次标定运行（`research/threshold-calibration/`）显示：
+        多轮的运行里 **5 次改完变差、只有 3 次变好**。
+        所以"最后一轮"经常是**最差的一份** ——
+        把它交给人是浪费，人该看候选里最好的那一版。
+
+        ## 与 `final` 的区别
+
+        | 字段 | 含义 |
+        |---|---|
+        | `final` | **通过了的**定稿；没通过就是 `None` |
+        | `best` | 无论通过与否，**分数最高**的那一轮 |
+
+        未通过时 `final is None` 这条语义**必须保住** ——
+        否则"有没有定稿"就再也分不出来（`E2` 那条测试守的就是它）。
+        """
+        return _best_round(self.rounds)
+
+    @property
     def total_seconds(self) -> float:
         return sum(o.seconds for r in self.rounds for o in r.outcomes)
 
@@ -281,13 +304,40 @@ BLOCKING_SEVERITY: Severity = Severity.BLOCKER
 #:
 #: **"算术可复现"不等于"结果可复现"。**
 #:
-#: **应对（不是靠挪阈值假装判准了）**：
+#: ## 65 是怎么定的 —— **10 次实测标定**（2026-10-17）
 #:
-#: 1. **如实记录噪声** —— 本文件与 CHANGELOG 都写明，不宣称可复现
-#: 2. **边界情况下走 `ESCALATE`** —— 3 轮用尽仍未达线就交给人。
-#:    一次判不准时，**交给人比调切点诚实**
-#: 3. **先收集分布再定阈值** —— 跑 ~10 次记录分数分布，
-#:    才知道 80 该不该动。**没有分布就定阈值是拍脑袋**
+#: 数据在 `research/threshold-calibration/`。要点：
+#:
+#: | 指标 | 首轮 | 末轮 | **取最好一轮** |
+#: |---|---|---|---|
+#: | 均值 | 61.5 | 63.4 | **70.3** |
+#: | σ | 11.6 | 12.8 | **7.7** |
+#: | p50 | 62.8 | 57.6 | **67.9** |
+#:
+#: **关键发现一：返工多数在让质量变差。**
+#: 10 次里多轮的运行：**变好 3 次 / 变差 5 次 / 没动 1 次**。
+#: 所以旧行为"取末轮"经常交出去的是**几次里最差的一份** ——
+#: 已改为**取最好一轮**（`_best_round`）：均值 +7 分、波动降 40%。
+#:
+#: **关键发现二：80 这条线太严。** 旧阈值下收敛率只有 **3/10 = 30%**。
+#: 按"取最好一轮"的分布：
+#:
+#: | 阈值 | 通过率 |
+#: |---|---|
+#: | 55 / 60 | 100% |
+#: | **65** | **60%** ← 选它 |
+#: | 70 | 40% |
+#: | 75 / 80 | 30% |
+#:
+#: **为什么选 65**：它让约六成的运行自动通过、四成升级人工。
+#: 那两个数字是**工作量分配**，不是质量指标 ——
+#: 想让更多集的自动通过就往下调，想更严就往上调。
+#:
+#: ⚠️ **这不是一个"正确"的数，是一条可调政策线。** 换题材/换模型/
+#: 换提示词都会让分布变化，届时应重新跑一次标定，而不是沿用 65。
+#:
+#: ⚠️ **样本量只有 10**：p50 这类分位数的置信区间很宽。
+#: 这个数够用作"有依据的起点"，但**不够用作"精确刻度"**。
 #:
 #: ## ⚠️ 通过 ≠ 完美
 #:
@@ -300,7 +350,23 @@ BLOCKING_SEVERITY: Severity = Severity.BLOCKER
 #: 所以证据链**必须原样保留所有意见**（`RoundResult.issues` 已带），
 #: 否则会出现"通过了，但没人知道它其实带着 2 个已知缺陷"。
 #: **这与项目的诚实原则一致：通过只是"达到了我们定的线"。**
-PASS_THRESHOLD: float = 80.0
+PASS_THRESHOLD: float = 65.0
+
+
+def _best_round(rounds: Sequence["RoundResult"]) -> "RoundResult | None":
+    """取**权威总分最高**的那一轮。
+
+    为什么需要它（2026-10-17 实测）：10 次标定运行里，多轮的运行中
+    **5 次改完变差、只有 3 次变好**。所以"最后一轮"经常是**最差的一份**，
+    把它交给人工是浪费 —— 人应该看候选里最好的那一版。
+
+    **不改判定**：它只影响"未通过时交哪份稿子"，不影响 `accepted`。
+    """
+    usable = [r for r in rounds
+              if r.draft is not None and not r.invalidated_reason]
+    if not usable:
+        return None
+    return max(usable, key=lambda r: r.total)
 
 
 def merge_reviews(
@@ -802,11 +868,31 @@ class CrewOrchestrator:
         why = ("无有效轮次" if last is None
                else f"最后一轮权威总分 {last.total:.1f}"
                     f"（{last.verdict.value}）")
+        # ⚠️ **返回「最好那一轮」的稿子，不是最后一轮**（2026-10-17 实测依据）
+        #
+        # 10 次标定运行（`research/threshold-calibration/`）显示：
+        # 多轮里 **5 次分数变差、只有 3 次变好** —— 也就是说
+        # **"末轮"经常是几次里最差的那一份**。
+        #
+        # 取最好一轮的实测收益：
+        #   均值 63.4 -> **70.3**   σ 12.8 -> **7.7**（波动降 40%）
+        #
+        # 注意：`accepted` 仍为 False、`exhausted` 仍为 ESCALATE ——
+        # **这不改变"没通过"这个事实**，只是把"交给人的那一份稿子"
+        # 从末轮换成最好的一轮。人拿到的应该是候选里最好的，
+        # 而不是"最后一次尝试"。
+        best = _best_round(rounds)
         return CycleResult(
-            rounds=tuple(rounds), final=None, accepted=False,
+            rounds=tuple(rounds),
+            # ⚠️ **`final` 仍为 `None`** —— 它的语义是"**通过了的**定稿"，
+            # 未通过就不该有。想拿"最好的候选"用 `CycleResult.best`。
+            final=None,
+            accepted=False,
             #: 让调用方能区分"还在改"（REVISE）与"改不动了"（ESCALATE）
             exhausted=Verdict.ESCALATE.value,
-            reason=f"达到轮次上限 {limit} 仍未通过，升级人工；{why}",
+            reason=f"达到轮次上限 {limit} 仍未通过，升级人工；{why}"
+                   + (f"；最好的是第 {best.round_index} 轮"
+                      f"（{best.total:.1f} 分）" if best is not None else ""),
         )
 
     # ---- 可观测性 ------------------------------------------------------

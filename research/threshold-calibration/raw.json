@@ -1,0 +1,448 @@
+[
+  {
+    "run": 1,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 46.2,
+    "finalScore": 46.2,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 46.2（REVISE）",
+    "wallSeconds": 335.5,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 46.2,
+        "blocker": 0,
+        "advisory": 6,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 63.8,
+        "blocker": 0,
+        "advisory": 3,
+        "scenesWithIssues": 3
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 46.2,
+        "blocker": 0,
+        "advisory": 6,
+        "scenesWithIssues": 5
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4543,
+        "out": 3426
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3070,
+        "out": 10383
+      }
+    }
+  },
+  {
+    "run": 2,
+    "accepted": true,
+    "rounds": 1,
+    "firstScore": 80.2,
+    "finalScore": 80.2,
+    "reason": "第 1 轮通过（权威总分 80.2）",
+    "wallSeconds": 78.2,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 80.2,
+        "blocker": 0,
+        "advisory": 1,
+        "scenesWithIssues": 1
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 1,
+        "in": 804,
+        "out": 938
+      },
+      "reviewer": {
+        "calls": 1,
+        "in": 983,
+        "out": 2044
+      }
+    }
+  },
+  {
+    "run": 3,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 55.6,
+    "finalScore": 54.4,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 54.4（REVISE）",
+    "wallSeconds": 222.7,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 55.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 4
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 69.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 54.4,
+        "blocker": 0,
+        "advisory": 5,
+        "scenesWithIssues": 4
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4015,
+        "out": 3742
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3293,
+        "out": 6160
+      }
+    }
+  },
+  {
+    "run": 4,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 62.77,
+    "finalScore": 57.65,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 57.6（REVISE）",
+    "wallSeconds": 301.4,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 62.77,
+        "blocker": 0,
+        "advisory": 5,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 57.65,
+        "blocker": 0,
+        "advisory": 6,
+        "scenesWithIssues": 6
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 57.65,
+        "blocker": 0,
+        "advisory": 6,
+        "scenesWithIssues": 6
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 5111,
+        "out": 5640
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 4506,
+        "out": 9337
+      }
+    }
+  },
+  {
+    "run": 5,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 70.8,
+    "finalScore": 62.6,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 62.6（REVISE）",
+    "wallSeconds": 368.2,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 70.8,
+        "blocker": 0,
+        "advisory": 3,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 45.0,
+        "blocker": 0,
+        "advisory": 7,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 62.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 3
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4376,
+        "out": 3926
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3451,
+        "out": 10256
+      }
+    }
+  },
+  {
+    "run": 6,
+    "accepted": true,
+    "rounds": 2,
+    "firstScore": 55.6,
+    "finalScore": 80.2,
+    "reason": "第 2 轮通过（权威总分 80.2）",
+    "wallSeconds": 133.8,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 55.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 4
+      },
+      {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 80.2,
+        "blocker": 0,
+        "advisory": 1,
+        "scenesWithIssues": 1
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 2,
+        "in": 2895,
+        "out": 2297
+      },
+      "reviewer": {
+        "calls": 2,
+        "in": 2009,
+        "out": 4020
+      }
+    }
+  },
+  {
+    "run": 7,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 67.9,
+    "finalScore": 54.4,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 54.4（REVISE）",
+    "wallSeconds": 301.0,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 67.9,
+        "blocker": 0,
+        "advisory": 3,
+        "scenesWithIssues": 3
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 66.91,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 3
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 54.4,
+        "blocker": 0,
+        "advisory": 5,
+        "scenesWithIssues": 4
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4122,
+        "out": 4574
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3791,
+        "out": 6589
+      }
+    }
+  },
+  {
+    "run": 8,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 42.6,
+    "finalScore": 62.6,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 62.6（REVISE）",
+    "wallSeconds": 234.9,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 42.6,
+        "blocker": 0,
+        "advisory": 9,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 62.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 3
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 62.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 3
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4637,
+        "out": 3490
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3057,
+        "out": 5992
+      }
+    }
+  },
+  {
+    "run": 9,
+    "accepted": false,
+    "rounds": 3,
+    "firstScore": 63.8,
+    "finalScore": 54.4,
+    "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 54.4（REVISE）",
+    "wallSeconds": 327.6,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 63.8,
+        "blocker": 0,
+        "advisory": 3,
+        "scenesWithIssues": 3
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 55.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 4
+      },
+      {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 54.4,
+        "blocker": 0,
+        "advisory": 5,
+        "scenesWithIssues": 4
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4282,
+        "out": 3910
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3377,
+        "out": 7788
+      }
+    }
+  },
+  {
+    "run": 10,
+    "accepted": true,
+    "rounds": 3,
+    "firstScore": 69.6,
+    "finalScore": 81.56,
+    "reason": "第 3 轮通过（权威总分 81.6）",
+    "wallSeconds": 246.6,
+    "detail": [
+      {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 69.6,
+        "blocker": 0,
+        "advisory": 4,
+        "scenesWithIssues": 2
+      },
+      {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 54.23,
+        "blocker": 0,
+        "advisory": 5,
+        "scenesWithIssues": 5
+      },
+      {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 81.56,
+        "blocker": 0,
+        "advisory": 1,
+        "scenesWithIssues": 1
+      }
+    ],
+    "tokens": {
+      "writer": {
+        "calls": 3,
+        "in": 4415,
+        "out": 4424
+      },
+      "reviewer": {
+        "calls": 3,
+        "in": 3794,
+        "out": 6027
+      }
+    }
+  }
+]

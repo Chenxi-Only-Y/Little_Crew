@@ -329,19 +329,34 @@ def _pipeline() -> None:
     cycle = o.run_script_cycle({"source.novel": DEMO_SOURCE,
                                 "episodeId": "E001", "title": "雨夜信"})
     check("G1 剧本闭环通过", cycle.accepted, cycle.reason[:60])
-    check("G2 恰好 2 轮（首稿缺陷 → 修订通过）", cycle.round_count == 2,
+    # ⚠️ 这里原本断言"恰好 2 轮（缺陷 -> 修订 -> 通过）"。
+    #
+    # 2026-10-17 阈值从 80 降到 65 之后，**这一处刻意注入的缺陷
+    # （2 场里缺 1 场转折，76.9 分）已经高于通过线**，于是第 1 轮就过 ——
+    # 断言随之失效。
+    #
+    # 这不是缺陷：**返工闭环的覆盖不靠这里**。`orchestrator_check`
+    # 的 D 段用**显式低分**（48 分）+ 第二轮高分，确定性地验证
+    # "REVISE -> 修订 -> PASS" 这条路径，那比依赖"夹具分数恰好低于线"稳得多。
+    #
+    # 所以这里改为断言**实际行为**：能收敛、且产出的稿子是有效的。
+    check("G2 在轮次上限内收敛（轮数 <= 3）",
+          1 <= cycle.round_count <= 3, f"{cycle.round_count} 轮")
+    check("G3 通过了就一定有定稿",
+          cycle.final is not None, str(cycle.final))
+    check("G4 每轮都记录了权威总分",
+          all(r.total > 0 for r in cycle.rounds),
+          str([round(r.total, 1) for r in cycle.rounds]))
+    check("G5 编剧被调用的次数与轮数一致",
+          stubs["screenwriter"].calls == cycle.round_count,
+          f"calls={stubs['screenwriter'].calls} rounds={cycle.round_count}")
+    # 第 2 轮起必须带着上一轮的意见 —— 这条与轮数无关，始终成立
+    check("G6 若发生过返工，编剧确实收到了意见",
+          cycle.round_count == 1
+          or len(stubs["screenwriter"].received_critiques)
+          == cycle.round_count - 1,
+          f"{len(stubs['screenwriter'].received_critiques)} 次 / "
           f"{cycle.round_count} 轮")
-    check("G3 第 1 轮 REVISE、第 2 轮 PASS",
-          cycle.rounds[0].verdict is Verdict.REVISE
-          and cycle.rounds[1].verdict is Verdict.PASS,
-          f"{cycle.rounds[0].verdict.value} → {cycle.rounds[1].verdict.value}")
-    check("G4 第 2 轮总分高于第 1 轮",
-          cycle.rounds[1].total > cycle.rounds[0].total,
-          f"{cycle.rounds[0].total} → {cycle.rounds[1].total}")
-    check("G5 编剧被调用 2 次（返工真的发生）",
-          stubs["screenwriter"].calls == 2)
-    check("G6 编剧真的收到了返工指令",
-          len(stubs["screenwriter"].received_critiques) == 1)
     check("G7 script.final 归属编剧",
           o.owner_of("script.final") == "screenwriter")
 
@@ -367,8 +382,16 @@ def _pipeline() -> None:
 
     # 可观测性
     spans = o.runtime.spans()
-    check("G14 全链路留痕（每次调用一个 span）", len(spans) >= 8,
-          f"{len(spans)} span")
+    # ⚠️ 原断言是 `>= 8`，那是按"剧本恰好 2 轮"写死的。
+    # 2026-10-17 阈值降到 65 后本夹具 1 轮通过（见 G2 的说明），
+    # span 变成 5 个 —— 固定下界就失效了。
+    #
+    # 改成**与轮数挂钩**：下游（分镜等）固定若干 span，
+    # 剧本每多一轮至少多一个。这样它验的是"每次调用都留痕"，
+    # 而不是"这一集恰好调用了 8 次"——**后者是夹具的偶然属性，不是契约**。
+    check("G14 全链路留痕（每个阶段/每轮都有 span）",
+          len(spans) >= 4 + cycle.round_count,
+          f"{len(spans)} span / {cycle.round_count} 轮")
     check("G15 黑板含全部关键产物",
           {"script.final", "script.draft", "shot.list",
            "review.verdict"} <= set(o.snapshot()["blackboard"]),
