@@ -67,6 +67,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
                     help="`--llm` 时**审核方**（剧评人）用哪个模型 —— "
                          "⚠️ 必须与 --llm-model 不同族（跨模型族盲读的硬要求）")
+    ap.add_argument("--accept-script", action="store_true",
+                    help="⚠️ **调试用**：无视剧本门禁裁定，强行进入分镜与渲染。"
+                         "只用于验证**下游链路**（桥接/渲染/合成）——"
+                         "正式跑不要加，它会让不合格剧本也出片")
     ap.add_argument("--workdir", default="outputs/episode_E100")
     ap.add_argument("--fresh", action="store_true", help="清空工作目录")
     ap.add_argument("--no-video", action="store_true",
@@ -165,6 +169,11 @@ def main(argv: list[str] | None = None) -> int:
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.workdir = work
+    # ⚠️ 调试开关：只为验证下游链路，**正式跑不要开**。
+    # 开了之后 `scriptVerdict` 仍会如实显示 REVISE —— 不掩盖剧本没过这一事实。
+    runner.force_accept_script = bool(args.accept_script)
+    if args.accept_script:
+        print("  ⚠️ --accept-script：无视剧本门禁裁定（仅用于验证下游）")
 
     # 产物散落在缓存的**分片目录**里，所以要能按文件名找回来。
     # 视频层要求调用方提供解析方式 —— 它不该去猜目录结构。

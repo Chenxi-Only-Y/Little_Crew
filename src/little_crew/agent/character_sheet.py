@@ -344,11 +344,31 @@ def script_text(source: Any) -> str:
             if isinstance(sc, Mapping):
                 heading = str(sc.get("heading") or sc.get("id") or i)
                 body = str(sc.get("text") or "")
+                cast = sc.get("characters") or ()
             else:
                 heading = str(getattr(sc, "heading", None)
                               or getattr(sc, "id", None) or i)
                 body = str(getattr(sc, "text", "") or "")
+                cast = getattr(sc, "characters", ()) or ()
             lines.append(f"[场{i}] {heading}")
+            # ⚠️ **必须把结构化的人物表渲染成 `@名字` 标记。**
+            #
+            # 踩过的坑（2026-10-17）：这里原本只写 heading + body，
+            # 于是 `characters` 字段被**丢掉**了。而下游
+            # `_characters_of()` 只认文本里的 `@名字` / `CHAR-\d{4}` ——
+            # 它读不到结构化字段。
+            #
+            # 后果**极隐蔽**：真实 LLM 的剧本有 `characters: ["少女", …]`，
+            # 但压成文本后没有任何标记 -> 定妆表识别出 **0 个角色** ->
+            # `_with_appearance()` 静默跳过（它对认不出的名字 `continue`）->
+            # **每镜提示词里没有任何外观信息**，角色一致性在文字层彻底丢失。
+            # 而且不报任何错、测试也全过（桩路径用原始素材，不受影响）。
+            #
+            # 这条函数是"把各种形态压成**可解析文本**"，那它就该产出
+            # 下游解析器真正认得的形式（本文件只此一处调用，改动面最小）。
+            cast_names = [str(c).strip() for c in cast if str(c).strip()]
+            if cast_names:
+                lines.append("　".join(f"@{n}" for n in cast_names))
             lines.append(body)
             lines.append("")
         return "\n".join(lines).strip()

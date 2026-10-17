@@ -61,7 +61,8 @@ Little_Crew/
 │   ├── comfyui-internals/        ComfyUI 内部机制笔记
 │   ├── model-survey/             模型生态笔记
 │   ├── consistency-calibration/  L2 标定实验 + degradations/ 退化图
-│   └── review-evidence/          M5 门禁测量脚本与报告
+│   ├── review-evidence/          M5 门禁测量脚本与报告
+│   └── llm-crew/                 真实 LLM 职位跑通下游的证据（图 + 运行报告）
 ├── outputs/                      【产物】不入库（证据图不放这里，见 §1.0.2）
 ├── logs/                         【日志】不入库
 ├── ARCHITECTURE.md               【架构总纲】代码怎么分层、依赖方向

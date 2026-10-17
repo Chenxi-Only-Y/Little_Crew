@@ -510,7 +510,22 @@ class DramaturgeLlm:
                 #
                 # **不让模型自己选严重度**：它对"多严重"的判断不稳定，
                 # 而严重度直接决定流程走不走得下去 —— 那必须可复现。
-                severity=Severity.BLOCKER,
+                #
+                # ⚠️ 2026-10-17 修正：`BLOCKER` -> `MAJOR`。
+                #
+                # 此前定成 `BLOCKER` 是**因为当时还没有阈值** ——
+                # 那时只有"阻断级才拦"这一条判据，若设成 `MAJOR` 则第 1 轮
+                # 就放行。有了阈值之后，`BLOCKER` 反而把阈值变成了**死代码**：
+                # 剧评人每次都报 BLOCKER，于是 `BLOCKER 优先` 永远压过分数，
+                # 实测 81.1 分（已在 80 线上）仍被判 REVISE。
+                #
+                # **正确的分工**：
+                #   `BLOCKER` = **客观违规**（分辨率/时长/合规）—— 分数再高也不能掩盖
+                #   `MAJOR`   = **质量问题**（缺冲突、节奏）—— **由阈值裁决**
+                #
+                # 这样阈值才真正起作用：问题多 -> 分数低 -> REVISE；
+                # 改进了 -> 分数升 -> 达 80 -> PASS。
+                severity=Severity.MAJOR,
                 dimension=dim,
                 location=IssueLocation(scene=sid),
                 problem=f"{sid}：{problem}",
@@ -557,8 +572,13 @@ class DramaturgeLlm:
         而不是"客观质量"—— 后者本就没有可复现的定义。
         """
         n = max(len(draft.scenes), 1)
+        # **按场次计**（2026-10-17 与规则桩同口径）：
+        # 一场缺转折就是一场不完整，扣掉该场的全部分数。
+        # 旧公式按缺陷项数计，导致"2 场缺 1 场"仍有 94 分、总分 88.6 ——
+        # 高于通过线 80，第 1 轮就放行，返工闭环形同虚设。
+        bad_scenes = len({i.location.scene for i in issues})
+        completeness = max(0.0, 100.0 * (1.0 - bad_scenes / n))
         bad = len(issues)
-        completeness = max(0.0, 100.0 - 100.0 * bad / (n * len(_STRUCTURE_KEYS)))
         # 文字编辑没跑时一致性无从判断 —— **给中性分而不是满分**：
         # 满分会让"没人看过"看起来像"检查过了没问题"。
         return QcScore(dimensions={

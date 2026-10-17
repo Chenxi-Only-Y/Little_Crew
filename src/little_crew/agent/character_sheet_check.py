@@ -63,6 +63,7 @@ def main() -> int:
     _protocol()
     _cache_linkage()
     _semantic_hints()
+    _structured_cast()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
@@ -408,6 +409,92 @@ def _semantic_hints() -> None:
             for i in range(30)}
     check("I17 无线索的角色仍保持多样性（线索没把随机性吃光）",
           len(seen) >= 20, f"30 个得到 {len(seen)} 种")
+
+
+# ---------- J. 结构化 cast 必须被识别（2026-10-17 静默失效）----------
+#
+# ## 这一段存在的唯一理由
+#
+# 2026-10-17 接真实 LLM 时发现：**定妆表识别出 0 个角色**，
+# 而下游 `_with_appearance()` 对认不出的名字 **静默 continue** ——
+# 于是每镜提示词里**没有任何外观信息**，角色一致性在文字层彻底丢失。
+#
+# ## 根因
+#
+# 剧本有**两种形态**：
+#   · 桩：纯文本，角色用 `@名字` 标记
+#   · 真实 LLM：`ScriptDraft.scenes[].characters` 是**结构化列表**
+#
+# 而 `script_text()` 把 ScriptDraft 压成文本时**只写 heading + body**，
+# `characters` 被丢掉 —— 下游 `_characters_of()` 只认 `@名字`，于是 0 个。
+#
+# ## 为什么它躲过了所有测试
+#
+# 既有测试全都喂**原始文本素材**（桩路径），那条路上 cast 就在正文里，
+# 所以一直是绿的。**这个缺陷只对真实 LLM 路径可见。**
+#
+# 这段测试把"结构化 cast 必须被识别"钉住 —— 加它比修它更重要。
+
+def _structured_cast() -> None:
+    from little_crew.agent.character_sheet import CharacterDesignerRules, script_text
+
+    # 一个"真实 LLM 形状"的剧本：characters 是列表，正文里**没有 @ 标记**
+    draft = {
+        "episodeId": "E900",
+        "title": "结构化测试",
+        "scenes": [
+            {"scene_id": "S01", "heading": "内景·书店·夜",
+             "characters": ["少女", "旅人"],
+             "text": "少女推开门，旅人抬头看她。两个人谁都没说话。"},
+            {"scene_id": "S02", "heading": "外景·街·晨",
+             "characters": ["少女"],
+             "text": "少女走进晨雾，没有回头。"},
+        ],
+    }
+
+    text = script_text(draft)
+    check("J1 script_text 把结构化 characters 渲染成 @ 标记",
+          "@少女" in text and "@旅人" in text, text[:90])
+
+    lib = CharacterDesignerRules().design(draft, episode_id="E900")
+    names = {s.name for s in lib.sheets}
+    check("J2 ★ 定妆表能识别结构化 cast（不是 0 个）",
+          names == {"少女", "旅人"}, f"识别到 {sorted(names)}")
+
+    # 逐场归属要对 —— 全部塞进"出现过的场次"会让缓存精度下降
+    a = lib.by_name("少女")
+    b = lib.by_name("旅人")
+    check("J3 每个角色记录了它出现过的场次",
+          a is not None and b is not None
+          and len(a.scenes) == 2 and len(b.scenes) == 1,
+          f"少女={getattr(a, 'scenes', None)} 旅人={getattr(b, 'scenes', None)}")
+
+    check("J4 外观片段非空（并进提示词才有意义）",
+          a is not None and bool(a.prompt_fragment),
+          str(a.prompt_fragment)[:60] if a else "")
+
+    # 确定性：同一份剧本得同一批外观（缓存要求）
+    lib2 = CharacterDesignerRules().design(draft, episode_id="E900")
+    check("J5 同一份结构化剧本 -> 同一批外观（确定性）",
+          [(s.name, s.prompt_fragment) for s in lib.sheets]
+          == [(s.name, s.prompt_fragment) for s in lib2.sheets])
+
+    # 原始文本路径不能被这次改动破坏（桩仍是 @ 标记）
+    raw = "[场1] 内景·夜\n@少女 @旅人\n两人对坐无语。"
+    lib3 = CharacterDesignerRules().design(raw, episode_id="E901")
+    check("J6 原始文本路径不受影响（@ 标记仍能识别）",
+          {s.name for s in lib3.sheets} == {"少女", "旅人"},
+          str(sorted(s.name for s in lib3.sheets)))
+
+    # 没有 characters 字段时不能崩（老剧本 / 散文素材）
+    lib4 = CharacterDesignerRules().design(
+        {"scenes": [{"heading": "场", "text": "有人在走路。"}]},
+        episode_id="E902")
+    # ⚠️ 空表是**正确**行为，不是失败：正文里没有任何 `@名字` 标记，
+    # 就真的认不出角色 —— 硬凑一个假角色比认不出来更糟。
+    # 这里只验"不崩、且不误报"。
+    check("J7 缺 characters 且正文无标记 -> 不崩、空表（不误报角色）",
+          tuple(lib4.sheets) == (), str(lib4.sheets))
 
 
 if __name__ == "__main__":

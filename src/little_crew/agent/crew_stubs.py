@@ -373,7 +373,12 @@ class DramaturgeRules:
                     # 定成不阻断会让第 1 轮就放行，闭环形同虚设。
                     #
                     # 判据是**"该修 vs 可以更好"**，不是"确定性 vs 语义"。
-                    severity=Severity.BLOCKER,
+                    #
+                    # ⚠️ 2026-10-17 修正：`BLOCKER` -> `MAJOR`。
+                    # 结构缺陷是**质量问题**，该由阈值裁决；`BLOCKER` 留给
+                    # **客观违规**（分辨率/时长/合规）。详见 `crew_llm.py`
+                    # 同一处的说明 —— 定成 `BLOCKER` 会让阈值变成死代码。
+                    severity=Severity.MAJOR,
                     dimension=D.COMPLETENESS,
                     location=IssueLocation(scene=sid),
                     problem=f"{sid} 缺少「{label}」：{msg}",
@@ -386,9 +391,22 @@ class DramaturgeRules:
                     from_issue=f"issue_{len(issues):03d}",
                 ))
 
-        # 评分：结构缺陷越多，完整性越低
+        # 评分：结构性不完整的**场次占比**决定完整性
+        #
+        # ⚠️ 2026-10-17 改口径：**按场次计**，不按"缺陷项数"计。
+        #
+        # 旧公式 `100 - 100*缺陷数/(场次×3)`：一场缺 1 项只影响 1/3，
+        # 于是"2 场里有 1 场缺转折"仍有 94.4 分，加权后总分 **88.6** ——
+        # 高于通过线 80，**第 1 轮就放行，返工闭环形同虚设**（实测）。
+        #
+        # 新公式 `100 × (1 - 有缺陷的场次数/总场次)`：
+        # **一场缺转折就是一场不完整**，该扣掉该场的全部分数。
+        #
+        # 这个口径与"完整性"这个词也更一致：一场戏缺了转折，
+        # 不是因为"缺了三分之一项"，而是**这场不成立**。
         n = max(len(draft.scenes), 1)
-        completeness = max(0.0, 100.0 - 100.0 * missing_total / (n * len(_STRUCTURE_RULES)))
+        bad_scenes = len({i.location.scene for i in issues})
+        completeness = max(0.0, 100.0 * (1.0 - bad_scenes / n))
         # 一致性：跨场角色是否连贯（此处按"每场是否交代了人物"粗判）
         no_char = sum(1 for sc in draft.scenes if not _characters_of(sc))
         consistency = max(0.0, 100.0 - 40.0 * no_char / n)

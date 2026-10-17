@@ -38,7 +38,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 27),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 43),
-    ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 70),
+    ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 43),
     ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 74),

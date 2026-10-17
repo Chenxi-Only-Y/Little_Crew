@@ -338,7 +338,7 @@ class EpisodeRunner:
         cycle = self.orch.run_script_cycle(
             {"source.novel": source, "episodeId": self.episode_id,
              "title": self.title})
-        if not cycle.accepted:
+        if not cycle.accepted and not self.force_accept_script:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
                 script_rounds=cycle.round_count,
@@ -347,9 +347,16 @@ class EpisodeRunner:
                 reason=f"剧本阶段未通过：{cycle.reason}",
                 wall_seconds=time.perf_counter() - t0)
 
+        # 强行接受时 `cycle.final` 是 None —— 退回**最后一轮的稿子**。
+        # 注意这不是"当作通过"：`ok` 仍会如实标记，
+        # 证据里也会保留 `scriptAccepted=False`（见下）。
+        script_draft = cycle.final
+        if script_draft is None and self.force_accept_script and cycle.rounds:
+            script_draft = cycle.rounds[-1].draft
+
         # ---- 2) 分镜 ----
         out = self.orch.run_stage("storyboard_artist", "shot.list",
-                                  {"script.final": cycle.final})
+                                  {"script.final": script_draft})
         if not out.ok:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
@@ -370,7 +377,7 @@ class EpisodeRunner:
         # **这是"角色一致"的前置**：没有它，每镜提示词里只有"少女"三个字，
         # 图像模型只能即兴发挥 —— 于是同一角色长得不一样。
         # 有了它，至少**文字层面**是一致的（图像层面还需参考图，见 §5.8）。
-        self.characters = self._design_characters(cycle.final)
+        self.characters = self._design_characters(script_draft)
 
         # ---- 3) 桥接 ----
         irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
@@ -580,6 +587,17 @@ class EpisodeRunner:
     #: 这个区分是刻意的：把"没检查"与"检查了没问题"混为一谈，
     #: 正是 C3 要消灭的自我签收。
     verify_artifacts: bool = True
+
+    #: ⚠️ **调试用**：无视剧本门禁裁定，强行进入分镜与渲染。
+    #:
+    #: 存在的理由：**"剧本标定"与"下游链路"是两件独立的验证**。
+    #: 剧本门禁的阈值还在标定中（分数有噪声），而下游（桥接/渲染/合成）
+    #: 的正确性不该被一个可调阈值挡住 —— 否则每次验下游都要先赌剧本能过。
+    #:
+    #: **正式跑绝不能开。** 开了会让不合格剧本也出片，
+    #: 所以：① 默认 False；② 结果里 `scriptAccepted` 仍如实标记为 False；
+    #: ③ CLI 的帮助文案明确写"调试用"。
+    force_accept_script: bool = False
 
     #: 是否把白模预演作为控制信号注入（需要 ComfyUI 通道 + Z-Image ControlNet）
     use_white_model: bool = False
