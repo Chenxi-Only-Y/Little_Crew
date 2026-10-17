@@ -512,6 +512,65 @@ def blind_read_verdict(expected: Mapping[str, Any],
 # 注册触发
 # ---------------------------------------------------------------------------
 
+
+@register("audio_track_present", version="1")
+def audio_track_present(expected: Mapping[str, Any],
+                        observed: Mapping[str, Any]) -> AssertionOutcome:
+    """**产物里必须有音轨。**
+
+    ## 为什么需要它
+
+    `minimax-h3` 的 `capability.native_audio=True` 早就声明了，
+    但在此之前**没有任何一条断言能验证"成片真的有声音"** ——
+    `audio.tts` 只是一条编译规则，它描述"应该去合成语音"，
+    而不是"产物里必须有一条音频轨"。
+
+    **声明与验证是两件事。** 少了这一层，"加了音轨"永远只是一句话。
+
+    ## 判据
+
+    观测里的 `hasAudio` 来自 **容器字节探测**（`observe._media_flags`）：
+    MP4 找 `soun` handler / `mp4a` 标记，Matroska 找 `A_*`，WAV 直接算有。
+    **不依赖 ffprobe**（本机没装）。
+
+    ## 期望参数
+
+    | 参数 | 默认 | 说明 |
+    |---|---|---|
+    | `requireVideo` | `true` | 同时要求有视频轨 —— 只有音频不算"成片" |
+
+    ## ⚠️ 它不判断音轨**内容**对不对
+
+    只回答"有没有"。声音是否对得上画面、音量是否合适，属 L2/L3 的范围。
+    """
+    if "hasAudio" not in observed:
+        return _missing(
+            "audio_track_present 需要 observed['hasAudio'] —— "
+            "只有媒体容器（mp4/webm/wav）能测；图像或纯文本产物测不了")
+
+    has_audio = bool(observed["hasAudio"])
+    has_video = observed.get("hasVideo")
+    want_video = bool(expected.get("requireVideo", True))
+
+    obs = {"hasAudio": has_audio,
+           "hasVideo": has_video,
+           "container": observed.get("container", "")}
+
+    if not has_audio:
+        return AssertionOutcome(
+            passed=False, observed=obs,
+            detail=(f"产物（{obs['container'] or '未知容器'}）**没有音轨**。"
+                    f"若用 H3 这类音画同出的模型，音轨是白送的，"
+                    f"缺了说明请求/落盘环节把它丢了"))
+    if want_video and has_video is False:
+        return AssertionOutcome(
+            passed=False, observed=obs,
+            detail="有音轨但没有视频轨 —— 只有声音不构成成片")
+    return AssertionOutcome(
+        passed=True, observed=obs,
+        detail=f"{obs['container']} 容器，音轨"
+               + ("与视频轨" if has_video else "") + "齐全")
+
 def ensure_registered() -> None:
     """确保内置算子已注册。
 
@@ -521,7 +580,8 @@ def ensure_registered() -> None:
     """
     from little_crew.review.constraint import REGISTRY
     missing = [n for n in ("identity_similarity", "token_diff", "duration_within",
-                           "resolution_matches", "count_at_least")
+                           "resolution_matches", "count_at_least",
+                           "audio_track_present")
                if n not in REGISTRY.names()]
     if missing:
         raise AssertionError_(f"内置算子未注册：{missing}")

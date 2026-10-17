@@ -71,6 +71,12 @@ OPERATOR_NEEDS: Mapping[str, frozenset[str]] = {
     # 必须在这里登记，否则预检认为"不需要观测" -> 交给算子 ->
     # 算子判"缺观测"不通过 -> 每一镜都被拦。
     "cast_consistent_with_text": frozenset({"characters", "description"}),
+    # ---- 媒体容器：有没有音轨 ----
+    #
+    # `hasAudio` 由 `_media_flags` 从容器字节探测得出（不依赖 ffprobe）。
+    # 图像产物测不出这个字段 -> 预检判"跳过"，而不是判"没通过" ——
+    # 那是对的：静帧本来就不该被要求有音轨。
+    "audio_track_present": frozenset({"hasAudio"}),
 }
 
 #: 带 `field` 参数的算子：真正需要的字段由 `expected["field"]` 决定。
@@ -182,6 +188,13 @@ def measure_artifact(ref: Any, resolve: Callable[[str], Any] | None,
             sz = _image_size(path)
             if sz:
                 out["width"], out["height"] = sz
+            # 视频/音频：读容器判有无音轨。**只在媒体扩展名时读** ——
+            # 图像也读一遍会白白多花 I/O（一集 24 镜）。
+            if path.suffix.lower() in _MEDIA_EXT:
+                try:
+                    out.update(_media_flags(path.read_bytes()))
+                except OSError:
+                    pass
             out["name"] = name
         return out
 
@@ -286,6 +299,53 @@ def extract_from_artifact(ref: Any) -> dict[str, Any]:
     return measure_artifact(ref, None)
 
 
+#: 需要做容器探测的扩展名。**只对媒体文件读字节** ——
+#: 图像/文本类不必为此多读一遍磁盘。
+_MEDIA_EXT = frozenset({".mp4", ".m4v", ".mov", ".webm",
+                        ".m4a", ".mp3", ".wav", ".aac", ".flac"})
+
+
+def _media_flags(blob: bytes) -> dict[str, Any]:
+    """从**容器字节**判断有没有视频轨/音频轨。**不依赖 ffprobe。**
+
+    ## 为什么自己做容器解析
+
+    本机没装 ffprobe（实测 `FileNotFoundError`），而"成片有没有声音"
+    是必须能验的事 —— 否则"加了音轨"永远只是一句声明。
+
+    ## 判据（容器层的事实，不是推测）
+
+    | 容器 | 判据 |
+    |---|---|
+    | MP4/MOV | `ftyp` 头 + `moov/trak/mdia/hdlr` 的 handler 为 `vide` / `soun` |
+    | Matroska | EBML 魔数 + `V_*` / `A_*` 编解码器标记 |
+    | WAV | `RIFF....WAVE` |
+
+    ⚠️ **只在字节里找标记，不做完整解析。** 这足以回答"有没有音轨"，
+    而不必实现一个 mp4 解析器。缺点是它不能告诉你音轨**多长**——
+    那个由 `durationSec` 从别处量。
+    """
+    out: dict[str, Any] = {}
+    if len(blob) < 16:
+        return out
+
+    if blob[4:8] == b"ftyp":
+        out["container"] = "mp4"
+        out["hasVideo"] = b"vide" in blob
+        # `mp4a` 是 AAC 的采样描述；有它基本必有音轨
+        out["hasAudio"] = b"soun" in blob or b"mp4a" in blob
+    elif blob[:4] == b"\x1a\x45\xdf\xa3":
+        out["container"] = "matroska"
+        out["hasVideo"] = b"V_VP" in blob or b"V_MPEG" in blob or b"V_AV1" in blob
+        out["hasAudio"] = (b"A_OPUS" in blob or b"A_AAC" in blob
+                           or b"A_VORBIS" in blob or b"A_MPEG" in blob)
+    elif blob[:4] == b"RIFF" and blob[8:12] == b"WAVE":
+        out["container"] = "wav"
+        out["hasVideo"] = False
+        out["hasAudio"] = True
+    return out
+
+
 def _measure_blob(blob: bytes, name: str,
                   *, want_signature: bool = False) -> dict[str, Any]:
     """从**内存字节**量可测属性。不需要文件系统。
@@ -294,6 +354,8 @@ def _measure_blob(blob: bytes, name: str,
     也不受"文件还在不在磁盘上"影响。
     """
     out: dict[str, Any] = {"bytes": len(blob)}
+    # 媒体容器：顺带判有无音轨（"成片有声"必须可验）
+    out.update(_media_flags(blob))
     if name:
         out["name"] = name
     sz = _image_size_bytes(blob)

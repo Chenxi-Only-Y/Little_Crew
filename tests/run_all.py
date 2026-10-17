@@ -58,7 +58,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
-    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 95),
+    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 106),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
     ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 38),

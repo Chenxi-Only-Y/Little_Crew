@@ -31,6 +31,102 @@
 
 ---
 
+## [0.4.0-alpha.50] — 2026-10-18（**成片有声**：H3 音画同出 · 第 13 个断言）
+
+### 起因：一句提示
+
+> 用户："部分生视频模型有音频。"
+
+顺着查，发现**项目里早就登记了**，只是没有一条能走通的通道：
+
+| 证据 | 内容 |
+|---|---|
+| `local-gen/app/engines/h3.py` | `from diffsynth.pipelines.minimax_h3_audio_video import MiniMaxH3Pipeline`<br>`video, audio = pipe(...)` → `write_video_audio(...)` |
+| 权重目录 | `.../MiniMax-H3/FL2VA/processor` —— **FL2VA = First-Last to Video + Audio** |
+| 注册表 | `minimax-h3` 的 `capability.native_audio=**True**`（早就声明） |
+| `h3-native-audio` 条目 | "零额外成本：音轨与视频同一遍前向产出" |
+
+### 实测确认（不看代码，看文件）
+
+**本机没装 ffprobe**，所以自己解析容器：
+
+```
+vide handler : True     soun handler : True
+编解码器      : ['avc1', 'mp4a']        trak 数量 : 2
+```
+
+**✅ H3 确实音画同出，不需要 TTS。**
+
+### 接线 Added —— 三处
+
+| 位置 | 改动 |
+|---|---|
+| `models/registry.py` | 给 `minimax-h3` 加**第三个后端**：local-gen 异步通道（`/v1/videos/generations`） |
+| `runtime/channels/http.py` | 提交时也认 **`job_id`** —— local-gen 用的就是这个键 |
+| `review/observe.py` + `ops.py` | 新增容器探测 `_media_flags` + 断言 **`audio_track_present`** |
+
+**第二处是个真 bug**：代码只认 `id` / `task_id`，而 local-gen 返回
+`{"job_id": "...", "status": "queued"}` —— 任务会被判"服务端没给任务 id"
+而**每次提交都失败**，看起来像服务不可用。
+
+> **声明了却走不通，比没声明更糟** —— 它让人以为已经接好了。
+
+### 新增 Added —— 第 13 个断言 `audio_track_present`
+
+`capability.native_audio=True` 只是一句**声明**。在此之前**没有任何断言能验证
+"成片真的有声音"** —— `audio.tts` 是一条编译规则（描述"该去合成语音"），
+不是"产物里必须有一条音频轨"。
+
+> **声明与验证是两件事。**
+
+判据来自**容器字节**（不依赖 ffprobe）：MP4 找 `ftyp` + `soun`/`mp4a`，
+Matroska 找 `A_*`，WAV 直接算有。
+⚠️ 它**不判断音轨内容对不对** —— 只回答"有没有"。
+
+### 达成 Milestone —— 3 镜有声成片
+
+```
+3 段 × ~330-340 秒  ->  ffmpeg concat  ->  audio_demo.mp4
+13.41 秒 / 16.35 MB / h264 640x384 24fps + **AAC 32kHz 立体声 176 kb/s**
+算子判定: ✅ 通过 —— mp4 容器，音轨与视频轨齐全
+```
+
+**走 i2v 而不是 t2v**：把 Z-Image 静帧当首帧，得到"我们控制的构图 +
+模型补的运镜 + 模型自带的音轨"。纯 t2v 会丢掉构图
+（那正是 `img2img` 否证过的问题）。已抽帧验证构图完整保留。
+
+**为什么只做 3 镜**：单镜实测约 **340 秒纯生成**。
+24 镜约 **2.6 小时** —— 那不是演示，是排队。**把慢说清楚，比假装它能跑整集诚实。**
+
+### 修正 Fixed —— 一个被测试套件抓到的缩进错误
+
+给 `http.py` 加 `job_id` 那行时，多行表达式缩进错了，导致
+`IndentationError` —— **7 个套件立刻变红**。已修。
+（这是"测试全绿不能当正确性证据、但测试变红一定有真问题"的又一个例子。）
+
+### ⚠️ 覆盖范围（不夸大）
+
+| 项 | 状态 |
+|---|---|
+| H3 出音轨 | ✅ **实测**（容器探测 + 成片） |
+| 断言 `audio_track_present` | ✅ 11 项单测 |
+| local-gen 后端登记 | ✅ 已完成 |
+| **HttpChannel 异步路径端到端** | ⚠️ **未跑通** —— 只验证了响应键解析（`job_id` / `result.url`）；演示脚本走的是直连 urllib |
+| 接进 `EpisodeRunner` 主流程 | ❌ **未做**（H3 与 Z-Image 的 IR/编译规则不同，硬塞会破坏已跑通的整集链路） |
+| 整集 24 镜全用 H3 | ❌ 未做（2.6 小时） |
+| 音轨**内容**质量 | ❌ 未评估（只验"有没有"） |
+
+**先独立脚本证明可行性，再接主流程** —— 与项目一贯做法一致（先量，再改）。
+
+### 验证 Verification
+
+```
+ [v] 确定性验收门禁     106 项（+11）
+ 结果：全部通过 —— 功能用例 1266/1266，外加架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.49] — 2026-10-18（新算子的真实发生率：**0%** —— 一次自我修正）
 
 ### 一句话

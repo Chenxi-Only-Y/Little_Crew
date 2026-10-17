@@ -1,0 +1,58 @@
+{
+  "kind": "h3-audio-demo",
+  "model": "minimax-h3 (local-gen i2v)",
+  "clips": [
+    {
+      "shot": 1,
+      "still": "04502b88_img_20261017_183702_a3d7a3.png",
+      "prompt": "镜头缓慢横移，风穿过薰衣草，花穗起伏，远处有鸟鸣",
+      "seconds": 340.4,
+      "probe": {
+        "bytes": 8430698,
+        "container": "mp4",
+        "hasVideo": true,
+        "hasAudio": true,
+        "name": "clip01.mp4"
+      }
+    },
+    {
+      "shot": 2,
+      "still": "d83cd330_img_20261017_183734_bdb7ed.png",
+      "prompt": "镜头轻轻前推，晨雾散开，露水从叶片滴落，水滴声清晰",
+      "seconds": 340.2,
+      "probe": {
+        "bytes": 4284847,
+        "container": "mp4",
+        "hasVideo": true,
+        "hasAudio": true,
+        "name": "clip02.mp4"
+      }
+    },
+    {
+      "shot": 3,
+      "still": "c3f2ae15_img_20261017_184431_eb1913.png",
+      "prompt": "镜头微微上摇，云影掠过屋顶，风铃轻响，人声低语",
+      "seconds": 330.2,
+      "probe": {
+        "bytes": 4436289,
+        "container": "mp4",
+        "hasVideo": true,
+        "hasAudio": true,
+        "name": "clip03.mp4"
+      }
+    }
+  ],
+  "final": {
+    "file": "audio_demo.mp4",
+    "bytes": 17149145,
+    "container": "mp4",
+    "hasVideo": true,
+    "hasAudio": true
+  },
+  "operatorVerdict": {
+    "passed": true,
+    "detail": "mp4 容器，音轨与视频轨齐全"
+  },
+  "totalSeconds": 1011.0,
+  "note": "H3 是音画同出（FL2VA），音轨与视频同一遍前向产出 —— 不需要独立 TTS。单镜实测约 290 秒纯生成，所以只做 4 镜；整集 24 镜约 2.6 小时。"
+}

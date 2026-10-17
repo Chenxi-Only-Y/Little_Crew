@@ -436,6 +436,37 @@ def _video_models() -> list[ModelSpec]:
                     status_success_value="Success",
                     notes="官方 API 或自建服务。endpoint 由 config/.env 提供",
                 ),
+                Backend(
+                    kind=BackendKind.HTTP,
+                    # **本地零成本通道**（2026-10-18 加）。
+                    #
+                    # 在此之前 H3 只有两条路：本机 ComfyUI（没起）与 MiniMax
+                    # 官方 API（没有 key）。而 `capability.native_audio=True`
+                    # 早就声明了 —— **模型档案知道它有音频，但没有任何一条
+                    # 能走通的通道**。声明了却走不通，比没声明更糟。
+                    endpoint=resolve_endpoint("http://127.0.0.1:8100",
+                                              "LOCAL_GEN_ENDPOINT"),
+                    api_key_env="LOCAL_GEN_API_KEY",   # 本地服务通常不需要
+                    path="/v1/videos/generations",
+                    body_template=(
+                        '{"prompt": "{prompt}", "image_path": "{image_path}",'
+                        ' "width": {width}, "height": {height},'
+                        ' "seconds": {duration},'
+                        ' "num_inference_steps": {steps}, "seed": {seed}}'
+                    ),
+                    # 响应长这样（实测）：
+                    #   {"job_id": "...", "status": "queued", "poll": "..."}
+                    #   -> {"status": "succeeded",
+                    #       "result": {"url": "...mp4", "frames": 107, "fps": 24}}
+                    response_path="result.url",
+                    async_task=True,
+                    status_path="/v1/videos/generations/{task_id}",
+                    status_success_value="succeeded",
+                    is_local_by_default=True,
+                    notes=("local-gen 本地异步通道（零成本）。"
+                           "**实测产物自带 AAC 音轨**（容器里 2 条 trak："
+                           "avc1 视频 + mp4a 音频）—— 不需要另做 TTS"),
+                ),
             ),
             capability=Capability(
                 max_resolution=(1344, 768),

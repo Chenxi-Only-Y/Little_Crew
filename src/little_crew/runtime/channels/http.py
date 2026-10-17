@@ -201,7 +201,13 @@ class HttpChannel:
 
         handle.raw = raw
         if self.backend.async_task:
-            task_id = extract_path(raw, "id") or extract_path(raw, "task_id")
+        # ⚠️ 也要认 `job_id` —— local-gen 的异步视频接口用的就是它
+            # （`{"job_id": "...", "status": "queued", "poll": "..."}`）。
+            # 只认 `id`/`task_id` 的话，任务会被判"服务端没给任务 id"
+            # 而**每次提交都失败**，看起来像服务不可用。
+            task_id = (extract_path(raw, "id")
+                       or extract_path(raw, "task_id")
+                       or extract_path(raw, "job_id"))
             if not task_id:
                 handle.status = JobStatus.FAILED
                 handle.error = ChannelError(

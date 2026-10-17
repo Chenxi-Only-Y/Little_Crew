@@ -1,0 +1,12 @@
+{
+  "url": "http://127.0.0.1:8100/files/vid_370af9d8173c429a.mp4",
+  "bytes": 8632327,
+  "has_vide": true,
+  "has_soun": true,
+  "codecs": [
+    "avc1",
+    "mp4a"
+  ],
+  "traks": 2,
+  "note": "由 research/audio-track/probe_h3_audio.py 的任务产物探测而来"
+}

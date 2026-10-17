@@ -458,6 +458,71 @@ def _i_cast_text() -> None:
     check("I15 算子已注册到 REGISTRY", "cast_consistent_with_text" in REGISTRY.names())
 
 
+# ---------- J. audio_track_present（2026-10-18 新增算子）----------
+#
+# ## 为什么这一段守
+#
+# `minimax-h3` 的 `capability.native_audio=True` 早就声明了，
+# 但在此之前**没有任何断言能验证"成片真的有声音"**。
+# **声明与验证是两件事** —— 少了这一层，"加了音轨"永远只是一句话。
+#
+# ## 判据来自容器字节，不依赖 ffprobe
+#
+# 本机没装 ffprobe（实测 FileNotFoundError），所以
+# `observe._media_flags` 自己看容器：MP4 找 `soun` / `mp4a`，
+# Matroska 找 `A_*`，WAV 直接算有。
+
+def _j_audio() -> None:
+    from little_crew.review.observe import _media_flags
+    from little_crew.review.ops import audio_track_present as f
+
+    check("J1 有音轨 + 有视频轨 -> 通过",
+          f({}, {"hasAudio": True, "hasVideo": True, "container": "mp4"}).passed)
+    check("J2 ★ 没有音轨 -> 不通过",
+          not f({}, {"hasAudio": False, "hasVideo": True,
+                     "container": "mp4"}).passed)
+    check("J3 只有音轨没有画面 -> 不通过（只有声音不构成成片）",
+          not f({}, {"hasAudio": True, "hasVideo": False,
+                     "container": "wav"}).passed)
+    check("J4 requireVideo=false 时纯音频可以过",
+          f({"requireVideo": False},
+            {"hasAudio": True, "hasVideo": False, "container": "wav"}).passed)
+    r = f({}, {"width": 832, "height": 480})
+    check("J5 ★ 图像产物测不了音轨 -> 不通过（缺观测不等于通过）",
+          not r.passed and "缺失" in r.detail, r.detail[:70])
+
+    # ---- 容器探测本身 ----
+    mp4 = (b"\x00\x00\x00\x20ftypisom\x00\x00\x02\x00"
+           b"isomiso2avc1mp41" + b"\x00" * 40
+           + b"moov" + b"trak" + b"vide" + b"trak" + b"soun" + b"mp4a")
+    fl = _media_flags(mp4)
+    check("J6 ★ MP4 字节里能查出视频轨与音轨",
+          fl.get("container") == "mp4" and fl.get("hasVideo") is True
+          and fl.get("hasAudio") is True, str(fl))
+
+    mp4_noaudio = (b"\x00\x00\x00\x20ftypisom" + b"\x00" * 40
+                   + b"moov" + b"trak" + b"vide")
+    fl2 = _media_flags(mp4_noaudio)
+    check("J7 无音轨的 MP4 -> hasAudio=False",
+          fl2.get("hasAudio") is False, str(fl2))
+
+    wav = b"RIFF\x24\x00\x00\x00WAVEfmt " + b"\x00" * 20
+    fl3 = _media_flags(wav)
+    check("J8 WAV -> 有音频、无视频",
+          fl3.get("hasAudio") is True and fl3.get("hasVideo") is False,
+          str(fl3))
+
+    check("J9 非媒体字节 -> 不产出任何字段（不编造）",
+          _media_flags(b"\x89PNG\r\n\x1a\n" + b"\x00" * 40) == {},
+          str(_media_flags(b"\x89PNG\r\n\x1a\n" + b"\x00" * 40)))
+
+    check("J10 太短的字节 -> 不崩",
+          _media_flags(b"\x00\x01") == {})
+
+    from little_crew.review.constraint import REGISTRY
+    check("J11 算子已注册", "audio_track_present" in REGISTRY.names())
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -473,6 +538,7 @@ def main() -> int:
     _c_verdicts()
     _d_enforcement()
     _i_cast_text()
+    _j_audio()
     _e_determinism()
     _f_ir_binding()
     # L3 盲读算子 + 门禁对它的响应

@@ -99,3 +99,8 @@ Thumbs.db
 !outputs/.gitkeep
 !logs/.gitkeep
 !config/env/.gitkeep
+
+# 音轨演示的**中间片段**：可由 make_audio_demo.py 重跑得到，
+# 而成片（audio_demo.mp4）已包含它们的内容 —— 不必进版本库。
+research/audio-track/clips/
+research/audio-track/*.partial.json
