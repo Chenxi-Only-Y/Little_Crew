@@ -38,6 +38,7 @@ from typing import Any, Mapping
 
 from little_crew.agent.llm import LLMError, LlmClient
 from little_crew.agent.messages import (
+    COMPLETENESS_PENALTY_PER_SCENE,
     Dimension,
     IssueLocation,
     QcScore,
@@ -577,7 +578,12 @@ class DramaturgeLlm:
         # 旧公式按缺陷项数计，导致"2 场缺 1 场"仍有 94 分、总分 88.6 ——
         # 高于通过线 80，第 1 轮就放行，返工闭环形同虚设。
         bad_scenes = len({i.location.scene for i in issues})
-        completeness = max(0.0, 100.0 * (1.0 - bad_scenes / n))
+        # **按场次的绝对惩罚**（2026-10-17，与规则桩同口径）——
+        # 不用比例：比例会让 2 场剧本的单个缺陷被罚 50%、8 场只罚 12.5%，
+        # 且短剧本会撞到 0 的地板（实测短剧本组 5 次有 4 次停在同一个分数）。
+        # 详见 `messages.COMPLETENESS_PENALTY_PER_SCENE` 的说明。
+        completeness = max(
+            0.0, 100.0 - COMPLETENESS_PENALTY_PER_SCENE * bad_scenes)
         bad = len(issues)
         # 文字编辑没跑时一致性无从判断 —— **给中性分而不是满分**：
         # 满分会让"没人看过"看起来像"检查过了没问题"。

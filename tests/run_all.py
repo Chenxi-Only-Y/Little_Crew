@@ -41,11 +41,16 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 43),
-    ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 74),
+    ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 79),
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），
     # 那些必须能被**确定性地**断言，不能靠"我看模型像是改了"。
     ("LLM 职位机制", [sys.executable, "-m", "little_crew.agent.crew_llm_check"], 32),
+    # ⚠️ 这一套的存在理由（2026-10-17 的教训）：`crew_llm_check` 只碰
+    # `DramaturgeLlm().client`，**从不调用它的 `__call__`** ——
+    # 于是剧评人换完整性公式时漏了 import，1205 项测试全过、
+    # 直到真实一集连崩 3 次才暴露。**"能构造"不等于"能工作"。**
+    ("LLM 剧评人", [sys.executable, "-m", "little_crew.agent.dramaturge_llm_check"], 17),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 60),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),

@@ -33,6 +33,7 @@ from typing import Any, Mapping, Sequence
 
 from little_crew.agent.messages import (
     MAX_SHOT_SECONDS,
+    COMPLETENESS_PENALTY_PER_SCENE,
     Dimension,
     IssueLocation,
     QcScore,
@@ -405,8 +406,13 @@ class DramaturgeRules:
         # 这个口径与"完整性"这个词也更一致：一场戏缺了转折，
         # 不是因为"缺了三分之一项"，而是**这场不成立**。
         n = max(len(draft.scenes), 1)
+        # **按场次的绝对惩罚**（2026-10-17 改）：
+        # 不再用"缺陷场次/总场次"那个比例 —— 它让 2 场剧本的单个缺陷
+        # 被罚 50%，而 8 场只罚 12.5%，且短剧本会撞到 0 的地板。
+        # 详见 `messages.COMPLETENESS_PENALTY_PER_SCENE` 的说明。
         bad_scenes = len({i.location.scene for i in issues})
-        completeness = max(0.0, 100.0 * (1.0 - bad_scenes / n))
+        completeness = max(
+            0.0, 100.0 - COMPLETENESS_PENALTY_PER_SCENE * bad_scenes)
         # 一致性：跨场角色是否连贯（此处按"每场是否交代了人物"粗判）
         no_char = sum(1 for sc in draft.scenes if not _characters_of(sc))
         consistency = max(0.0, 100.0 - 40.0 * no_char / n)

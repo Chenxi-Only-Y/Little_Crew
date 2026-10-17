@@ -483,6 +483,7 @@ def main() -> int:
     _review_board()
     _pipeline()
     _contract()
+    _completeness_length_independent()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
@@ -493,6 +494,70 @@ def main() -> int:
     print("=" * 78)
     print(f"结果：{npass}/{len(_results)} 通过")
     return 0 if npass == len(_results) else 1
+
+
+
+# ---------- I. 完整性必须与剧本长度无关（2026-10-17）----------
+#
+# ## 这一段守什么
+#
+# 2026-10-17 之前，完整性用的是**比例**：
+#     completeness = 100 * (1 - 缺陷场次/总场次)
+#
+# 条件对比实验（research/threshold-calibration/）实测到两个后果：
+#   · 同一份素材切成 2 场后，总分比 5 场低 **17.7 分** —— 同样的绝对缺陷量
+#   · 2 场里两场都有缺陷 -> 完整性归零 -> 总分固定 41.4，
+#     5 次里 4 次停在这个"地板"上 —— 那是地板的形状，不是质量分布
+#
+# 已改成**按场次的绝对惩罚**（`COMPLETENESS_PENALTY_PER_SCENE`）。
+# 这一段钉住的正是那个修复的性质：**1 个缺陷场次，在任何长度的剧本里
+# 都该扣同样多的完整性分**。
+#
+# ⚠️ 它**不**主张"2 场剧本合格"—— 只主张"缺陷的代价可比"。
+# "一集只有 2 场"是不是问题，是另一个独立判断，不该藏在比例公式里。
+
+def _completeness_length_independent() -> None:
+    from little_crew.agent.crew_stubs import DramaturgeRules
+    from little_crew.agent.messages import COMPLETENESS_PENALTY_PER_SCENE
+
+    # 三类结构信号都齐的"完整"场；以及一个都不含的"不完整"场。
+    RICH = "她拒绝了，但那要付出代价。忽然她转身离开。"
+    FLAT = "屋里很安静，光线柔和，她坐着。"
+
+    def _draft(n: int, bad: int) -> ScriptDraft:
+        scenes = []
+        for i in range(n):
+            text = FLAT if i < bad else RICH
+            scenes.append({"id": f"S{i+1:02d}", "heading": "内景",
+                           "characters": ("甲",), "text": text})
+        return ScriptDraft(frm="screenwriter", to="dramaturge",
+                           episode_id="E900", title="T",
+                           scenes=tuple(scenes), revision=1)
+
+    def _comp(n: int, bad: int) -> float:
+        p = {"script.draft": _draft(n, bad)}
+        out = DramaturgeRules()(envelope=CallEnvelope.root(
+            "dramaturge", "script.critique", p, Budget.unlimited(),
+            callee_kind="agent"), runtime=None)          # type: ignore[arg-type]
+        assert out.ok, out.error_message
+        fb = out.output["script.critique"]
+        return float(fb.score.dimensions[Dimension.COMPLETENESS])
+
+    expect = 100.0 - COMPLETENESS_PENALTY_PER_SCENE
+    c2 = _comp(2, 1)
+    c8 = _comp(8, 1)
+    check("I1 ★ 1 个缺陷场次：2 场与 8 场得到**相同**完整性",
+          abs(c2 - c8) < 0.01, f"2 场={c2}  8 场={c8}")
+    check(f"I2 该值等于 100 - 惩罚({COMPLETENESS_PENALTY_PER_SCENE})",
+          abs(c2 - expect) < 0.01, f"{c2} vs {expect}")
+
+    # 无缺陷时满分；缺陷翻倍时线性下降（**不再有"短剧本撞 0"**）
+    check("I3 无缺陷 -> 100", abs(_comp(2, 0) - 100.0) < 0.01)
+    check("I4 2 场全缺 -> 50（旧比例公式会给 0）",
+          abs(_comp(2, 2) - (100.0 - 2 * COMPLETENESS_PENALTY_PER_SCENE)) < 0.01,
+          f"{_comp(2, 2)}")
+    check("I5 4 个缺陷场次 -> 归零，不会变成负数",
+          _comp(5, 4) == 0.0, f"{_comp(5, 4)}")
 
 
 if __name__ == "__main__":
