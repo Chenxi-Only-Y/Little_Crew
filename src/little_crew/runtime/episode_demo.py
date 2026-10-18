@@ -89,6 +89,25 @@ def _print_clips(runner: Any, enabled: bool) -> None:
     print(f"  ⚠️ 真片段没出来：{info.get('reason') or '（未进入第二段）'}")
     for f in (info.get("failures") or [])[:4]:
         print(f"      ✗ {f}")
+    return
+
+
+def _print_audio(runner: Any, enabled: bool) -> None:
+    """打印**片段音轨检查**（V3）。缺音轨 = M3 没达成，必须看得见。"""
+    if not enabled:
+        return
+    rep = getattr(runner, "_clip_audio", None) or {}
+    if not rep:
+        return
+    print()
+    print(f"  音轨检查：{'✅ 全部通过' if rep.get('ok') else '❌ 有片段缺音轨'}"
+          f"  ({rep.get('passed')}/{rep.get('passed', 0) + rep.get('failed', 0)})")
+    for r in (rep.get("clips") or []):
+        mark = "✓" if r.get("passed") else "✗"
+        print(f"      [{mark}] {r.get('clip')}  容器 {r.get('container')}"
+              f"  音轨 {r.get('hasAudio')}")
+    if not rep.get("ok"):
+        print(f"      {rep.get('reason')}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -417,6 +436,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  交付物写入 {out_dir}")
     print("=" * 78)
     _print_clips(runner, args.video_mode)
+    _print_audio(runner, args.video_mode)
 
     return 0 if res.ok else 1
 

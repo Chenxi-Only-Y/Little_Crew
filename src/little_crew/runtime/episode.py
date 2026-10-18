@@ -195,6 +195,12 @@ class EpisodeResult:
     #: 两者都在时，**`clip_video` 才是"视频"**，另一个是占位呈现。
     clip_video: str = ""
 
+    #: **片段音轨检查结果**（V3，2026-10-18）：`{"ok", "clips", "passed", "failed", "reason"}`。
+    #:
+    #: 为什么单独一个字段：`clip_video` 只说"有没有拼出成片"，
+    #: 而 M3 的要求是"**含音轨**"。两件事，必须分开看得见。
+    clip_audio: dict[str, Any] = field(default_factory=dict)
+
     advisory: tuple[dict[str, Any], ...] = ()
 
     #: **导演方案**（2026-10-18）：`{"ok": bool, "plan": {...}}` 或空。
@@ -245,6 +251,7 @@ class EpisodeResult:
             "scriptVerdict": self.script_verdict,
             "failureKind": self.failure_kind,
             "clipVideo": self.clip_video,
+            "clipAudio": dict(self.clip_audio),
             "advisory": [dict(a) for a in self.advisory],
             "director": dict(self.director),
             "gaffer": dict(self.gaffer),
@@ -578,6 +585,11 @@ class EpisodeRunner:
             clip_video = str(clips.get("path") or "")
             # **记下来**：不记的话"片段没出来"与"没开视频模式"分不清。
             self._clip_info = dict(clips)
+            # ⚠️ **缺音轨 -> 交付失败**（M3 的定义是"成片含音轨"）
+            self._clip_audio = dict(clips.get("audio") or {})
+            if clips.get("path") and self._clip_audio.get("ok") is False:
+                ok = False
+                reason = str(self._clip_audio.get("reason") or "片段缺音轨")
 
         return EpisodeResult(
             episode_id=self.episode_id, ok=ok,
@@ -1225,17 +1237,74 @@ class EpisodeRunner:
             if not paths:
                 return {"ok": False, "reason": "片段为空"}
 
+            # ---- V3：音轨门禁（缺音轨 -> 交付失败）----
+            audio = self._check_clip_audio(paths + [full] if paths else paths)
+
             full = clipdir / "full_clips.mp4"
             try:
                 concat_clips(self._ffmpeg(), paths, full, workdir=clipdir)
             except Exception as e:                            # noqa: BLE001
                 return {"ok": False,
                         "reason": f"合片失败 {type(e).__name__}: {e}"[:160],
-                        "clips": [str(x) for x in paths]}
-            return {"ok": True, "path": str(full),
-                    "clips": [str(x) for x in paths]}
+                        "clips": [str(x) for x in paths], "audio": audio}
+            # 合片自身也查一次（-c copy 通常保住音轨，但**不假设**）
+            audio = self._check_clip_audio(paths + [full])
+            return {"ok": bool(audio.get("ok")), "path": str(full),
+                    "clips": [str(x) for x in paths], "audio": audio,
+                    "reason": ("" if audio.get("ok")
+                               else str(audio.get("reason") or ""))}
         except Exception as e:                                # noqa: BLE001
             return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+
+    def _check_clip_audio(self, paths: list[Any]) -> dict[str, Any]:
+        """对**真片段**逐条检查音轨（V3，2026-10-18）。
+
+        ## 为什么放在渲染之后，而不是门禁里
+
+        门禁在静帧阶段跑，**那时片段还不存在** —— 没法检查"有没有音轨"。
+        所以音轨检查必须在片段产出后**再走一遍**。
+
+        ## 为什么判据是 `hard`
+
+        M3 的定义是"成片**含音轨**"。没有音轨的片段 = M3 没达成。
+        所以缺音轨**让交付失败**（`ok=False`），而不是只留个 warning。
+
+        `_missing()` 的规矩照旧：**取不到观测 ≠ 通过**。
+        """
+        from little_crew.review.observe import measure_artifact
+        from little_crew.review.ops import audio_track_present
+
+        def resolve(name: str) -> Any:
+            for q in paths:
+                qp = pathlib.Path(str(q))
+                if qp.name == name:
+                    return qp
+            return None
+
+        rows: list[dict[str, Any]] = []
+        for q in paths:
+            qp = pathlib.Path(str(q))
+            try:
+                probe = measure_artifact(qp.name, resolve)
+                verdict = audio_track_present({}, probe)
+                rows.append({
+                    "clip": qp.name,
+                    "container": probe.get("container"),
+                    "hasVideo": probe.get("hasVideo"),
+                    "hasAudio": probe.get("hasAudio"),
+                    "passed": bool(verdict.passed),
+                    "detail": str(verdict.detail)[:160],
+                })
+            except Exception as e:                            # noqa: BLE001
+                rows.append({"clip": qp.name, "container": None,
+                             "hasVideo": None, "hasAudio": None,
+                             "passed": False,
+                             "detail": f"{type(e).__name__}: {e}"[:160]})
+        failed = [r for r in rows if not r["passed"]]
+        return {"ok": not failed, "clips": rows,
+                "passed": len(rows) - len(failed), "failed": len(failed),
+                "reason": ("" if not failed else
+                           f"{len(failed)} 个片段缺音轨 —— M3 要求成片含音轨")}
 
     def _still_path(self, art: Any) -> Any:
         """把一镜的产物转成**文件路径**（H3 要的是一个真实文件）。

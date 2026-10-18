@@ -230,6 +230,53 @@ def _run_wiring() -> None:
 
 
 
+# ---------- E. V3：音轨门禁 ----------
+#
+# M3 的定义是"成片**含音轨**"。所以缺音轨必须**让交付失败**，
+# 而不是只留个 warning —— 否则 M3 会以"看起来完成了"的样子通过。
+#
+# 这里只用**确定性**判据（不依赖仓库里的媒体文件）：
+#   · 取不到观测 -> 不通过（铁律①：缺观测 ≠ 通过）
+#   · 结构上缺音轨会不会让 `ok` 变 False
+
+def _audio_gate() -> None:
+    print()
+    print("E. V3：音轨门禁")
+
+    class D:
+        _check_clip_audio = EpisodeRunner._check_clip_audio
+
+    # 不存在的文件 -> 必须**记为失败**，不能当通过
+    rep = D()._check_clip_audio(["/nonexistent/zzz.mp4"])
+    check("X1 ★★ 取不到观测 -> **不通过**（缺观测 ≠ 通过）",
+          rep["ok"] is False and rep["failed"] == 1, str(rep)[:120])
+    check("X2 失败原因可读（不是空字符串）",
+          bool((rep.get("reason") or "").strip()), str(rep.get("reason"))[:80])
+
+    # 空列表 -> 没有可检查的，不算失败
+    rep2 = D()._check_clip_audio([])
+    check("X3 空列表 -> ok=True 且 passed=0（没有可检查的不等于失败）",
+          rep2["ok"] is True and rep2["passed"] == 0, str(rep2)[:100])
+
+    # ---- 结构：缺音轨要让交付失败 ----
+    src = inspect.getsource(EpisodeRunner.run)
+    i_audio = src.find("_clip_audio")
+    i_ok = src.find("ok = False", i_audio) if i_audio > 0 else -1
+    check("X4 ★★ 缺音轨时 `run()` 把 `ok` 置 False（M3 要求含音轨）",
+          0 <= i_audio < i_ok, f"audio@{i_audio} ok=False@{i_ok}")
+
+    # ---- 结果字段 ----
+    from little_crew.runtime.episode import EpisodeResult
+    import dataclasses
+    names = [f.name for f in dataclasses.fields(EpisodeResult)]
+    check("X5 ★ 音轨结果单独一个字段（与「有没有拼出成片」分开看得见）",
+          "clip_audio" in names and "clip_video" in names, str(names[-8:]))
+    d = EpisodeResult(episode_id="E1").as_dict()
+    check("X6 as_dict 导出 clipAudio", "clipAudio" in d,
+          str([k for k in d if "lip" in k]))
+
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -242,6 +289,7 @@ def main() -> int:
     _behavior()
     _structure()
     _run_wiring()
+    _audio_gate()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
