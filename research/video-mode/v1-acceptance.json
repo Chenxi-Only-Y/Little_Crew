@@ -1,0 +1,30 @@
+{
+  "kind": "video-mode-v1",
+  "elapsedSeconds": 662.2,
+  "ok": true,
+  "reason": "",
+  "backend": {
+    "endpoint": "http://127.0.0.1:8100",
+    "path": "/v1/videos/generations"
+  },
+  "clips": {
+    "S01-001": {
+      "bytes": 8239916,
+      "container": "mp4",
+      "hasVideo": true,
+      "hasAudio": true,
+      "passed": true,
+      "detail": "mp4 容器，音轨与视频轨齐全"
+    },
+    "S02-001": {
+      "bytes": 5561308,
+      "container": "mp4",
+      "hasVideo": true,
+      "hasAudio": true,
+      "passed": true,
+      "detail": "mp4 容器，音轨与视频轨齐全"
+    }
+  },
+  "failures": [],
+  "allHaveAudio": true
+}
