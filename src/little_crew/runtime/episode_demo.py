@@ -88,6 +88,10 @@ def main(argv: list[str] | None = None) -> int:
                          "（A 类审查职位的通用实现）。"
                          "它是 `script.draft` 的**门禁审核者**之一，"
                          "所以意见直接影响裁定。需要 --llm 的 key")
+    ap.add_argument("--llm-director", action="store_true",
+                    help="先跑**导演**产出 `episode.plan`，"
+                         "并按它的 shotBudget 给分镜师派活。"
+                         "需要 --llm")
     ap.add_argument("--llm-advisory", action="store_true",
                     help="额外跑 3 个**顾问批评家**"
                          "（连贯性 / 合规 / 节奏）。"
@@ -156,6 +160,21 @@ def main(argv: list[str] | None = None) -> int:
         from little_crew.agent.storyboard_llm import StoryboardArtistLlm
 
         # 分镜师是**创作**职位，用生成方同族即可（它不是审核方）
+        #
+        # ---- 导演（若启用）----
+        #
+        # ⚠️ **导演先定预算，分镜在预算内分配** —— 这是"导演"这个职位
+        # 真正进入协作链的方式。没这一步，`episode.plan` 只是一份没人看的文档。
+        #
+        # 注意：导演要看**剧本**，而剧本此刻还没产出。
+        # 所以这里只绑定实现；由 `EpisodeRunner._run_director()` 在剧本定稿后
+        # 调它、并把拿到的 plan 交给分镜师。
+        if args.llm_director:
+            from little_crew.agent.director_llm import DirectorLlm
+
+            stubs["director"] = DirectorLlm(client=writer)
+            print("  导演：**真实 LLM**（定基调与每场镜头预算）")
+
         stubs["storyboard_artist"] = StoryboardArtistLlm(client=writer)
     # ---- A 类审查职位：通用批评家（2026-10-18）----
     #

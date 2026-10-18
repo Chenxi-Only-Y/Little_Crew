@@ -186,6 +186,11 @@ class EpisodeResult:
     #:
     #: **但它们是真跑的** —— 不是占位。意见会进报告，人看得见。
     advisory: tuple[dict[str, Any], ...] = ()
+
+    #: **导演方案**（2026-10-18）：`{"ok": bool, "plan": {...}}` 或空。
+    #:
+    #: 空 = 没启用导演（不是"导演失败了"）。失败时 `ok=False` 且有 `reason`。
+    director: dict[str, Any] = field(default_factory=dict)
     shot_count: int = 0
     planned_shots: int = 0
     rendered: int = 0
@@ -227,6 +232,7 @@ class EpisodeResult:
             "scriptVerdict": self.script_verdict,
             "failureKind": self.failure_kind,
             "advisory": [dict(a) for a in self.advisory],
+            "director": dict(self.director),
             "plannedShots": self.planned_shots,
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
@@ -409,6 +415,12 @@ class EpisodeRunner:
         # **这是"角色一致"的前置**：没有它，每镜提示词里只有"少女"三个字，
         # 图像模型只能即兴发挥 —— 于是同一角色长得不一样。
         # 有了它，至少**文字层面**是一致的（图像层面还需参考图，见 §5.8）。
+        # ---- 2.2) 导演：定预算，交给分镜 ----
+        #
+        # ⚠️ **顺序很关键**：必须在**分镜之前**。
+        # 导演的产物是"每场几个镜头"，晚于分镜就毫无意义。
+        director_info = self._run_director(script_draft)
+
         # ---- 2.5) 顾问批评家（不进裁定）----
         advisory = self._run_advisory(script_draft, on_progress=on_progress)
 
@@ -556,6 +568,7 @@ class EpisodeRunner:
             failures=failed, video=video, video_path=video_path,
             characters=self.characters,
             advisory=advisory,
+            director=director_info,
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -1124,6 +1137,51 @@ class EpisodeRunner:
             jobs = [(self._values(ir), ir["graphId"]) for ir in irs]
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
+
+    def _run_director(self, script: Any) -> dict[str, Any]:
+        """跑**导演**产出 `episode.plan`，并把它交给分镜师。
+
+        ## 为什么这是"职位真正进入协作链"的关键
+
+        在此之前 `episode.plan` 虽然产出了，但**没有下游消费** ——
+        它只是一份没人看的文档。而分镜师自己决定每场几个镜头，
+        于是出现过"一场只给一个镜头"。
+
+        三步：
+          1. `run_stage("director", "episode.direct", {"script.draft": ...})`
+          2. 从黑板取 `episode.plan`
+          3. **注入分镜师的 `plan` 属性**（它有就设，没有就跳过）
+
+        ## 失败不阻断
+
+        导演挂了只是没有预算 —— 分镜可以按"每场 ≥2 镜"独立工作。
+        **但失败要看得见**（返回的 dict 里 `ok=False`），否则
+        "没有预算"与"预算为空"就分不清了。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "director" not in impls:
+            return {}
+        try:
+            out = self.orch.run_stage("director", "episode.direct",
+                                     {"script.draft": script})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+        if not getattr(out, "ok", False):
+            return {"ok": False,
+                    "reason": str(getattr(out, "error", ""))[:160]}
+
+        plan = self.orch.blackboard.value("episode.plan")
+        if not isinstance(plan, Mapping):
+            return {"ok": False, "reason": "导演没有产出 episode.plan"}
+
+        # 注入分镜师（它有 plan 属性才设；别硬塞陌生属性）
+        sb = impls.get("storyboard_artist")
+        if sb is not None and hasattr(sb, "plan"):
+            try:
+                sb.plan = dict(plan)
+            except Exception:                                 # noqa: BLE001
+                pass
+        return {"ok": True, "plan": dict(plan)}
 
     def _run_advisory(self, script: Any, *, on_progress: Any = None
                       ) -> tuple[dict[str, Any], ...]:

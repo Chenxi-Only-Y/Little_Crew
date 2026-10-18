@@ -119,10 +119,18 @@ class StoryboardArtistLlm:
     agent_id = "storyboard_artist"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.6, max_shots: int = 40) -> None:
+                 temperature: float = 0.6, max_shots: int = 40,
+                 plan: Mapping[str, Any] | None = None) -> None:
         self.client = client or LlmClient("deepseek-v4")
         self.temperature = temperature
         self.max_shots = max_shots
+        #: **导演方案**（`episode.plan`）。给了就按它的 `shotBudget` 分配镜头。
+        #:
+        #: 为什么不给也算正常：分镜师可以独立工作。但**给了就要遵守** ——
+        #: 否则"导演"这个职位只是产了一份没人看的文档。
+        self.plan = dict(plan or {})
+        #: 上一轮的预算偏差（测试与证据用）
+        self.budget_deviations: list[str] = []
         self.calls = 0
         #: 上一轮的驳回原因（测试与证据用）
         self.rejections: list[str] = []
@@ -163,6 +171,33 @@ class StoryboardArtistLlm:
                 f"模型返回了合法 JSON 但没有可用镜头"
                 f"（前 200 字：{str(data)[:200]}）")
 
+        # ---- 预算偏差（**记录但不阻断**）----
+        #
+        # ⚠️ **为什么不直接拒稿**：导演预算是一个"意图"，
+        # 而分镜受硬约束（每镜 ≤10 秒、每场 ≥2 镜）挤压 ——
+        # 某场稍多或稍少是正常的。
+        # 直接驳回会让"导演"变成第二个门禁，而它没有标定过。
+        #
+        # 所以：**记下来，让报告看得见**。等量出偏差分布，再决定要不要拦。
+        # （与 `PASS_THRESHOLD` / 顾问批评家同一套纪律：先有分布，再有权重。）
+        self.budget_deviations = []
+        budgets = {}
+        for s in (self.plan.get("scenes") or ()):
+            sid = str(s.get("sceneId") or "")
+            if sid:
+                budgets[sid] = int(s.get("shotBudget") or 0)
+        if budgets:
+            actual: dict[str, int] = {}
+            for sh in shots:
+                actual[str(getattr(sh, "scene_id", ""))] = (
+                    actual.get(str(getattr(sh, "scene_id", "")), 0) + 1)
+            for sid, want in budgets.items():
+                got = actual.get(sid, 0)
+                if want > 0 and got != want:
+                    self.budget_deviations.append(
+                        f"{sid}: 预算 {want} 镜，实给 {got} 镜"
+                        f"（{'超' if got > want else '少'} {abs(got - want)}）")
+
         out = ShotList(
             frm="storyboard_artist", to="*", stage="storyboard",
             episode_id=draft.episode_id,
@@ -176,6 +211,8 @@ class StoryboardArtistLlm:
                 "agent": self.agent_id,
                 "shotCount": len(shots),
                 "sceneCount": len(draft.scenes),
+                "budgetDeviations": list(self.budget_deviations),
+                "hasPlan": bool(self.plan),
                 "servedModel": (self.client.call_log[-1].get("servedModel")
                                 if self.client.call_log else ""),
                 "usage": (self.client.call_log[-1].get("usage")
@@ -196,6 +233,34 @@ class StoryboardArtistLlm:
             lines += [f"═══ {sid}　{sc.get('heading', '')}",
                       f"人物：{cast or '（未标）'}",
                       str(sc.get("text", "")), ""]
+        # ---- 导演预算（若给了）----
+        budget_lines: list[str] = []
+        budgets = {}
+        for s in (self.plan.get("scenes") or ()):
+            sid = str(s.get("sceneId") or "")
+            if sid:
+                budgets[sid] = s
+        if budgets:
+            budget_lines.append("【导演给的镜头预算 —— 必须遵守】")
+            for sc in draft.scenes:
+                sid = str(sc.get("scene_id") or sc.get("id") or "?")
+                b = budgets.get(sid)
+                if b:
+                    budget_lines.append(
+                        f"  {sid}: **{b.get('shotBudget')} 镜**"
+                        + (f"　保住：{b.get('focus')}" if b.get("focus") else ""))
+                else:
+                    budget_lines.append(f"  {sid}: （导演未给预算，按 ≥2 镜）")
+            if self.plan.get("tone"):
+                budget_lines.append(f"  基调：{self.plan['tone']}")
+            if self.plan.get("pacing"):
+                budget_lines.append(f"  节奏：{self.plan['pacing']}")
+            if self.plan.get("motifs"):
+                budget_lines.append(
+                    f"  视觉动机（尽量体现）：{'、'.join(self.plan['motifs'])}")
+            budget_lines.append("")
+
+        lines += budget_lines
         lines += [
             f"请为以上 {len(draft.scenes)} 场切分镜。总镜头数不超过 "
             f"{self.max_shots}。",
