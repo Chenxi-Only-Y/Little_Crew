@@ -31,6 +31,71 @@
 
 ---
 
+## [0.4.0-alpha.70] — 2026-10-18（V2 卡点**定位到根因** · 修复未完成，已回退）
+
+### 根因找到了 —— 而且是一个"半对"的结构问题
+
+`HttpChannel` **在构造时把 `backend` 存进 `self`**，而
+`submit / poll / collect / reconcile / available` **全都读 `self.backend`**：
+
+```python
+# channels/http.py:388-393
+val = extract_path(raw, self.backend.response_path)     # ← 通道自己的，不是传进来的
+    f"响应中取不到 response_path={self.backend.response_path!r} 指定的值"
+```
+
+而 `RenderSession.render_http(values, backend)` **收下了另一个 backend**，
+却让通道继续用自己那个 —— **传进来的被静默忽略**。
+
+真实管线里一条通道要服务两种后端：
+
+| 用途 | 后端 | `response_path` |
+|---|---|---|
+| 出静帧 | zimage | `data.0.url` |
+| **出视频** | H3 | **`result.url`** |
+
+demo 里通道是**按图像后端建的** → 第二段拿它去请求视频接口 →
+报 `响应中取不到 response_path='data.0.url'`。
+
+> **看起来像服务端返回不对，实际是我们问错了地方。**
+
+### 做到了哪一步
+
+| 步 | 状态 |
+|---|---|
+| 定位根因 | ✅ 精确到行 |
+| 加 `HttpChannel.for_backend()` | ✅ 已加（换后端返回视图，不换的那几个设置照抄） |
+| 在 `RenderSession.render_http` 里换视图 | ❌ **没做完，已回退** |
+
+### 为什么回退
+
+改到一半发现影响面比一个小窗口大：`_await` 里也在用 `self.channel`，
+而 `render_http` 尾部还有 4 处 `self.channel.*`（`available` / `submit` /
+`collect` / `reconcile`）。我一度只替换了方法内的一部分，于是出现
+"**提交走了对的通道、轮询走了错的**"这种**半对状态** —— 测试立刻红了。
+
+> **半对状态比全错更危险**：全错会当场失败，半对会跑过去一段才露馅。
+
+所以我**回退到全绿**，把 `for_backend` 留着（它本身是干净的、未被调用），
+把根因写清楚，而不是在当前窗口硬修。
+
+### 下一步（很具体，不用重新推导）
+
+1. 给 `HttpChannel` 的**全部**通道方法加一个"当前后端"入口 ——
+   或者更彻底：让 `submit/poll/collect/reconcile/available` **显式接收后端**，
+   而不是读 `self.backend`（`for_backend` 已备好，可作过渡）
+2. 改完重跑 `--video-mode --limit 2`（11 分钟）
+3. 通过后再做 V3（门禁接 `audio_constraint`）
+
+### 验证 Verification
+
+```
+ 结果：全部通过 —— 功能用例 1446，外加架构守卫 PASS
+ render.py 已回退到 HEAD；channels/http.py 只多了 for_backend（未接线）
+```
+
+---
+
 ## [0.4.0-alpha.69] — 2026-10-18（**让 V2 的失败说话** · 抓到两个真问题）
 
 ### 第一次真机跑：105 秒"跑通"，其实第二段**一秒都没跑**

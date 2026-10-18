@@ -137,6 +137,39 @@ class HttpChannel:
 
     # ---- 可用性 --------------------------------------------------------
 
+    def for_backend(self, backend: Any) -> "HttpChannel":
+        """返回**同一套设置、换一个后端**的通道视图。
+
+        ## 为什么需要它（2026-10-18 真机事故）
+
+        `HttpChannel` 在构造时把 `backend` 存进 `self`，而
+        `submit/poll/collect/fetch` 全都读 `self.backend.response_path`
+        —— **`render_http(values, backend)` 传进来的那个 backend 被忽略了**。
+
+        于是同一条通道只能服务一个后端。而真实管线里一条通道要服务两种：
+        **出图**（zimage，`data.0.url`）与**出视频**（H3，`result.url`）。
+
+        后果很隐蔽：第二段拿图像通道去请求视频接口，报
+        `响应中取不到 response_path='data.0.url' 指定的值` ——
+        **看起来像服务端返回不对，实际是我们问错了地方**。
+
+        所以 `RenderSession.render_http` 在发现 `backend is not self.channel.backend`
+        时，用这个方法换一个视图，而不是复用。
+        """
+        if backend is self.backend:
+            return self
+        view = type(self)(backend,
+                          timeout_s=getattr(self, "timeout_s", 300),
+                          poll_interval_s=getattr(self, "poll_interval_s", 0.2))
+        # 其余与后端无关的设置照抄 —— 漏抄会让"换了后端就丢了 key/上限"
+        for name in ("api_key", "max_polls", "channel_id"):
+            if hasattr(self, name) and hasattr(view, name):
+                try:
+                    setattr(view, name, getattr(self, name))
+                except Exception:                             # noqa: BLE001
+                    pass
+        return view
+
     def available(self) -> tuple[bool, str]:
         """探测可用性。**不抛异常** —— 失败本身就是要返回的信息。"""
         if not self.backend.path:
