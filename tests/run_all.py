@@ -55,6 +55,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # continuity_supervisor / compliance_officer / pacing_editor /
     # review_board）。假客户端，不吃 API。
     ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 39),
+    # B 类第一个：导演产出 episode.plan（每场镜头预算 + 基调 + 动机）
+    ("导演职位", [sys.executable, "-m", "little_crew.agent.director_llm_check"], 32),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
