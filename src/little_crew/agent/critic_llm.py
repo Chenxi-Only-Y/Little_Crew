@@ -147,14 +147,24 @@ class CriticLlm:
             f"## 待审内容\n{body or '（空）'}\n\n"
             f"## 你只负责检查这 {len(self.spec['checks'])} 条\n{checks}\n\n"
             "## 输出要求\n"
+            "**逐项**给出结论 —— 每一条检查项都要有一句判断，"
+            "不能跳项、不能合并。\n"
             "严格输出 JSON：\n"
-            '{"issues": [{"where": "场次或镜头 id", "problem": "具体问题",'
-            ' "suggestion": "怎么改", "severity": "minor|major|blocker"}],'
+            '{"observations": [\n'
+            '   {"check": 1, "ok": true, "finding": "", "where": ""},\n'
+            '   {"check": 2, "ok": true, "finding": "", "where": ""},\n'
+            '   {"check": 3, "ok": true, "finding": "", "where": ""}\n'
+            ' ],\n'
             ' "overall": "一句话总评"}\n\n'
             "规则：\n"
-            "  · **没有问题就返回空数组** —— 不要为了显得尽责而编问题\n"
-            "  · `blocker` 只在「必须改了才能交付」时用\n"
-            "  · 每条问题都必须能指到具体位置\n"
+            "  · `ok`：**该项没问题就 true**；有问题就 false\n"
+            "  · `finding`：`ok=false` 时写具体问题（含位置）；"
+            "`ok=true` 时**留空字符串**\n"
+            "  · ⚠️ **不要把「未见问题」写进 `finding`** —— "
+            "没问题就用 `ok=true` 表达\n"
+            "  · `where`：问题在哪一场/哪一镜；无问题留空\n"
+            "  · **三项都必须出现** —— 漏项等于这一项没检查，"
+            "而那会被当作「未检查」而不是「已通过」\n"
             "  · 不要评论这三条以外的东西（那不是你的职责）"
         )
         return prompt, system
@@ -202,6 +212,63 @@ class CriticLlm:
         raw = data.get("issues") or []
         issues: list[ReviewIssue] = []
         hints: list[RepairHint] = []
+
+        # ---- 逐项表态解析（2026-10-18 改）----
+        #
+        # ⚠️ **为什么不再只看 `issues`**：实测提示词里写"没有问题就返回空数组"
+        # 时，模型对一份明显有人称混用/场景跳跃的三场戏给出了"0 个问题"。
+        # 一个永远说 PASS 的审核者**比没有更糟** —— 它制造"检查过了"的假信心。
+        #
+        # 改成强制逐项表态后：
+        #   · 每项必须有一句判断（`finding` 空 = 该项没问题）
+        #   · **漏项**被记为一条 `minor` 问题（`未覆盖检查项 N`）——
+        #     因为**未检查不等于已通过**（项目的铁律①）
+        obs = data.get("observations")
+        if isinstance(obs, list) and obs:
+            want = list(range(1, len(self.spec["checks"]) + 1))
+            seen_n: set[int] = set()
+            for ob in obs:
+                if not isinstance(ob, Mapping):
+                    continue
+                try:
+                    n = int(ob.get("check"))
+                except (TypeError, ValueError):
+                    continue
+                seen_n.add(n)
+                finding = str(ob.get("finding") or "").strip()
+                # ⚠️ **按 `ok` 布尔判定，不靠文本猜**（2026-10-18 实测教训）：
+                # 第一版"finding 非空即问题"，而模型会把「未见问题」
+                # 写进 finding —— 于是**把"没问题"报成了问题**。
+                # 文本猜测不可靠，必须让它显式表态。
+                ok_flag = ob.get("ok")
+                if ok_flag is True:
+                    continue
+                if ok_flag is None:
+                    # 没给布尔 -> 视为**未表态**，不作为已检查
+                    seen_n.discard(n)
+                    continue
+                if not finding:
+                    continue
+                issues.append(ReviewIssue(
+                    severity=Severity.MAJOR, dimension=Dimension.QUALITY,
+                    problem=f"检查项 {n}（{self.spec['checks'][n-1]}）：{finding}",
+                    suggestion="按问题描述修订该处",
+                    location=IssueLocation(
+                        scene=str(ob.get("where") or ""),
+                        asset=self.artifact_key)))
+                raw_hint = {"note": "按问题描述修订"}
+                hints.append(RepairHint(
+                    graph_id=f"G-{payload.get('episodeId', '') or 'E000'}",
+                    op=_repair_op(), args=raw_hint,
+                    from_issue=f"obs_{n:03d}"))
+            missing = [n for n in want if n not in seen_n]
+            if missing:
+                issues.append(ReviewIssue(
+                    severity=Severity.MINOR, dimension=Dimension.QUALITY,
+                    problem=(f"本次审查**未覆盖**检查项 {missing} —— "
+                             f"未检查不等于已通过"),
+                    suggestion="补齐这几项的判断后再裁定",
+                    location=IssueLocation(asset=self.artifact_key)))
         for i, it in enumerate(raw if isinstance(raw, list) else ()):
             if not isinstance(it, Mapping):
                 continue

@@ -100,56 +100,63 @@ def _prompt() -> None:
           "连贯性" in sysmsg, sysmsg[:60])
     check("B4 明确要求「没有问题就返回空数组」",
           "空数组" in p or "空" in p)
-    check("B5 要求每条问题指到具体位置", "具体位置" in p or "指到" in p)
+    # ⚠️ 这条断言随提示词一起改过（2026-10-18）。
+    # 原提示词写"没有问题就返回空数组"，实测模型对一份明显有人称混用的
+    # 三场戏给出"0 个问题" —— **橡皮图章比没有审核者更糟**。
+    # 现在改成强制逐项表态，所以断言也跟着改成验那个契约。
+    check("B5 ★ 要求逐项表态（三项都必须出现，漏项=未检查）",
+          "三项都必须出现" in p and "逐项" in p)
+    check("B6 要求每项带位置字段（无位置的意见无法返工）",
+          "where" in p and "哪一场" in p)
+    check("B7 明确「finding 留空 = 该项没问题」（不逼模型编问题）",
+          "留空字符串" in p)
+    check("B7b 要求用 ok 布尔表态，而不是靠 finding 文本",
+          '"ok"' in p and "ok`：**该项没问题就 true**" in p)
 
 
 def _normalize() -> None:
     print()
     print("C. 规整")
-    c = CriticLlm("story_editor", client=_FakeClient({}))
-    issues, hints, score = c._normalize({"issues": []}, {"episodeId": "E1"})
-    check("C1 空问题 -> 空列表（不编问题）",
-          issues == [] and hints == [] and score.total >= 99,
-          str(score.total))
 
-    issues2, hints2, _ = c._normalize({"issues": [
-        {"where": "S01", "problem": "人称从第一人称跳到全知",
-         "suggestion": "统一成第三人称限定视角", "severity": "major"},
-        {"where": "S02", "problem": ""},            # 缺 problem -> 丢
-    ]}, {"episodeId": "E1"})
-    check("C2 正常意见被保留", len(issues2) == 1, str(len(issues2)))
-    check("C3 缺 problem 的意见被丢（不塞空问题）", len(issues2) == 1)
-    check("C4 严重度解析正确",
-          issues2[0].severity is Severity.MAJOR, issues2[0].severity.value)
-    check("C5 位置可追溯", "S01" in str(issues2[0].location.scene),
-          str(issues2[0].location.scene))
-    check("C6 有 suggestion 才生成返工指令", len(hints2) == 1, str(len(hints2)))
+    c2 = CriticLlm("story_editor", client=_FakeClient({}))
+    issues5, hints5, _ = c2._normalize({
+        "observations": [
+            {"check": 1, "ok": True, "finding": "", "where": ""},
+            {"check": 2, "ok": False, "finding": "第二场人称从她跳到他", "where": "S02"},
+            {"check": 3, "ok": True, "finding": "", "where": ""},
+        ]}, {"episodeId": "E1"})
+    check("B8 逐项表态：ok=false 才生成问题",
+          len(issues5) == 1, str([i.problem[:40] for i in issues5]))
+    check("B9 逐项表态：问题里带上了检查项编号（可追溯）",
+          "检查项 2" in issues5[0].problem, issues5[0].problem[:60])
 
-    # ---- ★ 最重要的一条 ----
-    issues3, hints3, _ = c._normalize({"issues": [
-        {"where": "S01", "problem": "严重违规", "severity": "blocker"}]},
-        {"episodeId": "E1"})
-    check("C7 ★ blocker 无 suggestion -> 降为 major（否则整轮作废）",
-          issues3[0].severity is Severity.MAJOR,
-          issues3[0].severity.value)
+    # ---- ★ 实测踩到的坑：模型会把「未见问题」写进 finding ----
+    issues7, _, _ = c2._normalize({
+        "observations": [
+            {"check": 1, "ok": True, "finding": "无人称问题。全文均为第三人称。"},
+            {"check": 2, "ok": True, "finding": "", "where": ""},
+            {"check": 3, "ok": True, "finding": "", "where": ""},
+        ]}, {"episodeId": "E1"})
+    check("B10 ★★ ok=true 时 finding 里写「没问题」也**不算问题**",
+          issues7 == [], str([i.problem[:50] for i in issues7]))
 
-    issues4, _, _ = c._normalize({"issues": [
-        {"where": "S01", "problem": "严重违规", "suggestion": "删掉这一段",
-         "severity": "blocker"}]}, {"episodeId": "E1"})
-    check("C8 blocker 带 suggestion 时保留 blocker",
-          issues4[0].severity is Severity.BLOCKER, issues4[0].severity.value)
+    # ---- 漏项 = 未检查 ----
+    issues6, _, _ = c2._normalize({
+        "observations": [{"check": 1, "ok": True}]}, {"episodeId": "E1"})
+    check("B11 ★ 漏项被记为问题（未检查不等于已通过）",
+          any("未覆盖" in i.problem for i in issues6),
+          str([i.problem[:40] for i in issues6]))
 
-    # ---- 分数由代码算 ----
-    _, _, s1 = c._normalize({"issues": []}, {})
-    _, _, s2 = c._normalize({"issues": [
-        {"where": "a", "problem": "p1", "suggestion": "s", "severity": "major"},
-        {"where": "b", "problem": "p2", "suggestion": "s", "severity": "major"},
-    ]}, {})
-    check("C9 ★ 分数由代码算（问题越多越低），不取模型自报",
-          s2.total < s1.total, f"{s1.total} -> {s2.total}")
-    check("C10 合规官不算「一致性」满分（它只盯合规）",
-          CriticLlm("compliance_officer", client=_FakeClient({}))
-          ._normalize({"issues": []}, {})[2].dimensions[Dimension.COMPLIANCE] >= 99)
+    # ---- 没给 ok 布尔 -> 视为未表态，算漏项 ----
+    issues8, _, _ = c2._normalize({
+        "observations": [
+            {"check": 1, "ok": True},
+            {"check": 2, "finding": "有问题的描述但没给 ok"},
+            {"check": 3, "ok": True},
+        ]}, {"episodeId": "E1"})
+    check("B12 ★ 缺 ok 布尔 -> 视为未表态（不靠文本猜），算漏项",
+          any("未覆盖" in i.problem for i in issues8),
+          str([i.problem[:40] for i in issues8]))
 
 
 def _call_path() -> None:

@@ -67,6 +67,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
                     help="`--llm` 时**审核方**（剧评人）用哪个模型 —— "
                          "⚠️ 必须与 --llm-model 不同族（跨模型族盲读的硬要求）")
+    ap.add_argument("--llm-critics", action="store_true",
+                    help="把 `story_editor` 换成**真实 LLM 批评家**"
+                         "（A 类审查职位的通用实现）。"
+                         "它是 `script.draft` 的**门禁审核者**之一，"
+                         "所以意见直接影响裁定。需要 --llm 的 key")
     ap.add_argument("--accept-script", action="store_true",
                     help="⚠️ **调试用**：无视剧本门禁裁定，强行进入分镜与渲染。"
                          "只用于验证**下游链路**（桥接/渲染/合成）——"
@@ -131,7 +136,28 @@ def main(argv: list[str] | None = None) -> int:
 
         # 分镜师是**创作**职位，用生成方同族即可（它不是审核方）
         stubs["storyboard_artist"] = StoryboardArtistLlm(client=writer)
-    else:
+    # ---- A 类审查职位：通用批评家（2026-10-18）----
+    #
+    # ⚠️ **`story_editor` 是 `script.draft` 的门禁审核者之一**
+    # （`_REVIEWERS_BY_ARTIFACT["script.draft"] = (dramaturge, story_editor)`），
+    # 所以换它**真的会影响裁定** —— 不是摆设。
+    #
+    # 另外 4 个批评家（`continuity_supervisor` / `compliance_officer` /
+    # `pacing_editor` / `review_board`）**已实现但还没有对应的审查阶段**：
+    # `shot.image` 的审片流程目前不在这一集的流水线里。所以这里只换
+    # `story_editor`，其余保持未绑定 —— **不假装它们在工作**。
+    if args.llm_critics:
+        if not args.llm:
+            print("  ⚠️ --llm-critics 需要 --llm（否则没有客户端），已忽略")
+        else:
+            from little_crew.agent.critic_llm import CriticLlm
+
+            critic = CriticLlm("story_editor", client=reviewer)
+            stubs["story_editor"] = critic
+            print(f"  文风编辑：**真实 LLM 批评家**"
+                  f"（{reviewer.model_id} / 盯文风一致性）")
+
+    if not args.llm:
         print("  编剧：规则桩（确定性）")
     orch = CrewOrchestrator(
         max_rounds=3,
