@@ -17,17 +17,17 @@
     "seed": "7"
   },
   "ok": true,
-  "elapsedSeconds": 505.2,
+  "elapsedSeconds": 328.1,
   "fromCache": false,
   "artifacts": {
-    "277726d3_vid_b0effdd193a44907.mp4": 8332535
+    "bf5b3576_vid_8f73c37c2aac44af.mp4": 8332535
   },
   "probe": {
     "bytes": 8332535,
     "container": "mp4",
     "hasVideo": true,
     "hasAudio": true,
-    "name": "277726d3_vid_b0effdd193a44907.mp4"
+    "name": "bf5b3576_vid_8f73c37c2aac44af.mp4"
   },
   "operatorPassed": true,
   "operatorDetail": "mp4 容器，音轨与视频轨齐全"
