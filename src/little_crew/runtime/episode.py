@@ -391,6 +391,14 @@ class EpisodeRunner:
         if script_draft is None and self.force_accept_script and cycle.rounds:
             script_draft = cycle.rounds[-1].draft
 
+        # ---- 1.5) 导演：定预算，交给分镜 ----
+        #
+        # ⚠️ **顺序是这个职位有没有意义的全部**：导演的产物是
+        # "每场几个镜头"，**晚于分镜就毫无价值**。
+        # （第一版插在桥接前 —— 那时分镜早就跑完了，
+        #   于是预算一条都没生效。是 `D8` 那条结构断言抓到的。）
+        director_info = self._run_director(script_draft)
+
         # ---- 2) 分镜 ----
         out = self.orch.run_stage("storyboard_artist", "shot.list",
                                   {"script.final": script_draft})
@@ -415,12 +423,6 @@ class EpisodeRunner:
         # **这是"角色一致"的前置**：没有它，每镜提示词里只有"少女"三个字，
         # 图像模型只能即兴发挥 —— 于是同一角色长得不一样。
         # 有了它，至少**文字层面**是一致的（图像层面还需参考图，见 §5.8）。
-        # ---- 2.2) 导演：定预算，交给分镜 ----
-        #
-        # ⚠️ **顺序很关键**：必须在**分镜之前**。
-        # 导演的产物是"每场几个镜头"，晚于分镜就毫无意义。
-        director_info = self._run_director(script_draft)
-
         # ---- 2.5) 顾问批评家（不进裁定）----
         advisory = self._run_advisory(script_draft, on_progress=on_progress)
 
