@@ -67,6 +67,30 @@ def _print_advisory(res: Any) -> None:
             print(f"         [{i.get('severity')}] {str(i.get('problem'))[:88]}")
 
 
+
+def _print_clips(runner: Any, enabled: bool) -> None:
+    """打印**真片段第二段**的结果。
+
+    ⚠️ 为什么必须有这个打印：`alpha.68` 第一次真机跑时，第二段因为
+    "静帧路径没解析出来"而**立刻失败**，但它只是返回了一个 `ok=False` 的
+    dict —— **屏幕上什么都没显示**。表现是"视频模式开了，但成片还是 Ken Burns"，
+    而人会以为"视频模式没生效"。
+
+    **失败不说话，等于没失败** —— 只是把问题推给下一次。
+    """
+    if not enabled:
+        return
+    info = getattr(runner, "_clip_info", None) or {}
+    print()
+    if info.get("ok"):
+        print(f"  真片段成片：{info.get('path')}")
+        print(f"    片段 {len(info.get('clips') or [])} 个")
+        return
+    print(f"  ⚠️ 真片段没出来：{info.get('reason') or '（未进入第二段）'}")
+    for f in (info.get("failures") or [])[:4]:
+        print(f"      ✗ {f}")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="跑通一集")
     ap.add_argument("--limit", type=int, default=None,
@@ -392,6 +416,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  墙钟 {wall:.1f}s   成片时长 {res.total_seconds:.1f}s")
     print(f"  交付物写入 {out_dir}")
     print("=" * 78)
+    _print_clips(runner, args.video_mode)
+
     return 0 if res.ok else 1
 
 

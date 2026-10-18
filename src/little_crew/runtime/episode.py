@@ -576,6 +576,8 @@ class EpisodeRunner:
             clips = self._render_clip_stage(per_shot_artifacts,
                                             on_progress=on_progress)
             clip_video = str(clips.get("path") or "")
+            # **记下来**：不记的话"片段没出来"与"没开视频模式"分不清。
+            self._clip_info = dict(clips)
 
         return EpisodeResult(
             episode_id=self.episode_id, ok=ok,
@@ -1236,8 +1238,23 @@ class EpisodeRunner:
             return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
 
     def _still_path(self, art: Any) -> Any:
-        """把一镜的产物转成**文件路径**（H3 要的是一个真实文件）。"""
+        """把一镜的产物转成**文件路径**（H3 要的是一个真实文件）。
+
+        ⚠️ `per_shot_artifacts[shot]` 是**列表**（产物引用），不是单个值。
+        第一版只认单个值，于是每一镜都返回 None、全部被跳过，
+        **而失败又被吞掉了** —— 表现是"视频模式开了但什么都没发生"。
+        （2026-10-18 真机跑 105 秒就"跑通"，比预期 660 秒短得多，才露的馅。）
+
+        认的顺序：序列 -> 第一个能用的；Path；`.path`；形如路径的字符串。
+        """
         if art is None:
+            return None
+        # 列表/元组：逐个试，取第一个能转的
+        if isinstance(art, (list, tuple)):
+            for item in art:
+                got = self._still_path(item)
+                if got is not None:
+                    return got
             return None
         if isinstance(art, pathlib.PurePath):
             return art
@@ -1246,7 +1263,10 @@ class EpisodeRunner:
             return cand
         if isinstance(art, (str, bytes)):
             s = art.decode("utf-8", "replace") if isinstance(art, bytes) else art
-            if s and len(s) < 400 and ("/" in s or "\\" in s):
+            # ⚠️ 只认"像路径"的字符串。sha256 也是长字符串，
+            # 但**没有分隔符** —— 不加这条会把哈希当路径传下去。
+            if s and len(s) < 400 and ("/" in s or "\\" in s or s.lower().endswith(
+                    (".png", ".jpg", ".jpeg", ".webp"))):
                 return s
         return None
 
