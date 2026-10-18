@@ -1263,24 +1263,43 @@ class EpisodeRunner:
             return cand
         if isinstance(art, (str, bytes)):
             s = art.decode("utf-8", "replace") if isinstance(art, bytes) else art
-            # ⚠️ 只认"像路径"的字符串。sha256 也是长字符串，
-            # 但**没有分隔符** —— 不加这条会把哈希当路径传下去。
-            if s and len(s) < 400 and ("/" in s or "\\" in s or s.lower().endswith(
-                    (".png", ".jpg", ".jpeg", ".webp"))):
+            if not s or len(s) >= 400:
+                return None
+            # 有分隔符 -> 当路径直接给
+            if "/" in s or "\\" in s:
                 return s
+            # ⚠️ **裸文件名必须解析成真实路径**（2026-10-18 真机事故）。
+            #
+            # 产物引用里存的是**文件名**（如 `f8781a7e_img_...png`），真文件在
+            # 缓存的哈希分片目录里。直接把它交给 H3 会得到：
+            #     RuntimeError: image_path 不存在：f8781a7e_img_....png
+            # 因为那是相对**服务端 CWD** 找的，而文件根本不在那儿。
+            #
+            # 调用方已经提供了 `resolve_artifact`（demo 里就是 `_resolve`），
+            # 用它把名字换成 Path —— **自己猜目录结构是不对的**。
+            if s.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                resolver = getattr(self, "resolve_artifact", None)
+                if callable(resolver):
+                    try:
+                        got = resolver(s)
+                    except Exception:                         # noqa: BLE001
+                        got = None
+                    if got is not None:
+                        return got
+                return None
         return None
 
     def _ffmpeg(self) -> Any:
         """取 ffmpeg 可执行文件。**不猜路径就报错**，不静默用系统 PATH。"""
-        from little_crew.config import load_project
+        # ⚠️ `config` 模块**没有** `load_project`（第一版写错，真机到合片才炸）。
+        # ffmpeg 走环境变量/默认名；不猜固定路径 —— 猜错了在别人机器上就崩。
+        from little_crew.config import env_value
 
         try:
-            cfg = load_project() or {}
+            got = env_value("FFMPEG", "")
         except Exception:                                     # noqa: BLE001
-            cfg = {}
-        exe = ((cfg.get("tools") or {}).get("ffmpeg")
-               or cfg.get("ffmpeg") or "ffmpeg")
-        return exe
+            got = ""
+        return got or "ffmpeg"
 
     # ---- V1：video_mode 的第二段（2026-10-18）--------------------------
     #

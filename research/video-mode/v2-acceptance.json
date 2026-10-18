@@ -1,0 +1,31 @@
+{
+  "kind": "video-mode-v2-run",
+  "version": "0.4.0-alpha.73",
+  "wallSeconds": 677.9,
+  "note": "run() 内自动跑第二段：静帧 -> H3 片段（2 镜各约 331s）-> 合片。本轮合片因 _ffmpeg() 用错函数名失败，修好后用已落盘片段直接合片成功。",
+  "clips": {
+    "SH-E100-001-001.mp4": 6.09,
+    "SH-E100-001-002.mp4": 2.97
+  },
+  "fullClips": {
+    "bytes": 9507840,
+    "mb": 9.07,
+    "container": "mp4",
+    "hasVideo": true,
+    "hasAudio": true,
+    "assertion": "audio_track_present 通过"
+  },
+  "bugsFound": [
+    {
+      "where": "EpisodeRunner._still_path",
+      "what": "产物引用是文件名的列表；裸文件名被当路径交给 H3 -> image_path 不存在",
+      "fix": "裸文件名走调用方提供的 resolve_artifact"
+    },
+    {
+      "where": "EpisodeRunner._ffmpeg",
+      "what": "from little_crew.config import load_project（该函数不存在）-> 合片 ImportError",
+      "fix": "改用 config.env_value('FFMPEG') 或默认 ffmpeg"
+    }
+  ],
+  "correction": "alpha.71 曾推测'管线中间切模型会失败'。实测**不成立**：日志显示 卸载 zimage -> 加载 h3 用时 1.4s（offload=disk），切换很轻。真原因是 image_path 传错。"
+}
