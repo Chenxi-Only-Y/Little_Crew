@@ -191,6 +191,9 @@ class EpisodeResult:
     #:
     #: 空 = 没启用导演（不是"导演失败了"）。失败时 `ok=False` 且有 `reason`。
     director: dict[str, Any] = field(default_factory=dict)
+
+    #: **灯光方案**（2026-10-18）：`{"ok": bool, "plan": {...}}` 或空。
+    gaffer: dict[str, Any] = field(default_factory=dict)
     shot_count: int = 0
     planned_shots: int = 0
     rendered: int = 0
@@ -233,6 +236,7 @@ class EpisodeResult:
             "failureKind": self.failure_kind,
             "advisory": [dict(a) for a in self.advisory],
             "director": dict(self.director),
+            "gaffer": dict(self.gaffer),
             "plannedShots": self.planned_shots,
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
@@ -398,6 +402,8 @@ class EpisodeRunner:
         # （第一版插在桥接前 —— 那时分镜早就跑完了，
         #   于是预算一条都没生效。是 `D8` 那条结构断言抓到的。）
         director_info = self._run_director(script_draft)
+        # 灯光师在导演之后（参考基调）、分镜之前（光要进画面描述）
+        lighting_info = self._run_gaffer(script_draft)
 
         # ---- 2) 分镜 ----
         out = self.orch.run_stage("storyboard_artist", "shot.list",
@@ -571,6 +577,7 @@ class EpisodeRunner:
             characters=self.characters,
             advisory=advisory,
             director=director_info,
+            gaffer=lighting_info,
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -1181,6 +1188,40 @@ class EpisodeRunner:
         if sb is not None and hasattr(sb, "plan"):
             try:
                 sb.plan = dict(plan)
+            except Exception:                                 # noqa: BLE001
+                pass
+        return {"ok": True, "plan": dict(plan)}
+
+    def _run_gaffer(self, script: Any) -> dict[str, Any]:
+        """跑**灯光师**产出 `lighting.plan`，并注入分镜师。
+
+        与 `_run_director` 同一套模式：
+
+          1. `run_stage("gaffer", "lighting.plan", ...)`
+          2. 从黑板取 `lighting.plan`
+          3. 注入分镜师的 `lighting` 属性（有就设）
+
+        **顺序**：导师之后、分镜之前 —— 光要影响分镜的画面描述。
+        失败不阻断（没光方案分镜照样能切）。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "gaffer" not in impls:
+            return {}
+        try:
+            out = self.orch.run_stage("gaffer", "lighting.plan",
+                                     {"script.draft": script})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+        if not getattr(out, "ok", False):
+            return {"ok": False, "reason": str(getattr(out, "error", ""))[:160]}
+
+        plan = self.orch.blackboard.value("lighting.plan")
+        if not isinstance(plan, Mapping):
+            return {"ok": False, "reason": "灯光师没有产出 lighting.plan"}
+        sb = impls.get("storyboard_artist")
+        if sb is not None and hasattr(sb, "lighting"):
+            try:
+                sb.lighting = dict(plan)
             except Exception:                                 # noqa: BLE001
                 pass
         return {"ok": True, "plan": dict(plan)}

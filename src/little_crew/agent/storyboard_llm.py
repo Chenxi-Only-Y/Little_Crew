@@ -120,7 +120,8 @@ class StoryboardArtistLlm:
 
     def __init__(self, *, client: LlmClient | None = None,
                  temperature: float = 0.6, max_shots: int = 40,
-                 plan: Mapping[str, Any] | None = None) -> None:
+                 plan: Mapping[str, Any] | None = None,
+                 lighting: Mapping[str, Any] | None = None) -> None:
         self.client = client or LlmClient("deepseek-v4")
         self.temperature = temperature
         self.max_shots = max_shots
@@ -129,6 +130,11 @@ class StoryboardArtistLlm:
         #: 为什么不给也算正常：分镜师可以独立工作。但**给了就要遵守** ——
         #: 否则"导演"这个职位只是产了一份没人看的文档。
         self.plan = dict(plan or {})
+        #: **灯光方案**（`lighting.plan`）。给了就把每场的光写进提示词。
+        #:
+        #: 为什么光能进提示词而"氛围"不能：见 `gaffer_llm` 的模块说明 ——
+        #: 「窗在左侧，硬光斜切」是可执行的，「压抑感」不是。
+        self.lighting = dict(lighting or {})
         #: 上一轮的预算偏差（测试与证据用）
         self.budget_deviations: list[str] = []
         self.calls = 0
@@ -261,6 +267,29 @@ class StoryboardArtistLlm:
             budget_lines.append("")
 
         lines += budget_lines
+
+        # ---- 灯光方案（若给了）----
+        lights = {}
+        for s in (self.lighting.get("scenes") or ()):
+            sid = str(s.get("sceneId") or "")
+            if sid:
+                lights[sid] = s
+        if lights:
+            lines.append("【灯光方案 —— 画面描述要体现】")
+            for sc in draft.scenes:
+                sid = str(sc.get("scene_id") or sc.get("id") or "?")
+                L = lights.get(sid)
+                if not L:
+                    continue
+                bits = [x for x in (L.get("timeOfDay"), L.get("keyLight"),
+                                    L.get("colorTemp")) if x]
+                lines.append(f"  {sid}: {'；'.join(bits)}"
+                             f"　影调 {L.get('contrast')}"
+                             + (f"　{L.get('note')}" if L.get("note") else ""))
+            if self.lighting.get("palette"):
+                lines.append(f"  主色板：{'、'.join(self.lighting['palette'])}")
+            lines.append("")
+
         lines += [
             f"请为以上 {len(draft.scenes)} 场切分镜。总镜头数不超过 "
             f"{self.max_shots}。",

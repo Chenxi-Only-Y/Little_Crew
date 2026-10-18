@@ -172,6 +172,69 @@ def _structure() -> None:
           "except Exception" in fn)
 
 
+# ---------- 灯光师接线（与导演同一套模式）----------
+
+class _OkGaffer:
+    agent_id = "gaffer"
+
+    def __call__(self, *, envelope: Any, runtime: Any) -> CallResult:
+        return CallResult.success({"lighting.plan": {
+            "scenes": [{"sceneId": "S01", "contrast": "高"}],
+            "palette": ["靛蓝"]}})
+
+
+class _BadGaffer:
+    agent_id = "gaffer"
+
+    def __call__(self, *, envelope: Any, runtime: Any) -> CallResult:
+        return CallResult.fail("F-LLM", "模拟灯光师失败")
+
+
+class _StoryboardWithLighting:
+    agent_id = "storyboard_artist"
+    lighting: Any = None
+
+    def __call__(self, *, envelope: Any, runtime: Any) -> CallResult:
+        return CallResult.success({"shot.list": ShotList(
+            frm="storyboard_artist", to="*", stage="storyboard",
+            episode_id="E1", shots=(), total_seconds=0.0)})
+
+
+def _gaffer_wiring() -> None:
+    print()
+    print("C. 灯光师接线")
+
+    r0 = _Runner(_orch())
+    check("G1 没绑灯光师 -> 空结果（「没启用」，不是失败）",
+          EpisodeRunner._run_gaffer(r0, "剧本") == {})
+
+    r1 = _Runner(_orch())
+    r1.orch.bind("gaffer", _BadGaffer())
+    g1 = EpisodeRunner._run_gaffer(r1, "剧本")
+    check("G2 灯光师失败 -> ok=False 且有 reason",
+          g1.get("ok") is False and bool(g1.get("reason")), str(g1))
+
+    sb = _StoryboardWithLighting()
+    r2 = _Runner(_orch(storyboard=sb))
+    r2.orch.bind("gaffer", _OkGaffer())
+    g2 = EpisodeRunner._run_gaffer(r2, "剧本")
+    check("G3 成功 -> ok=True 且带回 plan", g2.get("ok") is True)
+    check("G4 ★★ lighting 真的注入到分镜师（与导演同一套机制）",
+          isinstance(sb.lighting, dict)
+          and sb.lighting.get("palette") == ["靛蓝"],
+          str(sb.lighting)[:100])
+
+
+def _order_both() -> None:
+    """**顺序**：导演 -> 灯光 -> 分镜。三者写反任何一个，预算/光就不生效。"""
+    src = inspect.getsource(EpisodeRunner.run)
+    i_d = src.find("_run_director")
+    i_g = src.find("_run_gaffer")
+    i_sb = src.find('"storyboard_artist"')
+    check("G5 ★★ 顺序正确：导演 -> 灯光 -> 分镜",
+          0 <= i_d < i_g < i_sb, f"dir@{i_d} gaffer@{i_g} sb@{i_sb}")
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -183,6 +246,8 @@ def main() -> int:
 
     _behavior()
     _structure()
+    _gaffer_wiring()
+    _order_both()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

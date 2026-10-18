@@ -60,7 +60,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 导演**接线**（不是职位本身）：plan 有没有真的注入到分镜师，
     # 以及**调用顺序**对不对（晚于分镜则预算毫无意义）。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签。
-    ("导演接线", [sys.executable, "-m", "little_crew.runtime.director_wiring_check"], 10),
+    ("导演接线", [sys.executable, "-m", "little_crew.runtime.director_wiring_check"], 15),
+    ("灯光师", [sys.executable, "-m", "little_crew.agent.gaffer_llm_check"], 30),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),

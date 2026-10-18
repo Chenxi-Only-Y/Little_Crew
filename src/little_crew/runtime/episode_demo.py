@@ -92,6 +92,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="先跑**导演**产出 `episode.plan`，"
                          "并按它的 shotBudget 给分镜师派活。"
                          "需要 --llm")
+    ap.add_argument("--llm-gaffer", action="store_true",
+                    help="跑**灯光师**产出 `lighting.plan`，"
+                         "把每场的光写进分镜提示词。需要 --llm")
     ap.add_argument("--llm-advisory", action="store_true",
                     help="额外跑 3 个**顾问批评家**"
                          "（连贯性 / 合规 / 节奏）。"
@@ -174,6 +177,11 @@ def main(argv: list[str] | None = None) -> int:
 
             stubs["director"] = DirectorLlm(client=writer)
             print("  导演：**真实 LLM**（定基调与每场镜头预算）")
+        if args.llm_gaffer:
+            from little_crew.agent.gaffer_llm import GafferLlm
+
+            stubs["gaffer"] = GafferLlm(client=writer)
+            print("  灯光师：**真实 LLM**（定每场的光与影调）")
 
         stubs["storyboard_artist"] = StoryboardArtistLlm(client=writer)
     # ---- A 类审查职位：通用批评家（2026-10-18）----
