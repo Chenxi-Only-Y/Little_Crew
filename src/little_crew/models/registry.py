@@ -451,7 +451,12 @@ def _video_models() -> list[ModelSpec]:
                     body_template=(
                         '{"prompt": "{prompt}", "image_path": "{image_path}",'
                         ' "width": {width}, "height": {height},'
-                        ' "seconds": {duration},'
+                        # ⚠️ 占位符名必须与 `h3_video.video_values()` 的键**完全一致**。
+                        # 这里最初写 `{duration}`（借自 ComfyUI/H3 的命名），
+                        # 而值那边给的是 `seconds` —— 真调用立刻报
+                        # "请求体模板里有未替换的占位符 ['duration']"。
+                        # **假渲染器不看模板，所以那种单测永远发现不了。**
+                        ' "seconds": {seconds},'
                         ' "num_inference_steps": {steps}, "seed": {seed}}'
                     ),
                     # 响应长这样（实测）：

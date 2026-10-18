@@ -31,6 +31,91 @@
 
 ---
 
+## [0.4.0-alpha.53] — 2026-10-18（R13：**通用批评家**一次覆盖 5 个审查职位）
+
+### ⚠️ 先纠正一个前提：那 15 个里 **5 个不该接 LLM**
+
+盘点名册（18 个）后发现，"15 个职位接真实 LLM"这个说法本身要修：
+
+| 类别 | 职位 | 产出 | 该怎么接 |
+|---|---|---|---|
+| **A 审查** | `continuity_supervisor` `compliance_officer` `pacing_editor` `review_board` `story_editor` | `ReviewFeedback` | ✅ **LLM** |
+| **B 设计** | `director` `production_designer` `character_designer` `gaffer` `line_producer` | 结构化计划 | ✅ **LLM** |
+| **C 执行** | `cinematographer` `camera_operator` `dialogue_editor` `composer` `assembly_editor` | **`shot.image` / `shot.video` / `shot.voice` / `shot.music` / `episode.master`** | ❌ **不是 LLM** |
+
+**C 类产出的是媒体文件，不是文本** —— 它们的实现方式是**接渲染通道**
+（`cinematographer` 就是出图、`assembly_editor` 就是已经跑通的视频合成）。
+把执行职位"接 LLM"是方向错误。
+
+另：**`character_designer` 其实已经写好了**（`character_sheet.py` 的
+`CharacterDesignerRules`），只是**没绑成职位**。
+
+→ 真正该接 LLM 的是 **A+B 共 10 个**。
+
+### 本轮交付 —— `agent/critic_llm.py`（A 类 5 个一次覆盖）
+
+A 类的**输出契约完全相同**（都是 `ReviewFeedback`），差异只在"盯什么"。
+所以：**一个类 + 一份"盯什么"的清单**，比复制五遍可靠 ——
+**复制五遍会漂，而漂了不会报错。**
+
+| 职位 | 盯什么（三条，写到可判定） |
+|---|---|
+| `story_editor` | 人称统一 / 用词层级 / 句式重复 |
+| `continuity_supervisor` | 人物描述矛盾 / 时间线 / 关键物件出现与消失 |
+| `compliance_officer` | 不当内容 / 真实人物商标 / 歧视性表述 |
+| `pacing_editor` | 说明性冗余 / 转折铺垫 / 结尾收束 |
+| `review_board` | 关键场次覆盖 / 时长分布 / 是否偷懒 |
+
+**刻意只做 A 类**：B 类的产物是结构化计划，需要各自规整；
+把三类硬塞进一个"通用职位"，最容易写出"什么都管、什么都管不好"。
+
+### 三条刻意的设计取舍
+
+| 取舍 | 理由 |
+|---|---|
+| **`blocker` 无 `suggestion` 时降级为 `major`** | `merge_reviews` 的规则是"有阻塞问题但无返工指令 -> **整轮作废**"。模型只要报一条 blocker 却忘了给建议，**整轮 token 全白花**。宁可降级也不让整轮作废 |
+| **分数由代码算，不取模型自报** | 模型对自己有多严厉没有稳定标定 |
+| **返工操作名从 `RepairHint.KNOWN_OPS` 取** | 凭记忆写操作名会抛 `ValueError`，表现成"审核者执行失败"（`alpha.36` 踩过） |
+
+### ⚠️ 顺带修掉一个真 bug（由探针脚本抓到）
+
+`probe_async_channel.py` 真调用 local-gen H3 时立刻失败：
+
+```
+请求体模板里有未替换的占位符 ['duration']
+```
+
+`body_template` 写的是 `{duration}`（借自 ComfyUI/H3 命名），
+而 `video_values()` 给的是 `seconds`。
+
+**假渲染器不看模板，所以那 25 项单测全都过了。**
+→ 已修，并加了两条**模板一致性测试**（`G2`/`G3`）：
+`body_template` 的占位符必须被 `video_values()` **完全覆盖且不多不少**。
+这类"名字不对齐"的 bug 靠人读代码是查不出来的。
+
+### 新增测试 —— 36 项
+
+| 段 | 守什么 |
+|---|---|
+| A 覆盖面 | 5 个都能构造；**非审查职位必须被拒绝** |
+| B 提示词 | 三条检查项真的进了提示词；system 点明职责范围 |
+| C 规整 | 空问题不编；缺 `problem` 的丢；**`blocker` 无建议降级**；**分数由代码算** |
+| D 调用路径 | `__call__` 能跑通；缺输入/可重试/不可重试分类正确 |
+| E 助手 | 返工操作名合法 |
+| **F 编排器集成** | **批评家能被编排器真驱动一轮**（契约接错会在这里暴露） |
+
+### 验证 Verification
+
+```
+ [v] 通用批评家     36 项（新增，假客户端）
+ 结果：全部通过 —— 功能用例 1330/1330，外加架构守卫 PASS
+```
+
+### 现状：R13 进度 3/18 → **8/18 可用实现**（5 个桩 + 3 个 LLM 已换 + 5 个批评家已就位）
+⚠️ 批评家**尚未接进 `episode_demo`**（还差一个开关），故实际运行仍是 3 个真实 LLM。
+
+---
+
 ## [0.4.0-alpha.52] — 2026-10-18（M3 收口**地基**：H3 音轨渲染模块）
 
 ### 本轮做了什么

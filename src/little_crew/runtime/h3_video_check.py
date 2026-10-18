@@ -224,6 +224,52 @@ def _concat() -> None:
           '"-f", "concat"' in src and '"-safe", "0"' in src)
 
 
+def _template_matches_values() -> None:
+    """**模板占位符必须被 `video_values()` 全部覆盖。**
+
+    ## 这条测试是怎么来的
+
+    2026-10-18 真调用时立刻失败：
+
+        请求体模板里有未替换的占位符 ['duration']
+
+    因为 `body_template` 里写的是 `{duration}`（借自 ComfyUI/H3 的命名），
+    而 `video_values()` 给的是 `seconds`。
+
+    **上面那些用假渲染器的测试全都过了** —— 假渲染器拿到的是 `values` 字典，
+    根本不看 `body_template`。这就暴露了那批测试的盲区：
+    **它们验的是"我传了什么"，不是"模板要什么"。**
+
+    而这两个名字必须对齐，否则**请求根本发不出去**。
+    """
+    import re
+
+    from little_crew.models.registry import build_default_registry
+
+    spec = build_default_registry().get("minimax-h3")
+    be = None
+    if spec is not None:
+        for b in spec.backends:
+            if getattr(b, "is_local_by_default", False) and b.async_task:
+                be = b
+                break
+    if be is None:
+        check("G1 注册表里有本地 H3 后端", False, "取不到 local-gen 后端")
+        return
+    check("G1 注册表里有本地 H3 后端", True, str(be.endpoint))
+
+    placeholders = set(re.findall(r"\{(\w+)\}", be.body_template or ""))
+    shot = VideoShot(shot_id="x", prompt="p", image_path="a.png")
+    provided = set(video_values(shot))
+
+    missing = placeholders - provided
+    check("G2 ★ 模板占位符全部被 video_values() 覆盖（否则请求发不出去）",
+          not missing, f"模板要 {sorted(missing)}，值里没有")
+    check("G3 没有多余的入参（多余会被静默忽略 -> 改了参数不生效）",
+          not (provided - placeholders),
+          f"多余的: {sorted(provided - placeholders)}")
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -239,6 +285,7 @@ def main() -> int:
     _seed_progress()
     _constraint()
     _concat()
+    _template_matches_values()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

@@ -51,6 +51,10 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 于是剧评人换完整性公式时漏了 import，1205 项测试全过、
     # 直到真实一集连崩 3 次才暴露。**"能构造"不等于"能工作"。**
     ("LLM 剧评人", [sys.executable, "-m", "little_crew.agent.dramaturge_llm_check"], 17),
+    # A 类审查职位的**通用批评家**：一次覆盖 5 个（story_editor /
+    # continuity_supervisor / compliance_officer / pacing_editor /
+    # review_board）。假客户端，不吃 API。
+    ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 36),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
