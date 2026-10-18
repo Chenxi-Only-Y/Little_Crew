@@ -31,6 +31,32 @@
 
 ---
 
+### 运维记录：推送一直失败的真因（2026-10-18）
+
+这一整天 `git push` 反复失败：
+
+```
+fatal: unable to access '.../Little_Crew.git/':
+schannel: failed to receive handshake, SSL/TLS connection failed
+```
+
+我一度归因于"GitHub 抖动 / 代理没起"，还试过 `-c http.proxy=...`。
+**真因是 Windows 的 schannel TLS 后端**。
+
+修法（已写进本仓库配置）：
+
+```powershell
+git config http.sslBackend openssl
+```
+
+改完**不带任何 `-c` 参数直接推就成功**了。
+
+> **同一个症状反复出现时，别每次都当成"网络抖一下"。**
+> 这次它出现了十几次，而我只在最后才去看 TLS 后端 ——
+> 前面那些重试加起来的时间，比排查它多得多。
+
+---
+
 ## [0.4.0-alpha.75] — 2026-10-18（🎉 **M3 达成：整集 20 镜全部真片段 + 全部带音轨**）
 
 ### 里程碑
