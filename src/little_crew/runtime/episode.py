@@ -174,6 +174,18 @@ class EpisodeResult:
     #: 实测里 C 组 5 次有 2 次是第一种，而报告只写"未通过、0 分" ——
     #: 读者会误以为"这个题材质量差"。
     failure_kind: str = ""
+
+    #: **顾问意见**（2026-10-18）：`[{position, verdict, issues, total}]`。
+    #:
+    #: 与门禁审核者的区别是**它们不进裁定**。为什么：
+    #:
+    #: 往门禁里塞 3 个未标定的审核者，会让"通过与否"取决于
+    #: 哪个提示词更爱挑刺 —— 那不是严谨，是**随机**。
+    #: 所以先让它们以顾问身份**产出真实意见**，量出命中率，
+    #: 再决定要不要把某一条升成门禁（与 `PASS_THRESHOLD` 同一套纪律）。
+    #:
+    #: **但它们是真跑的** —— 不是占位。意见会进报告，人看得见。
+    advisory: tuple[dict[str, Any], ...] = ()
     shot_count: int = 0
     planned_shots: int = 0
     rendered: int = 0
@@ -214,6 +226,7 @@ class EpisodeResult:
             "scriptRounds": self.script_rounds,
             "scriptVerdict": self.script_verdict,
             "failureKind": self.failure_kind,
+            "advisory": [dict(a) for a in self.advisory],
             "plannedShots": self.planned_shots,
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
@@ -396,6 +409,9 @@ class EpisodeRunner:
         # **这是"角色一致"的前置**：没有它，每镜提示词里只有"少女"三个字，
         # 图像模型只能即兴发挥 —— 于是同一角色长得不一样。
         # 有了它，至少**文字层面**是一致的（图像层面还需参考图，见 §5.8）。
+        # ---- 2.5) 顾问批评家（不进裁定）----
+        advisory = self._run_advisory(script_draft, on_progress=on_progress)
+
         self.characters = self._design_characters(script_draft)
 
         # ---- 3) 桥接 ----
@@ -539,6 +555,7 @@ class EpisodeRunner:
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
             characters=self.characters,
+            advisory=advisory,
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -637,6 +654,14 @@ class EpisodeRunner:
     #: 所以：① 默认 False；② 结果里 `scriptAccepted` 仍如实标记为 False；
     #: ③ CLI 的帮助文案明确写"调试用"。
     force_accept_script: bool = False
+
+    #: **顾问批评家**（2026-10-18）：这些职位的意见会进报告，但**不进裁定**。
+    #:
+    #: 例如 `("continuity_supervisor", "compliance_officer", "pacing_editor")`。
+    #: 空元组 = 不跑（默认）。
+    #:
+    #: ⚠️ 它们**不是免费的**：每个职位每集一次 LLM 调用。
+    advisory_critics: tuple[str, ...] = ()
 
     #: 是否把白模预演作为控制信号注入（需要 ComfyUI 通道 + Z-Image ControlNet）
     use_white_model: bool = False
@@ -1099,6 +1124,117 @@ class EpisodeRunner:
             jobs = [(self._values(ir), ir["graphId"]) for ir in irs]
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
+
+    def _run_advisory(self, script: Any, *, on_progress: Any = None
+                      ) -> tuple[dict[str, Any], ...]:
+        """跑**顾问批评家**：意见进报告，**不进裁定**。
+
+        ## 为什么单独一个方法，而不是把它们加进 `_REVIEWERS_BY_ARTIFACT`
+
+        加了就变成门禁审核者，而 `merge_reviews` 对多个审核者取**各维度最低分** ——
+        于是加 3 个未标定的批评家会让"通过与否"取决于哪一个更爱挑刺。
+        **那不是严谨，是随机。**
+
+        所以先让它们产出真实意见、量命中率，再决定升不升门禁。
+        这与 `PASS_THRESHOLD` 的标定是同一套纪律：**先有分布，再有权重。**
+
+        ## 失败不阻断
+
+        顾问挂了只是少一份意见 —— 不该让整集停下。
+        但**失败要记下来**（`verdict="error"`），否则"顾问没意见"与
+        "顾问没跑"就分不清了。
+        """
+        ids = tuple(getattr(self, "advisory_critics", ()) or ())
+        if not ids or script is None:
+            return ()
+        try:
+            from little_crew.agent.critic_llm import CriticLlm
+        except Exception:                                     # noqa: BLE001
+            return ()
+
+        # **用项目已有的渲染器**：`script_text()` 把 ScriptDraft 摊成可读文本，
+        # 与定妆表用的是同一套（`alpha.40` 修过它丢 characters 的问题）。
+        text = ""
+        try:
+            from little_crew.agent.character_sheet import script_text
+            text = str(script_text(script) or "")
+        except Exception:                                     # noqa: BLE001
+            text = ""
+        if not text.strip():
+            for attr in ("as_text", "to_text"):
+                v = getattr(script, attr, None)
+                if callable(v):
+                    try:
+                        text = str(v())
+                    except Exception:                         # noqa: BLE001
+                        text = ""
+                    if text.strip():
+                        break
+        if not text.strip():
+            text = str(getattr(script, "text", "") or "")
+
+        # ⚠️ **正文为空 -> 这不是"通过"，是"没审成"**（2026-10-18 实测）。
+        #
+        # 第一版没取到正文（`ScriptDraft` 没有 `as_text`），把空串喂给批评家，
+        # 三个顾问齐刷刷返回 `PASS 100.0` —— **看起来全部合格，
+        # 实际一个字都没看**。这正是"未检查 ≠ 已通过"的反面教材。
+        # ⚠️ **判据要按类型与结构，不能只看"字符串空不空"。**
+        #
+        # 第一版只判 `text.strip()`，而 `script_text()` 对一个不相干对象
+        # 会返回**非空的** repr —— 守卫没触发，批评家照样拿到垃圾文本。
+        # 所以再叠一层：**不是 `ScriptDraft` 或没有场次，就不算可审。**
+        try:
+            from little_crew.agent.messages import ScriptDraft
+            is_draft = isinstance(script, ScriptDraft)
+            has_scenes = bool(getattr(script, "scenes", None))
+        except Exception:                                     # noqa: BLE001
+            is_draft, has_scenes = True, True
+        if not text.strip() or not is_draft or not has_scenes:
+            return tuple({"position": rid, "verdict": "error",
+                          "reason": ("取不到可审的剧本正文 —— "
+                                     "**未审查，不算通过**"),
+                          "issues": [], "total": 0.0} for rid in ids)
+
+        from little_crew.agent.protocol import Budget, CallEnvelope
+
+        out: list[dict[str, Any]] = []
+        for rid in ids:
+            if on_progress is not None:
+                try:
+                    on_progress("advisory", rid, 0)
+                except Exception:                             # noqa: BLE001
+                    pass
+            try:
+                critic = CriticLlm(rid)
+                env = CallEnvelope.root(
+                    rid, critic.capability,
+                    {critic.artifact_key: text}, Budget.unlimited(),
+                    callee_kind="agent")
+                res = critic(envelope=env, runtime=None)
+            except Exception as e:                            # noqa: BLE001
+                out.append({"position": rid, "verdict": "error",
+                            "reason": f"{type(e).__name__}: {e}"[:160],
+                            "issues": [], "total": 0.0})
+                continue
+            if not res.ok:
+                out.append({"position": rid, "verdict": "error",
+                            "reason": str(res.error_message)[:160],
+                            "issues": [], "total": 0.0})
+                continue
+            fb = res.output.get(critic.capability)
+            if fb is None:
+                out.append({"position": rid, "verdict": "error",
+                            "reason": "没有产出意见", "issues": [], "total": 0.0})
+                continue
+            out.append({
+                "position": rid,
+                "verdict": fb.verdict.value,
+                "total": round(float(fb.score.total), 1) if fb.score else 0.0,
+                "issues": [
+                    {"severity": i.severity.value, "problem": i.problem[:200]}
+                    for i in fb.issues[:8]],
+            })
+        return tuple(out)
 
     def _run_gate(self, *, batch: Any, picked: Sequence[Any],
                   irs: Sequence[Mapping[str, Any]]) -> Any:

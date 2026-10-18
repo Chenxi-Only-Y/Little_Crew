@@ -51,6 +51,22 @@ from little_crew.runtime.render import RenderSession
 LAVENDER_LEGEND = DEMO_SOURCE_LAVENDER
 
 
+def _print_advisory(res: Any) -> None:
+    """打印**顾问意见**（不进裁定）。dry-run 与完整跑都要看到。"""
+    adv = getattr(res, "advisory", ()) or ()
+    if not adv:
+        return
+    print()
+    print("  顾问意见（**不进裁定**，仅供人判断）：")
+    for a in adv:
+        mark = {"PASS": "·", "REVISE": "!"}.get(str(a.get("verdict")), "X")
+        print(f"    [{mark}] {a.get('position')}: {a.get('verdict')}"
+              f"  总分 {a.get('total')}"
+              + (f"  ({a.get('reason')})" if a.get("reason") else ""))
+        for i in (a.get("issues") or [])[:3]:
+            print(f"         [{i.get('severity')}] {str(i.get('problem'))[:88]}")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="跑通一集")
     ap.add_argument("--limit", type=int, default=None,
@@ -72,6 +88,11 @@ def main(argv: list[str] | None = None) -> int:
                          "（A 类审查职位的通用实现）。"
                          "它是 `script.draft` 的**门禁审核者**之一，"
                          "所以意见直接影响裁定。需要 --llm 的 key")
+    ap.add_argument("--llm-advisory", action="store_true",
+                    help="额外跑 3 个**顾问批评家**"
+                         "（连贯性 / 合规 / 节奏）。"
+                         "它们**不进裁定**，只把意见写进报告 —— "
+                         "先量命中率，再决定要不要升门禁。需要 --llm")
     ap.add_argument("--accept-script", action="store_true",
                     help="⚠️ **调试用**：无视剧本门禁裁定，强行进入分镜与渲染。"
                          "只用于验证**下游链路**（桥接/渲染/合成）——"
@@ -198,6 +219,11 @@ def main(argv: list[str] | None = None) -> int:
     # ⚠️ 调试开关：只为验证下游链路，**正式跑不要开**。
     # 开了之后 `scriptVerdict` 仍会如实显示 REVISE —— 不掩盖剧本没过这一事实。
     runner.force_accept_script = bool(args.accept_script)
+    # 顾问批评家：**不进裁定**，只产意见（见 EpisodeRunner.advisory_critics）
+    if args.llm_advisory and args.llm:
+        runner.advisory_critics = ("continuity_supervisor",
+                                   "compliance_officer", "pacing_editor")
+        print("  顾问批评家：连贯性 / 合规 / 节奏（**不进裁定**）")
     if args.accept_script:
         print("  ⚠️ --accept-script：无视剧本门禁裁定（仅用于验证下游）")
 
@@ -236,6 +262,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         print()
         print("=" * 78)
+        _print_advisory(res)
         print(f"dry-run 结束：剧本与分镜已跑通（{wall:.1f}s），未出图")
         print("=" * 78)
         return 0
@@ -299,6 +326,8 @@ def main(argv: list[str] | None = None) -> int:
     print("    硬规则校验：")
     for k, v in ev.checks.items():
         print(f"      {'✅' if v else '❌'} {k}")
+
+    _print_advisory(res)
 
     # ---------- 落盘 ----------
     out_dir = work / "delivery"

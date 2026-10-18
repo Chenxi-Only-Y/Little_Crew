@@ -54,7 +54,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # A 类审查职位的**通用批评家**：一次覆盖 5 个（story_editor /
     # continuity_supervisor / compliance_officer / pacing_editor /
     # review_board）。假客户端，不吃 API。
-    ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 34),
+    ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 39),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
