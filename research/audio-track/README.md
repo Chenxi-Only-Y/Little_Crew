@@ -178,3 +178,45 @@ python research\audio-track\make_audio_demo.py
 | `frame_2s.jpg` / `frame_12s.jpg` | 抽帧（验证构图保留） |
 | `clips/clip0*.mp4` | 3 段原始片段 |
 | `probe_h3_audio.py` / `make_audio_demo.py` | 可复跑脚本 |
+
+
+---
+
+## 附录：异步通道探针（2026-10-18）
+
+`probe_async_channel.py` 跑通了 `HttpChannel` 的 **submit → poll → collect** 全程 ——
+这是 M3 的地基（`alpha.52` 起一直欠着，因为演示脚本走直连 urllib，
+`h3_video_check` 用假渲染器，通道从没真跑过）。
+
+### 结果
+
+```
+ok = True   耗时 505.2s   产物 7.95 MB
+容器 mp4 · 视频轨 ✓ · 音轨 ✓
+```
+
+### 拦住它的两个 bug
+
+| # | Bug | 表现 |
+|---|---|---|
+| ① | `body_template` 写 `{duration}`，值给 `seconds` | 「未替换的占位符 ['duration']」，**第一秒就失败** |
+| ② | **轮询紧循环，没有 sleep** | `WinError 10048`（地址只能使用一次） |
+
+**② 是本项目最像"外部故障"的一个自造故障**：报错指向网络、指向服务端，
+而实际是**我们自己把 Windows 临时端口打光了** —— 130 秒发了 5725 次连接（44/秒），
+`TIME_WAIT` 堆到 21427，超过 16384 的端口池。
+
+修法：`_await` 里 `poll` 前加 `time.sleep(self.poll_interval_s)`
+（`poll_interval_s` 原本存了却从未使用）。
+
+### 文件
+
+| 文件 | 内容 |
+|---|---|
+| `async-probe/*.mp4` | 产物（**带音轨**，7.95 MB） |
+| `async-probe.json` | 入参、耗时、容器探测结果、断言结论 |
+| `probe_async_channel.py` | 可复跑（约 8 分钟） |
+
+⚠️ `async-probe/cache/` **不入库** —— 那是 `CachingRenderer` 的分层内容缓存，
+一次探针就会带进 3 份同一个 mp4（工作副本 + t1 + t2 = 23.84 MB）。
+证据留在产物与 json 里。

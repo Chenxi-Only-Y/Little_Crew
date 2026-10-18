@@ -104,3 +104,10 @@ Thumbs.db
 # 而成片（audio_demo.mp4）已包含它们的内容 —— 不必进版本库。
 research/audio-track/clips/
 research/audio-track/*.partial.json
+
+# ---- 渲染缓存（2026-10-18）----
+# `research/**/cache/` 是 `CachingRenderer` 的分层内容缓存 —— **产物，不是源码**。
+# 实测一次探针就带进来 3 份同一个 mp4（工作副本 + t1 + t2 两层缓存 = 23.84 MB）。
+# 证据留在各目录的 `*.json` 与顶层产物里，缓存不入库。
+research/**/cache/
+research/**/async-probe/cache/
