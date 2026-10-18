@@ -452,8 +452,12 @@ class CachingRenderer:
             except Exception:                                 # noqa: BLE001
                 pass          # 记账失败不该阻断渲染 —— 但下次续跑会不知道它
 
-        out = self.session.render_http(values, backend=backend, job_id=job_id,
-                                       provenance=provenance)
+        # ⚠️ **换成配这个后端的会话**（2026-10-18 真机事故）。
+        # `HttpChannel` 构造时锁死了 `backend`，不换会话就会出现
+        # "用图像通道请求视频接口" —— 报 `response_path='data.0.url'`。
+        # 用 `with_backend` 整份换，避免"提交换对了、轮询没换"的半对状态。
+        out = self.session.with_backend(backend).render_http(
+            values, backend=backend, job_id=job_id, provenance=provenance)
         dt = time.perf_counter() - t0
 
         # ---- 提交成功后立刻记 channel_id ----

@@ -478,6 +478,37 @@ class RenderSession:
 
     # ---- 等待与回收 ----------------------------------------------------
 
+    def with_backend(self, backend: Any) -> "RenderSession":
+        """返回一个**换了通道后端**的浅拷贝。
+
+        ## 为什么是"整个会话换一份"，而不是"方法内替换几行"
+
+        `HttpChannel` 构造时把 `backend` 存进 `self`，而
+        `available/submit/poll/collect/reconcile` **全都读 `self.backend`** ——
+        `render_http(values, backend)` 传进来的那个会被**静默忽略**。
+
+        2026-10-18 真机上，这导致"用图像通道请求视频接口"，报
+        `响应中取不到 response_path='data.0.url'`。
+
+        我一开始只在 `render_http` 里替换了**一部分** `self.channel`，
+        结果变成「提交走了对的通道、轮询走了错的」——
+        **半对状态比全错更危险**：全错会当场失败，半对会跑一段才露馅。
+
+        所以改成**整份会话换掉**：要么全用旧通道，要么全用新通道，
+        **不存在中间态**。浅拷贝只替换 `channel`，其余（timeout/checkpoint 等）共享。
+        """
+        current = getattr(self, "channel", None)
+        if current is None or getattr(current, "backend", None) is backend:
+            return self
+        swap = getattr(current, "for_backend", None)
+        if not callable(swap):
+            return self
+        import copy as _copy
+
+        clone = _copy.copy(self)
+        clone.channel = swap(backend)
+        return clone
+
     def _await(self, handle: JobHandle, result: CompileResult | None, gid: str,
                reused: bool, t0: float, on_progress: Any) -> RenderOutcome:
         # HTTP 路径没有编译产物 -> result 为 None。用局部变量统一两种情况，
