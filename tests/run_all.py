@@ -72,6 +72,9 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 顾问批评家的守卫：**取不到可审正文 -> error，不是 PASS**。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签（之前撞过两次）。
     ("顾问批评家守卫", [sys.executable, "-m", "little_crew.runtime.advisory_check"], 10),
+    # **轮询必须节流**：紧循环曾把 Windows 临时端口打光（TIME_WAIT 21427 > 16384），
+    # 表现为"异步渲染随机失败"。这条守住 sleep，防止后人当冗余删掉。
+    ("轮询节流", [sys.executable, "-m", "little_crew.runtime.polling_check"], 6),
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),

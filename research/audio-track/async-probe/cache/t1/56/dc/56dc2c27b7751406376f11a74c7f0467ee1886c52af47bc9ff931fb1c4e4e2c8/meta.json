@@ -1,0 +1,17 @@
+{
+ "key": "t1:sha256:56dc2c27b7751406376f11a74c7f0467ee1886c52af47bc9ff931fb1c4e4e2c8",
+ "tier": "t1",
+ "createdAt": 1792307283.6155903,
+ "artifacts": [
+  "277726d3_vid_b0effdd193a44907.mp4"
+ ],
+ "provenance": {
+  "irHash": "4c65be43dc48d432df321a3613f745d4dd4d6f8598c62f1cfaf87253f548c8dd",
+  "graphHash": "",
+  "jobId": "PROBE-H3",
+  "channel": "http"
+ },
+ "deps": [],
+ "renderSeconds": 505.1057224999822,
+ "crossEnvironment": false
+}

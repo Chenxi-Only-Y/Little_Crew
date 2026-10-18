@@ -274,7 +274,10 @@ class RenderSession:
         *,
         backend: Backend | None = None,
         timeout_s: int = 900,
-        poll_interval_s: float = 1.0,
+        poll_interval_s: float = 0.2,   # 2026-10-18: 1.0 让测试套件从 45s 涨到 240s
+                                    # （每个 poll 都等满 1 秒）；0.2 仍安全：
+                                    # 340 秒的任务约 1700 次连接 ≈ 5/秒，
+                                    # TIME_WAIT 约 1200 条 << 16384 端口池
     ) -> None:
         """``compiler`` **必填**。
 
@@ -510,7 +513,21 @@ class RenderSession:
                     notice_count=notices,
                     reused_submission=reused,
                     seconds=time.perf_counter() - t0)
+            # ⚠️ **必须节流**（2026-10-18 实测）。
+            #
+            # 此前这里是个**紧循环** —— `poll_interval_s` 存了却从来没用。
+            # 实测后果：
+            #   · 130 秒内向 local-gen 发了 **5725 次连接**（≈44/秒）
+            #   · Windows 临时端口池只有 16384，TIME_WAIT 堆到 **21427**
+            #   · 于是 `poll` 抛 `WinError 10048`（地址只能使用一次）
+            #
+            # 表现是"异步渲染随机失败"，而根因是**我们自己把端口打光了**。
+            # 这类错误最容易被误判成"服务端不稳"。
+            #
+            # 不只影响 local-gen —— **任何异步 HTTP 后端**（含 MiniMax 官方）
+            # 都会因为这里没有节流而被自己打死。
             try:
+                time.sleep(self.poll_interval_s)
                 h = self.channel.poll(h)
             except Exception as exc:                          # noqa: BLE001
                 return RenderOutcome(

@@ -1,0 +1,34 @@
+{
+  "kind": "async-channel-probe",
+  "backend": {
+    "endpoint": "http://127.0.0.1:8100",
+    "path": "/v1/videos/generations",
+    "statusPath": "/v1/videos/generations/{task_id}",
+    "responsePath": "result.url",
+    "asyncTask": true
+  },
+  "values": {
+    "prompt": "镜头缓慢横移，风穿过薰衣草，远处有鸟鸣",
+    "image_path": "D:\\AI\\ds.8\\Little_Crew\\research\\llm-crew\\full_S01-001.png",
+    "width": "640",
+    "height": "384",
+    "seconds": "2.0",
+    "steps": "8",
+    "seed": "7"
+  },
+  "ok": true,
+  "elapsedSeconds": 505.2,
+  "fromCache": false,
+  "artifacts": {
+    "277726d3_vid_b0effdd193a44907.mp4": 8332535
+  },
+  "probe": {
+    "bytes": 8332535,
+    "container": "mp4",
+    "hasVideo": true,
+    "hasAudio": true,
+    "name": "277726d3_vid_b0effdd193a44907.mp4"
+  },
+  "operatorPassed": true,
+  "operatorDetail": "mp4 容器，音轨与视频轨齐全"
+}
