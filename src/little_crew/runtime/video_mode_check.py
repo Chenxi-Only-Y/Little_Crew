@@ -277,6 +277,76 @@ def _audio_gate() -> None:
 
 
 
+# ---------- F. `_render_clip_stage` 整体（外层）----------
+#
+# ## 这一段的来历（2026-10-18，代价 1.75 小时）
+#
+# 我写了 31 项测试，全都绕着 `render_video_stage`（**内层**）转。
+# 而 bug 在 `_render_clip_stage`（**外层**）：
+#
+#     audio = self._check_clip_audio(paths + [full])   # `full` 还没赋值
+#     full = clipdir / "full_clips.mp4"
+#     → UnboundLocalError
+#
+# 整集 20 镜渲染完（6308 秒 = 1.75 小时）之后，才在最后一步炸掉。
+#
+# > **测了内层不等于测了外层。** 包装函数里的顺序/变量错误，
+# > 只有真的调用那个包装函数才会暴露。
+#
+# 所以这一段**真的调 `_render_clip_stage`**（假渲染器 + 1×1 假 png），
+# 断言它至少能走到"返回一个 dict"这一步。
+
+def _outer_wrapper() -> None:
+    print()
+    print("F. 外层 `_render_clip_stage`")
+
+    import os as _os
+    import pathlib
+
+    class _D:
+        _render_clip_stage = EpisodeRunner._render_clip_stage
+        _still_path = EpisodeRunner._still_path
+        _ffmpeg_status = EpisodeRunner._ffmpeg_status
+        _ffmpeg = EpisodeRunner._ffmpeg
+        _check_clip_audio = EpisodeRunner._check_clip_audio
+        render_video_stage = EpisodeRunner.render_video_stage
+        video_seconds = 1.0
+        _prompts_seen = {"S1": "p1"}
+        resolve_artifact = staticmethod(lambda n: None)
+        render_video_stage_calls = 0
+
+    # 1) 缺 ffmpeg -> 必须**在渲染前**失败（不浪费）
+    _os.environ.pop("FFMPEG", None)
+    d1 = _D()
+    d1._workdir = pathlib.Path(".")
+    got = d1._render_clip_stage({"S1": ["C:/x/a.png"]})
+    check("Y1 ★★ 缺 ffmpeg -> **开跑前**就失败（不浪费渲染时间）",
+          got["ok"] is False and "ffmpeg" in str(got.get("reason", "")).lower(),
+          str(got)[:140])
+
+    # 2) 有 ffmpeg、没有可用静帧 -> 走到"没有可用的静帧路径"，不抛
+    _os.environ["FFMPEG"] = sys.executable          # 任何存在的文件都行
+    d2 = _D()
+    d2._workdir = pathlib.Path(".")
+    got2 = d2._render_clip_stage({})
+    check("Y2 ★ 空输入 -> 返回 dict（**不抛 UnboundLocalError / NameError**）",
+          isinstance(got2, dict) and got2.get("ok") is False, str(got2)[:140])
+
+    # 3) 关键：**函数能被完整执行到返回**，不因变量顺序而崩
+    d3 = _D()
+    d3._workdir = pathlib.Path(".")
+    try:
+        got3 = d3._render_clip_stage({"S1": ["C:/definitely/not/here.png"]})
+        ok3 = isinstance(got3, dict)
+        detail3 = str(got3)[:140]
+    except Exception as e:                                  # noqa: BLE001
+        ok3 = False
+        detail3 = f"{type(e).__name__}: {e}"
+    check("Y3 ★★ 走到返回处不抛（**这条就是当初该有的那条**）",
+          ok3, detail3)
+
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -290,6 +360,7 @@ def main() -> int:
     _structure()
     _run_wiring()
     _audio_gate()
+    _outer_wrapper()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

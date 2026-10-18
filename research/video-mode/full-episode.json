@@ -1,0 +1,16 @@
+{
+  "kind": "m3-full-episode",
+  "version": "0.4.0-alpha.75",
+  "shots": 20,
+  "clipsMB": 74.71,
+  "fullMB": 74.68,
+  "renderSeconds": 6308.3,
+  "perShotSeconds": 315.4,
+  "audioAssertion": {
+    "passed": 21,
+    "failed": 0,
+    "note": "20 镜 + 合片，全部 mp4 且 hasAudio=True"
+  },
+  "gate": "硬规则 5/5 全过",
+  "note": "M3 里程碑：整集 20 镜每镜都是 H3 真片段（2 秒/镜），拼成 full_clips.mp4 且带音轨，音轨门禁 21/21 通过。"
+}

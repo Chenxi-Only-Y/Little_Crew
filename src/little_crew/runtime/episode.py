@@ -1206,6 +1206,13 @@ class EpisodeRunner:
         不抛、不改 `ok`。但**失败必须看得见**（`{"ok": False, "reason": ...}`）。
         """
         try:
+            # ⚠️ **开跑前先确认 ffmpeg 可用**（见 `_ffmpeg_status` 的说明）。
+            # 一镜 331 秒 —— 绝不能让"缺 ffmpeg"在最后一步才暴露。
+            _exe, _ok_ff, _why_ff = self._ffmpeg_status()
+            if not _ok_ff:
+                return {"ok": False, "reason": _why_ff, "clips": [],
+                        "audio": {"ok": False, "reason": _why_ff}}
+
             stills: dict[str, Any] = {}
             for sid, art in (per_shot or {}).items():
                 path = self._still_path(art)
@@ -1237,16 +1244,16 @@ class EpisodeRunner:
             if not paths:
                 return {"ok": False, "reason": "片段为空"}
 
-            # ---- V3：音轨门禁（缺音轨 -> 交付失败）----
-            audio = self._check_clip_audio(paths + [full] if paths else paths)
-
             full = clipdir / "full_clips.mp4"
             try:
                 concat_clips(self._ffmpeg(), paths, full, workdir=clipdir)
             except Exception as e:                            # noqa: BLE001
+                # ⚠️ **异常分支不要引用后面才赋值的变量**
+                # （第一版在这里写 `"audio": audio`，而 `audio` 在下面才创建 ->
+                #   `UnboundLocalError`，把 1.75 小时的整集跑挂在了最后一步。）
                 return {"ok": False,
                         "reason": f"合片失败 {type(e).__name__}: {e}"[:160],
-                        "clips": [str(x) for x in paths], "audio": audio}
+                        "clips": [str(x) for x in paths]}
             # 合片自身也查一次（-c copy 通常保住音轨，但**不假设**）
             audio = self._check_clip_audio(paths + [full])
             return {"ok": bool(audio.get("ok")), "path": str(full),
@@ -1358,17 +1365,48 @@ class EpisodeRunner:
                 return None
         return None
 
-    def _ffmpeg(self) -> Any:
-        """取 ffmpeg 可执行文件。**不猜路径就报错**，不静默用系统 PATH。"""
-        # ⚠️ `config` 模块**没有** `load_project`（第一版写错，真机到合片才炸）。
-        # ffmpeg 走环境变量/默认名；不猜固定路径 —— 猜错了在别人机器上就崩。
+    def _ffmpeg_status(self) -> tuple[str, bool, str]:
+        """解析 ffmpeg 并**确认它真的能跑**。返回 `(可执行值, 可用, 原因)`。
+
+        ## 为什么要有这个（2026-10-18）
+
+        `alpha.73` 那轮整集视频跑完 **677.9 秒**之后，合片才炸在一个
+        import 名字上。这次排整集（≈2.3 小时）前做前置检查，又发现
+        **ffmpeg 根本不在 PATH、`FFMPEG` 环境变量也是空的** ——
+        若没查，那 2.3 小时会全部白花在最后一步。
+
+        > **贵的动作之前，先跑便宜的检查。**
+        > 这句话在上一次已经写过一遍了 —— 这次把它**写进代码**，
+        > 而不是指望下次记得。
+
+        所以 `_render_clip_stage` 在**渲染第一镜之前**就调这里：
+        不可用就直接失败，一秒钟都不浪费。
+        """
+        import shutil as _shutil
+
         from little_crew.config import env_value
 
         try:
-            got = env_value("FFMPEG", "")
+            cand = str(env_value("FFMPEG", "") or "").strip()
         except Exception:                                     # noqa: BLE001
-            got = ""
-        return got or "ffmpeg"
+            cand = ""
+        if cand:
+            if pathlib.Path(cand).is_file():
+                return cand, True, ""
+            if _shutil.which(cand):
+                return cand, True, ""
+            return cand, False, (f"FFMPEG={cand!r} 既不是文件也不在 PATH 里")
+        found = _shutil.which("ffmpeg")
+        if found:
+            return found, True, ""
+        return "ffmpeg", False, (
+            "找不到 ffmpeg —— 设 `FFMPEG` 环境变量指向可执行文件，"
+            "或把 ffmpeg 加进 PATH。**这条在开跑前就要过，"
+            "不要等到 2 小时后的合片步骤。**")
+
+    def _ffmpeg(self) -> Any:
+        """取 ffmpeg 可执行文件。**不猜路径就报错**，不静默用系统 PATH。"""
+        return self._ffmpeg_status()[0]
 
     # ---- V1：video_mode 的第二段（2026-10-18）--------------------------
     #
