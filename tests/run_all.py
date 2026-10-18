@@ -75,6 +75,10 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # **轮询必须节流**：紧循环曾把 Windows 临时端口打光（TIME_WAIT 21427 > 16384），
     # 表现为"异步渲染随机失败"。这条守住 sleep，防止后人当冗余删掉。
     ("轮询节流", [sys.executable, "-m", "little_crew.runtime.polling_check"], 6),
+    # video_mode **第二段**：把已有静帧动画化。
+    # 反馈循环很贵（2 镜 ≈12 分钟 / 整集 ≈2.4 小时），所以先用假通道验接线。
+    # 重点是失败语义：**拿不到本地后端绝不退回付费 API**。
+    ("video_mode 第二段", [sys.executable, "-m", "little_crew.runtime.video_mode_check"], 18),
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),

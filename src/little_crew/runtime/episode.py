@@ -1147,6 +1147,90 @@ class EpisodeRunner:
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
 
+    # ---- V1：video_mode 的第二段（2026-10-18）--------------------------
+    #
+    # ## 为什么是"第二段"而不是"整个 video_mode"
+    #
+    # `minimax-h3` 的 `body_template` **强制要 `image_path`** —— 它是图生视频。
+    # 所以主流程要出视频，必须两段：先出静帧，再动画化。
+    # 而 `_values(ir)` 在渲染前拿不到 `image_path`（那时静帧还不存在）。
+    #
+    # **所以 V1 只做第二段**：吃**已有**的静帧，把它们动画化。
+    # 这样成本可控（2 镜 ≈ 12 分钟），且不触碰已跑通的静帧链路。
+    #
+    # 设计见 `docs/00-项目策划书.md` §5.10.15.1。
+
+    def render_video_stage(
+        self,
+        stills: Mapping[str, Any],
+        prompts: Mapping[str, str],
+        *,
+        seconds: float = 2.0,
+        steps: int = 8,
+        seed_base: int = 0,
+        width: int = 640,
+        height: int = 384,
+        on_progress: Any = None,
+    ) -> dict[str, Any]:
+        """把**已有静帧**动画化成片段（`video_mode` 的第二段）。
+
+        `stills`：`{shotId: 静帧路径}`；`prompts`：`{shotId: 提示词}`。
+
+        返回：`{"ok", "clips": {shotId: bytes}, "failures", "backend", "reason"}`。
+
+        ## 失败语义（这里最容易写错）
+
+        | 情况 | 返回 |
+        |---|---|
+        | 拿不到本地后端 | `ok=False`，`reason` 说明**不退回付费 API** |
+        | 全部镜头成功 | `ok=True` |
+        | 部分成功 | `ok=False`，**但 `clips` 保留成功的** —— 半成品有用 |
+        | 缺静帧或缺提示词 | 跳过该镜并记进 `failures`（**不静默丢**） |
+        """
+        from little_crew.runtime.h3_video import (
+            VideoShot,
+            h3_backend,
+            render_videos,
+        )
+
+        backend = h3_backend()
+        if backend is None:
+            # ⚠️ **绝不静默退回付费 API**（`alpha.52` 的不变式）。
+            # 否则"本地服务没起"会变成"账单悄悄变了"。
+            return {"ok": False, "clips": {}, "failures": [],
+                    "backend": None,
+                    "reason": ("拿不到本地 H3 后端 —— 本地服务未起或通道不可用。"
+                               "**不退回付费 API。**")}
+
+        shots: list[Any] = []
+        skipped: list[dict[str, Any]] = []
+        for sid, path in (stills or {}).items():
+            prompt = str((prompts or {}).get(sid) or "").strip()
+            if not prompt:
+                skipped.append({"shotId": sid, "why": "没有提示词"})
+                continue
+            if path is None:
+                skipped.append({"shotId": sid, "why": "没有静帧"})
+                continue
+            shots.append(VideoShot(shot_id=sid, prompt=prompt,
+                                   image_path=path, width=width, height=height))
+        if not shots:
+            return {"ok": False, "clips": {}, "failures": skipped,
+                    "backend": {"endpoint": backend.endpoint},
+                    "reason": "没有可动画化的镜头（缺静帧或缺提示词）"}
+
+        ok, failures = render_videos(
+            self.renderer, backend, shots, seconds=seconds, steps=steps,
+            seed_base=seed_base, on_progress=on_progress)
+        return {
+            "ok": bool(ok) and not failures,
+            "clips": dict(ok or {}),
+            "failures": list(failures or ()) + skipped,
+            "backend": {"endpoint": backend.endpoint, "path": backend.path},
+            "reason": ("" if (ok and not failures)
+                       else f"{len(failures or ())} 个镜头失败"),
+        }
+
     def _run_director(self, script: Any) -> dict[str, Any]:
         """跑**导演**产出 `episode.plan`，并把它交给分镜师。
 
