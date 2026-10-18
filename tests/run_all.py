@@ -61,7 +61,10 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。
-    ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 25),
+    ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 28),
+    # 顾问批评家的守卫：**取不到可审正文 -> error，不是 PASS**。
+    # 单开文件是为了避开 episode_check 里既有的 G/H 段标签（之前撞过两次）。
+    ("顾问批评家守卫", [sys.executable, "-m", "little_crew.runtime.advisory_check"], 10),
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
