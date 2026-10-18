@@ -88,6 +88,11 @@ def main(argv: list[str] | None = None) -> int:
                          "（A 类审查职位的通用实现）。"
                          "它是 `script.draft` 的**门禁审核者**之一，"
                          "所以意见直接影响裁定。需要 --llm 的 key")
+    ap.add_argument("--video-mode", action="store_true",
+                    help="**真片段**模式：静帧之后把每镜动画化再拼成片。"
+                         "⚠️ 实测 331s/镜 —— 2 镜 ≈11 分钟，24 镜 ≈2.3 小时")
+    ap.add_argument("--video-mode-seconds", type=float, default=2.0,
+                    help="每镜片段秒数（H3 上限 10 秒，2 秒最稳）")
     ap.add_argument("--llm-director", action="store_true",
                     help="先跑**导演**产出 `episode.plan`，"
                          "并按它的 shotBudget 给分镜师派活。"
@@ -246,6 +251,12 @@ def main(argv: list[str] | None = None) -> int:
     # ⚠️ 调试开关：只为验证下游链路，**正式跑不要开**。
     # 开了之后 `scriptVerdict` 仍会如实显示 REVISE —— 不掩盖剧本没过这一事实。
     runner.force_accept_script = bool(args.accept_script)
+    runner.video_mode = bool(args.video_mode)
+    runner.video_seconds = float(args.video_mode_seconds)
+    runner._workdir = work
+    if args.video_mode:
+        print(f"  视频模式：**真片段**（{args.video_mode_seconds}s/镜，"
+              f"约 331s/镜 —— 请估算总耗时）")
     # 顾问批评家：**不进裁定**，只产意见（见 EpisodeRunner.advisory_critics）
     if args.llm_advisory and args.llm:
         runner.advisory_critics = ("continuity_supervisor",

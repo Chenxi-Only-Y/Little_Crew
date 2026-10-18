@@ -185,6 +185,51 @@ def _structure() -> None:
           "minimax_api" not in mod and "fallback_to_paid" not in mod)
 
 
+# ---------- D. V2：接进 run() 的接线 ----------
+#
+# V1 只验了"第二段本身能用"。V2 验的是"`run()` 会不会自动叫它、
+# 顺序对不对、失败会不会污染前面的结论"。
+#
+# **顺序这条最容易写错**：H3 要拿静帧当首帧 —— 若第二段跑在 `_render`
+# 之前，它拿到的就是空。而这类错误**不报异常**（`alpha.59` 被同样的坑坑过）。
+
+def _run_wiring() -> None:
+    print()
+    print("D. V2：接进 run()")
+
+    check("W1 ★ video_mode **默认关闭**（打开它是决定，不是顺手）",
+          EpisodeRunner.video_mode is False, str(EpisodeRunner.video_mode))
+
+    src = inspect.getsource(EpisodeRunner.run)
+    i_render = src.find("self._render(")
+    i_clip = src.find("_render_clip_stage(")
+    i_assemble = src.find("self.assembler.assemble(")
+    check("W2 ★★ 第二段在**静帧渲染之后**（否则拿不到首帧）",
+          0 <= i_render < i_clip, f"render@{i_render} clip@{i_clip}")
+    check("W3 第二段在**成片清单之后**（清单先定，再谈呈现）",
+          0 <= i_assemble < i_clip, f"assemble@{i_assemble} clip@{i_clip}")
+    check("W4 由 `video_mode` 闸住（默认不走）",
+          "self.video_mode" in src[:i_clip + 200] if i_clip > 0 else False,
+          "没看到 video_mode 判断")
+
+    fn = inspect.getsource(EpisodeRunner._render_clip_stage)
+    check("W5 ★ 失败不抛异常（片段没出来，静帧成片仍然有效）",
+          "except Exception" in fn and "return {" in fn)
+
+    # 结果字段
+    import dataclasses
+    names = [f.name for f in dataclasses.fields(
+        __import__("little_crew.runtime.episode", fromlist=["EpisodeResult"])
+        .EpisodeResult)]
+    check("W6 ★ 结果里区分得开两种成片（clip_video vs video_path）",
+          "clip_video" in names and "video_path" in names, str(names[-6:]))
+    d = __import__("little_crew.runtime.episode", fromlist=["EpisodeResult"]) \
+        .EpisodeResult(episode_id="E1").as_dict()
+    check("W7 as_dict 导出 clipVideo（报告能看出是不是真片段拼的）",
+          "clipVideo" in d, str([k for k in d if "ideo" in k]))
+
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -196,6 +241,7 @@ def main() -> int:
 
     _behavior()
     _structure()
+    _run_wiring()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

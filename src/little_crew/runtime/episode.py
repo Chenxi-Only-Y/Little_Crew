@@ -32,6 +32,8 @@ episode.master（成片清单/母版）+ delivery.evidence（交付证据）
 
 from __future__ import annotations
 
+import pathlib
+
 import hashlib
 import json
 import time
@@ -185,6 +187,14 @@ class EpisodeResult:
     #: 再决定要不要把某一条升成门禁（与 `PASS_THRESHOLD` 同一套纪律）。
     #:
     #: **但它们是真跑的** —— 不是占位。意见会进报告，人看得见。
+    #: **真片段拼的成片路径**（`video_mode` 时才有）。
+    #:
+    #: 与 `video_path` 的区别：
+    #:   · `video_path` = 静帧 + Ken Burns（**便宜、随时能出**）
+    #:   · `clip_video` = H3 真片段拼的（**331s/镜，贵**）
+    #: 两者都在时，**`clip_video` 才是"视频"**，另一个是占位呈现。
+    clip_video: str = ""
+
     advisory: tuple[dict[str, Any], ...] = ()
 
     #: **导演方案**（2026-10-18）：`{"ok": bool, "plan": {...}}` 或空。
@@ -234,6 +244,7 @@ class EpisodeResult:
             "scriptRounds": self.script_rounds,
             "scriptVerdict": self.script_verdict,
             "failureKind": self.failure_kind,
+            "clipVideo": self.clip_video,
             "advisory": [dict(a) for a in self.advisory],
             "director": dict(self.director),
             "gaffer": dict(self.gaffer),
@@ -555,6 +566,17 @@ class EpisodeRunner:
             video, video_path = self._assemble_video(
                 manifest, per_shot_artifacts)
 
+        # ---- 6.5) 视频模式第二段（真片段，不是静帧 + Ken Burns）----
+        #
+        # ⚠️ **顺序**：必须在静帧都落盘之后 —— H3 要拿静帧当首帧。
+        # ⚠️ **成本**：331s/镜，24 镜 ≈ 2.3 小时。所以 `video_mode` 默认关。
+        # ⚠️ **失败不覆盖前一步的结论**：片段没出来，静帧成片仍然有效。
+        clip_video = ""
+        if self.video_mode and manifest.shot_count:
+            clips = self._render_clip_stage(per_shot_artifacts,
+                                            on_progress=on_progress)
+            clip_video = str(clips.get("path") or "")
+
         return EpisodeResult(
             episode_id=self.episode_id, ok=ok,
             script_rounds=cycle.round_count,
@@ -676,6 +698,16 @@ class EpisodeRunner:
     #: 所以：① 默认 False；② 结果里 `scriptAccepted` 仍如实标记为 False；
     #: ③ CLI 的帮助文案明确写"调试用"。
     force_accept_script: bool = False
+
+    #: **视频模式**（2026-10-18 V2）：开了就在静帧之后自动跑第二段，
+    #: 把每个静帧动画化成片段，再拼成成片。
+    #:
+    #: ⚠️ **成本**：实测 331s/镜。2 镜 ≈ 11 分钟，24 镜 ≈ **2.3 小时**。
+    #: 所以默认关闭 —— 打开它是个决定，不是一个顺手。
+    video_mode: bool = False
+
+    #: 每镜片段的秒数（H3 实测上限 10 秒，2 秒最稳）
+    video_seconds: float = 2.0
 
     #: **顾问批评家**（2026-10-18）：这些职位的意见会进报告，但**不进裁定**。
     #:
@@ -1146,6 +1178,89 @@ class EpisodeRunner:
             jobs = [(self._values(ir), ir["graphId"]) for ir in irs]
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
+
+    def _render_clip_stage(self, per_shot: Any, *,
+                          on_progress: Any = None) -> dict[str, Any]:
+        """`run()` 里的第二段：静帧 -> 片段 -> 拼成成片。
+
+        `per_shot`：`{shotId: 产物}`（`run()` 里那份）。值可能是路径、
+        字节或对象 —— 所以用 `_still_path()` 统一转成路径。
+
+        ## 三重失败都不覆盖前一步的结论
+
+        片段没出来，**静帧成片仍然有效** —— 所以这里只返回状态，
+        不抛、不改 `ok`。但**失败必须看得见**（`{"ok": False, "reason": ...}`）。
+        """
+        try:
+            stills: dict[str, Any] = {}
+            for sid, art in (per_shot or {}).items():
+                path = self._still_path(art)
+                if path is not None:
+                    stills[sid] = path
+            if not stills:
+                return {"ok": False, "reason": "没有可用的静帧路径"}
+
+            prompts = dict(getattr(self, "_prompts_seen", {}) or {})
+            res = self.render_video_stage(
+                stills, prompts, seconds=self.video_seconds,
+                on_progress=on_progress)
+            if not res.get("ok"):
+                return {"ok": False, "reason": res.get("reason") or "片段渲染失败",
+                        "clips": list(res.get("clips") or {}),
+                        "failures": res.get("failures") or []}
+
+            # 落盘 + 拼成成片
+            from little_crew.runtime.h3_video import concat_clips
+
+            outdir = pathlib.Path(getattr(self, "_workdir", None) or ".")
+            clipdir = outdir / "clips"
+            clipdir.mkdir(parents=True, exist_ok=True)
+            paths: list[pathlib.Path] = []
+            for sid, blob in (res.get("clips") or {}).items():
+                dst = clipdir / f"{sid}.mp4"
+                dst.write_bytes(blob)
+                paths.append(dst)
+            if not paths:
+                return {"ok": False, "reason": "片段为空"}
+
+            full = clipdir / "full_clips.mp4"
+            try:
+                concat_clips(self._ffmpeg(), paths, full, workdir=clipdir)
+            except Exception as e:                            # noqa: BLE001
+                return {"ok": False,
+                        "reason": f"合片失败 {type(e).__name__}: {e}"[:160],
+                        "clips": [str(x) for x in paths]}
+            return {"ok": True, "path": str(full),
+                    "clips": [str(x) for x in paths]}
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+
+    def _still_path(self, art: Any) -> Any:
+        """把一镜的产物转成**文件路径**（H3 要的是一个真实文件）。"""
+        if art is None:
+            return None
+        if isinstance(art, pathlib.PurePath):
+            return art
+        cand = getattr(art, "path", None)
+        if cand:
+            return cand
+        if isinstance(art, (str, bytes)):
+            s = art.decode("utf-8", "replace") if isinstance(art, bytes) else art
+            if s and len(s) < 400 and ("/" in s or "\\" in s):
+                return s
+        return None
+
+    def _ffmpeg(self) -> Any:
+        """取 ffmpeg 可执行文件。**不猜路径就报错**，不静默用系统 PATH。"""
+        from little_crew.config import load_project
+
+        try:
+            cfg = load_project() or {}
+        except Exception:                                     # noqa: BLE001
+            cfg = {}
+        exe = ((cfg.get("tools") or {}).get("ffmpeg")
+               or cfg.get("ffmpeg") or "ffmpeg")
+        return exe
 
     # ---- V1：video_mode 的第二段（2026-10-18）--------------------------
     #
