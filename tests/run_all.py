@@ -49,6 +49,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("白模渲染", [sys.executable, "-m", "little_crew.runtime.previs_check"], 16),
     # 参考视频规格：按目标视频模型契约算"刚好过线"，并校核已渲的视频。
     ("参考视频规格", [sys.executable, "-m", "little_crew.runtime.video_ref_check"], 28),
+    # 发布器：把产物变成 URL（视频模型只收 URL）。接口可替换，实现按需加。
+    ("产物发布器", [sys.executable, "-m", "little_crew.runtime.publish_check"], 14),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),
