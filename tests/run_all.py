@@ -44,7 +44,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # B 类最后两个职位：美术指导（art.bible）/ 制片主任（production.schedule）
     ("美术指导+制片主任", [sys.executable, "-m", "little_crew.agent.b_class_llm_check"], 33),
     # 白模布局校验器：PrevisAgent 的验收标准。纯几何，与 Blender 同一套数学。
-    ("白模布局校验", [sys.executable, "-m", "little_crew.runtime.previs_layout_check"], 23),
+    ("白模布局校验", [sys.executable, "-m", "little_crew.runtime.previs_layout_check"], 24),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),

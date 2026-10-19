@@ -263,11 +263,22 @@ def validate_layout(layout: Mapping[str, Any], *,
             issues.append(Issue("out-of-frame-x", "minor", who,
                                 f"水平位置 u={p['u']:.2f}（0~1 之外，出画）",
                                 "把 x 收到画内，或确认这是刻意的画外构图"))
-        if not p["inFrameY"]:
+        # ⚠️ **"不许切头切脚"只对全身类景别成立**（2026-10-19 真机发现）。
+        #
+        # 第一版对所有景别都查这条，于是 `close` 变成了无解：
+        #   · `too-far-for-size` 要求 z ≈ 1.9m（close 的主体距离）
+        #   · `too-tall-in-frame` 又要求 158cm 的人在该距离下占高 ≤100%
+        # 而 close 的 cover = 0.34×身高 = 0.57m —— **人物必然比画面高，那是特写**。
+        #
+        # 真机上模型被判 RETRY 两次，每次都在把 z 往远推（6.2m）来躲这条错规则。
+        #
+        # **正确判据**：只有"该景别本该装下整个人"时才查（cover ≥ 1 倍身高）。
+        cover_mul = SHOT_COVER.get(cam["shotSize"], 1.0)
+        if not p["inFrameY"] and cover_mul >= 1.0:
             issues.append(Issue("too-tall-in-frame", "major", who,
                                 f"角色在画内占高 {p['heightFraction']:.0%} > 100% —— "
-                                f"会切头切脚",
-                                "加大景别（如 medium→full）或把 z 拉远"))
+                                f"{cam['shotSize']} 景别本该装下整个人",
+                                "改用更紧的景别（如 full→medium），或把 z 拉远"))
 
     # ---- 角色互相重叠 ----
     for i, a in enumerate(subjects):

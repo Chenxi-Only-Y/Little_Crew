@@ -132,14 +132,26 @@ def _reject() -> None:
           f"{r2.verdict.value} {[i.code for i in r2.issues]}")
 
     # 特写却占满 -> 切头切脚
-    # 特写的主体距离约 0.7m；把角色放到这个距离上，1.68m 的人必然撑爆画面
+    # ---- 切头切脚：只对"本该装下整个人"的景别成立 ----
+    #
+    # 真机教训（2026-10-19）：第一版对所有景别都查这条，于是 `close` 变成了无解 ——
+    # `too-far-for-size` 要求 z≈1.9m，而 158cm 的人在该距离下必然占高 >100%。
+    # 模型被判 RETRY 两次，每次都在把 z 往远推来躲这条错规则。
     r3 = validate_layout(_layout(
-        shot={"shot_size": "extreme_close", "lens_mm": 50.0, "azimuth_deg": 0.0},
-        subjects=[{"who": "A", "x": 0, "z": 0.7, "height_cm": 168}]))
-    check("C3 ★★ 特写里人物占高 >100% -> RETRY（切头切脚）",
+        shot={"shot_size": "full", "lens_mm": 28.0, "azimuth_deg": 0.0},
+        subjects=[{"who": "A", "x": 0, "z": 1.5, "height_cm": 168}]))
+    check("C3 ★★ `full` 里人物占高 >100% -> RETRY（该装下整个人却切了）",
           r3.verdict is Verdict.RETRY
           and any(i.code == "too-tall-in-frame" for i in r3.issues),
           f"{r3.verdict.value} {[i.code for i in r3.issues]}")
+
+    # 而 `close` 里人比画面高是**正常**的 —— 不该因此判错
+    r3b = validate_layout(_layout(
+        shot={"shot_size": "close", "lens_mm": 85.0, "azimuth_deg": 0.0},
+        subjects=[{"who": "A", "x": 0, "z": 1.2, "height_cm": 168}]))
+    check("C3b ★★ `close` 里人比画面高是特写常态，**不判 too-tall**",
+          not any(i.code == "too-tall-in-frame" for i in r3b.issues),
+          f"{r3b.verdict.value} {[i.code for i in r3b.issues]}")
 
     # 两人重叠
     r4 = validate_layout(_layout(subjects=[
