@@ -1,0 +1,322 @@
+{
+  "source": "research/threshold-calibration/raw.json",
+  "note": "每轮的 total 即当轮权威总分；本表由 detail[].total 复算得出",
+  "runs": [
+    {
+      "run": 1,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 46.2,
+      "finalScore": 46.2,
+      "wallSeconds": 335.5,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 46.2,
+          "blocker": 0,
+          "advisory": 6,
+          "scenesWithIssues": 5
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 63.8,
+          "blocker": 0,
+          "advisory": 3,
+          "scenesWithIssues": 3
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 46.2,
+          "blocker": 0,
+          "advisory": 6,
+          "scenesWithIssues": 5
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "accepted": true,
+      "rounds": 1,
+      "firstScore": 80.2,
+      "finalScore": 80.2,
+      "wallSeconds": 78.2,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "PASS",
+          "total": 80.2,
+          "blocker": 0,
+          "advisory": 1,
+          "scenesWithIssues": 1
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 55.6,
+      "finalScore": 54.4,
+      "wallSeconds": 222.7,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 55.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 4
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 69.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 2
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 54.4,
+          "blocker": 0,
+          "advisory": 5,
+          "scenesWithIssues": 4
+        }
+      ]
+    },
+    {
+      "run": 4,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 62.77,
+      "finalScore": 57.65,
+      "wallSeconds": 301.4,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 62.77,
+          "blocker": 0,
+          "advisory": 5,
+          "scenesWithIssues": 5
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 57.65,
+          "blocker": 0,
+          "advisory": 6,
+          "scenesWithIssues": 6
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 57.65,
+          "blocker": 0,
+          "advisory": 6,
+          "scenesWithIssues": 6
+        }
+      ]
+    },
+    {
+      "run": 5,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 70.8,
+      "finalScore": 62.6,
+      "wallSeconds": 368.2,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 70.8,
+          "blocker": 0,
+          "advisory": 3,
+          "scenesWithIssues": 2
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 45.0,
+          "blocker": 0,
+          "advisory": 7,
+          "scenesWithIssues": 5
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 62.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 3
+        }
+      ]
+    },
+    {
+      "run": 6,
+      "accepted": true,
+      "rounds": 2,
+      "firstScore": 55.6,
+      "finalScore": 80.2,
+      "wallSeconds": 133.8,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 55.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 4
+        },
+        {
+          "round": 2,
+          "verdict": "PASS",
+          "total": 80.2,
+          "blocker": 0,
+          "advisory": 1,
+          "scenesWithIssues": 1
+        }
+      ]
+    },
+    {
+      "run": 7,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 67.9,
+      "finalScore": 54.4,
+      "wallSeconds": 301.0,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 67.9,
+          "blocker": 0,
+          "advisory": 3,
+          "scenesWithIssues": 3
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 66.91,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 3
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 54.4,
+          "blocker": 0,
+          "advisory": 5,
+          "scenesWithIssues": 4
+        }
+      ]
+    },
+    {
+      "run": 8,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 42.6,
+      "finalScore": 62.6,
+      "wallSeconds": 234.9,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 42.6,
+          "blocker": 0,
+          "advisory": 9,
+          "scenesWithIssues": 5
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 62.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 3
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 62.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 3
+        }
+      ]
+    },
+    {
+      "run": 9,
+      "accepted": false,
+      "rounds": 3,
+      "firstScore": 63.8,
+      "finalScore": 54.4,
+      "wallSeconds": 327.6,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 63.8,
+          "blocker": 0,
+          "advisory": 3,
+          "scenesWithIssues": 3
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 55.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 4
+        },
+        {
+          "round": 3,
+          "verdict": "REVISE",
+          "total": 54.4,
+          "blocker": 0,
+          "advisory": 5,
+          "scenesWithIssues": 4
+        }
+      ]
+    },
+    {
+      "run": 10,
+      "accepted": true,
+      "rounds": 3,
+      "firstScore": 69.6,
+      "finalScore": 81.56,
+      "wallSeconds": 246.6,
+      "detail": [
+        {
+          "round": 1,
+          "verdict": "REVISE",
+          "total": 69.6,
+          "blocker": 0,
+          "advisory": 4,
+          "scenesWithIssues": 2
+        },
+        {
+          "round": 2,
+          "verdict": "REVISE",
+          "total": 54.23,
+          "blocker": 0,
+          "advisory": 5,
+          "scenesWithIssues": 5
+        },
+        {
+          "round": 3,
+          "verdict": "PASS",
+          "total": 81.56,
+          "blocker": 0,
+          "advisory": 1,
+          "scenesWithIssues": 1
+        }
+      ]
+    }
+  ]
+}
