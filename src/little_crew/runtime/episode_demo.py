@@ -143,6 +143,15 @@ def main(argv: list[str] | None = None) -> int:
                     help="先跑**导演**产出 `episode.plan`，"
                          "并按它的 shotBudget 给分镜师派活。"
                          "需要 --llm")
+    ap.add_argument("--llm-previs", action="store_true",
+                    help="跑**白模预演师**：每镜判断布局 -> Blender 出白模"
+                         "（圆柱给人看 / 人形喂 ControlNet）。需要 --llm")
+    ap.add_argument("--blender", default="",
+                    help="Blender 可执行文件（配 --llm-previs）")
+    ap.add_argument("--use-white-model", action="store_true",
+                    help="把白模控制图注入出图（需要 ComfyUI + ControlNet）")
+    ap.add_argument("--comfy-input", default="",
+                    help="ComfyUI 的 input/ 目录 —— 控制图必须投放进去")
     ap.add_argument("--llm-art", action="store_true",
                     help="跑**美术指导**产出 `art.bible`，把每场的空间/材质/道具"
                          "写进分镜提示词。需要 --llm")
@@ -234,6 +243,11 @@ def main(argv: list[str] | None = None) -> int:
 
             stubs["director"] = DirectorLlm(client=writer)
             print("  导演：**真实 LLM**（定基调与每场镜头预算）")
+        if args.llm_previs:
+            from little_crew.agent.previs_agent_llm import PrevisAgentLlm
+
+            stubs["previs"] = PrevisAgentLlm(client=writer)
+            print("  白模预演师：**真实 LLM**（判断每镜机位与站位，交 Blender 出白模）")
         if args.llm_art:
             from little_crew.agent.production_designer_llm import (
                 ProductionDesignerLlm,
@@ -325,6 +339,14 @@ def main(argv: list[str] | None = None) -> int:
     runner.video_mode = bool(args.video_mode)
     runner.video_seconds = float(args.video_mode_seconds)
     runner._workdir = work
+    # ---- 白模（2026-10-19）----
+    runner.blender_exe = str(args.blender or "")
+    runner.use_white_model = bool(args.use_white_model)
+    runner.comfy_input_dir = (Path(args.comfy_input) if args.comfy_input else None)
+    if args.use_white_model and not args.blender:
+        print("  ⚠️ --use-white-model 需要 --blender（否则渲不出控制图）")
+    if args.use_white_model and not args.comfy_input:
+        print("  ⚠️ --use-white-model 需要 --comfy-input（控制图必须投放进 ComfyUI 的 input/）")
     if args.video_mode:
         print(f"  视频模式：**真片段**（{args.video_mode_seconds}s/镜，"
               f"约 331s/镜 —— 请估算总耗时）")
