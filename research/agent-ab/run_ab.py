@@ -50,7 +50,7 @@ from little_crew.agent.storyboard_llm import LEGAL_VOCAB, StoryboardArtistLlm
 OUT = pathlib.Path(r"D:\AI\ds.8\Little_Crew\research\agent-ab")
 OUT.mkdir(parents=True, exist_ok=True)
 
-MODEL = "deepseek-v4"
+MODEL = "deepseek-flash"
 REPEATS = 3
 MAX_SHOTS = 40
 

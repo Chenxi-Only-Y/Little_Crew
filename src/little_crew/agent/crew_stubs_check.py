@@ -277,7 +277,7 @@ def _review_board() -> None:
           f"verdict={fb.verdict.value} issues={len(fb.issues)}")
     check("F3 QC-5 五维齐全",
           len(fb.score.dimensions) == 5, str(sorted(d.value for d in fb.score.dimensions)))
-    check("F4 跨族盲读（qwen3-vl-max 审 deepseek-v4）",
+    check("F4 跨族盲读（qwen3-vl-max 审 deepseek-flash）",
           fb.cross_family_ok and fb.reviewer_model == "qwen3-vl-max")
 
     # 超长镜头应被 BLOCKER 拦住

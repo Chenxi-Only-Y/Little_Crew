@@ -276,7 +276,7 @@ LICENSE_CATALOG: Mapping[str, LicenseInfo] = {
     #
     # 正确做法：部署方在正式上线前逐条核实并在 config/ 中登记；
     # 在那之前门禁一律 NEEDS_REVIEW。
-    "deepseek-v4": LicenseInfo(
+    "deepseek-flash": LicenseInfo(
         "Commercial API ToS", commercial_use=True, verified=False,
         note="⚠️ 服务条款未逐条核实。价格页与条款页需分别核实，"
              "尤其是「生成内容的商用权」与「训练数据使用」两条"),

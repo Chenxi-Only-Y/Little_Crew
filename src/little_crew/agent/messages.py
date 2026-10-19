@@ -575,7 +575,7 @@ def _family(model_id: str) -> str:
     """取模型族。用于"跨模型族盲读"判定。
 
     "minimax-h3" -> "minimax"；"qwen3-vl-max" -> "qwen3"；
-    "deepseek-v4" -> "deepseek"
+    "deepseek-flash" -> "deepseek"
     """
     if not model_id:
         return ""

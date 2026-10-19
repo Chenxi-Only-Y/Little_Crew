@@ -56,7 +56,7 @@ __all__ = ["LLMError", "LLMReply", "LlmClient", "extract_json",
 #: 选它而不是另建一条：注册表已经声明了它的端点、路径、模板、响应路径、
 #: 上下文长度与结构化输出评分 —— **重复声明会产生第二份真相**，
 #: 而两份真相迟早会不一致。
-DEFAULT_MODEL_ID = "deepseek-v4"
+DEFAULT_MODEL_ID = "deepseek-flash"
 
 
 

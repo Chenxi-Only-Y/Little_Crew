@@ -122,7 +122,7 @@ class StoryboardArtistLlm:
                  temperature: float = 0.6, max_shots: int = 40,
                  plan: Mapping[str, Any] | None = None,
                  lighting: Mapping[str, Any] | None = None) -> None:
-        self.client = client or LlmClient("deepseek-v4")
+        self.client = client or LlmClient("deepseek-flash")
         self.temperature = temperature
         self.max_shots = max_shots
         #: **导演方案**（`episode.plan`）。给了就按它的 `shotBudget` 分配镜头。

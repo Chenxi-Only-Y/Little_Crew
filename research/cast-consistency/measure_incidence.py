@@ -98,7 +98,7 @@ def _inputs_for(shot: object) -> tuple[dict[str, object], dict[str, object]]:
 
 def one_run(source_name: str, source: str, idx: int) -> dict:
     stubs = default_crew_stubs()
-    writer = LlmClient("deepseek-v4", timeout_s=120)
+    writer = LlmClient("deepseek-flash", timeout_s=120)
     reviewer = LlmClient("mimo-v2.6-flash", timeout_s=120)
     stubs["screenwriter"] = ScreenwriterLlm(client=writer)
     stubs["dramaturge"] = DramaturgeLlm(client=reviewer)

@@ -57,6 +57,65 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.84] — 2026-10-19（内部 id 统一为 **`deepseek-flash`**）
+
+### 改了什么
+
+`deepseek-v4` → **`deepseek-flash`**，全项目 25 个文件（不含 CHANGELOG 历史）。
+
+| 层 | 改前 | 改后 |
+|---|---|---|
+| 内部 id | `deepseek-v4` | **`deepseek-flash`** |
+| 发出去 | `deepseek-chat` | **`deepseek-flash`** |
+| 服务端回显 | `deepseek-flash` | `deepseek-flash` |
+
+**三层终于一致。** 以后核对成本从"查三处"降到"看一眼"。
+
+### 为什么这次敢改（上次犹豫的原因已排除）
+
+最怕的是**家族映射**：`_family()` 用"取第一段、去尾部数字"推导族，
+若两个名字推出不同的族，**跨族守卫会静默失效**（同族判定作废为 ESCALATE）。
+
+实测：
+
+```
+_family('deepseek-flash') = 'deepseek'
+_family('deepseek-v4')    = 'deepseek'    ← 同一个族
+```
+
+**所以跨族逻辑完全不变**，所有相关断言依然成立。
+
+### 三个"不是找替换"的坑，都处理了
+
+| # | 位置 | 处理 |
+|---|---|---|
+| 1 | `license.py` 的字典键 + `registry.license_id` | **成对改** —— 只改一处会让 A7 授权校验红（`glm` 今天刚红过一次） |
+| 2 | `crew_stubs.py` / `orchestrator_check.py` 里的 `generator_model=` 夹具值 | 一起改，靠"族不变"保证断言仍成立 |
+| 3 | `messages.py` 里 `_family` 的**文档字符串** | 同步改 —— 否则后人按注释查会发现名字不存在 |
+
+### 一处刻意不改
+
+**CHANGELOG 的历史记录不改。** 历史是记录，不是配置 ——
+把过去的记录改成今天的名字，等于伪造时间线。
+
+### 还撤回了一次误伤
+
+批量替换波及 `research/github-survey/` —— 那是**别的项目的调研笔记**，
+不是我们的配置。已 `git checkout` 撤回。
+
+> 全量替换前应该先限定范围；这次靠 `git status` 看清单才发现。
+
+### 验证 Verification
+
+```
+ [v] 1462 项测试通过 + 架构守卫 PASS
+ [v] 真调：modelId=deepseek-flash  servedModel=deepseek-flash
+ [v] 三族真机：编剧 deepseek-flash / 剧评人 mimo / 文风编辑 GLM
+     -> 剧本 2 轮 PASS，分镜 35 个
+```
+
+---
+
 ## [0.4.0-alpha.83] — 2026-10-19（元端：**直接发 `deepseek-flash`**，不再依赖别名）
 
 ### 改了什么

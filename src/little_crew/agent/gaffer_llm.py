@@ -55,7 +55,7 @@ class GafferLlm:
     def __init__(self, *, client: LlmClient | None = None,
                  plan: Mapping[str, Any] | None = None,
                  temperature: float = 0.3) -> None:
-        self.client = client or LlmClient("deepseek-v4")
+        self.client = client or LlmClient("deepseek-flash")
         #: 导演方案（有就参考基调，没有也能工作）
         self.plan = dict(plan or {})
         self.temperature = temperature

@@ -121,7 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm", action="store_true",
                     help="编剧与剧评人改用**真实 LLM**（其余职位仍用规则桩）——"
                          "需要 API key；产出不是确定性的")
-    ap.add_argument("--llm-model", default="deepseek-v4",
+    ap.add_argument("--llm-model", default="deepseek-flash",
                     help="`--llm` 时**生成方**（编剧）用哪个注册表模型")
     ap.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
                     help="`--llm` 时**审核方**（剧评人）用哪个模型 —— "

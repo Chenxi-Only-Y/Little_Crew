@@ -268,7 +268,7 @@ def _merge_rules() -> None:
           v5 is Verdict.ESCALATE and "同属模型族" in why5, why5[:70])
 
     cross = _fb(Verdict.PASS, _score(85, 85, 85),
-                reviewer="qwen3-vl-max", generator="deepseek-v4")
+                reviewer="qwen3-vl-max", generator="deepseek-flash")
     v6, _, _, _, why6 = merge_reviews([cross])
     check("A9 跨族 → 判定有效", v6 is Verdict.PASS and not why6, why6[:50])
 
@@ -282,10 +282,10 @@ def _merge_rules() -> None:
     v8, _, iss8, _, _ = merge_reviews([
         _fb(Verdict.REVISE, _score(80, 80, 60), [i_minor],
             [RepairHint(graph_id="G", op="adjust_prompt", args={})], "qwen3-vl-max",
-            "deepseek-v4"),
+            "deepseek-flash"),
         _fb(Verdict.REVISE, _score(80, 80, 55), [i_major],
             [RepairHint(graph_id="G", op="adjust_prompt", args={})], "claude-x",
-            "deepseek-v4"),
+            "deepseek-flash"),
     ])
     check("A11 同维度同定位去重，保留更严的",
           len(iss8) == 1 and iss8[0].severity is Severity.MAJOR,
@@ -326,7 +326,7 @@ def _cycle_pass() -> None:
     sw = ScreenwriterStub()
     r1 = ReviewerStub(_fb(Verdict.PASS, _score(88, 90, 85)), "script.critique")
     r2 = ReviewerStub(_fb(Verdict.PASS, _score(86, 88, 84),
-                          reviewer="qwen3-max", generator="deepseek-v4"),
+                          reviewer="qwen3-max", generator="deepseek-flash"),
                       "style.guard")
     o = _orch().bind("screenwriter", sw).bind("dramaturge", r1).bind("story_editor", r2)
     res = o.run_script_cycle({"source.novel": "雨夜天台"})
@@ -377,9 +377,9 @@ def _cycle_revise_then_pass() -> None:
     ).bind(
         "story_editor", SeqReviewer("style.guard",
                                     _fb(Verdict.PASS, _score(80, 82, 78),
-                                        reviewer="qwen3-max", generator="deepseek-v4"),
+                                        reviewer="qwen3-max", generator="deepseek-flash"),
                                     _fb(Verdict.PASS, _score(84, 86, 82),
-                                        reviewer="qwen3-max", generator="deepseek-v4"),
+                                        reviewer="qwen3-max", generator="deepseek-flash"),
                                     "story_editor")
     )
     res = o.run_script_cycle({"source.novel": "雨夜天台"})
@@ -414,7 +414,7 @@ def _cycle_no_progress() -> None:
         "dramaturge", ReviewerStub(always, "script.critique")
     ).bind("story_editor", ReviewerStub(
         _fb(Verdict.PASS, _score(80, 80, 80), reviewer="qwen3-max",
-            generator="deepseek-v4"), "style.guard"))
+            generator="deepseek-flash"), "style.guard"))
     res = o.run_script_cycle({"source.novel": "x"})
 
     check("E1 始终不通过 → 停在轮次上限（不会无限循环）",
@@ -435,7 +435,7 @@ def _cycle_invalidation() -> None:
         "dramaturge", ReviewerStub(liar, "script.critique")
     ).bind("story_editor", ReviewerStub(
         _fb(Verdict.PASS, _score(85, 85, 85), reviewer="qwen3-max",
-            generator="deepseek-v4"), "style.guard"))
+            generator="deepseek-flash"), "style.guard"))
     res = o.run_script_cycle({"source.novel": "x"})
     check("F1 自报不可信 → 立即作废，不进入第 2 轮",
           (not res.accepted) and res.round_count == 1 and sw.calls == 1,
@@ -446,12 +446,12 @@ def _cycle_invalidation() -> None:
     # 同族审核
     sw2 = ScreenwriterStub()
     same = _fb(Verdict.PASS, _score(90, 90, 90),
-               reviewer="deepseek-v4", generator="deepseek-v4")
+               reviewer="deepseek-flash", generator="deepseek-flash")
     o2 = _orch().bind("screenwriter", sw2).bind(
         "dramaturge", ReviewerStub(same, "script.critique")
     ).bind("story_editor", ReviewerStub(
         _fb(Verdict.PASS, _score(85, 85, 85), reviewer="qwen3-max",
-            generator="deepseek-v4"), "style.guard"))
+            generator="deepseek-flash"), "style.guard"))
     res2 = o2.run_script_cycle({"source.novel": "x"})
     check("F3 同族审核 → 作废（不信「自己人说没问题」）",
           (not res2.accepted) and "模型族" in res2.reason, res2.reason[:70])
@@ -557,7 +557,7 @@ def _stage_failures() -> None:
         _fb(Verdict.PASS, _score(80, 80, 80)), "script.critique")
     ).bind("story_editor", ReviewerStub(
         _fb(Verdict.PASS, _score(80, 80, 80), reviewer="qwen3-max",
-            generator="deepseek-v4"), "style.guard"))
+            generator="deepseek-flash"), "style.guard"))
     res4 = o4.run_script_cycle({"source.novel": "x"})
     check("G4 编剧未绑定 → 作废（不是崩掉）",
           (not res4.accepted) and "编剧" in res4.reason, res4.reason[:60])
@@ -572,7 +572,7 @@ def _trace() -> None:
                                    "script.critique")
     ).bind("story_editor", ReviewerStub(
         _fb(Verdict.PASS, _score(86, 86, 86), reviewer="qwen3-max",
-            generator="deepseek-v4"), "style.guard"))
+            generator="deepseek-flash"), "style.guard"))
     o.run_script_cycle({"source.novel": "x"})
 
     spans = o.runtime.spans()

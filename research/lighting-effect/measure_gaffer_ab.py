@@ -118,7 +118,7 @@ def main() -> int:
     from little_crew.agent.llm import LlmClient
     from little_crew.agent.protocol import Budget, CallEnvelope
 
-    g = GafferLlm(client=LlmClient("deepseek-v4", timeout_s=180))
+    g = GafferLlm(client=LlmClient("deepseek-flash", timeout_s=180))
     t0 = time.perf_counter()
     out = g(envelope=CallEnvelope.root(
         "gaffer", "lighting.plan", {"script.draft": SCRIPT},

@@ -58,7 +58,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 def one_run(idx: int) -> dict:
     """跑一次剧本闭环，返回该次的结构化记录。"""
     stubs = default_crew_stubs()
-    writer = LlmClient("deepseek-v4")
+    writer = LlmClient("deepseek-flash")
     reviewer = LlmClient("mimo-v2.6-flash")
     w = ScreenwriterLlm(client=writer)
     d = DramaturgeLlm(client=reviewer)

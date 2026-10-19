@@ -223,7 +223,7 @@ def main() -> int:
     # ==================================================================
     def fb(**kw) -> ReviewFeedback:
         base = dict(frm="dramaturge", to="screenwriter", verdict=Verdict.PASS,
-                    reviewer_model="qwen3-vl-max", generator_model="deepseek-v4")
+                    reviewer_model="qwen3-vl-max", generator_model="deepseek-flash")
         base.update(kw)
         return ReviewFeedback(**base)
 

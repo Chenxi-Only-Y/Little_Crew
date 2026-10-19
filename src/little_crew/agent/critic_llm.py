@@ -131,7 +131,7 @@ class CriticLlm:
         self.spec = CRITIC_CHECKS[agent_id]
         self.capability: str = self.spec["capability"]
         self.artifact_key: str = self.spec["artifact"]
-        self.client = client or LlmClient("deepseek-v4")
+        self.client = client or LlmClient("deepseek-flash")
         self.temperature = temperature
 
     # ---- 提示词 --------------------------------------------------------

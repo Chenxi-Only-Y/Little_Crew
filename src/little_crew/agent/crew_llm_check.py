@@ -119,7 +119,7 @@ def _retry() -> None:
     print("H. 传输层重试")
 
     # ① 可重试失败 -> 重试到上限后抛出
-    c = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    c = LlmClient("deepseek-flash", max_retries=2, backoff_s=0.0)
     n = {"i": 0}
 
     def always_net(*_a, **_k):
@@ -138,7 +138,7 @@ def _retry() -> None:
         check("H3 最终仍抛出（不把失败吞成成功）", e.retryable, "")
 
     # ② 不可重试 -> 一次都不重试
-    c2 = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    c2 = LlmClient("deepseek-flash", max_retries=2, backoff_s=0.0)
     n2 = {"i": 0}
 
     def always_4xx(*_a, **_k):
@@ -155,7 +155,7 @@ def _retry() -> None:
           f"尝试 {n2['i']} 次 retries={c2.retries}")
 
     # ③ 抖动一次后成功 -> 上层看不到失败
-    c3 = LlmClient("deepseek-v4", max_retries=2, backoff_s=0.0)
+    c3 = LlmClient("deepseek-flash", max_retries=2, backoff_s=0.0)
     n3 = {"i": 0}
 
     def flaky(*_a, **_k):
@@ -171,7 +171,7 @@ def _retry() -> None:
           f"text={r.text!r} 尝试={n3['i']}")
 
     # ④ max_retries=0 时完全不重试（显式选择）
-    c4 = LlmClient("deepseek-v4", max_retries=0, backoff_s=0.0)
+    c4 = LlmClient("deepseek-flash", max_retries=0, backoff_s=0.0)
     n4 = {"i": 0}
 
     def always_net2(*_a, **_k):
@@ -347,8 +347,8 @@ def main() -> int:
           {"screenwriter", "dramaturge"} <= set(CREW_PROMPTS),
           str(list(CREW_PROMPTS)))
     # 跨族是硬要求，不能只靠"记得传对参数"
-    with_same = build_llm_crew(client=LlmClient("deepseek-v4"),
-                               reviewer_client=LlmClient("deepseek-v4"))
+    with_same = build_llm_crew(client=LlmClient("deepseek-flash"),
+                               reviewer_client=LlmClient("deepseek-flash"))
     check("G3 ⚠️ 传同一个模型时**不会报错**（所以调用方必须自己查）",
           isinstance(with_same["screenwriter"], ScreenwriterLlm)
           and isinstance(with_same["dramaturge"], DramaturgeLlm), "")

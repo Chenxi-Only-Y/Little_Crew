@@ -67,7 +67,7 @@ class DirectorLlm:
     def __init__(self, *, client: LlmClient | None = None,
                  total_shots: int = DEFAULT_TOTAL_SHOTS,
                  temperature: float = 0.4) -> None:
-        self.client = client or LlmClient("deepseek-v4")
+        self.client = client or LlmClient("deepseek-flash")
         self.total_shots = max(1, int(total_shots))
         self.temperature = temperature
 

@@ -432,7 +432,7 @@ class DramaturgeRules:
             issues=tuple(issues),
             repair_hints=tuple(hints),
             reviewer_model="qwen3-max",       # 与编剧的 deepseek 跨族
-            generator_model="deepseek-v4",
+            generator_model="deepseek-flash",
             round_no=int(draft.revision),
         )
         return CallResult.success({"script.critique": fb})
@@ -509,7 +509,7 @@ class StoryEditorRules:
                            from_issue=f"issue_{k:03d}")
                 for k, i in enumerate(issues, 1)),
             reviewer_model="qwen3-max",
-            generator_model="deepseek-v4",
+            generator_model="deepseek-flash",
             round_no=int(draft.revision),
         )
         return CallResult.success({"style.guard": fb})
@@ -686,9 +686,9 @@ class ReviewBoardRules:
             }, phase="final"),
             issues=tuple(issues),
             repair_hints=tuple(hints),
-            # **跨族盲读**：审片用 qwen3-vl-max，分镜师用 deepseek-v4
+            # **跨族盲读**：审片用 qwen3-vl-max，分镜师用 deepseek-flash
             reviewer_model="qwen3-vl-max",
-            generator_model="deepseek-v4",
+            generator_model="deepseek-flash",
             round_no=1,
         )
         return CallResult.success({"review.verdict": fb})

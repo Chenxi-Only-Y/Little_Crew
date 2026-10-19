@@ -98,8 +98,8 @@ def main() -> int:
           f"local={h3.supports_local if h3 else None} api={h3.supports_api if h3 else None}")
 
     check("A4 仅 API 的模型不误报为本地",
-          not reg.get("deepseek-v4").supports_local
-          and reg.get("deepseek-v4").supports_api)
+          not reg.get("deepseek-flash").supports_local
+          and reg.get("deepseek-flash").supports_api)
 
     check("A5 仅本地的模型不误报为 API",
           reg.get("sdxl-base").supports_local

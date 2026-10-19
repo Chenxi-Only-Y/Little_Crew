@@ -43,7 +43,7 @@ print(f"  {'#':>2} {'轮':>3} {'场':>3} {'各轮分数':>24} {'最好':>7} "
 print("  " + "-" * 92)
 for a in range(1, N + 1):
     stubs = default_crew_stubs()
-    wr = LlmClient("deepseek-v4", timeout_s=90, max_retries=1)
+    wr = LlmClient("deepseek-flash", timeout_s=90, max_retries=1)
     rv = LlmClient("mimo-v2.6-flash", timeout_s=90, max_retries=1)
     stubs["screenwriter"] = ScreenwriterLlm(client=wr)
     stubs["dramaturge"] = DramaturgeLlm(client=rv)

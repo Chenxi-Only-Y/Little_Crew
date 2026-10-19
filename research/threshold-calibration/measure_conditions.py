@@ -95,7 +95,7 @@ def _build_source(name: str) -> str:
 
 def one_run(idx: int, *, source_name: str, max_scenes: int) -> dict:
     stubs = default_crew_stubs()
-    writer = LlmClient("deepseek-v4")
+    writer = LlmClient("deepseek-flash")
     reviewer = LlmClient("mimo-v2.6-flash")
     w = ScreenwriterLlm(client=writer, max_scenes=max_scenes)
     d = DramaturgeLlm(client=reviewer)

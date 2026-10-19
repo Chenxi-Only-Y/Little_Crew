@@ -631,7 +631,7 @@ def build_llm_crew(*, client: LlmClient | None = None,
     默认：编剧 DeepSeek / 审核方 MiMo —— 满足跨模型族盲读的硬要求。
     传同一个会让门禁退化成自我签收（**而且不会报错**）。
     """
-    c = client or LlmClient("deepseek-v4")
+    c = client or LlmClient("deepseek-flash")
     r = reviewer_client or LlmClient("mimo-v2.6-flash")
     made: dict[str, Any] = {}
     if "screenwriter" in only:

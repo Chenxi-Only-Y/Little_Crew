@@ -16,7 +16,7 @@
 
   ``minimax-h3``      真·双通道：本地 ComfyUI 节点 或 云端 HTTP API
   ``z-image-turbo``   两个**本地**后端：ComfyUI 节点图 或 ``local-gen`` HTTP 服务
-  ``deepseek-v4``     仅 HTTP（无本地权重）
+  ``deepseek-flash``     仅 HTTP（无本地权重）
 
 **"通道"与"模型"正交**是这套设计的要点：加一个通道不改模型，加一个模型不改通道。
 
@@ -107,11 +107,11 @@ _LOCAL = "RTX 4060 Laptop 8GB / RAM 15.8GB"
 def _text_models() -> list[ModelSpec]:
     return [
         ModelSpec(
-            model_id="deepseek-v4",
+            model_id="deepseek-flash",
             # ⚠️ **销售名 vs API 名**（2026-10-19 实测）：
             #   控制台里叫 DeepSeek-V4.1-Flash，但 API **不接受**这个名字 ——
-            #   实测 `deepseek-v4.1-flash` -> HTTP 400，
-            #   支持的是 `deepseek-flash` / `deepseek-v4-pro` / `deepseek-chat`。
+            #   实测 `deepseek-flash.1-flash` -> HTTP 400，
+            #   支持的是 `deepseek-flash` / `deepseek-flash-pro` / `deepseek-chat`。
             #   而 `deepseek-chat` 会被服务端解析成 **`deepseek-flash`**（回显确认）。
             #
             # **2026-10-19 决定：直接发 `deepseek-flash`，不再依赖别名。**
@@ -150,7 +150,7 @@ def _text_models() -> list[ModelSpec]:
                 structured_output_score=0.92,
             ),
             cost=CostProfile(kind="metered", cny_per_1k_tokens=0.001),
-            license_id="deepseek-v4",
+            license_id="deepseek-flash",
             maturity=Maturity.PRODUCTION,
             prompt_profile="zh-structured-v1",
             notes="分镜结构化输出的主力。中文剧作理解好，JSON 模式稳定。",
