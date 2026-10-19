@@ -64,7 +64,8 @@ DEFAULT_RESOLUTION: tuple[int, int] = (640, 384)
 def layout_to_spec(layout: Mapping[str, Any], *,
                    out_dir: str,
                    resolution: tuple[int, int] = DEFAULT_RESOLUTION,
-                   fps: int = 24) -> tuple[dict[str, Any], list[str]]:
+                   fps: int = 24,
+                   form: str = "marker") -> tuple[dict[str, Any], list[str]]:
     """布局 → Blender spec。返回 `(spec, warnings)`。
 
     **警告必须被调用方看到** —— 丢掉的角色、被忽略的字段都进 `warnings`。
@@ -109,6 +110,7 @@ def layout_to_spec(layout: Mapping[str, Any], *,
         "fps": int(fps),
         # ⚠️ **`subjects` 是主路径** —— 由 `render_previs_simple.py` 消费。
         # 保留 `character` 是给旧脚本（`render_previs.py`）的兼容块，新脚本忽略它。
+        "form": form,
         "subjects": subj_out,
         # **场景道具**：地面由渲染器无条件画，这里只放剧本里的空间物件。
         # 与 subjects 共用同一套坐标（x = 左右，z = 离相机多远）。
@@ -192,7 +194,8 @@ def render_layout(layout: Mapping[str, Any], *, blender: str,
                   script: str | None = None,
                   ffmpeg: str | None = None,
                   resolution: tuple[int, int] = DEFAULT_RESOLUTION,
-                  fps: int = 24) -> dict[str, Any]:
+                  fps: int = 24,
+                  with_control: bool = True) -> dict[str, Any]:
     """完整跑一镜：布局 → spec → Blender → 帧 → mp4 + 首帧。
 
     返回 `{"ok", "mp4", "first", "warnings", "frames", "reason"}`。
@@ -237,5 +240,50 @@ def render_layout(layout: Mapping[str, Any], *, blender: str,
     except Exception as e:                                    # noqa: BLE001
         return {"ok": False, "warnings": warns, "frames": n,
                 "reason": f"编码失败：{type(e).__name__}: {e}"[:300]}
-    return {"ok": True, "mp4": str(mp4), "first": str(png),
-            "warnings": warns, "reason": "", "frames": n}
+    result: dict[str, Any] = {"ok": True, "mp4": str(mp4), "first": str(png),
+                              "warnings": warns, "reason": "", "frames": n}
+
+    # ---- 第二遍：**给模型**的控制图（简化人形）----
+    #
+    # **为什么两遍**：A/B 实测（`alpha.107`）发现圆柱当 ControlNet 输入会把
+    # 人体压成"柱子形状的涂抹"。所以：
+    #   · 给人看 -> 圆柱（`previs.mp4` / `previs_first.png`）
+    #   · 给模型 -> 简化人形（`previs_control.png`）
+    # 同一份布局、同一个机位，**只换形体** —— 不引入新的不一致。
+    if with_control:
+        try:
+            result["control"] = _render_control(
+                layout, blender=blender, out_dir=out_dir, script=script_path,
+                resolution=resolution, fps=fps)
+        except Exception as e:                                # noqa: BLE001
+            warn = (f"控制图渲染失败（{type(e).__name__}: {e}）—— "
+                    f"仍可用圆柱首帧，但画质会差（见 SUMMARY.md）")
+            result["warnings"] = list(warns) + [warn]
+            result["control"] = ""
+    return result
+
+
+def _render_control(layout: Mapping[str, Any], *, blender: str, out_dir: Path,
+                    script: Path, resolution: tuple[int, int],
+                    fps: int) -> str:
+    """用**简化人形**再渲一帧，作为 ControlNet 的控制图。"""
+    cdir = out_dir / "control"
+    spec, _ = layout_to_spec(layout, out_dir=str(cdir), resolution=resolution,
+                             fps=fps, form="figure")
+    cdir.mkdir(parents=True, exist_ok=True)
+    spec_path = cdir / "shot.json"
+    spec_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2),
+                         encoding="utf-8")
+    r = subprocess.run(
+        [blender, "--background", "--factory-startup",
+         "--python", str(script), "--", str(spec_path)],
+        capture_output=True, text=True, timeout=900)
+    if r.returncode != 0 or "RENDER_DONE" not in (r.stdout or ""):
+        raise RuntimeError(f"Blender 失败：{r.stderr[-200:]}")
+    d = cdir / "gray"
+    fs = sorted(d.glob(FRAME_GLOB))
+    if not fs:
+        raise RuntimeError(f"{d} 里没有帧")
+    out = out_dir / "previs_control.png"
+    shutil.copyfile(fs[0], out)
+    return str(out)

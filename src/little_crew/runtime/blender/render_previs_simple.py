@@ -120,38 +120,56 @@ def _capsule(name: str, loc, radius: float, half_len: float,
 
 
 def _subject(name: str, pos: Vector, height_m: float,
-             params: dict | None = None) -> list:
-    """**位置标记**：一根与身高同高的圆柱，立在 (x, z)。
+             params: dict | None = None, *, form: str = "marker") -> list:
+    """放一个人。**两种形态，用途不同。**
 
-    ## 为什么不做"人形"
+    ## 为什么要两种
 
-    用户看过三版人形（胶囊+球 / 加横肩 / 锥台）都说"怪怪的"，
-    然后明确要求「**不用躯干**」。
+    A/B 实测（`alpha.107`）发现一条真实的张力：
 
-    **判断：白模不该去扮演"人"。** 它的唯一职责是
-    —— 这个人在哪、占多高、离机位多远、旁边东西在哪。
+    | 形态 | 给人看（位置参考） | 给模型（ControlNet 输入） |
+    |---|---|---|
+    | **等高圆柱** | ✅ 不假装是人，读位置最清楚 | ❌ **模型会照抄圆柱轮廓** → 人体塌成"柱子形状的涂抹" |
+    | **简化人形** | ⚠️ 会被问"为啥这么糙" | ✅ 有无肩/头/腿的轮廓，模型能正常出人 |
 
-    | 表达 | 需要什么几何 |
-    |---|---|
-    | 谁在哪 | 一根**竖圆柱**的**底面位置** |
-    | 占多高 | 圆柱的**高度** |
-    | 多宽 | 圆柱的**直径**（按肩宽给，因为它要挡光/占画面） |
-    | 机位关系 | 交给相机（不在人身上表达） |
+    实测证据：`research/previs-ab/` 的 A/B 两图（像素差 9.81%，但 B 组画质崩塌）。
 
-    这些东西**一根圆柱就全给了**，画头画躯干画腿都不增加信息，
-    只增加"像不像人"的争议。
-
-    ## 直径为什么取 0.17 × 身高
-
-    按**髋宽**给（真人约 0.17h），而不是肩宽（0.24h）——
-    因为圆柱是等宽的，取肩宽会让人看起来"上下一样胖"，
-    取髋宽至少不会夸大遮挡面积。
-
-    ## 一根柱子会不会太简陋
-
-    对**构图/位置约束**够用：ControlNet 要的是"这块区域有个人"，不是"这个人长什么样"。
-    而这正是用户定的范围 —— **只做位置与镜头运动的参考**。
+    **所以分两路**：同一份布局、同一个机位，只换形体。
     """
+
+    if form == "figure":
+        # ---- 简化人形：躯干锥台 + 球头 ----
+        # 比例按真人：肩宽 ≈ 0.24h、髋宽 ≈ 0.17h、头 ≈ 0.13h（7.6 头身）
+        tb, tt = height_m * 0.05, height_m * 0.76
+        d = tt - tb
+        bpy.ops.mesh.primitive_cone_add(
+            vertices=24, radius1=height_m * 0.085, radius2=height_m * 0.115,
+            depth=d, location=(pos.x, pos.y, tb + d / 2))
+        torso = bpy.context.object
+        torso.name = f"{name}_torso"
+        parts = [torso]
+        hr = height_m * 0.072
+        bpy.ops.mesh.primitive_uv_sphere_add(
+            radius=hr,
+            location=(pos.x, pos.y, tt + height_m * 0.045 + hr * 0.35))
+        head = bpy.context.object
+        head.name = f"{name}_head"
+        parts.append(head)
+        # 腿：两根细圆柱，给模型"下半身在哪"的线索（不画关节）
+        for sign, tag in ((-1, "L"), (1, "R")):
+            lc = Vector((pos.x + sign * height_m * 0.045, pos.y, tb * 0.5))
+            bpy.ops.mesh.primitive_cylinder_add(
+                vertices=16, radius=height_m * 0.040, depth=tb,
+                location=lc)
+            leg = bpy.context.object
+            leg.name = f"{name}_leg{tag}"
+            parts.append(leg)
+        return parts
+
+    # ---- 等高圆柱：位置标记（默认）----
+    #
+    # 直径取 0.17 × 身高（按**髋宽**，不按肩宽）：
+    # 圆柱是等宽的，取肩宽会显得"上下一样胖"，夸大遮挡面积。
     r = height_m * 0.085
     bpy.ops.mesh.primitive_cylinder_add(
         vertices=32, radius=r, depth=height_m,
@@ -266,7 +284,8 @@ def main() -> None:
         h = float(s.get("height_cm") or 168) / 100.0
         pos = Vector((cam_obj.location.x, cam_obj.location.y, 0.0)) \
             + fwd * z + right * x
-        _subject(str(s.get("who") or "A"), pos, h)
+        _subject(str(s.get("who") or "A"), pos, h,
+                 form=str(spec.get("form") or "marker"))
         placed.append({"who": s.get("who"), "z": z, "x": x})
 
     # ---- 场景：地面 + 道具盒体 ----
@@ -307,6 +326,7 @@ def main() -> None:
         "resolution": [rx, ry],
         "cameraMovement": str(shot.get("camera_movement", "static")),
         "shotSize": str(shot.get("shot_size", "medium")),
+        "form": str(spec.get("form") or "marker"),
         "subjects": placed,
         "set": set_out,
         "distance": round(dist, 3),

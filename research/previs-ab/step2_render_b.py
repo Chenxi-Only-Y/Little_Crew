@@ -28,8 +28,7 @@ UNET = "z_image_turbo_int8_convrot.safetensors"
 CLIP = "qwen_3_4b_fp4_mixed.safetensors"
 VAE = "ae.safetensors"
 COMFY_INPUT = Path(r"D:\ComfyUI\ComfyUI\input")
-PREVIS = Path(r"D:\AI\ds.8\Little_Crew\research\blender-previs"
-              r"\shot640-evidence\previs_first.png")
+PREVIS = Path(r"D:\AI\_previs_out\two_forms\SH-001\previs_control.png")
 OUT = Path(r"D:\AI\_previs_out\ab")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -39,7 +38,7 @@ PROMPT = ("a young woman in a plain linen dress standing alone in a dim "
 
 # ---- 投放控制图（LoadImage 只认 input/ 里的裸文件名）----
 assert PREVIS.is_file(), f"白模首帧不存在：{PREVIS}"
-name = "previs_ab_ctrl.png"
+name = "previs_ab_ctrl_figure.png"
 shutil.copyfile(PREVIS, COMFY_INPUT / name)
 print("控制图已投放:", COMFY_INPUT / name)
 
@@ -64,7 +63,7 @@ shot = Shot(frm="storyboard_artist", to="previs_ab",
 ir = shot_to_ir(shot, episode_id="previs-ab", checkpoint=UNET,
                 resolution=(640, 384), steps=8, cfg=1.0,
                 sampler="euler", scheduler="simple",
-                filename_prefix="previs_ab_b")
+                filename_prefix="previs_ab_b2")
 
 nodes = [dict(n) for n in ir.get("nodes", ())]
 for n in nodes:
