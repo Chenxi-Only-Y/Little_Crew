@@ -279,6 +279,16 @@ def setup_camera(cam: dict[str, Any], look_at: Vector) -> Any:
     sc.collection.objects.link(cam_obj)
     sc.camera = cam_obj
 
+    # ⚠️ **必须让 `sensor_height` 真的掌管垂直方向**（2026-10-19 实测）。
+    #
+    # Blender 的 `sensor_fit` 默认是 `AUTO`：横幅画面按**水平** `sensor_width`(36mm)
+    # 适配，垂直方向实际是 36 × 480/832 ≈ **20.8mm**。
+    # 而下面的 `fov_v` 按 `sensor_height`(24mm) 算 ——
+    # **假设的垂直视场偏大 → 距离算得偏近 → 人偏大、脚切出画面。**
+    #
+    # 实测表现：`full` 景别出图，人物占屏高约 130%，脚在画面外。
+    cam_data.sensor_fit = 'VERTICAL'
+
     subject_h = float(cam.get("subjectHeight", 1.7))
     target = Vector(look_at)
 
