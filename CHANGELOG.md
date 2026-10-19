@@ -57,6 +57,54 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.100] — 2026-10-19（第 ⑧ 步：**白模接进生成链路的三个卡点**）
+
+### 白模到今天为止仍只是"给人看的图"
+
+它有没有用，只有**拿它约束出图、再对比有/无约束**才能证明。
+这一步不做，前面 ⑦ 步都只是准备。
+
+### 卡点 ①：服务没跑
+
+```
+8188/system_stats  ❌ 拒绝连接（ComfyUI）
+8100/health        ❌ 拒绝连接（local-gen）
+```
+
+`composition.zimage_controlnet` 走 ComfyUI 编译通道，需要 ControlNet（6.25 GB）在。
+
+### 卡点 ②：新白模**没接进来**（真缺口，不是环境问题）
+
+```python
+行 908:  frame = self._previs_frame_for(shot) if want_ctrl else None
+```
+
+**调的仍是旧的启发式挑帧。**
+`PrevisAgent → 适配器 → render_previs_simple → previs_first.png` **完全没接进 `EpisodeRunner`**。
+
+### 卡点 ③：适配器与渲染器在 `research/` 里
+
+`src/` 不能 import `research/`（研究脚本不该变成生产依赖）。
+三个文件必须搬进 `src/little_crew/runtime/` 并补测试。
+
+### 关键判断：**这一步不该等环境**
+
+| 步 | 依赖服务 |
+|---|---|
+| 搬进 `runtime/` · `_run_previs()` · 新首帧优先 | ❌ **不需要** |
+| 起服务跑 A/B 对比 | ✅ 需要 |
+
+**②③ 可以在没有服务的情况下全部做完并测试。**
+
+### 验证 Verification
+
+```
+ [v] 策划书 +§5.10.19（三个卡点 + 解法顺序）
+ [v] 1519 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.99] — 2026-10-19（**PrevisAgent 自己摆场景** + 穿模闭环）
 
 ### PrevisAgent 现在产出 `set`
