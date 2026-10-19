@@ -48,6 +48,8 @@ import os
 import sys
 
 import bpy  # type: ignore  # noqa: F401  (只在 Blender 里可用)
+import os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from mathutils import Vector  # type: ignore
 
 #: 景别 → 画面垂直覆盖高度（相对主体身高）。**与校验器 / 旧脚本一致。**
@@ -119,36 +121,46 @@ def _capsule(name: str, loc, radius: float, half_len: float,
     return parts
 
 
-def _subject(name: str, pos: Vector, height_m: float) -> list:
-    """一个极简人形：**一根胶囊 + 一个球头，仅此两件**。
+def _subject(name: str, pos: Vector, height_m: float,
+             params: dict | None = None) -> list:
+    """**位置标记**：一根与身高同高的圆柱，立在 (x, z)。
 
-    ## 为什么没有腿、没有手臂
+    ## 为什么不做"人形"
 
-    新范围的判据是：**这个部件携带位置信息吗？**
+    用户看过三版人形（胶囊+球 / 加横肩 / 锥台）都说"怪怪的"，
+    然后明确要求「**不用躯干**」。
 
-    | 部件 | 携带位置信息 | 留 |
-    |---|---|---|
-    | 胶囊（身高、在哪） | ✅ | ✅ |
-    | 球头（顶到哪，判断是否切头） | ✅ | ✅ |
-    | 腿 / 手臂 / 关节 | ❌ 纯装饰 | ❌ |
+    **判断：白模不该去扮演"人"。** 它的唯一职责是
+    —— 这个人在哪、占多高、离机位多远、旁边东西在哪。
 
-    第一版照抄了旧角色的轮廓（躯干 + 腿），**而旧轮廓是为"姿态"服务的** ——
-    姿态已不在范围里，腿就只是在多画两个圆柱。
+    | 表达 | 需要什么几何 |
+    |---|---|
+    | 谁在哪 | 一根**竖圆柱**的**底面位置** |
+    | 占多高 | 圆柱的**高度** |
+    | 多宽 | 圆柱的**直径**（按肩宽给，因为它要挡光/占画面） |
+    | 机位关系 | 交给相机（不在人身上表达） |
+
+    这些东西**一根圆柱就全给了**，画头画躯干画腿都不增加信息，
+    只增加"像不像人"的争议。
+
+    ## 直径为什么取 0.17 × 身高
+
+    按**髋宽**给（真人约 0.17h），而不是肩宽（0.24h）——
+    因为圆柱是等宽的，取肩宽会让人看起来"上下一样胖"，
+    取髋宽至少不会夸大遮挡面积。
+
+    ## 一根柱子会不会太简陋
+
+    对**构图/位置约束**够用：ControlNet 要的是"这块区域有个人"，不是"这个人长什么样"。
+    而这正是用户定的范围 —— **只做位置与镜头运动的参考**。
     """
-    r = height_m * 0.06
-    # 胶囊：从脚底到肩（占身高约 80%），两端半球自然形成肩与胯的圆角
-    half_len = height_m * 0.38
-    body_center = Vector((pos.x, pos.y, half_len + r))
-    parts = _capsule(f"{name}_body", body_center, r, half_len)
-    # 头：球，略压在胶囊顶端上（读作"头"）
-    head_r = height_m * 0.075
-    head_z = half_len * 2 + r + head_r * 0.55
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=head_r,
-                                         location=(pos.x, pos.y, head_z))
-    h = bpy.context.object
-    h.name = f"{name}_head"
-    parts.append(h)
-    return parts
+    r = height_m * 0.085
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=32, radius=r, depth=height_m,
+        location=(pos.x, pos.y, height_m / 2.0))
+    ob = bpy.context.object
+    ob.name = name
+    return [ob]
 
 
 def _ground() -> None:
