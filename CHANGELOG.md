@@ -57,6 +57,49 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.103] — 2026-10-19（删 `previs.py` 里的重复函数；ComfyUI 已起）
+
+### 拼接脚本留下了一个重复的 `render_layout`
+
+搬模块时我把"旧适配器的 `render_layout`"和"新写的 `render_layout`"都带进了
+`runtime/previs.py`（第 120 行与第 235 行）。Python 取后者，所以功能没坏 ——
+但**前一个是死代码，而且两版签名不同**（旧的收 `encoder`，新的收 `ffmpeg`）。
+
+**第一次删的时候删过头了**：按"两个 def 之间"删除，把夹在中间的
+`find_ffmpeg` / `encode_frames` / `first_frame` 一起删了 —— 测试立刻报
+`cannot import name 'first_frame'`。
+
+第二次改成**删到"下一个顶层 def"为止**，只删 45 行，导出恢复齐全。
+
+> **按"两个标记之间"删除是危险的 —— 中间可能夹着别的东西。**
+> 正确做法是删到"下一个同名层级的分界"。
+
+### ComfyUI 已就位
+
+```
+D:\ComfyUI\ComfyUI\main.py            python_embeded
+z_image_turbo_int8_convrot.safetensors   5.78 GB
+models/model_patches/Z-Image-...-lite    1.88 GB   ← 用 lite 省内存
+启动到 /system_stats 200 耗时 30 秒
+```
+
+节点也在：`ModelPatchLoader` · `ZImageFunControlnet` · `ControlNetApplyAdvanced`。
+
+### 但 A/B 还没跑
+
+`composition.zimage_controlnet` 的注入代码在 `episode.py` 里，走完整编译通道；
+手搓 ComfyUI workflow 需要 8 个节点的精确参数名，**试错成本高于剩余时间**。
+所以这一轮**把环境准备好了，实验留给下一轮专门的运行**。
+
+### 验证 Verification
+
+```
+ [v] 白模渲染   16 项
+ [v] 全量       1535 项通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.102] — 2026-10-19（修测试里的 `/tmp` 跨平台坑；并把门禁改成**两道**）
 
 ### 又是我自己的流程错

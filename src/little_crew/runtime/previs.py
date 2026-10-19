@@ -117,51 +117,6 @@ def layout_to_spec(layout: Mapping[str, Any], *,
     return spec, warns
 
 
-def render_layout(layout: Mapping[str, Any], *, blender: str,
-                  script: str, out_root: str,
-                  encoder: str | None = None,
-                  resolution: tuple[int, int] = DEFAULT_RESOLUTION,
-                  fps: int = 24) -> dict[str, Any]:
-    """完整跑一镜：布局 → spec → Blender → 帧 → mp4 + 首帧。
-
-    返回 `{"ok", "mp4", "first", "warnings", "frames", "reason"}`。
-    """
-    sid = str(layout.get("shotId") or "shot")
-    out_dir = Path(out_root) / sid
-    spec, warns = layout_to_spec(layout, out_dir=str(out_dir),
-                                 resolution=resolution, fps=fps)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    spec_path = out_dir / "shot.json"
-    spec_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2),
-                         encoding="utf-8")
-
-    r = subprocess.run(
-        [blender, "--background", "--factory-startup",
-         "--python", script, "--", str(spec_path)],
-        capture_output=True, text=True, timeout=1800)
-    if r.returncode != 0:
-        return {"ok": False, "warnings": warns,
-                "reason": f"Blender 失败（{r.returncode}）：{r.stderr[-300:]}"}
-    if "RENDER_DONE" not in (r.stdout or ""):
-        return {"ok": False, "warnings": warns,
-                "reason": "Blender 没输出 RENDER_DONE —— 可能没渲出帧"}
-
-    gray = out_dir / "gray"
-    if encoder is None:
-        return {"ok": False, "warnings": warns,
-                "reason": "没有编码器路径，帧已渲好但未编码",
-                "frames": len(list(gray.glob("f*.png")))}
-    e = subprocess.run(
-        [sys.executable, encoder, str(gray), str(out_dir / "previs"), str(fps)],
-        capture_output=True, text=True, timeout=900)
-    if e.returncode != 0:
-        return {"ok": False, "warnings": warns,
-                "reason": f"编码失败：{(e.stdout or '')[-200:]}{(e.stderr or '')[-200:]}"}
-    return {"ok": True, "mp4": str(out_dir / "previs.mp4"),
-            "first": str(out_dir / "previs_first.png"),
-            "warnings": warns, "reason": "",
-            "frames": len(list(gray.glob("f*.png")))}
-
 def find_ffmpeg() -> str:
     """找 ffmpeg。**优先环境变量，其次 PATH**，都不行就报错 —— 不猜固定路径。"""
     import os
