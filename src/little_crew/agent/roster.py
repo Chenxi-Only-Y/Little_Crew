@@ -393,13 +393,17 @@ def _specs() -> list[AgentSpec]:
         # 交给 Blender 渲染。所以 `execution=TEXT_LLM` —— 判断由 LLM 做，
         # 画面由 Blender 做。
         #
-        # **刻意不声明 `produces` / `consumes`**（与 `cinematographer` 同一处理）：
-        #   · `produces` 要求"有人消费"，而白模的消费者是
-        #     `EpisodeRunner._run_previs`（**运行时代码，不是 agent**）——
-        #     声明成产物会变成孤儿产出（守卫会拦）。
-        #   · `consumes` 要求"有实现者声明该能力"，而 `art.bible` /
-        #     `episode.plan` 目前只在产物键层面存在、没有 agent 声明能力。
-        # 等这两条真的在能力注册表里落地，再补上。
+        # **`produces` 必须声明，不能省**（2026-10-19 实测）：
+        # 黑板写入是**按名册的 `produces` 白名单**做的 ——
+        # 省掉它，`run_stage` 会 ok=True 但**产物根本不进黑板**
+        # （表现为 `previs.layouts` 取到 None，`_run_previs` 空转返回 ok=False）。
+        #
+        # 消费者是**摄影指导**：出图时把白模当 ControlNet 控制图
+        # （`EpisodeRunner._control_frame_for` 就是这条路径）。
+        # 这不是凑对子 —— 白模的用途本来就是"约束画面"。
+        #
+        # 刻意**不声明** `consumes`：`art.bible` / `episode.plan` 目前只在
+        # 产物键层面存在、没有 agent 声明**能力**，写上去就是造假依赖。
         AgentSpec(
             agent_id="previs",
             crew_title="白模预演师",
@@ -407,7 +411,8 @@ def _specs() -> list[AgentSpec]:
             department=Department.CAMERA,
             stage=Stage.SCRIPT,
             execution=ExecutionKind.TEXT_LLM,
-            capabilities=("previs.layout",),
+            capabilities=("previs.layouts",),
+            produces=("previs.layouts",),
             requires=("shot.list", "script.final"),
         ),
         AgentSpec(
@@ -437,7 +442,13 @@ def _specs() -> list[AgentSpec]:
             execution=ExecutionKind.IMAGE_GEN,
             capabilities=("shot.image",),
             produces=("shot.image",),
-            requires=("shot.list", "lighting.plan"),
+            # **`requires` 里必须有 `previs.layouts`**（2026-10-19 加）：
+            # 出图时把白模首帧当 ControlNet 控制图
+            # （`EpisodeRunner._control_frame_for` 优先取 `previs_first`）。
+            #
+            # 注意：孤儿产出判定看的是 **`requires`** 不是 `consumes` ——
+            # `consumes` 的语义是「允许调用的下游能力」，与"需要这个输入"无关。
+            requires=("shot.list", "lighting.plan", "previs.layouts"),
             # ⚠️ 技术质检**不是能力而是工具**（确定性规则判定，无需模型决策）。
             #    早期版本把它写成 consumes=("review.tech") —— 那会让路由找不到实现者。
             tools=("qc.tech_check",),

@@ -196,6 +196,10 @@ class EpisodeResult:
     #: **美术设定**（2026-10-19）：`{"ok": bool, "bible": {...}}` 或空。
     art: dict[str, Any] = field(default_factory=dict)
 
+    #: **白模预演**（2026-10-19）：`{"ok", "shots", "failed"}` 或空。
+    #: 失败不阻断 —— 它只影响"构图是否受约束"，不影响能否出图。
+    previs: dict[str, Any] = field(default_factory=dict)
+
     #: **排期**（2026-10-19）：`{"ok": bool, "schedule": {...}}` 或空。
     #: 不影响交付判定 —— 它是前置预估，不是门禁。
     schedule: dict[str, Any] = field(default_factory=dict)
@@ -260,6 +264,7 @@ class EpisodeResult:
             "clipVideo": self.clip_video,
             "art": dict(self.art),
             "schedule": dict(self.schedule),
+            "previs": dict(self.previs),
             "clipAudio": dict(self.clip_audio),
             "advisory": [dict(a) for a in self.advisory],
             "director": dict(self.director),
@@ -386,6 +391,8 @@ class EpisodeRunner:
     def __init__(self, orchestrator: Any, renderer: Any, *,
                  episode_id: str = "E001", title: str = "",
                  checkpoint: Any = None) -> None:
+        # **每实例**一份，避免不同 episode 之间串控制图。
+        self.previs_first: dict[str, Path] = {}
         self.orch = orchestrator
         self.renderer = renderer
         self.episode_id = episode_id
@@ -550,6 +557,11 @@ class EpisodeRunner:
         # 产物进 `EpisodeResult.schedule`，**不影响交付判定** ——
         # 它是"这片要花多少"的前置预估，不是质量门禁。
         sched_info = self._run_line_producer()
+        # ---- 4.6) 白模预演（2026-10-19）----
+        #
+        # 必须在分镜之后（它消费 `shot.list`），在出图之前（控制图要先生成）。
+        # 失败不阻断 —— 没有白模照样能出图，只是失去空间约束。
+        previs_info = self._run_previs()
 
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
@@ -751,7 +763,12 @@ class EpisodeRunner:
 
     #: **每镜的白模首帧**（`shotId -> Path`），由 `_run_previs()` 填。
     #: 有它就用它当控制图；没有才退到旧的启发式挑帧。
-    previs_first: dict[str, Path] = field(default_factory=dict)
+    # ⚠️ **必须在这里声明默认值，不能写 `field(default_factory=dict)`** ——
+    # `EpisodeRunner` 是**普通类**（手写 `__init__`），不是 dataclass。
+    # 写 `field(...)` 会让类属性变成 `Field` 对象，`self.previs_first` 直接是坏的
+    # （实测：`AttributeError: 'Field' object has no attribute 'items'`）。
+    # 真正的每实例字典在 `__init__` 里建。
+    previs_first: dict[str, Path] = {}
 
     #: 白模渲染的 Blender 可执行文件。空则不需要白模。
     blender_exe: str = ""
@@ -862,7 +879,7 @@ class EpisodeRunner:
         if shot_list is None:
             return {"ok": False, "reason": "没有镜头表 —— 无法预演"}
         try:
-            out = self.orch.run_stage("previs", "previs.layout",
+            out = self.orch.run_stage("previs", "previs.layouts",
                                      {"shot.list": shot_list})
         except Exception as e:                                # noqa: BLE001
             return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:200]}

@@ -57,6 +57,84 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.111] — 2026-10-19（**`_run_previs()` 首次真正执行**；修三个真 bug）
+
+### 单镜验证通过
+
+```
+_run_previs -> {'ok': True, 'shots': ['SH--000-001', 'SH--000-002'], 'failed': []}
+previs_first: 两条都 = .../previs_control.png（人形控制图），都真实存在
+```
+
+**这段代码写了两轮、却从来没有一行代码调用它** —— 今天第一次真正执行。
+
+### 修的三个真 bug（都是"从未执行"才藏得住的）
+
+#### ① `previs_first` 是 `Field` 对象 —— 类属性写成了 dataclass 语法
+
+```python
+previs_first: dict[str, Path] = field(default_factory=dict)   # ← 在普通类里是坏的
+→ AttributeError: 'Field' object has no attribute 'items'
+```
+
+**`EpisodeRunner` 是普通类（手写 `__init__`），不是 dataclass。**
+写在类体里的 `field(...)` 只是一个类属性，值是 `Field` 对象。
+改成 `previs_first: dict[str, Path] = {}` + 在 `__init__` 里建实例字典。
+
+> **`field(default_factory=...)` 只能在 `@dataclass` 里用。**
+> 混用不会报错，只会在**第一次访问实例属性时**以最难懂的方式炸。
+
+#### ② 删掉 `produces` 导致**产物根本不进黑板**
+
+为了绕过"孤儿产出"检查，我把 `produces=("previs.layouts",)` 删了。
+结果 `run_stage` 返回 `ok=True`，但 **`previs.layouts` 取到 `None`**：
+
+> **黑板写入是按名册的 `produces` 白名单做的** —— 不声明就静默不写。
+
+`_run_previs` 因此空转，返回 `{'ok': False, 'shots': [], 'failed': []}` ——
+**一个"成功"的调用，产出了零个东西。**
+
+#### ③ 能力名与产物名不统一
+
+名册惯例是**能力名 == 产物名**（`shot.image` 即如此）。
+我写成 `capabilities=("previs.layout",)`（单数）+ `produces=("previs.layouts",)`（复数），
+两边对不上。统一成 `previs.layouts`。
+
+### 孤儿产物检查看的是 `requires` 不是 `consumes`
+
+```python
+for p in sorted(produced):
+    if p not in required and p not in terminal_outputs:   # required 来自 requires
+```
+
+`consumes` 的语义是「**允许调用的下游能力**」，与"需要这个输入"无关。
+所以正确做法是把 `"previs.layouts"` 加进 **`cinematographer.requires`** ——
+**摄影指导出图时确实需要白模当控制图**，这不是凑对子。
+
+### 接线
+
+```python
+sched_info = self._run_line_producer()
+previs_info = self._run_previs()      # ← 新增，在分镜之后、出图之前
+```
+
+结果进 `EpisodeResult.previs`（`{"ok", "shots", "failed"}`）。
+
+### 验证 Verification
+
+```
+ [v] 多智能体协作   49/49（19 职位 + 依赖闭合）
+ [v] 全量           1535 项通过 + 架构守卫 PASS
+ [v] 单镜真跑       _run_previs ok=True，2 镜控制图都生成
+```
+
+### 下一步
+
+`episode_demo` 的 `--llm-previs` / `--blender` / `--use-white-model` 三个开关还没接回
+（之前因撞名册回滚）。**接回后即可跑整集**。
+
+---
+
 ## [0.4.0-alpha.110] — 2026-10-19（**正式加第 19 个职位：白模预演师**）
 
 ### 名册 18 → 19

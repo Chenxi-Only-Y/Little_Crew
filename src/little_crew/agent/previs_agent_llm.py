@@ -65,7 +65,7 @@ class PrevisAgentLlm:
     """把 `previs` 实现为真实 LLM 职位。"""
 
     agent_id = "previs"
-    capability = "previs.layout"
+    capability = "previs.layouts"
     produces_key = "previs.layouts"
     consumes_key = "shot.list"
 
