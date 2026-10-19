@@ -38,6 +38,9 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 27),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 43),
+    # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，
+    # 而上层只看到 [empty-output]（2026-10-19 实测，稳定复现）。
+    ("LLM 调用串行化", [sys.executable, str(PLATFORM / "tests" / "test_llm_lock.py")], 7),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),

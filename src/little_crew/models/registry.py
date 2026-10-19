@@ -215,6 +215,65 @@ def _text_models() -> list[ModelSpec]:
             notes="跨模型族盲读的审核方 —— 与生成方（DeepSeek）不同厂，"
                   "满足「审核方与生成方不同族」的硬要求。",
         ),
+        # ── 第三模型族：GLM（2026-10-19 加入）──────────────────────
+        #
+        # ## 为什么需要第三个族
+        #
+        # 在此之前只有两个族（DeepSeek 生成 / MiMo 审核），于是
+        # `dramaturge` 与 `story_editor` **只能用同一个模型** ——
+        # 所谓「双维审查」实际是同一模型的两个提示词，
+        # 独立性弱于跨族（见 docs/00 §5.10.16 ①）。
+        #
+        # 加入 GLM 后：生成方 DeepSeek、剧评人 MiMo、文风编辑 GLM ——
+        # **三个职位三个族**，跨族约束在「审查视角级」上也成立了。
+        #
+        # ## ⚠️ 这是一个**推理模型**（实测 2026-10-19）
+        #
+        # `reasoning_tokens` 约占 completion 的 **80%**：
+        #
+        #     max_tokens=16   -> completion 16，其中 reasoning 15，**content 为空**
+        #     max_tokens=2000 -> completion 176，其中 reasoning 173，content 正常
+        #
+        # **所以 `max_tokens` 给小了会返回空字符串** —— 而空字符串在
+        # 上层看起来像"模型没答"，很难归因。本条目给了足够额度。
+        #
+        # 实际计费 token 约为显式输出的 **5 倍**，成本估算要按这个算。
+        ModelSpec(
+            model_id="GLM-5.3-flash",
+            display_name="智谱 GLM-5.3 Flash",
+            task=TaskKind.TEXT_STRUCTURED,
+            backends=(Backend(
+                kind=BackendKind.HTTP,
+                endpoint="https://open.bigmodel.cn/api/paas/v4",
+                api_key_env="GLM_API_KEY",
+                path="/chat/completions",
+                body_template=(
+                    '{"model": "GLM-5.3-flash",'
+                    ' "messages": {messages},'
+                    ' "temperature": {temperature},'
+                    ' "max_tokens": 16384}'
+                ),
+                body_template_json=(
+                    '{"model": "GLM-5.3-flash",'
+                    ' "messages": {messages},'
+                    ' "temperature": {temperature},'
+                    ' "max_tokens": 16384,'
+                    ' "response_format": {"type": "json_object"}}'
+                ),
+                response_path="choices.0.message.content",
+            ),),
+            capability=Capability(context_tokens=128_000,
+                                  supports_negative_prompt=False,
+                                  structured_output_score=0.88),
+            cost=CostProfile(kind="metered", cny_per_1k_tokens=0.002),
+            license_id="glm",
+            maturity=Maturity.BETA,
+            prompt_profile="zh-structured-v1",
+            notes="第三个模型族。推理模型（reasoning_tokens 约占 80%），"
+                  "max_tokens 必须给足否则返回空内容。"
+                  "用于让「剧评人 / 文风编辑」分属不同族。",
+        ),
+
         ModelSpec(
             model_id="local-llm",
             display_name="本地 LLM（Ollama 等）",

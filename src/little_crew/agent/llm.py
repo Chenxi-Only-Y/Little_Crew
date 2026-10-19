@@ -40,6 +40,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -56,6 +57,42 @@ __all__ = ["LLMError", "LLMReply", "LlmClient", "extract_json",
 #: 上下文长度与结构化输出评分 —— **重复声明会产生第二份真相**，
 #: 而两份真相迟早会不一致。
 DEFAULT_MODEL_ID = "deepseek-v4"
+
+
+
+#: **同一模型的调用串行化**（2026-10-19 实测）。
+#:
+#: ## 为什么需要
+#:
+#: 编排器是**并行双审** —— `dramaturge` 与 `story_editor` 同时发起。
+#: 接入 GLM 后实测到：
+#:
+#: | | 结果 |
+#: |---|---|
+#: | 并发 2 个 | 253 字 / **0 字**（各 77~79 秒，明显在排队） |
+#: | 串行 2 个 | 231 字 / 209 字（39.6s / 15.0s）**都正常** |
+#:
+#: 也就是说该端点**并发受限**，第二个请求会返回**空内容** ——
+#: 而上层只会看到 `[empty-output]`，很难归因到"并发"。
+#:
+#: ## 为什么按 model_id 分锁，而不是一把全局锁
+#:
+#: 全局锁会把**所有模型**串起来（DeepSeek 与 MiMo 本来能并行，没必要等）。
+#: 按模型分锁只串行"同一个端点的调用"，不同模型之间仍并行。
+#:
+#: 代价：同一模型的并发变成串行 → 双审的总耗时约等于两者之和。
+#: **这是可接受的**：正确性优先于墙钟；且审查本身就是瓶颈之外的环节。
+_MODEL_LOCKS: dict[str, Any] = {}
+_MODEL_LOCKS_GUARD = threading.Lock()
+
+
+def _lock_for(model_id: str) -> Any:
+    with _MODEL_LOCKS_GUARD:
+        got = _MODEL_LOCKS.get(model_id)
+        if got is None:
+            got = threading.RLock()
+            _MODEL_LOCKS[model_id] = got
+        return got
 
 
 class LLMError(RuntimeError):
@@ -367,8 +404,11 @@ class LlmClient:
         否则模型会返回一个合法但无用的 `{}`。
         """
         hint = "" if "json" in prompt.lower() else "\n\n请以 JSON 格式输出。"
-        reply = self.chat(prompt + hint, system=system,
-                          temperature=temperature, json_mode=True)
+        # ⚠️ **同一模型的调用串行化**（见 `_MODEL_LOCKS` 的说明）。
+        # 并发受限的端点会在并发时返回空内容，而上层只会看到 `[empty-output]`。
+        with _lock_for(self.model_id):
+            reply = self.chat(prompt + hint, system=system,
+                              temperature=temperature, json_mode=True)
         return extract_json(reply.text, what=what)
 
     # ---- 内部 ----------------------------------------------------------

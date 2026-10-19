@@ -126,6 +126,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
                     help="`--llm` 时**审核方**（剧评人）用哪个模型 —— "
                          "⚠️ 必须与 --llm-model 不同族（跨模型族盲读的硬要求）")
+    ap.add_argument("--llm-critic-model", default="GLM-5.3-flash",
+                    help="文风编辑用哪个模型（默认 GLM —— **第三个族**，"
+                         "让两个审核职位不再同源）")
     ap.add_argument("--llm-critics", action="store_true",
                     help="把 `story_editor` 换成**真实 LLM 批评家**"
                          "（A 类审查职位的通用实现）。"
@@ -248,17 +251,24 @@ def main(argv: list[str] | None = None) -> int:
         else:
             from little_crew.agent.critic_llm import CriticLlm
 
-            critic = CriticLlm("story_editor", client=reviewer)
+            # ⚠️ **文风编辑用第三个模型族**（2026-10-19 加入 GLM）。
+            #
+            # 在此之前 `dramaturge` 与 `story_editor` 都是 MiMo ——
+            # 所谓「双维审查」实际是同一模型的两个提示词，
+            # 独立性弱于跨族（docs/00 §5.10.16 ①）。
+            # 现在：生成方 DeepSeek / 剧评人 MiMo / 文风编辑 GLM，**三个职位三个族**。
+            critic_client = LlmClient(args.llm_critic_model)
+            critic = CriticLlm("story_editor", client=critic_client)
             stubs["story_editor"] = critic
             print(f"  文风编辑：**真实 LLM 批评家**"
-                  f"（{reviewer.model_id} / 盯文风一致性）")
+                  f"（{args.llm_critic_model} / 第三个族 / 盯文风一致性）")
 
     if not args.llm:
         print("  编剧：规则桩（确定性）")
     orch = CrewOrchestrator(
         max_rounds=3,
         model_families={"screenwriter": "deepseek", "storyboard_artist": "deepseek",
-                        "dramaturge": "qwen", "story_editor": "qwen",
+                        "dramaturge": "mimo", "story_editor": "glm",
                         "review_board": "qwen"})
     orch.bind_many(stubs)
 

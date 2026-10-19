@@ -298,6 +298,19 @@ LICENSE_CATALOG: Mapping[str, LicenseInfo] = {
         note="⚠️ 服务条款未逐条核实（小米 MiMo 开放平台）。"
              "注意它是**纯 API 服务、无开源权重** —— "
              "商用前需确认「生成内容的商用权」与「数据留存」两条"),
+    #: 智谱 GLM —— **第三个模型族**（2026-10-19 加入）。
+    #:
+    #: 它存在的理由与 mimo 类似：平台要求审核方与生成方不同族，
+    #: 而在此之前只有两个族，导致「双维审查」的两个职位只能用同一个模型
+    #: （见 docs/00 §5.10.16 ①）。加入它之后：
+    #: 生成方 DeepSeek / 剧评人 MiMo / 文风编辑 GLM —— **三个职位三个族**。
+    #:
+    #: ⚠️ 同 mimo：**不写 verified** —— 我们没逐条读过智谱的服务条款。
+    "glm": LicenseInfo(
+        "Zhipu AI Open Platform ToS", commercial_use=True, verified=False,
+        note="⚠️ 服务条款未逐条核实（智谱开放平台）。"
+             "注意它是**推理模型**：reasoning token 也计费，"
+             "约为显式输出的 1.6 倍 —— 成本估算要按实际 total_tokens 算"),
     "local-llm": LicenseInfo(
         APACHE_2_0, commercial_use=True, verified=False,
         note="⚠️ 本地 LLM 的实际授权取决于**部署方选用哪个权重**"
