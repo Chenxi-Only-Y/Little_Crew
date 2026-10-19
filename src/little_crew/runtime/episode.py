@@ -976,64 +976,22 @@ class EpisodeRunner:
         out = dict(ir)
         nodes = [dict(n) for n in ir.get("nodes", ())]
 
-        # ---- ① 模型源 ----
-        params: dict[str, Any] = {
-            "unet_name": self.zimage_unet,
-            "clip_name": self.zimage_clip,
-            "vae_name": self.zimage_vae,
-            # `weight_dtype` 是 UNETLoader 的**必需**参数；缺了会被
-            # `required_input_missing` 拒绝。规则默认值只在自动注入路径生效，
-            # 走显式声明时必须自己带上。
-            "weight_dtype": "default",
-        }
-        old_src = next((n["id"] for n in nodes
-                        if n.get("kind") == "model.checkpoint"), "n_ckpt")
-        for n in nodes:
-            if n.get("kind") == "model.checkpoint":
-                n["kind"] = "model.source_zimage"
-                n["params"] = params
-                n["meta"] = {**(n.get("meta") or {}),
-                             "title": "Z-Image 模型源（分离加载）"}
-                break
-        else:
-            nodes.insert(0, {"id": old_src, "kind": "model.source_zimage",
-                             "params": params})
-        src_id = next((n["id"] for n in nodes
-                       if n.get("kind") == "model.source_zimage"), old_src)
-
-        # ---- ② 在 IR 里显式声明 CLIP / VAE 加载器，并把引用改指过去 ----
+        # ---- ① 模型源 + ② 辅助加载器 ----
         #
-        # ⚠️ **必须显式声明，不能只改引用。**
-        # 只改引用的后果：IR 指向 `n_zimage_vae`，而该节点是编译器
-        # **自动注入**的 —— IR 里不存在它，拓扑排序直接报
-        # `DANGLING_REF: 引用了不存在的节点`。
-        #
-        # 显式声明还有个好处：编译器看到 IR 已声明同类加载器，
-        # 就**不会重复注入**（`_inject_aux_loaders` 的幂等规则）。
-        clip_kind = self._aux_loader_kind("CLIP")
-        vae_kind = self._aux_loader_kind("VAE")
+        # 这两步抽到 `runtime/model_source.py` 了 —— 因为
+        # **「哪些模型源可用、怎么换」是 Z-Image 通路的公共知识**，
+        # 不该埋在 `EpisodeRunner` 的私有方法里；
+        # 白模 A/B 实验脚本是它的第二个调用方，而**复制即漂移**。
+        from little_crew.runtime.model_source import apply_zimage_source
+        src_id = apply_zimage_source(
+            nodes,
+            unet_name=self.zimage_unet,
+            clip_name=self.zimage_clip,
+            vae_name=self.zimage_vae,
+            aux_loader_kind=self._aux_loader_kind,
+            src_node_id="n_ckpt",
+        )
         node_ids = {n["id"] for n in nodes}
-
-        for lkind, lname, lparams in (
-            (clip_kind, "n_zimage_clip",
-             {"clip_name": self.zimage_clip, "type": "qwen_image"}),
-            (vae_kind, "n_zimage_vae", {"vae_name": self.zimage_vae}),
-        ):
-            if lkind and lname not in node_ids:
-                nodes.append({"id": lname, "kind": lkind, "params": lparams,
-                              "meta": {"title": f"{lkind}（模型源的一部分）"}})
-                node_ids.add(lname)
-
-        remap = {"CLIP": "n_zimage_clip" if clip_kind else "",
-                 "VAE": "n_zimage_vae" if vae_kind else ""}
-        for n in nodes:
-            for port, ref in list((n.get("inputs") or {}).items()):
-                if not isinstance(ref, dict):
-                    continue
-                p = str(ref.get("port", "")).upper()
-                target = remap.get(p)
-                if ref.get("ref") == src_id and target:
-                    n["inputs"][port] = {"ref": target, "port": p}
 
         # ---- ③ 控制（只在需要时）----
         if not want_ctrl:

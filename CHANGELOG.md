@@ -57,6 +57,66 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.106] — 2026-10-19（🎉 **A 组出图成功**：白模 A/B 的通路打通）
+
+### 结果
+
+```
+ok: True   failure: NONE   8.1 秒   268 KB   640×384
+kinds: [model.source_zimage, prompt.negative, prompt.text, latent.empty,
+        sample.ksampler, decode.vae, io.save_image,
+        model.zimage_clip, model.zimage_vae]
+```
+
+画面与提示词逐项吻合（亚麻裙少女 / 昏暗木屋 / 雨痕窗 / 灰白天光）。
+`research/previs-ab/evidence/A_no_control.png`。
+
+### 打通的完整链条
+
+```
+ComfyChannel(Backend(kind=COMFYUI, endpoint=...))
+    .available()                                  -> (True, "ComfyUI 0.39.0")
+    .probe_catalog()                              -> 原始 /object_info
+probe_from_object_info(raw, ...)                  -> 970 节点矩阵
+shot_to_ir(shot, checkpoint=UNET, steps=8, ...)   -> 7 节点 IR
+apply_zimage_source(nodes, ...)                   -> 9 节点（分离式模型源）
+render_ir(ir, ch, comp, expect="image")           -> 出图 ✓
+```
+
+### 关键：把「模型源改写」抽成了独立模块
+
+`runtime/model_source.py`（新），两个函数：
+
+| 函数 | 作用 |
+|---|---|
+| `apply_zimage_source(nodes, ...)` | ① `model.checkpoint` → `model.source_zimage`；② 显式声明 CLIP/VAE 加载器并改引用 |
+| `aux_loader_kind_from(compiler)` | 从**编译器规则表**查"哪个辅助加载器提供该 dtype" |
+
+**为什么抽出来**：
+
+1. **它不是 `EpisodeRunner` 的私事** —— "哪些模型源可用、怎么换"是 Z-Image 通路的
+   公共知识，白模 A/B 脚本是第二个调用方
+2. **复制即漂移** —— 实验脚本若复制一份，等生产代码改了，实验跑的就不是同一件事，
+   而那种不一致**看不出来**
+
+`episode.py` 的 `_apply_white_model()` 现在**调用**它（59 行 → 8 行），
+**1535 项测试全过** —— 纯重构，无行为变化。
+
+### 验证 Verification
+
+```
+ [v] A 组出图   8.1 秒 / 640×384 / 268 KB
+ [v] 纯重构     1535 项测试通过 + 架构守卫 PASS
+```
+
+### 下一步：B 组（带控制图）
+
+只差 `_apply_white_model()` 的第 ③ 步（控制图注入）：
+`image.file` + `composition.zimage_controlnet` + 可选 `image.blur`。
+**那一步也要抽出来**（同理由），然后 A/B 才算真跑。
+
+---
+
 ## [0.4.0-alpha.105] — 2026-10-19（A/B 探路：**走到最后一步**，卡在模型源节点类型）
 
 ### 已打通（都实测过，不是推断）
