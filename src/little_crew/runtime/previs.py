@@ -193,9 +193,10 @@ def render_layout(layout: Mapping[str, Any], *, blender: str,
                   out_root: str,
                   script: str | None = None,
                   ffmpeg: str | None = None,
-                  resolution: tuple[int, int] = DEFAULT_RESOLUTION,
-                  fps: int = 24,
-                  with_control: bool = True) -> dict[str, Any]:
+                  resolution: tuple[int, int] | None = None,
+                  fps: int | None = None,
+                  with_control: bool = True,
+                  profile: Any = None) -> dict[str, Any]:
     """完整跑一镜：布局 → spec → Blender → 帧 → mp4 + 首帧。
 
     返回 `{"ok", "mp4", "first", "warnings", "frames", "reason"}`。
@@ -206,8 +207,32 @@ def render_layout(layout: Mapping[str, Any], *, blender: str,
     """
     sid = str(layout.get("shotId") or "shot")
     out_dir = Path(out_root) / sid
+
+    # ---- 按目标视频模型的契约定规格（`alpha.115`）----
+    #
+    # 给了 `profile` 就用它算出来的分辨率/帧率，并**把时长夹到它的区间**；
+    # 没给就退回默认 —— 但默认值 640×384 **喂不进 Seedance**（像素不足），
+    # 所以整集跑白模做参考视频时**必须传 profile**。
+    prof_dict: dict[str, Any] = {}
+    if profile is not None:
+        resolution = (int(profile.width), int(profile.height))
+        fps = int(profile.fps)
+        prof_dict = profile.as_dict()
+    elif resolution is None or fps is None:
+        resolution = resolution or DEFAULT_RESOLUTION
+        fps = fps or 24
+
     spec, warns = layout_to_spec(layout, out_dir=str(out_dir),
                                  resolution=resolution, fps=fps)
+    if profile is not None:
+        shot = spec.setdefault("shot", {})
+        wanted = float(shot.get("duration_sec") or 0.0) or \
+            float((layout.get("shot") or {}).get("duration_sec") or 3.0)
+        clamped = profile.clamp_seconds(wanted)
+        shot["duration_sec"] = clamped
+        if abs(clamped - wanted) > 0.05:
+            warns.append(f"时长 {wanted:.1f}s 被夹到 {clamped:.1f}s"
+                         f"（目标模型区间）")
     out_dir.mkdir(parents=True, exist_ok=True)
     spec_path = out_dir / "shot.json"
     spec_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2),
@@ -241,7 +266,8 @@ def render_layout(layout: Mapping[str, Any], *, blender: str,
         return {"ok": False, "warnings": warns, "frames": n,
                 "reason": f"编码失败：{type(e).__name__}: {e}"[:300]}
     result: dict[str, Any] = {"ok": True, "mp4": str(mp4), "first": str(png),
-                              "warnings": warns, "reason": "", "frames": n}
+                              "warnings": warns, "reason": "", "frames": n,
+                              "profile": prof_dict}
 
     # ---- 第二遍：**给模型**的控制图（简化人形）----
     #

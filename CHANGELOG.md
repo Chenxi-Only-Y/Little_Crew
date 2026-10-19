@@ -57,6 +57,57 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.115] — 2026-10-19（**`render_layout(profile=…)` 接通**：白模可直接喂三家 API）
+
+### 结果
+
+```
+profile:  852×480  24fps  ≤50MB
+渲染:     ok=True  120 帧（5 秒 × 24fps）
+体积:     89 KB
+三家校核:  ✅ 合格（Seedance / MiniMax / Wan Animate 同时满足）
+```
+
+### 改动
+
+| 位置 | 改动 |
+|---|---|
+| `render_layout(...)` | 新增 `profile=`；给了它就用 `profile.width/height/fps`，**并把时长夹到它的区间** |
+| 返回值 | 新增 `"profile": profile.as_dict()` —— **manifest 里能查到这版按谁的规格渲的** |
+| 参数默认 | `resolution` / `fps` 改成 `None`（不给就用默认），避免"传了 profile 又被默认值覆盖" |
+
+### 时长处理的一个细节
+
+**夹取，而不是替换**：
+
+```python
+clamped = profile.clamp_seconds(wanted)
+if abs(clamped - wanted) > 0.05:
+    warns.append(f"时长 {wanted:.1f}s 被夹到 {clamped:.1f}s（目标模型区间）")
+```
+
+统一成固定 5 秒会丢掉"这镜本来就短/长"的信息，而**时长直接换 token**。
+被夹的时候**要报出来** —— 否则会发现"白模比镜头短"却不知道为什么。
+
+### 一条必须写明的约束
+
+`render_layout` 的默认分辨率 **640×384 = 245,760 像素，喂不进 Seedance**（下限 407,696）。
+
+> **所以整集跑白模做参考视频时必须传 `profile`。**
+> 这一条写进了函数注释 —— 否则将来有人直接调 `render_layout()`，
+> 渲出来一版**通不过平台校验**的视频，而且看起来一切正常。
+
+### 验证 Verification
+
+```
+ [v] 白模渲染      16 项
+ [v] 参考视频规格  28 项
+ [v] 全量          1563 项通过 + 架构守卫 PASS
+ [v] 真渲一镜      852×480 / 120 帧 / 89 KB / 三家校核合格
+```
+
+---
+
 ## [0.4.0-alpha.114] — 2026-10-19（**参考视频规格按模型契约算**，而非写死）
 
 ### 决定接哪三家
