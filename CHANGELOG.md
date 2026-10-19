@@ -57,6 +57,48 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.105] — 2026-10-19（A/B 探路：**走到最后一步**，卡在模型源节点类型）
+
+### 已打通（都实测过，不是推断）
+
+```python
+ch  = ComfyChannel(Backend(kind=BackendKind.COMFYUI, endpoint="http://127.0.0.1:8188"))
+ok  = ch.available()                    # (True, "ComfyUI 0.39.0")
+raw = ch.probe_catalog()                # ComfyUI 原始 /object_info
+mat = probe_from_object_info(raw, endpoint=EP, comfy_version="0.39.0")   # 970 节点
+ir  = shot_to_ir(shot, checkpoint=UNET, resolution=(640,384), steps=8, cfg=1.0)  # 7 节点
+```
+
+**关键函数是 `probe_from_object_info`** —— 上一轮没找到它，卡了半天。
+它藏在 `little_crew.capability.capability` 里，而 `tests/test_e2e_comfy.py:151` 就是用法示例。
+
+> **找不到入口的时候，去看测试怎么用** —— 测试是最诚实的用法文档。
+
+### 仍卡住：`shot_to_ir` 只会生成 `CheckpointLoaderSimple`
+
+```
+编译失败：[MISSING_REQUIRED_NODE] CheckpointLoaderSimple.ckpt_name (FILE_MISSING)
+```
+
+而 Z-Image 在 `diffusion_models` 目录，只有 `UNETLoader.unet_name` 的枚举包含它
+（实测 `True`）。**改写模型源的代码在 `episode.py` 的「① 模型源」里，`shot_to_ir` 不做。**
+
+### 下一轮：把那段抽出来
+
+推荐把 `episode.py` 里「① 模型源」的重写逻辑抽成 `runtime/model_source.py` ——
+**这是纯重构，对生产代码无行为变化**，但让 A/B 脚本能复用。
+
+> **复制那段逻辑到脚本里是不行的：复制即漂移。**
+
+### 验证 Verification
+
+```
+ [v] research/previs-ab/DESIGN.md §八（含已打通/卡点/最短路径）
+ [v] 1535 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.104] — 2026-10-19（白模 A/B **预注册** + 单镜路径已探明）
 
 ### 预注册文档：`research/previs-ab/DESIGN.md`

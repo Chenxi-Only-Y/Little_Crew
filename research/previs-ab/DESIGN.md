@@ -135,24 +135,107 @@
 
 ---
 
-## 八、跑法（待驱动脚本验证后填实）
+## 八、跑法：**已探到 90%，卡在最后一个坎**
 
-当前**驱动脚本还没写**，原因如下 —— 记录下来免得下一轮重踩：
+### 已经确认可用的（本轮实测，不用再摸）
+
+```python
+from little_crew.models.registry import Backend, BackendKind
+from little_crew.runtime.channels.comfy import ComfyChannel
+from little_crew.agent.messages import Shot
+from little_crew.agent.ir_bridge import shot_to_ir
+from little_crew.runtime.render import render_ir
+from little_crew.compiler.compiler import ComfyCompiler
+
+ch = ComfyChannel(Backend(kind=BackendKind.COMFYUI,
+                          endpoint="http://127.0.0.1:8188",
+                          is_local_by_default=True))
+ch.available()        # -> (True, "ComfyUI 0.39.0")
+ch.probe_catalog()    # -> dict（ComfyUI 原始 /object_info）
+
+shot = Shot(frm="storyboard_artist", to="x", shot_id="SH-001",
+            scene_id="S01", shot_size="full", camera_movement="static",
+            action="stand", duration_sec=2.5, characters=("少女",),
+            description="...")
+ir = shot_to_ir(shot, episode_id="previs-ab",
+                checkpoint="z_image_turbo_int8_convrot.safetensors",
+                resolution=(640, 384), steps=8, cfg=1.0,
+                sampler="euler", scheduler="simple")
+# -> IR 节点数 7 ✓
+```
+
+**Z-Image 的三个模型名**（`episode.py` 的默认值，直接可用）：
+
+| 用途 | 文件名 |
+|---|---|
+| unet | `z_image_turbo_int8_convrot.safetensors` |
+| clip | `qwen_3_4b_fp4_mixed.safetensors` |
+| vae | `ae.safetensors` |
+
+### ✅ 已解决：`CapabilityMatrix` 怎么造
+
+**关键函数 `probe_from_object_info`**（在 `little_crew.capability.capability`）：
+
+```python
+raw = ch.probe_catalog()                       # ComfyUI 原始 /object_info
+mat = probe_from_object_info(raw, endpoint=EP, comfy_version="0.39.0")
+# -> 970 个节点 ✓
+comp = ComfyCompiler(mat, default_checkpoint=UNET, model_source_kind="model.source_zimage")
+```
+
+**`model_source_kind` 的合法值**（从 `compiler/*.py` 里 grep 出来）：
 
 ```
-IR → compile → CompiledJob → ComfyChannel.submit / poll / collect
+model.checkpoint · model.source_zimage · model.zimage_clip · model.zimage_vae
 ```
 
-这条路在 `episode.py` 里是**整集跑**时走通的，但**单独跑一镜**的调用序列
-还没验证过。而手搓 ComfyUI workflow JSON 需要 8 个节点的精确参数名
-（`UNETLoader` / `CLIPLoader` / `VAELoader` / `ModelPatchLoader` /
-`ZImageFunControlnet` / `KSampler` / `VAEDecode` / `SaveImage`）。
+### 🔴 仍卡住的地方：**模型源节点类型不对**
 
-> **写一个跑不起来的脚本，比不写更糟** —— 它会让人以为实验已经做了。
+```
+编译失败：[MISSING_REQUIRED_NODE] 必需节点或模型文件缺失：
+          CheckpointLoaderSimple.ckpt_name (DriftKind.FILE_MISSING)
+```
 
-下一轮第一件事：**验证"单镜静帧"的最短调用路径**，再写 `run_ab.py`。
+成因链：
 
----
+1. `shot_to_ir(...)` **只会生成 `CheckpointLoaderSimple`**（它没有"模型源类型"这个参数）
+2. 而 `z_image_turbo_int8_convrot.safetensors` 在 ComfyUI 的 **`diffusion_models`** 目录里，
+   只有 **`UNETLoader.unet_name`** 的枚举包含它 —— `CheckpointLoaderSimple` 看不到
+
+实测确认：
+
+```
+UNETLoader.unet_name 含 z_image_turbo_int8_convrot  →  True
+```
+
+3. **改写模型源的那段代码在 `episode.py` 里**（「① 模型源」，
+   把 `n_ckpt` 换成 `UNETLoader`，并把 prompt 节点的 `clip` 端口显式指向新源），
+   `shot_to_ir` 不做这件事
+
+### 下一轮最短路径
+
+| 方案 | 做什么 | 成本 |
+|---|---|---|
+| **A（推荐）** | 把 `episode.py` 里「① 模型源」那段抽成一个独立函数（如 `runtime/model_source.py`），A/B 脚本直接调它 | 半小时，且**对生产代码是纯重构** |
+| B | 在 A/B 脚本里复制那段节点改写 | 半小时，但**复制即漂移** |
+
+**选 A** —— 那段逻辑本来就该独立，因为"哪些模型源可用"是 Z-Image 通路的公共知识，
+不该埋在 `EpisodeRunner` 的私有方法里。
+
+### 下一轮的第一件事（二选一）
+
+| 方案 | 做什么 | 风险 |
+|---|---|---|
+| **A** | 写那个转换器：`probe_catalog()` 的原始 dict → 归一化场景 → `from_snapshot()` | 要读 `NodeSpec`/`PortSpec` 的完整要求，约 1 小时 |
+| **B** | 找到 `episode.py` 整集跑时矩阵的来源（顺着 `EpisodeRunner.__init__` 的 `renderer` 参数找） | 若有现成的，10 分钟 |
+
+**先试 B** —— 如果整集能跑，那说明矩阵在别处已经造好了，只是我没找到入口。
+
+### 一个可能的捷径
+
+`tests/` 里必然有人在测编译器 —— **它们怎么造矩阵，就照着抄**。
+本轮没找到 `NodeSpec(`，说明它们可能用 fixture JSON 或 mock。
+**读 `tests/test_compiler*.py` 是下一轮最快的入口。**
 
 ## 九、产物（跑完后）
 
