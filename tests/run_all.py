@@ -47,6 +47,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("白模布局校验", [sys.executable, "-m", "little_crew.agent.previs_layout_check"], 24),
     # 白模生产模块：布局→spec→Blender→帧→mp4+首帧。**可选增强，但失败必须可见。**
     ("白模渲染", [sys.executable, "-m", "little_crew.runtime.previs_check"], 16),
+    # 参考视频规格：按目标视频模型契约算"刚好过线"，并校核已渲的视频。
+    ("参考视频规格", [sys.executable, "-m", "little_crew.runtime.video_ref_check"], 28),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),
