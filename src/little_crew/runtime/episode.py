@@ -881,7 +881,17 @@ class EpisodeRunner:
                               out_root=str(self.workdir / "previs"),
                               resolution=self.previs_resolution)
             if r.get("ok"):
-                self.previs_first[str(lay.get("shotId"))] = Path(r["first"])
+                # **存"人形"那份，不存圆柱那份**（`alpha.108` 实测）：
+                # 圆柱当 ControlNet 输入会把人体压成"柱子形状的涂抹"；
+                # 人形（锥台躯干+球头+两腿）能出正常人体。
+                # 圆柱版留着给人看（`previs.mp4`），不进控制链路。
+                ctrl = r.get("control") or ""
+                target = Path(ctrl) if ctrl else Path(r["first"])
+                if not ctrl:
+                    failed.append({
+                        "shotId": str(lay.get("shotId")),
+                        "reason": "没有控制图（退回圆柱首帧，画质会差）"})
+                self.previs_first[str(lay.get("shotId"))] = target
                 made.append(str(lay.get("shotId")))
             else:
                 failed.append({"shotId": str(lay.get("shotId")),
