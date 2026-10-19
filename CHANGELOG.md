@@ -57,6 +57,77 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.92] — 2026-10-19（**第 ③ 步：白模布局校验器**，23 项测试）
+
+### 为什么校验器要先于 LLM 存在
+
+> **没有校验器，LLM 给出的布局好坏无从判断** —— 只能人一辆辆看。
+> 那样「多智能体协作」就退化成「人在循环里当裁判」。
+
+**所以它是 `PrevisAgent` 的验收标准，不是它的附属品。**
+
+### 最关键的一条：与 Blender **同一套数学**
+
+`setup_camera()` 的取景公式在 `runtime/previs_layout.py` 里**逐字复算**：
+
+```
+cover = SHOT_COVER[shot_size] × subject_h
+fov_v = 2·atan(sensor_height(24mm) / (2·lens))     ← alpha.90 的 sensor_fit 修复
+dist  = (cover/2) / tan(fov_v/2)
+focus = (0, 0, 0.55 × subject_h)
+cam   = focus + (sin(azim)·dist, -cos(azim)·dist, sin(ang)·dist)
+```
+
+**若这里换一种算法，"校验通过"与"Blender 渲出来的"就是两件事 —— 那种校验比没有更坏。**
+测试 `A1~A6` 逐项钉住这一点。
+
+### 三态（与项目其它门禁一致）
+
+| 判定 | 何时 |
+|---|---|
+| `KEEP` | 只有 minor 或没有 issue |
+| `RETRY` | 有 major，**且每条 major 都给得出 `fix`** |
+| `ESCALATE` | 有 blocker；**或 major 给不出改法**（给不出就不是"可自动修"） |
+
+### 抓到的三个真 bug（都是测试写出来才发现的）
+
+| # | Bug | 后果 |
+|---|---|---|
+| 1 | `depth = dist - z` —— 把 `z` 当"相对焦平面偏移" | **基线布局判 ESCALATE**（`z == dist` 被算成进深 0，"贴脸"）。已改为 `depth = z`（`z` 就是"离相机多远"，最自然也最好核对） |
+| 2 | `float(shot.get("lens_mm") or 50.0)` | **`lens_mm: 0` 被当成"没给"**，静默取默认 50 → 一个非法值被判成合规。已区分 `None` 与 `0` |
+| 3 | 测试 C3 用 `z=4.0` 配 `extreme_close` | 那是**景别与进深矛盾**（`too-far`），不是"切头切脚"。测试数据跟着语义修 |
+
+### 出画只记 `minor` —— 一个刻意的张力
+
+人物横向出画**不判 RETRY**：
+
+> **刻意的画外构图是存在的**（声音在画外、只露一只手）。
+> 把它判成错，等于禁止了一种正常的镜头语言。
+
+所以 `out-of-frame-x` 只是 `minor`，留给评审人判断。
+
+### 新增测试 23 项
+
+| 段 | 守什么 |
+|---|---|
+| A 一致 | 与 Blender 同一套数学（cover / fov / dist / focus / 方位角） |
+| B 缺观测 | 缺镜头参数 / 缺角色 / 缺身高 / 未知景别 / 焦距 0 —— **全部不判通过** |
+| C 拒绝 | 人在相机后方 · 景别与进深矛盾 · 切头切脚 · 两人重叠 · 缺 reason |
+| D 三态 | 判定集合；`RETRY` 的 major 必须带 fix |
+
+### 验证 Verification
+
+```
+ [v] 白模布局校验   23 项（新增）
+ [v] 全量           1518 项通过 + 架构守卫 PASS
+```
+
+### 剩余
+
+④ `PrevisAgent`（LLM：剧本+分镜 → 布局 + `reason`）—— **现在它有了客观的验收标准**。
+
+---
+
 ## [0.4.0-alpha.91] — 2026-10-19（**第 ② 步完成**：白模 mp4 + 首帧，640×384）
 
 ### 产物
