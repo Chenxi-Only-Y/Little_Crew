@@ -1,0 +1,30 @@
+{
+  "outDir": "D:\\AI\\_previs_out\\simple02",
+  "resolution": {
+    "width": 640,
+    "height": 384
+  },
+  "fps": 24,
+  "shot": {
+    "shot_size": "medium",
+    "lens_mm": 50.0,
+    "azimuth_deg": 0.0,
+    "angle_deg": 0.0,
+    "duration_sec": 2.5,
+    "camera_movement": "static"
+  },
+  "subjects": [
+    {
+      "who": "少女",
+      "x": -0.55,
+      "z": 2.45,
+      "height_cm": 158
+    },
+    {
+      "who": "旅人",
+      "x": 0.75,
+      "z": 5.5,
+      "height_cm": 180
+    }
+  ]
+}

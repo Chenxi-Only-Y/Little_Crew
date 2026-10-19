@@ -63,20 +63,17 @@ def layout_to_spec(layout: Mapping[str, Any], *,
     char = dict(_DEFAULT_CHARACTER)
     h = float(primary.get("height_cm") or 0) or 168.0
     char["height_cm"] = h
-    dropped = [str(s.get("who") or "?") for s in subs[1:]]
-    if dropped:
-        warns.append(
-            f"既有 build_character.py 只建一个角色 —— "
-            f"本镜丢了 {len(dropped)} 个：{dropped}。"
-            f"多人渲染需另写最小渲染器（记为下一步）")
+    # **全部角色都进 spec**（`render_previs_simple.py` 支持 N 个）
+    subj_out = [{"who": str(s.get("who") or f"P{i}"),
+                 "x": float(s.get("x") or 0.0),
+                 "z": float(s.get("z") or 0.0),
+                 "height_cm": float(s.get("height_cm") or 168.0)}
+                for i, s in enumerate(subs)]
+    if not subj_out:
+        warns.append("布局里没有 subjects —— 渲染器会拒绝")
 
     # ---- 站位：既有脚本不能摆位置 ----
-    x = float(primary.get("x") or 0.0)
-    z = float(primary.get("z") or 0.0)
-    if abs(x) > 1e-6 or z:
-        warns.append(
-            f"既有脚本的角色**固定在原点**，无法落到 x={x:.2f} z={z:.2f} —— "
-            f"站位信息在白模里暂不体现")
+    # 站位由 `subjects` 表达（`render_previs_simple.py` 按 x/z 摆人）
 
     # ---- 运动：新范围不走路，只保留机位运动 ----
     move = str(shot.get("camera_movement") or "static")
@@ -95,6 +92,9 @@ def layout_to_spec(layout: Mapping[str, Any], *,
             "path": "stand",
         },
         "fps": int(fps),
+        # ⚠️ **`subjects` 是主路径** —— 由 `render_previs_simple.py` 消费。
+        # 保留 `character` 是给旧脚本（`render_previs.py`）的兼容块，新脚本忽略它。
+        "subjects": subj_out,
     }
     return spec, warns
 
