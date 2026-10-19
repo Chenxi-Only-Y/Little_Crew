@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 from little_crew.runtime.previs import (
@@ -87,8 +88,13 @@ def _warn() -> None:
 def _fail() -> None:
     print()
     print("C. 失败要带回原因")
+    # ⚠️ **不要用 `/tmp/...`**（2026-10-19 实测）：
+    # Windows 上它会变成盘符相对的 `\\tmp\\`，且上一次运行留下的目录
+    # 会让清理时的 `unlink()` 报 PermissionError。
+    # `tempfile.mkdtemp()` 每次都新建、名字唯一、跨平台。
+    tmp = Path(tempfile.mkdtemp(prefix="previs_chk_"))
     r = render_layout(_layout(), blender="definitely-not-a-real-blender",
-                      out_root="/tmp/previs_chk")
+                      out_root=str(tmp))
     check("C1 ★ blender 不存在 → ok=False（不抛异常）", r["ok"] is False,
           str(r.get("ok")))
     check("C2 ★★ 且**带回原因**（不能静默失败）",
@@ -100,10 +106,7 @@ def _fail() -> None:
 def _first() -> None:
     print()
     print("D. 首帧来自同一份帧序列")
-    d = Path("/tmp/previs_first_chk")
-    if d.exists():
-        for f in d.glob("*"):
-            f.unlink()
+    d = Path(tempfile.mkdtemp(prefix="previs_first_"))
     (d / "gray").mkdir(parents=True, exist_ok=True)
     # 造两帧，内容可区分
     (d / "gray" / "f00001.png").write_bytes(b"AAA")

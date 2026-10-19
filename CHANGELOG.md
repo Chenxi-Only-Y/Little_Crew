@@ -57,6 +57,50 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.102] — 2026-10-19（修测试里的 `/tmp` 跨平台坑；并把门禁改成**两道**）
+
+### 又是我自己的流程错
+
+`alpha.101` 我**在套件失败的情况下提交了** —— 因为我的门禁只检查了"架构守卫"：
+
+```powershell
+if ($guard -match 'PASS') { git commit ... }     # ← 全量测试没进判断
+```
+
+**这是 `alpha.93` 同一类错的第二次。** 已改为**两道都过才提交**：
+
+```powershell
+$suite = run_all.py 的最后一行
+if ($guard -match 'PASS' -and $suite -match '全部通过') { git commit ... }
+```
+
+> **门禁写窄了，等于没有门禁。**
+
+### 测试里的真 bug：`/tmp` 在 Windows 上是**盘符相对路径**
+
+```
+PermissionError: [WinError 5] 拒绝访问。: '\\tmp\\previs_first_chk\\empty'
+```
+
+两个问题叠在一起：
+
+1. `/tmp/...` 在 Windows 上变成 `\\tmp\\...`（当前盘根），不是系统临时目录
+2. 上一次运行留下的 `empty/` **目录**，让 `for f in d.glob("*"): f.unlink()` 报拒绝访问
+
+改用 `tempfile.mkdtemp()` —— 每次新建、名字唯一、跨平台。
+
+> **测试里写死路径，就是在给自己埋一颗只在"第二次运行"才炸的雷。**
+> 第一次能过（目录不存在），第二次炸（残留）。
+
+### 验证 Verification
+
+```
+ [v] 白模渲染   16 项
+ [v] 全量       1535 项通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.101] — 2026-10-19（白模搬进 `runtime/` 并接进 `EpisodeRunner`）
 
 ### 做了什么
