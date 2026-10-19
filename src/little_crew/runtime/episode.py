@@ -983,7 +983,7 @@ class EpisodeRunner:
         # 不该埋在 `EpisodeRunner` 的私有方法里；
         # 白模 A/B 实验脚本是它的第二个调用方，而**复制即漂移**。
         from little_crew.runtime.model_source import apply_zimage_source
-        src_id = apply_zimage_source(
+        src = apply_zimage_source(
             nodes,
             unet_name=self.zimage_unet,
             clip_name=self.zimage_clip,
@@ -991,64 +991,23 @@ class EpisodeRunner:
             aux_loader_kind=self._aux_loader_kind,
             src_node_id="n_ckpt",
         )
+        src_id = src["src_id"]
         node_ids = {n["id"] for n in nodes}
 
         # ---- ③ 控制（只在需要时）----
-        if not want_ctrl:
-            out["nodes"] = nodes
-            return out
-
-        img_id = "n_ctrl_img"
-        if img_id not in node_ids:
-            # 投放进 ComfyUI 的 input/ 目录 —— LoadImage 不认绝对路径
-            nodes.append({"id": img_id, "kind": "image.file",
-                          "params": {"image": self._stage_control_image(frame)}})
-            node_ids.add(img_id)
-
-        # 控制信号预处理：模糊。
         #
-        # ⚠️ **必须插在 LoadImage 与 ControlNet 之间，且必须做成图节点。**
-        # 做成图节点的收益：`blur_radius` 进入 IR 哈希 ——
-        # 改半径就是改 IR，缓存会正确失效。
-        # 若在平台侧先模糊好再投放，改半径时**文件内容变了但 IR 没变**，
-        # 命中旧缓存，表现为"调了参数没反应"。
-        feed_id, feed_port = img_id, "IMAGE"
-        blur_id = "n_ctrl_blur"
-        blur = int(self.previs_blur_radius)
-        if blur > 0 and not 1 <= blur <= 31:
-            # ComfyUI 的 ImageBlur 约束是 1..31，超范围它会在**提交时**拒绝。
-            # 在这里先拦下来，把"提交被拒"变成"本地就能看懂的错"。
-            raise ValueError(
-                f"previs_blur_radius={blur} 超出 ComfyUI ImageBlur 的允许范围 "
-                f"1..31（0 表示不模糊）")
-        if blur > 0 and blur_id not in node_ids:
-            nodes.append({
-                "id": blur_id, "kind": "composition.image_blur",
-                "inputs": {"image": {"ref": img_id, "port": "IMAGE"}},
-                "params": {"blur_radius": blur,
-                           "sigma": float(self.previs_blur_sigma)},
-                "meta": {"title": f"白模模糊（半径 {self.previs_blur_radius}）"},
-            })
-            node_ids.add(blur_id)
-            feed_id, feed_port = blur_id, "IMAGE"
-
-        ctrl_id = "n_ctrl"
-        if ctrl_id not in node_ids:
-            nodes.append({
-                "id": ctrl_id, "kind": "composition.zimage_controlnet",
-                "inputs": {"model": {"ref": src_id, "port": "MODEL"},
-                           "vae": {"ref": remap["VAE"] or src_id,
-                                   "port": "VAE"},
-                           "image": {"ref": feed_id, "port": feed_port}},
-                "params": {"strength": self.control_strength},
-                "meta": {"title": f"白模控制（{self.previs_channel}）"},
-            })
-            for n in nodes:
-                if n.get("kind") == "sample.ksampler":
-                    n.setdefault("inputs", {})["model"] = {
-                        "ref": ctrl_id, "port": "MODEL"}
-                    break
-
+        # 这一步也抽到了 `runtime/model_source.py`（同理由：A/B 脚本要用它，
+        # 而复制即漂移）。
+        from little_crew.runtime.model_source import apply_control
+        apply_control(
+            nodes,
+            src=src,
+            staged_image=self._stage_control_image(frame),
+            blur_radius=int(self.previs_blur_radius),
+            blur_sigma=float(self.previs_blur_sigma),
+            strength=float(self.control_strength),
+            channel=str(self.previs_channel),
+        )
         out["nodes"] = nodes
         return out
 
