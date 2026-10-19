@@ -749,6 +749,16 @@ class EpisodeRunner:
     #: ⚠️ 它们**不是免费的**：每个职位每集一次 LLM 调用。
     advisory_critics: tuple[str, ...] = ()
 
+    #: **每镜的白模首帧**（`shotId -> Path`），由 `_run_previs()` 填。
+    #: 有它就用它当控制图；没有才退到旧的启发式挑帧。
+    previs_first: dict[str, Path] = field(default_factory=dict)
+
+    #: 白模渲染的 Blender 可执行文件。空则不需要白模。
+    blender_exe: str = ""
+
+    #: 白模分辨率 —— **必须与出图一致**，否则首帧做 ControlNet 会被缩放。
+    previs_resolution: tuple[int, int] = (640, 384)
+
     #: 是否把白模预演作为控制信号注入（需要 ComfyUI 通道 + Z-Image ControlNet）
     use_white_model: bool = False
 
@@ -829,6 +839,55 @@ class EpisodeRunner:
 
         return _PA
 
+    def _control_frame_for(self, shot: Any) -> Path | None:
+        """取这一镜的白模控制帧：**新白模优先，旧的启发式兜底**。"""
+        sid = str(getattr(shot, "shot_id", "") or "")
+        got = self.previs_first.get(sid) if sid else None
+        if got is not None and Path(got).is_file():
+            return Path(got)
+        return self._previs_frame_for(shot)
+
+    def _run_previs(self) -> dict[str, Any]:
+        """跑**预演师**：分镜 → 布局 → 每镜白模 → 首帧。
+
+        产出的首帧存进 `self.previs_first`，供 `_control_frame_for` 取用。
+
+        **失败不阻断**（没有白模，分镜照样能出图，只是失去空间约束），
+        但失败原因要进返回值，不能静默。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "previs" not in impls:
+            return {}
+        shot_list = self.orch.blackboard.value("shot.list")
+        if shot_list is None:
+            return {"ok": False, "reason": "没有镜头表 —— 无法预演"}
+        try:
+            out = self.orch.run_stage("previs", "previs.layout",
+                                     {"shot.list": shot_list})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:200]}
+        if not getattr(out, "ok", False):
+            return {"ok": False, "reason": str(getattr(out, "error", ""))[:200]}
+        layouts = self.orch.blackboard.value("previs.layouts") or []
+        made: list[str] = []
+        failed: list[dict[str, str]] = []
+        from little_crew.runtime.previs import render_layout
+        for lay in layouts:
+            if str(lay.get("verdict")) != "KEEP":
+                failed.append({"shotId": str(lay.get("shotId")),
+                               "reason": f"布局未通过：{lay.get('verdict')}"})
+                continue
+            r = render_layout(lay.get("layout") or {}, blender=self.blender_exe,
+                              out_root=str(self.workdir / "previs"),
+                              resolution=self.previs_resolution)
+            if r.get("ok"):
+                self.previs_first[str(lay.get("shotId"))] = Path(r["first"])
+                made.append(str(lay.get("shotId")))
+            else:
+                failed.append({"shotId": str(lay.get("shotId")),
+                               "reason": str(r.get("reason"))[:160]})
+        return {"ok": bool(made), "shots": made, "failed": failed}
+
     def _previs_frame_for(self, shot: Any) -> Path | None:
         """给一个镜头挑白模控制帧。**确定性且有理由，不是随便挑。**
 
@@ -905,7 +964,10 @@ class EpisodeRunner:
         """
         want_ctrl = self.use_white_model
         want_src = self.use_zimage_source or want_ctrl
-        frame = self._previs_frame_for(shot) if want_ctrl else None
+        # **新白模优先**（2026-10-19）：`PrevisAgent` 判断布局 + Blender 渲染的首帧。
+        # 旧的启发式挑帧（按动作选序列 + 取峰值帧）**降为兜底** ——
+        # 它是为「姿态」服务的，而新范围只要位置与机位。
+        frame = self._control_frame_for(shot) if want_ctrl else None
         if frame is None:
             want_ctrl = False
         if not want_src:

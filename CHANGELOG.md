@@ -57,6 +57,62 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.101] — 2026-10-19（白模搬进 `runtime/` 并接进 `EpisodeRunner`）
+
+### 做了什么
+
+| 步骤 | 结果 |
+|---|---|
+| 三个研究脚本 → `src/little_crew/runtime/previs.py` | ✅ 286 行 |
+| Blender 侧脚本 → `runtime/blender/render_previs_simple.py`（**随包发布**） | ✅ |
+| 新增 16 项测试 | ✅ 全过 |
+| `EpisodeRunner._run_previs()` | ✅ |
+| `_control_frame_for()`：**新白模优先**，旧启发式兜底 | ✅ |
+
+### 沿用 `alpha.95` 的两条警告
+
+`layout_to_spec` **继续主动报出**丢掉的信息（现在只可能"没有 subjects"），
+`render_layout` 的每条失败路径都带回 `reason` ——
+**可选增强可以失败，但不许静默。**
+
+### 又抓到一处 `sys.path` 操控
+
+架构守卫报：
+
+```
+X R3 违反（sys.path 操控）: runtime\blender\render_previs_simple.py
+```
+
+那行 `sys.path.insert` 是给 `build_character` 用的，而我把它改成纯圆柱之后
+**已经是死代码** —— 删掉，守卫恢复 PASS。
+
+> **删功能时要连带删掉它的脚手架。** 残留的 import 路径操作会一直红着。
+
+### 一个反复犯的错（第三次）
+
+写补丁脚本时又用了 **ASCII 双引号包在中文串里**：
+
+```python
+NEW = ("...它是为"姿态"服务的...")     # SyntaxError
+```
+
+已改用「」。这是同一类错误的**第三次**，记在这里：
+**中文串里的引号一律用「」，永远不用 " "。**
+
+### 验证 Verification
+
+```
+ [v] 白模渲染   16 项（新增）
+ [v] 全量       1535 项通过 + 架构守卫 PASS
+```
+
+### 下一步：只剩"起服务跑 A/B"
+
+代码侧已完备。`_run_previs()` 会把每镜首帧填进 `self.previs_first`，
+`_control_frame_for()` 优先取它。**剩下的就是起 ComfyUI + local-gen 跑对比。**
+
+---
+
 ## [0.4.0-alpha.100] — 2026-10-19（第 ⑧ 步：**白模接进生成链路的三个卡点**）
 
 ### 白模到今天为止仍只是"给人看的图"

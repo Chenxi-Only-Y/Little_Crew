@@ -45,6 +45,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("美术指导+制片主任", [sys.executable, "-m", "little_crew.agent.b_class_llm_check"], 33),
     # 白模布局校验器：PrevisAgent 的验收标准。纯几何，与 Blender 同一套数学。
     ("白模布局校验", [sys.executable, "-m", "little_crew.agent.previs_layout_check"], 24),
+    # 白模生产模块：布局→spec→Blender→帧→mp4+首帧。**可选增强，但失败必须可见。**
+    ("白模渲染", [sys.executable, "-m", "little_crew.runtime.previs_check"], 16),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),
