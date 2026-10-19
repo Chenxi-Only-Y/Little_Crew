@@ -57,6 +57,63 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.91] — 2026-10-19（**第 ② 步完成**：白模 mp4 + 首帧，640×384）
+
+### 产物
+
+```
+previs.mp4        57 KB   Duration 3.04s  h264 640×384 24fps
+previs_first.png 145 KB   640×384（全身入画）
+```
+
+渲染 73 帧 / 24fps / 3.042 秒（请求 2.5 秒，对齐到 Blender 的帧网格 `17n+5`）。
+
+### 新增：`previs_encode.py`（帧 → mp4 + 首帧）
+
+**为什么单独一个脚本、而不塞进 Blender 里**
+
+Blender 的 `--python` 跑在 **Blender 自己的 Python** 里，调不通项目代码；
+而编码只需要 ffmpeg，与 Blender 无关。
+
+拆开的好处：**编码可单独改、单独重试** —— 帧渲好了，重编码几秒钟；
+塞在一起则"改个码率要重渲 28 秒"。
+
+### 🔴 抓到一个平台坑：`-pattern_type glob` 在 Windows 不可用
+
+```
+Error opening input file D:\...\gray\f*.png
+Error opening input files: Function not implemented
+```
+
+Windows 版 ffmpeg **不支持 glob 输入**。改用 image2 序列：
+`-start_number N -i f%05d.png`。
+
+**而且 `start_number` 必须取实际首帧编号**（Blender 从 `00001` 起），
+写死 1 会在帧号不从 1 开始时**静默丢帧** —— 那种错误不会报错，只会少几帧。
+
+### 一次刻意不做的减配
+
+`depth` 帧仍在渲（73 帧 depth + 73 帧 gray，共 28 秒 → 这一镜约 15 秒）。
+
+**没有关它**，因为：
+- 关掉只省 ~14 秒，而改 `render_previs.py` 的内部有风险（那是已验证能跑的老脚本）
+- **只要下游不消费 depth，多渲一份不产生错误** —— 只是浪费一点时间
+
+**记为待办**：等 `previs.py` 正式进 `runtime/` 时一并关掉（那时会重写，不是打补丁）。
+
+> **在能跑的脚本上打补丁，比不关一个可选输出更危险。**
+
+### 验证 Verification
+
+```
+ [v] 渲染 73 帧 / 3.04s / 640×384
+ [v] mp4 57 KB（h264 yuv420p 24fps）
+ [v] 首帧 640×384，全身入画（sensor_fit 修复在 640 下同样生效）
+ [v] 1495 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.90] — 2026-10-19（**白模取景根因修复**：`sensor_fit` 用错，一行解决）
 
 ### 验证既有生成器（第 ① 步）
