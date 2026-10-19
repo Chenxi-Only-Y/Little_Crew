@@ -644,6 +644,12 @@ class EpisodeRunner:
             advisory=advisory,
             director=director_info,
             gaffer=lighting_info,
+            # ⚠️ 这三个**漏过一次**（2026-10-19）：白模渲了 40 张控制图，
+            # 但报告里 `previs` 是空的 —— 因为构造 EpisodeResult 时没传。
+            # 表现是「做了但看不见」，与「没做」在报告上完全一样。
+            art=art_info,
+            schedule=sched_info,
+            previs=previs_info,
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
