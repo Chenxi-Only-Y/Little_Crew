@@ -7,30 +7,34 @@
     "中·守夜",
     "中·信",
     "长·薰衣草",
-    "长·空屋"
+    "长·空屋",
+    "中·渔火",
+    "中·回声",
+    "长·摆渡",
+    "短·钥匙"
   ],
   "summary": {
     "单智能体": {
       "violations": 0.0,
       "budgetDev": null,
-      "sizeEntropy": 1.561,
-      "shotsPerSceneVariance": 0.122,
-      "shots": 12.5,
-      "shotCountRatio": 0.625
+      "sizeEntropy": 1.548,
+      "shotsPerSceneVariance": 0.0,
+      "shots": 12.0,
+      "shotCountRatio": 0.6
     },
     "多智能体": {
-      "violations": 0,
+      "violations": 0.0,
       "budgetDev": 0.0,
       "sizeEntropy": 1.544,
-      "shotsPerSceneVariance": 0.5,
-      "shots": 20,
+      "shotsPerSceneVariance": 0.694,
+      "shots": 20.0,
       "shotCountRatio": 1.0
     },
     "pairedDiff": {
-      "violations": 0,
+      "violations": 0.0,
       "budgetDev": null,
-      "sizeEntropy": -0.017,
-      "shotCountRatio": 0.35
+      "sizeEntropy": 0.003,
+      "shotCountRatio": 0.4
     }
   }
 }
