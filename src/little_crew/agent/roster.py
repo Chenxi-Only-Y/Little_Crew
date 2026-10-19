@@ -382,7 +382,34 @@ def _specs() -> list[AgentSpec]:
                    "审核模型必须与生成模型不同族，否则等于自我签收。"),
         ),
 
-        # ================= 摄影组（4 人）=================
+        # ================= 摄影组（5 人）=================
+        # ---- 预演师（2026-10-19 加，P2）----
+        #
+        # **为什么在摄影组**：它决定"机位在哪、人物站在哪、画面怎么构图" ——
+        # 这是摄影组的活。放在导演组会破坏"导演有且仅有一个"这条守卫
+        # （那是名册刻意的设计，不是疏漏）。
+        #
+        # **它不产出最终画面**：产出的是**三维空间的示意图**（白模），
+        # 交给 Blender 渲染。所以 `execution=TEXT_LLM` —— 判断由 LLM 做，
+        # 画面由 Blender 做。
+        #
+        # **刻意不声明 `produces` / `consumes`**（与 `cinematographer` 同一处理）：
+        #   · `produces` 要求"有人消费"，而白模的消费者是
+        #     `EpisodeRunner._run_previs`（**运行时代码，不是 agent**）——
+        #     声明成产物会变成孤儿产出（守卫会拦）。
+        #   · `consumes` 要求"有实现者声明该能力"，而 `art.bible` /
+        #     `episode.plan` 目前只在产物键层面存在、没有 agent 声明能力。
+        # 等这两条真的在能力注册表里落地，再补上。
+        AgentSpec(
+            agent_id="previs",
+            crew_title="白模预演师",
+            crew_title_en="Previs Artist",
+            department=Department.CAMERA,
+            stage=Stage.SCRIPT,
+            execution=ExecutionKind.TEXT_LLM,
+            capabilities=("previs.layout",),
+            requires=("shot.list", "script.final"),
+        ),
         AgentSpec(
             agent_id="storyboard_artist",
             crew_title="分镜师",

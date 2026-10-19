@@ -57,6 +57,78 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.110] — 2026-10-19（**正式加第 19 个职位：白模预演师**）
+
+### 名册 18 → 19
+
+| 部门 | 人数变化 |
+|---|---|
+| **摄影组** | 4 → **5**（新增「白模预演师」） |
+| 其余七部门 | 不变 |
+
+```python
+AgentSpec(
+    agent_id="previs",
+    crew_title="白模预演师",
+    department=Department.CAMERA,      # ← 摄影组，不是导演组
+    stage=Stage.SCRIPT,
+    execution=ExecutionKind.TEXT_LLM,  # 判断由 LLM 做，画面由 Blender 做
+    capabilities=("previs.layout",),
+    requires=("shot.list", "script.final"),
+)
+```
+
+### 两个"为什么不"
+
+**① 为什么在摄影组，不在导演组**
+
+它决定"机位在哪、人物站在哪、画面怎么构图" —— 这是摄影组的活。
+**放进导演组会破坏「导演有且仅有一个」这条守卫** ——
+那是名册刻意的设计，不是疏漏。
+
+**② 为什么刻意不声明 `produces` / `consumes`**
+
+| 字段 | 不加的原因 |
+|---|---|
+| `produces` | 守卫要求"有人消费"。白模的消费者是 `EpisodeRunner._run_previs`（**运行时代码，不是 agent**）→ 声明成产物会变成**孤儿产出** |
+| `consumes` | 守卫要求"有实现者声明该能力"。`art.bible` / `episode.plan` 目前只在**产物键**层面存在，没有 agent 声明**能力** |
+
+**这与 `cinematographer` 的处理一致**（它也是 `consumes=()`）。
+> 等这两条真的在能力注册表里落地，再补上 —— 现在写就是造假依赖。
+
+### 同步更新的校验
+
+| 项 | 改动 |
+|---|---|
+| A1 | `== 18` → `== 19` |
+| A5 | 期望职位名加「白模预演师」 |
+| A12 | 执行方式总数 `== 18` → `== 19` |
+
+### 一个过程中的错（记录下来）
+
+第一次插入时，我把新 `AgentSpec(...)` **塞进了 `storyboard_artist` 的构造里**：
+
+```python
+AgentSpec(                    ← 原分镜师的
+    AgentSpec( ... ),          ← 我插入的，成了嵌套
+    agent_id="storyboard_artist",
+```
+
+报错是 `TypeError: got multiple values for argument 'agent_id'`。
+**教训：在 `AgentSpec(` 这种多行构造里插入兄弟节点，
+要对着"上一个兄弟的结尾 `),`"定位，不能对着"下一个兄弟的 `agent_id=`"定位**——
+后者在构造内部。
+
+### 验证 Verification
+
+```
+ [v] 名册 19 个职位，摄影组 5 人
+ [v] 多智能体协作   49/49（原 47/49）
+ [v] 全量           1535 项通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.109] — 2026-10-19（两套形体接进 `EpisodeRunner`；**名词册撞墙**）
 
 ### 做了什么
