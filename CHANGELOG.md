@@ -57,6 +57,62 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.94] — 2026-10-19（**修 R1 反向依赖**：校验器挪到 `agent/` 层）
+
+### 我犯的流程错误（先说这个）
+
+`alpha.93` 我**在架构守卫失败的情况下提交并推送了**。
+
+```
+[X] 架构依赖守卫    —    0.40s
+结果：FAIL（1 个套件失败）
+```
+
+**因为我在同一条命令里先跑测试、后提交，中间没有停下来看结果。**
+
+> **提交前必须单独确认守卫通过。** 把"跑测试"和"提交"绑在一条命令里，
+> 就等于让提交不依赖测试结果 —— 那我跑它干什么。
+
+已修好，本轮的提交**在守卫 PASS 之后**才做。
+
+### 修的是什么
+
+`agent/previs_agent_llm.py` import 了 `runtime/previs_layout.py` ——
+**反向依赖（R1）**：`agent`(层 3) 不能依赖 `runtime`(层 4)。
+
+这和之前 `critic_llm_check.py` 犯的是**同一个错**。
+
+### 修法：把校验器挪到 `agent/`
+
+| 考量 | 结论 |
+|---|---|
+| 校验器零内部依赖 | 放哪层都不会引入新依赖 |
+| **它是 agent 的验收标准** | 语义上属于 `agent` |
+| `runtime` 将来要用它（渲染前校验） | `runtime`(4) → `agent`(3) **合法** ✓ |
+
+所以：`runtime/previs_layout.py` → **`agent/previs_layout.py`**（含其 check 文件）。
+
+### 一个复用面
+
+```python
+"ir", "governance", "models", "capability", "compiler",
+"agent",     # ← 3
+"review", "runtime", "api", "cli",   # 4/5
+```
+
+**下行依赖合法，上行非法。** 一个"被两层都要用"的纯工具，
+应该放在**较低的那一层** —— 然后两层都能 import 它。
+
+### 验证 Verification
+
+```
+ [v] 架构守卫 PASS（依赖方向全部合规）
+ [v] 白模布局校验   24 项
+ [v] 全量           1519 项通过
+```
+
+---
+
 ## [0.4.0-alpha.93] — 2026-10-19（**第 ④ 步：PrevisAgent** + 真机暴露校验器自相矛盾）
 
 ### 新增 `agent/previs_agent_llm.py`

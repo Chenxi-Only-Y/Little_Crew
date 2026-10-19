@@ -36,7 +36,7 @@ from typing import Any, Mapping, Sequence
 
 from little_crew.agent.llm import LLMError, LlmClient
 from little_crew.agent.protocol import Budget, CallEnvelope, CallResult
-from little_crew.runtime.previs_layout import (
+from little_crew.agent.previs_layout import (
     SHOT_COVER,
     Verdict,
     validate_layout,

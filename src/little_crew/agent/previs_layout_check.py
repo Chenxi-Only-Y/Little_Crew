@@ -1,4 +1,4 @@
-"""`runtime/previs_layout.py` 自检 —— 纯几何，不联网、不调模型。
+"""`agent/previs_layout.py` 自检 —— 纯几何，不联网、不调模型。
 
 ## 守什么
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import math
 import sys
 
-from little_crew.runtime.previs_layout import (
+from little_crew.agent.previs_layout import (
     FOCUS_RATIO,
     SENSOR_HEIGHT_MM,
     SHOT_COVER,
@@ -190,7 +190,7 @@ def _tristate() -> None:
           str([(i.code, bool(i.fix)) for i in r.issues]))
 
     # 构造"major 但无 fix" -> 必须降为 ESCALATE
-    from little_crew.runtime import previs_layout as M
+    from little_crew.agent import previs_layout as M
     orig = M.Issue
 
     class _NoFix(Issue := orig):
