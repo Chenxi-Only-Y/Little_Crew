@@ -57,6 +57,81 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.89] — 2026-10-19（**P2 预演师设计定稿**：生成器已有，只接判断层）
+
+### 关键发现：生成器**早就有了**
+
+差一点去自己写光栅化 —— 查本机才发现：
+
+```
+D:\Blender\blender.exe                      ← 在
+research/blender-previs/build_character.py   ← _sphere / _capsule 拼角色
+research/blender-previs/render_previs.py     ← setup_camera + **add_camera_move**
+research/blender-previs/shot.example.json    ← 输入格式（505 字节）
+```
+
+**`add_camera_move()` 就是"镜头运动关键帧"** —— 已经写好了。
+**`build_character.py` 本来就是用球 + 胶囊拼的** —— 天然符合新范围。
+
+> **先查本机有什么，再谈自己写什么。**
+> 差点因为没查，去重写一个已经存在的东西。
+
+### 三段分工
+
+```
+剧本 + 分镜（分镜师定景别/运镜/时长）
+   ↓ PrevisAgent（LLM）      判断空间布局，**必须带 reason**
+布局 JSON
+   ↓ 代码校验                视锥 / 距离 / 景别矛盾 / 出画
+shot.json
+   ↓ Blender                 摆机位 + 关键帧 + 逐帧
+帧序列
+   ↓ ffmpeg                  编码
+白模视频 mp4 + **首帧 PNG**
+```
+
+### 参数不是全交给 LLM
+
+| 参数 | 谁定 |
+|---|---|
+| `lens_mm`（景别→镜头）· 运动方向 · `duration_sec` | **查表 / 直接搬** |
+| **`azimuth` / `angle`** · **人物站位** · **`move_scale`** | **LLM 判断** |
+| 全部 | **代码校验** |
+
+**LLM 给意图，代码给事实，Blender 给画面。**
+
+### `reason` 是硬要求
+
+每镜必须给一句**可被人反驳**的空间理由：
+
+> 「机位在室内桌侧偏左，朝窗；少女距机位 2.6 米，略偏画面右 —— 留出窗的空间」
+
+**可反驳的判断才是判断**，不可反驳的只是一串数字。
+
+### 下游消费：诚实标注
+
+| 产物 | 今天 | 将来 |
+|---|---|---|
+| **首帧 PNG** | ✅ Z-Image 控构图 / H3 当 `image_path` | 同样适用 |
+| **白模视频 mp4** | ❌ **无人**（H3 只收首帧） | ✅ 待接可收控制视频的模型 |
+
+**所以视频是"为下一阶段预留的产物"** —— 论文里不能声称它当前已被消费。
+**首帧就是它今天的消费者**，这也是"必须同时产首帧"的原因。
+
+### 要砍的
+
+`solve_joints` / `pose_at` / `build_posed_character`（姿态）·
+`measure_subject_depth` / 深度合成器（纹理灰度）—— 全部不在新范围。
+
+### 验证 Verification
+
+```
+ [v] 策划书 +§5.10.18（P2 设计定稿）
+ [v] 1495 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.88] — 2026-10-19（**白模范围收缩**：只做位置与机位，几何体就够）
 
 ### 用户决定
