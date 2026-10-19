@@ -120,28 +120,59 @@ def _capsule(name: str, loc, radius: float, half_len: float,
 
 
 def _subject(name: str, pos: Vector, height_m: float) -> list:
-    """一个极简人形：躯干胶囊 + 球头 + 两条腿。**不做关节、不做姿态。**"""
-    body_r = height_m * BODY_RADIUS_RATIO
-    head_r = height_m * HEAD_RADIUS_RATIO
-    # 躯干：从臀部到肩，占身高约 30%
-    torso_len = height_m * 0.15
-    hip_z = height_m * 0.50
-    torso_center = Vector((pos.x, pos.y, hip_z + torso_len))
-    parts = _capsule(f"{name}_torso", torso_center, body_r, torso_len)
-    # 头
-    head_z = height_m * 0.90
+    """一个极简人形：**一根胶囊 + 一个球头，仅此两件**。
+
+    ## 为什么没有腿、没有手臂
+
+    新范围的判据是：**这个部件携带位置信息吗？**
+
+    | 部件 | 携带位置信息 | 留 |
+    |---|---|---|
+    | 胶囊（身高、在哪） | ✅ | ✅ |
+    | 球头（顶到哪，判断是否切头） | ✅ | ✅ |
+    | 腿 / 手臂 / 关节 | ❌ 纯装饰 | ❌ |
+
+    第一版照抄了旧角色的轮廓（躯干 + 腿），**而旧轮廓是为"姿态"服务的** ——
+    姿态已不在范围里，腿就只是在多画两个圆柱。
+    """
+    r = height_m * 0.06
+    # 胶囊：从脚底到肩（占身高约 80%），两端半球自然形成肩与胯的圆角
+    half_len = height_m * 0.38
+    body_center = Vector((pos.x, pos.y, half_len + r))
+    parts = _capsule(f"{name}_body", body_center, r, half_len)
+    # 头：球，略压在胶囊顶端上（读作"头"）
+    head_r = height_m * 0.075
+    head_z = half_len * 2 + r + head_r * 0.55
     bpy.ops.mesh.primitive_uv_sphere_add(radius=head_r,
                                          location=(pos.x, pos.y, head_z))
     h = bpy.context.object
     h.name = f"{name}_head"
     parts.append(h)
-    # 腿：两根细胶囊
-    for sign, tag in ((-1, "L"), (1, "R")):
-        leg_center = Vector((pos.x + sign * body_r * 0.7, pos.y,
-                             hip_z * 0.5))
-        parts += _capsule(f"{name}_leg{tag}", leg_center,
-                          body_r * 0.55, hip_z * 0.45)
     return parts
+
+
+def _ground() -> None:
+    """**地面平面** —— 零数据、零判断，但它提供"视平线在哪"这个关键参考。
+
+    没有地面就看不出机位是平视还是俯拍，也看不出人站在哪一侧。
+    """
+    bpy.ops.mesh.primitive_plane_add(size=40.0, location=(0.0, 0.0, 0.0))
+    g = bpy.context.object
+    g.name = "ground"
+
+
+def _prop(label: str, pos: Vector, w: float, d: float, h: float) -> list:
+    """场景道具：一个盒体。`w`/`d`/`h` 是宽/进深/高（米）。
+
+    **只给方盒子** —— 不做材质、不做造型。门的"门"字不在模型上，
+    但 2 米高的薄板在画面里的位置与比例，已经足够判断构图。
+    """
+    bpy.ops.mesh.primitive_cube_add(size=1.0,
+                                    location=(pos.x, pos.y, h / 2.0))
+    box = bpy.context.object
+    box.name = label
+    box.scale = (max(w, 0.01), max(d, 0.01), max(h, 0.01))
+    return [box]
 
 
 def _camera(shot: dict, subject_h: float):
@@ -228,6 +259,24 @@ def main() -> None:
         _subject(str(s.get("who") or "A"), pos, h)
         placed.append({"who": s.get("who"), "z": z, "x": x})
 
+    # ---- 场景：地面 + 道具盒体 ----
+    _ground()
+    set_out = []
+    for it in (spec.get("set") or []):
+        try:
+            sx = float(it.get("x") or 0.0)
+            sz = float(it.get("z") or dist)
+            sw = float(it.get("w") or 0.5)
+            sd = float(it.get("d") or 0.3)
+            sh = float(it.get("h") or 1.0)
+        except (TypeError, ValueError):
+            continue
+        pp = Vector((cam_obj.location.x, cam_obj.location.y, 0.0)) \
+            + fwd * sz + right * sx
+        _prop(str(it.get("label") or "prop"), pp, sw, sd, sh)
+        set_out.append({"label": it.get("label"), "x": sx, "z": sz,
+                        "w": sw, "d": sd, "h": sh})
+
     frames = max(1, int(round(float(shot.get("duration_sec", 2.5)) * fps)))
     _move(cam_obj, shot, dist, azim, frames)
 
@@ -249,6 +298,7 @@ def main() -> None:
         "cameraMovement": str(shot.get("camera_movement", "static")),
         "shotSize": str(shot.get("shot_size", "medium")),
         "subjects": placed,
+        "set": set_out,
         "distance": round(dist, 3),
         "grayFrames": frames, "depthFrames": 0,
         "outDir": out_dir,

@@ -95,6 +95,9 @@ def layout_to_spec(layout: Mapping[str, Any], *,
         # ⚠️ **`subjects` 是主路径** —— 由 `render_previs_simple.py` 消费。
         # 保留 `character` 是给旧脚本（`render_previs.py`）的兼容块，新脚本忽略它。
         "subjects": subj_out,
+        # **场景道具**：地面由渲染器无条件画，这里只放剧本里的空间物件。
+        # 与 subjects 共用同一套坐标（x = 左右，z = 离相机多远）。
+        "set": list(layout.get("set") or ()),
     }
     return spec, warns
 
