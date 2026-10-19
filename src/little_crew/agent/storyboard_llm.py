@@ -121,7 +121,8 @@ class StoryboardArtistLlm:
     def __init__(self, *, client: LlmClient | None = None,
                  temperature: float = 0.6, max_shots: int = 40,
                  plan: Mapping[str, Any] | None = None,
-                 lighting: Mapping[str, Any] | None = None) -> None:
+                 lighting: Mapping[str, Any] | None = None,
+                 art: Mapping[str, Any] | None = None) -> None:
         self.client = client or LlmClient("deepseek-flash")
         self.temperature = temperature
         self.max_shots = max_shots
@@ -135,6 +136,11 @@ class StoryboardArtistLlm:
         #: 为什么光能进提示词而"氛围"不能：见 `gaffer_llm` 的模块说明 ——
         #: 「窗在左侧，硬光斜切」是可执行的，「压抑感」不是。
         self.lighting = dict(lighting or {})
+        #: **美术设定**（`art.bible`）。给了就把每场的空间/材质/道具写进提示词。
+        #:
+        #: 与 `lighting` 刻意分开：灯光问「光怎么打」，美术问「东西是什么样」。
+        #: 实测两者单独注入时各自逐项兑现，合在一起会互相稀释。
+        self.art = dict(art or {})
         #: 上一轮的预算偏差（测试与证据用）
         self.budget_deviations: list[str] = []
         self.calls = 0
@@ -267,6 +273,30 @@ class StoryboardArtistLlm:
             budget_lines.append("")
 
         lines += budget_lines
+
+        # ---- 美术设定（若给了）----
+        arts = {}
+        for s in (self.art.get("scenes") or ()):
+            sid = str(s.get("sceneId") or "")
+            if sid:
+                arts[sid] = s
+        if arts:
+            lines.append("【美术设定 —— 空间与材质要体现】")
+            for sc in draft.scenes:
+                sid = str(sc.get("scene_id") or sc.get("id") or "?")
+                A = arts.get(sid)
+                if not A:
+                    continue
+                bits = [x for x in (A.get("space"),) if x]
+                if A.get("materials"):
+                    bits.append("材质 " + "、".join(A["materials"][:3]))
+                if A.get("props"):
+                    bits.append("道具 " + "、".join(A["props"][:3]))
+                lines.append(f"  {sid}: {'；'.join(bits)}"
+                             + (f"　年代 {A.get('era')}" if A.get("era") else ""))
+            if self.art.get("throughLine"):
+                lines.append(f"  贯穿线索：{self.art['throughLine']}")
+            lines.append("")
 
         # ---- 灯光方案（若给了）----
         lights = {}

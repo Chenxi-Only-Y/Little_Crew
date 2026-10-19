@@ -193,6 +193,13 @@ class EpisodeResult:
     #:   · `video_path` = 静帧 + Ken Burns（**便宜、随时能出**）
     #:   · `clip_video` = H3 真片段拼的（**331s/镜，贵**）
     #: 两者都在时，**`clip_video` 才是"视频"**，另一个是占位呈现。
+    #: **美术设定**（2026-10-19）：`{"ok": bool, "bible": {...}}` 或空。
+    art: dict[str, Any] = field(default_factory=dict)
+
+    #: **排期**（2026-10-19）：`{"ok": bool, "schedule": {...}}` 或空。
+    #: 不影响交付判定 —— 它是前置预估，不是门禁。
+    schedule: dict[str, Any] = field(default_factory=dict)
+
     clip_video: str = ""
 
     #: **片段音轨检查结果**（V3，2026-10-18）：`{"ok", "clips", "passed", "failed", "reason"}`。
@@ -251,6 +258,8 @@ class EpisodeResult:
             "scriptVerdict": self.script_verdict,
             "failureKind": self.failure_kind,
             "clipVideo": self.clip_video,
+            "art": dict(self.art),
+            "schedule": dict(self.schedule),
             "clipAudio": dict(self.clip_audio),
             "advisory": [dict(a) for a in self.advisory],
             "director": dict(self.director),
@@ -420,10 +429,13 @@ class EpisodeRunner:
         # （第一版插在桥接前 —— 那时分镜早就跑完了，
         #   于是预算一条都没生效。是 `D8` 那条结构断言抓到的。）
         director_info = self._run_director(script_draft)
+        # 美术指导：定空间与材质（在灯光之前 —— 先有"东西"，再谈"光怎么打"）
+        art_info = self._run_designer(script_draft)
         # 灯光师在导演之后（参考基调）、分镜之前（光要进画面描述）
         lighting_info = self._run_gaffer(script_draft)
 
         # ---- 2) 分镜 ----
+        # （制片主任在分镜产出后跑 —— 它消费镜头表）
         out = self.orch.run_stage("storyboard_artist", "shot.list",
                                   {"script.final": script_draft})
         if not out.ok:
@@ -533,6 +545,12 @@ class EpisodeRunner:
             s.shot_id: artifacts.get(f"G-{self.episode_id}-{s.shot_id}", [])
             for s in picked
         }
+        # ---- 4.5) 制片主任：排期（消费镜头表，**分镜之后**才跑）----
+        #
+        # 产物进 `EpisodeResult.schedule`，**不影响交付判定** ——
+        # 它是"这片要花多少"的前置预估，不是质量门禁。
+        sched_info = self._run_line_producer()
+
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
             shots=[s.as_dict() for s in picked],
@@ -1491,6 +1509,57 @@ class EpisodeRunner:
             "reason": ("" if (ok and not failures)
                        else f"{len(failures or ())} 个镜头失败"),
         }
+
+    def _run_designer(self, script: Any) -> dict[str, Any]:
+        """跑**美术指导**产出 `art.bible`，并注入分镜师。
+
+        与 `_run_gaffer` 同一套模式；顺序在**灯光之前**（美术定空间、灯定光）。
+
+        失败不阻断（没有美术设定，分镜照样能切）。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "production_designer" not in impls:
+            return {}
+        try:
+            out = self.orch.run_stage("production_designer", "scene.design",
+                                     {"script.draft": script})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+        if not getattr(out, "ok", False):
+            return {"ok": False, "reason": str(getattr(out, "error", ""))[:160]}
+        bible = self.orch.blackboard.value("art.bible")
+        if not isinstance(bible, Mapping):
+            return {"ok": False, "reason": "美术指导没有产出 art.bible"}
+        sb = impls.get("storyboard_artist")
+        if sb is not None and hasattr(sb, "art"):
+            try:
+                sb.art = dict(bible)
+            except Exception:                                 # noqa: BLE001
+                pass
+        return {"ok": True, "bible": dict(bible)}
+
+    def _run_line_producer(self) -> dict[str, Any]:
+        """跑**制片主任**产出 `production.schedule`（**分镜之后**才跑）。
+
+        它消费的是**镜头表**，所以必须在分镜产出后排。
+        产物进 `EpisodeResult.schedule`，**不影响交付判定** ——
+        它是"这片要花多少"的前置预估，不是质量门禁。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "line_producer" not in impls:
+            return {}
+        shot_list = self.orch.blackboard.value("shot.list")
+        if shot_list is None:
+            return {"ok": False, "reason": "没有镜头表 —— 无法排期"}
+        try:
+            out = self.orch.run_stage("line_producer", "production.schedule",
+                                     {"shot.list": shot_list})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+        if not getattr(out, "ok", False):
+            return {"ok": False, "reason": str(getattr(out, "error", ""))[:160]}
+        sched = self.orch.blackboard.value("production.schedule")
+        return {"ok": True, "schedule": dict(sched) if isinstance(sched, Mapping) else {}}
 
     def _run_director(self, script: Any) -> dict[str, Any]:
         """跑**导演**产出 `episode.plan`，并把它交给分镜师。

@@ -143,6 +143,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="先跑**导演**产出 `episode.plan`，"
                          "并按它的 shotBudget 给分镜师派活。"
                          "需要 --llm")
+    ap.add_argument("--llm-art", action="store_true",
+                    help="跑**美术指导**产出 `art.bible`，把每场的空间/材质/道具"
+                         "写进分镜提示词。需要 --llm")
+    ap.add_argument("--llm-schedule", action="store_true",
+                    help="跑**制片主任**产出 `production.schedule`"
+                         "（排期 + 风险镜）。需要 --llm")
     ap.add_argument("--llm-gaffer", action="store_true",
                     help="跑**灯光师**产出 `lighting.plan`，"
                          "把每场的光写进分镜提示词。需要 --llm")
@@ -228,6 +234,18 @@ def main(argv: list[str] | None = None) -> int:
 
             stubs["director"] = DirectorLlm(client=writer)
             print("  导演：**真实 LLM**（定基调与每场镜头预算）")
+        if args.llm_art:
+            from little_crew.agent.production_designer_llm import (
+                ProductionDesignerLlm,
+            )
+
+            stubs["production_designer"] = ProductionDesignerLlm(client=writer)
+            print("  美术指导：**真实 LLM**（定每场的空间/材质/道具）")
+        if args.llm_schedule:
+            from little_crew.agent.line_producer_llm import LineProducerLlm
+
+            stubs["line_producer"] = LineProducerLlm(client=writer)
+            print("  制片主任：**真实 LLM**（按实测单价排期 + 标风险镜）")
         if args.llm_gaffer:
             from little_crew.agent.gaffer_llm import GafferLlm
 
