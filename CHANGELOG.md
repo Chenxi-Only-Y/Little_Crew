@@ -57,6 +57,43 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.83] — 2026-10-19（元端：**直接发 `deepseek-flash`**，不再依赖别名）
+
+### 改了什么
+
+`registry` 里两处请求模板：`"model": "deepseek-chat"` → **`"model": "deepseek-flash"`**。
+
+### 为什么不改内部 id
+
+内部 `model_id="deepseek-v4"` 是**注册表键**，被 13 个文件、30+ 处引用。
+改名会牵连一大片，而它只是个内部标签 —— **真正决定"发哪个模型"的是模板里的名字**。
+
+**所以只改模板，不动 id。** 这是"改对地方"而不是"改得彻底"。
+
+### 为什么不用别名
+
+```
+请求 deepseek-chat  -> 服务端回显 servedModel=deepseek-flash
+请求 deepseek-flash -> 服务端回显 servedModel=deepseek-flash
+```
+
+两者当前等价，但**别名哪天改了指向，用别名的人不会有任何感知**；
+而发真名时，`servedModel` 一旦对不上就能立刻发现。
+
+> **这与此前所有 `servedModel` 对不上的困惑同源**：
+> 我们内部的 id 是 `deepseek-v4`，发的是 `deepseek-chat`，服务端回显 `deepseek-flash` ——
+> **三个名字，一个模型。** 现在发出去的名字与回显一致了。
+
+### 验证 Verification
+
+```
+ [v] 真调：chat_json = {'ok': True}  0.72s
+     modelId=deepseek-v4  servedModel=deepseek-flash
+ [v] 1462 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.82] — 2026-10-19（更正模型命名：**销售名与 API 名不是一回事**）
 
 ### 更正了什么

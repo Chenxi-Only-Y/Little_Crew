@@ -113,7 +113,10 @@ def _text_models() -> list[ModelSpec]:
             #   实测 `deepseek-v4.1-flash` -> HTTP 400，
             #   支持的是 `deepseek-flash` / `deepseek-v4-pro` / `deepseek-chat`。
             #   而 `deepseek-chat` 会被服务端解析成 **`deepseek-flash`**（回显确认）。
-            display_name="DeepSeek V4.1 Flash（API: deepseek-flash）",
+            #
+            # **2026-10-19 决定：直接发 `deepseek-flash`，不再依赖别名。**
+            # 别名哪天改了指向，发别名的人不会有任何感知 —— 而发真名会。
+            display_name="DeepSeek V4.1 Flash（API 名 deepseek-flash）",
             task=TaskKind.TEXT_STRUCTURED,
             backends=(Backend(
                 kind=BackendKind.HTTP,
@@ -129,12 +132,12 @@ def _text_models() -> list[ModelSpec]:
                 # 于是**纯文本调用必然 400**（DeepSeek 要求启用 json_object
                 # 时提示词里必须有 "json" 字样）。踩过。
                 body_template=(
-                    '{"model": "deepseek-chat",'
+                    '{"model": "deepseek-flash",'
                     ' "messages": {messages},'
                     ' "temperature": {temperature}}'
                 ),
                 body_template_json=(
-                    '{"model": "deepseek-chat",'
+                    '{"model": "deepseek-flash",'
                     ' "messages": {messages},'
                     ' "temperature": {temperature},'
                     ' "response_format": {"type": "json_object"}}'
