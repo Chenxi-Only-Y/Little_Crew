@@ -57,6 +57,48 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.82] — 2026-10-19（更正模型命名：**销售名与 API 名不是一回事**）
+
+### 更正了什么
+
+用户指出「是 `deepseek-v4.1-flash`，别写错了」。查证后确认：
+**这个说法对，但它是销售名，不是 API 名。**
+
+实测（`api.deepseek.com`）：
+
+| 发出去的名字 | 结果 | 服务端回显 |
+|---|---|---|
+| `deepseek-chat`（我们一直发的） | ✅ | **`deepseek-flash`** |
+| `deepseek-flash` | ✅ | `deepseek-flash` |
+| `deepseek-v4-pro` | ✅ | `deepseek-v4-pro` |
+| **`deepseek-v4.1-flash`** | ❌ **HTTP 400** | 支持的是上面三个 |
+
+**所以「DeepSeek-V4.1-Flash」在控制台里叫这个名字，但 API 侧应发
+`deepseek-flash`（或别名 `deepseek-chat`）。**
+
+### 改法：两个名字都写，而不是二选一
+
+- `registry` 的 `display_name` → **「DeepSeek V4.1 Flash（API: deepseek-flash）」**
+- 策划书 §5.10.16 的表 → 写销售名 + 括注 API 名 + 一行实测说明
+
+> **只写销售名会误导后来人直接发这个名字，然后收到 400；
+> 只写 API 名则与用户/控制台的认知对不上。**
+> 两个都写，并注明"哪个能发、哪个只是叫法"。
+
+### 顺带确认的一件事
+
+`deepseek-chat` 不是"另一个模型"，而是**别名** —— 服务端回显 `deepseek-flash`。
+这也是之前 `servedModel` 与我们内部 `model_id` 一直对不上的原因。
+
+### 验证 Verification
+
+```
+ [v] 1462 项测试通过 + 架构守卫 PASS
+ [v] display_name = DeepSeek V4.1 Flash（API: deepseek-flash）
+```
+
+---
+
 ## [0.4.0-alpha.81] — 2026-10-19（**第三模型族 GLM 接入** · 跨族审核补齐 · 两个推理模型的坑）
 
 ### 补齐了 §5.10.16 ① 的硬伤
@@ -69,7 +111,7 @@ git config http.sslBackend openssl
 
 | 职位 | 族 | 模型 |
 |---|---|---|
-| 编剧（生成方） | DeepSeek | `deepseek-v4` |
+| 编剧（生成方） | DeepSeek | `deepseek-v4.1-flash`（API 名 `deepseek-flash`） |
 | 剧评人 | 小米 | `mimo-v2.6-flash` |
 | **文风编辑** | **智谱** | **`GLM-5.3-flash`** |
 

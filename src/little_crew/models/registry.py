@@ -108,7 +108,12 @@ def _text_models() -> list[ModelSpec]:
     return [
         ModelSpec(
             model_id="deepseek-v4",
-            display_name="DeepSeek V4",
+            # ⚠️ **销售名 vs API 名**（2026-10-19 实测）：
+            #   控制台里叫 DeepSeek-V4.1-Flash，但 API **不接受**这个名字 ——
+            #   实测 `deepseek-v4.1-flash` -> HTTP 400，
+            #   支持的是 `deepseek-flash` / `deepseek-v4-pro` / `deepseek-chat`。
+            #   而 `deepseek-chat` 会被服务端解析成 **`deepseek-flash`**（回显确认）。
+            display_name="DeepSeek V4.1 Flash（API: deepseek-flash）",
             task=TaskKind.TEXT_STRUCTURED,
             backends=(Backend(
                 kind=BackendKind.HTTP,
