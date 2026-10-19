@@ -182,6 +182,11 @@ def project_subject(subject: Mapping[str, Any], cam: Mapping[str, Any], *,
 
 # ---- 校验 --------------------------------------------------------------
 
+def fair_join(*parts: Any) -> str:
+    """把"谁 / 哪个道具"拼成一句 —— 便于定位。"""
+    return " / ".join(str(p) for p in parts if p)
+
+
 def validate_layout(layout: Mapping[str, Any], *,
                     aspect: float = 640 / 384) -> LayoutCheck:
     """校验一份白模布局。
@@ -291,6 +296,55 @@ def validate_layout(layout: Mapping[str, Any], *,
                                     f"两人位置几乎重合（Δz={abs(za-zb):.2f}m "
                                     f"Δx={abs(xa-xb):.2f}m）—— 白模里会叠成一个",
                                     "把两人的 x 或 z 拉开"))
+
+    # ---- 穿模：人站在道具里面（**真机发现**）----
+    #
+    # 2026-10-19 实测：agent 把「少女坐在桌边」摆成了
+    #   少女 x=0.45 z=2.9   桌 x=0.45 z=2.85 w=1.2 d=0.7
+    # 桌子在 z 占 2.5~3.2、x 占 -0.15~1.05 —— **她落在桌子里面**。
+    # 渲出来的画面是"桌沿横切过人体"，一眼就假。
+    #
+    # 判据：人（一个半径 `半径比×身高` 的竖向圆柱）与盒子在**水平面上相交**，
+    # 且盒子**足够高**（茶几/地垫这类矮物件可以踩上去，不算穿模）。
+    for prop in (layout.get("set") or ()):
+        if not isinstance(prop, Mapping):
+            continue
+        try:
+            pw = float(prop.get("w") or 0)
+            pd = float(prop.get("d") or 0)
+            ph = float(prop.get("h") or 0)
+            px = float(prop.get("x") or 0)
+            pz = float(prop.get("z") or 0)
+        except (TypeError, ValueError):
+            continue
+        if pw <= 0 or pd <= 0 or ph <= 0:
+            continue
+        for s in subjects:
+            who = str(s.get("who") or "?")
+            h = float(s.get("height_cm") or DEFAULT_HEIGHT_M * 100) / 100.0
+            body_r = h * 0.085
+            # 矮于 30% 身高的物件视为"可以踩上去"（地垫、矮台），不报
+            if ph < h * 0.30:
+                continue
+            # **薄物件当平面看**（门/窗/墙）：人站在门框里是正常的。
+            #
+            # 第一版没这条，把「旅人站在门口」判成了穿模 ——
+            # 而门只有 0.1m 厚，它是**一块板**，不是可以"进去"的体积。
+            # 判据：最薄的水平边 < 0.25m → 平面，不参与体积相交。
+            if min(pw, pd) < 0.25:
+                continue
+            sv = float(s.get("z") or dist)
+            sx = float(s.get("x") or 0.0)
+            if (abs(sx - px) < pw / 2 + body_r * 0.6
+                    and abs(sv - pz) < pd / 2 + body_r * 0.6):
+                issues.append(Issue(
+                    "subject-inside-prop", "major", fair_join(who, prop),
+                    f"{who} 落在「{prop.get('label') or '道具'}」里面"
+                    f"（人 x={sx:.2f} z={sv:.2f}，"
+                    f"道具占 x={px-pw/2:.2f}~{px+pw/2:.2f} "
+                    f"z={pz-pd/2:.2f}~{pz+pd/2:.2f}）—— 穿模",
+                    f"把人移到道具外侧，或把「{prop.get('label') or '道具'}」挪开"
+                    f">{max(pw, pd)/2 + body_r:.2f}m"))
 
     # ---- 缺 reason ----
     if not str(layout.get("reason") or "").strip():

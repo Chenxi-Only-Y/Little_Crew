@@ -101,15 +101,20 @@ class PrevisAgentLlm:
             '{"azimuth_deg": 数字,   // 0=正面, 90=侧面, 负数=偏左\n'
             ' "angle_deg": 数字,     // 0=平视, 正=俯拍, 负=仰拍\n'
             ' "subjects": [{"who": "名字", "x": 数字, "z": 数字, "height_cm": 数字}],\n'
+            ' "set": [{"label": "门", "x": 数字, "z": 数字, "w": 宽, "d": 进深, "h": 高}],\n'
             ' "reason": "一句话说明为什么这样摆"}\n\n'
-            "坐标约定：\n"
-            "  · `x`：左右偏移（米），0 = 画面正中，正数偏右\n"
-            "  · `z`：**离相机多远**（米）—— 主体应接近该景别的主体距离\n"
-            "  · `height_cm`：身高（厘米）\n\n"
+            "坐标约定（都用米）：\n"
+            "  · `x`：左右偏移，0 = 画面正中，正数偏右\n"
+            "  · `z`：**离相机多远** —— 主体应接近该景别的主体距离\n"
+            "  · `height_cm`：身高（厘米，唯一用厘米的字段）\n"
+            "  · `set` 的 `w`/`d`/`h`：宽/进深/高 —— "
+            "门约 0.9×0.1×2.0，桌约 1.2×0.7×0.75，窗约 1.2×0.05×1.2\n\n"
             "规则：\n"
             "  · **必须给 `reason`**，且要具体到能被反驳："
             "写「机位在桌侧偏左朝窗，留出窗的空间」而不是「构图好看」\n"
             "  · `subjects` 要覆盖**这一镜出场的人物**\n"
+            "  · `set` 只放**剧本里真的出现的空间物件**（门/窗/桌/床/树/墙），"
+            "**不要凭空添家具**；没有就留空数组\n"
             "  · **不要改景别、不要改运镜、不要改时长**"
         )
         if fixes:
@@ -211,8 +216,32 @@ def normalize_layout(shot: Mapping[str, Any],
                                    or shot.get("cameraMovement") or "static"),
         },
         "subjects": subs,
+        # **场景道具**：与 subjects 共用同一套坐标（x 左右 / z 离相机多远）。
+        # 地面由渲染器无条件画，这里只放剧本里的空间物件。
+        "set": _set_of(data),
         "reason": str(data.get("reason") or "")[:200],
     }
+
+
+def _set_of(data: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """规整场景道具。**尺寸必须为正** —— 宽/高为 0 的盒子在画面里不存在，
+    留着只会让"人站在门里"这种判断失效。"""
+    out: list[dict[str, Any]] = []
+    for it in (data.get("set") or ()):
+        if not isinstance(it, Mapping):
+            continue
+        label = str(it.get("label") or "").strip()
+        if not label:
+            continue
+        w = _f(it.get("w"), 0.0)
+        d = _f(it.get("d"), 0.0)
+        h = _f(it.get("h"), 0.0)
+        if w <= 0 or d <= 0 or h <= 0:
+            continue
+        out.append({"label": label[:20], "x": _f(it.get("x"), 0.0),
+                    "z": _f(it.get("z"), 0.0),
+                    "w": round(w, 3), "d": round(d, 3), "h": round(h, 3)})
+    return out
 
 
 def _f(v: Any, default: float) -> float:
