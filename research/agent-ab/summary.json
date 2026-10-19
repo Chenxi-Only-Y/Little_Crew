@@ -1,0 +1,36 @@
+{
+  "model": "deepseek-v4",
+  "repeats": 3,
+  "scripts": [
+    "短·雨夜",
+    "短·集市",
+    "中·守夜",
+    "中·信",
+    "长·薰衣草",
+    "长·空屋"
+  ],
+  "summary": {
+    "单智能体": {
+      "violations": 0.0,
+      "budgetDev": null,
+      "sizeEntropy": 1.561,
+      "shotsPerSceneVariance": 0.122,
+      "shots": 12.5,
+      "shotCountRatio": 0.625
+    },
+    "多智能体": {
+      "violations": 0,
+      "budgetDev": 0.0,
+      "sizeEntropy": 1.544,
+      "shotsPerSceneVariance": 0.5,
+      "shots": 20,
+      "shotCountRatio": 1.0
+    },
+    "pairedDiff": {
+      "violations": 0,
+      "budgetDev": null,
+      "sizeEntropy": -0.017,
+      "shotCountRatio": 0.35
+    }
+  }
+}
