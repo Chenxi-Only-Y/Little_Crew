@@ -172,6 +172,13 @@ def main(argv: list[str] | None = None) -> int:
                          "正式跑不要加，它会让不合格剧本也出片")
     ap.add_argument("--workdir", default="outputs/episode_E100")
     ap.add_argument("--fresh", action="store_true", help="清空工作目录")
+    ap.add_argument("--episode-id", default="E100",
+                    help="集号，写进 shotId 与报告（默认 E100）。"
+                         "**开新一集必须换它**，否则镜头号会重名")
+    ap.add_argument("--title", default="薰衣草",
+                    help="集标题（默认 薰衣草）")
+    ap.add_argument("--allow-reuse", action="store_true",
+                    help="允许往已有**别的集**的工作目录里写（默认拒绝）")
     ap.add_argument("--no-video", action="store_true",
                     help="只出图，不合成 MP4")
     args = ap.parse_args(argv)
@@ -183,6 +190,28 @@ def main(argv: list[str] | None = None) -> int:
 
     root = Path(__file__).resolve().parents[3]
     work = root / args.workdir
+
+    # ---- 防串集（2026-10-20 加）----
+    #
+    # 最常见的出错方式不是"写错代码"，是**把新的一集写进老目录** ——
+    # 然后两集的 shotId 会重名（`SH-E100-S01-001`），缓存也会串，
+    # 而报告看起来一切正常。
+    _prev = work / "delivery" / "run.report.json"
+    if _prev.is_file() and not args.fresh and not args.allow_reuse:
+        try:
+            import json as _json
+
+            _old = _json.loads(_prev.read_text(encoding="utf-8"))
+            _old_id = str(_old.get("episodeId") or "")
+        except Exception:                                 # noqa: BLE001
+            _old_id = ""
+        if _old_id and _old_id != args.episode_id:
+            print(f"  [X] 这个目录里已经有一集：{_old_id}；"
+                  f"而你要跑的是 {args.episode_id}")
+            print("      换一个 --workdir（推荐），或加 --fresh 清空，"
+                  "或加 --allow-reuse 强行覆盖")
+            return 2
+    print(f"  集号 {args.episode_id} · 标题 {args.title}")
     if args.fresh:
         import shutil
 
