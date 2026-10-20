@@ -248,7 +248,57 @@ def _artifacts_for(agent: str, workdir: Path,
     return out
 
 
-def build_console(workdir: Path) -> Path:
+
+EDIT_JS_SRC = """
+let CUR=null,CUR_RES=null,CUR_FPS=null;
+async function openShot(sid){
+  const r=await fetch('/api/shot/'+encodeURIComponent(sid));
+  const j=await r.json();
+  const out=document.getElementById('ed-out');
+  if(!j.ok){out.textContent='读不到：'+j.reason;return;}
+  CUR=sid;const s=(j.layout&&j.layout.shot)||{};
+  document.getElementById('editor').style.display='block';
+  document.getElementById('ed-sid').textContent=sid;
+  document.getElementById('ed-size').value=s.shot_size||'medium';
+  document.getElementById('ed-move').value=s.camera_movement||'static';
+  document.getElementById('ed-az').value=s.azimuth_deg==null?0:s.azimuth_deg;
+  document.getElementById('ed-ang').value=s.angle_deg==null?0:s.angle_deg;
+  document.getElementById('ed-dur').value=s.duration_sec==null?3:s.duration_sec;
+  const sp=j.spec||{};
+  CUR_RES=(sp.resolution&&sp.resolution.width)?[sp.resolution.width,sp.resolution.height]:null;
+  CUR_FPS=sp.fps||null;
+  out.textContent='已载入 '+sid;
+}
+document.getElementById('ed-go').addEventListener('click',async()=>{
+  const out=document.getElementById('ed-out');
+  if(!CUR){out.textContent='先点一个镜头';return;}
+  out.textContent='重渲中…（约 15~30 秒）';
+  const body={shot_size:document.getElementById('ed-size').value,
+    camera_movement:document.getElementById('ed-move').value,
+    azimuth_deg:Number(document.getElementById('ed-az').value),
+    angle_deg:Number(document.getElementById('ed-ang').value),
+    duration_sec:Number(document.getElementById('ed-dur').value),
+    resolution:CUR_RES,fps:CUR_FPS};
+  const r=await fetch('/api/shot/'+encodeURIComponent(CUR),
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!j.ok){out.innerHTML='<b style="color:#f87171">失败</b> '+(j.reason||'')
+    +((j.blockers&&j.blockers.length)?'<br>'+j.blockers.map(x=>x.code+': '+x.detail).join('<br>'):'');return;}
+  const rr=j.render||{};
+  out.innerHTML='<b style="color:#4ade80">完成</b> 判定 '+j.verdict
+    +(rr.ok?' · 帧 '+rr.frames:' · 渲染失败 '+(rr.reason||''))
+    +((j.majors&&j.majors.length)?'<br><span style="color:#fbbf24">提示 '+j.majors.map(m=>m.code).join(' / ')+'</span>':'')
+    +'<br><span style="color:#6f7a8a">刷新页面可见新缩略图</span>';
+});
+"""
+
+def build_console(workdir: Path, *, editable: bool = False) -> Path:
+    """生成 `<workdir>/console.html`。
+
+    `editable=True` 只在**通过 `studio.py` 的本地服务**打开时启用 ——
+    `file://` 不能发 POST，所以静态打开永远只读。
+
+    """
     """生成 `<workdir>/console.html`（含 SVG 节点图）。"""
     workdir = Path(workdir)
     nodes, edges = _graph()
@@ -391,6 +441,8 @@ def build_console(workdir: Path) -> Path:
             "produces": n["produces"], "requires": n["requires"],
             "arts": [{"label": lbl, "src": src}
                      for lbl, src in arts_by_agent.get(n["id"], [])],
+            # 只有"一镜一图"的职位能在图上改（改的是那一镜的布局）
+            "canEdit": n["id"] in ("previs", "cinematographer"),
         }
 
     ok = st.get("ok")
@@ -406,6 +458,7 @@ def build_console(workdir: Path) -> Path:
             (f"{st.get('artifacts') or 0}/{st.get('shotCount') or 0}", "出图"),
         ))
 
+    edit_js = EDIT_JS_SRC if editable else ""
     page = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>导演台 · {html.escape(st.get('title') or st.get('episodeId') or '')}</title>
@@ -444,6 +497,13 @@ border-radius:4px;border:1px solid var(--line);display:block;background:#0f1115}
 aside dd.arts a:hover img{{border-color:var(--accent)}}
 code{{background:#0f1115;border:1px solid var(--line);border-radius:4px;
 padding:1px 5px;font-size:11.5px}}
+aside .row{{display:flex;align-items:center;gap:8px;margin:5px 0}}
+aside .row label{{width:52px;color:var(--dim);font-size:11.5px}}
+aside .row input,aside .row select{{flex:1;background:#0f1115;color:var(--fg);
+border:1px solid var(--line);border-radius:5px;padding:4px 7px;font-size:12px}}
+aside button{{margin-top:8px;width:100%;background:#1f3b52;color:#cfe9ff;
+border:1px solid #2d5a78;border-radius:6px;padding:7px;font-size:12.5px;cursor:pointer}}
+aside button:hover{{background:#264a66}}
 .legend{{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;
 color:var(--dim);font-size:11.5px}}
 .dot{{display:inline-block;width:9px;height:9px;border-radius:2px;
@@ -467,9 +527,27 @@ margin-right:5px;vertical-align:middle}}
 <div class="canvas">{''.join(s)}</div>
 <aside id="side"><h2>点一个方块</h2>
 <div class="m">右栏显示它的职责、要什么、产出什么。</div>
-<dl id="dl"></dl></aside>
+<dl id="dl"></dl>
+<div id="editor" style="display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:12px">
+  <div style="font-size:12px;color:var(--dim);margin-bottom:6px">
+    编辑这一镜（<span id="ed-sid"></span>）</div>
+  <div class="row"><label>景别</label><select id="ed-size">
+    <option>extreme_wide</option><option>wide</option><option>full</option>
+    <option>medium_full</option><option>medium</option>
+    <option>medium_close</option><option>close</option>
+    <option>extreme_close</option></select></div>
+  <div class="row"><label>运镜</label><select id="ed-move">
+    <option>static</option><option>dolly_in</option><option>dolly_out</option>
+    <option>truck_left</option><option>truck_right</option></select></div>
+  <div class="row"><label>机位°</label><input id="ed-az" type="number" step="1"></div>
+  <div class="row"><label>俯仰°</label><input id="ed-ang" type="number" step="1"></div>
+  <div class="row"><label>时长s</label><input id="ed-dur" type="number" step="0.5"></div>
+  <button id="ed-go">保存并只重渲这一镜</button>
+  <div id="ed-out" class="m" style="margin-top:8px"></div>
+</div></aside>
 </div>
 <script>
+const EDITABLE={'true' if editable else 'false'};
 const D={json.dumps(detail, ensure_ascii=False)};
 const dl=document.getElementById('dl');
 document.querySelectorAll('.node').forEach(g=>{{
@@ -488,12 +566,15 @@ document.querySelectorAll('.node').forEach(g=>{{
       ${{(d.arts&&d.arts.length)?`
         <dt>这一集的产物（${{d.arts.length}}）</dt>
         <dd class="arts">${{
-          d.arts.map(a=>`<a href="${{a.src}}" target="_blank" rel="noopener"
+          d.arts.map(a=>`<a ${{d.canEdit&&EDITABLE
+              ? `href="#" onclick="openShot('${{a.label}}');return false"` 
+              : `href="${{a.src}}" target="_blank" rel="noopener"`}}
              title="${{a.label}}"><img loading="lazy" src="${{a.src}}"
              alt="${{a.label}}"><span>${{a.label.replace(/^SH-E[0-9]+-/,'')}}</span></a>`).join('')
         }}</dd>`:''}}
   }});
 }});
+{edit_js}
 </script></body></html>"""
     out = workdir / CONSOLE_NAME
     out.write_text(page, encoding="utf-8")
