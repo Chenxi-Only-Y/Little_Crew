@@ -380,6 +380,10 @@ class AssemblyEditorRules:
 # 一集流水线
 # ==========================================================================
 
+class StopRequested(Exception):
+    """主动停下（`--stop-after`）。**不是错误** —— 是"按要求停在这里"。"""
+
+
 class EpisodeRunner:
     """把一集从头跑到尾。
 
@@ -401,14 +405,32 @@ class EpisodeRunner:
         self.assembler = AssemblyEditorRules()
         #: 本集的角色定妆表（文字半）。跑完 run() 后可用。
         self.characters: Any = None
+        #: 当前阶段（短键：script/storyboard/…）。半成品报告与实时页面用它。
+        self.stage: str = "init"
+        #: 每阶段的相对时间与小信息。
+        self.trace: dict[str, Any] = {}
+        #: 跑到这个阶段后停下（"" = 不停）。给 `--stop-after` 用。
+        self.stop_after: str = ""
+        self._t0: float = time.time()
 
     # ---- 主流程 --------------------------------------------------------
+
+    def _mark(self, stage: str, **info: Any) -> None:
+        """记下"到了哪一步"。**纯副作用，不改变任何行为。**
+
+        它存在的唯一理由：中途停下时，得有东西说明"停在哪、之前做了什么"。
+        """
+        self.stage = stage
+        self.trace[stage] = {"t": round(time.time() - self._t0, 1), **info}
+        if self.stop_after and stage == self.stop_after:
+            raise StopRequested(f"停在「{stage}」（--stop-after）")
 
     def run(self, source: str, *, limit: int | None = None,
             on_progress: Any = None) -> EpisodeResult:
         t0 = time.perf_counter()
 
         # ---- 1) 剧本闭环 ----
+        self._mark("script")
         cycle = self.orch.run_script_cycle(
             {"source.novel": source, "episodeId": self.episode_id,
              "title": self.title})
@@ -430,6 +452,7 @@ class EpisodeRunner:
             script_draft = cycle.rounds[-1].draft
 
         # ---- 1.5) 导演：定预算，交给分镜 ----
+        self._mark("director")
         #
         # ⚠️ **顺序是这个职位有没有意义的全部**：导演的产物是
         # "每场几个镜头"，**晚于分镜就毫无价值**。
@@ -438,10 +461,13 @@ class EpisodeRunner:
         director_info = self._run_director(script_draft)
         # 美术指导：定空间与材质（在灯光之前 —— 先有"东西"，再谈"光怎么打"）
         art_info = self._run_designer(script_draft)
+        self._mark("art")
         # 灯光师在导演之后（参考基调）、分镜之前（光要进画面描述）
         lighting_info = self._run_gaffer(script_draft)
+        self._mark("lighting")
 
         # ---- 2) 分镜 ----
+        self._mark("storyboard")
         # （制片主任在分镜产出后跑 —— 它消费镜头表）
         out = self.orch.run_stage("storyboard_artist", "shot.list",
                                   {"script.final": script_draft})
@@ -488,6 +514,7 @@ class EpisodeRunner:
             irs = irs[:planned]
 
         # ---- 4) 渲染 ----
+        self._mark("render_start")
         rstats = self._render(irs, on_progress=on_progress)
         batch = rstats["batch"]
 
@@ -539,6 +566,7 @@ class EpisodeRunner:
             artifacts[o.graph_id] = sorted(o.artifacts)
 
         # ---- 5) 合成 ----
+        self._mark("assemble")
         ir_hashes: dict[str, str] = {}
         for (s, ir) in zip(picked, irs):
             try:
@@ -558,6 +586,7 @@ class EpisodeRunner:
         # 它是"这片要花多少"的前置预估，不是质量门禁。
         sched_info = self._run_line_producer()
         # ---- 4.6) 白模预演（2026-10-19）----
+        self._mark("previs")
         #
         # 必须在分镜之后（它消费 `shot.list`），在出图之前（控制图要先生成）。
         # 失败不阻断 —— 没有白模照样能出图，只是失去空间约束。

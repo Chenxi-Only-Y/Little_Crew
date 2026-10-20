@@ -53,6 +53,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("产物发布器", [sys.executable, "-m", "little_crew.runtime.publish_check"], 14),
     # 工作室：图上改一镜的布局并只重渲那一镜。真起服务、不调 Blender。
     ("工作室编辑", [sys.executable, "-m", "little_crew.runtime.studio_check"], 24),
+    # 半成品报告：中途停下时把「到哪了」落成文件。纯文件读写。
+    ("半成品报告", [sys.executable, "-m", "little_crew.runtime.partial_report_check"], 20),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),

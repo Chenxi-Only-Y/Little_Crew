@@ -34,7 +34,7 @@ from little_crew.runtime.channels.base import ArtifactRef, JobHandle, JobStatus
 from little_crew.runtime.channels.http import HttpChannel
 from little_crew.runtime.cached_render import CachingRenderer, artifact_fetcher_for
 from little_crew.runtime.checkpoint import RenderCheckpoint
-from little_crew.runtime.episode import EpisodeRunner
+from little_crew.runtime.episode import EpisodeRunner, StopRequested
 from little_crew.runtime.render import RenderSession
 
 # ==========================================================================
@@ -179,6 +179,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="集标题（默认 薰衣草）")
     ap.add_argument("--allow-reuse", action="store_true",
                     help="允许往已有**别的集**的工作目录里写（默认拒绝）")
+    ap.add_argument("--stop-after", default="",
+                    choices=["", "script", "director", "storyboard",
+                             "previs", "render_start", "assemble"],
+                    help="跑到这个阶段就停下，并写半成品报告（默认不停）")
     ap.add_argument("--no-video", action="store_true",
                     help="只出图，不合成 MP4")
     args = ap.parse_args(argv)
@@ -369,6 +373,9 @@ def main(argv: list[str] | None = None) -> int:
     runner.video_seconds = float(args.video_mode_seconds)
     runner._workdir = work
     # ---- 白模（2026-10-19）----
+    runner.stop_after = str(args.stop_after or "")
+    if runner.stop_after:
+        print(f"  ⏸ 按要求停在「{runner.stop_after}」后")
     runner.blender_exe = str(args.blender or "")
     runner.use_white_model = bool(args.use_white_model)
     runner.comfy_input_dir = (Path(args.comfy_input) if args.comfy_input else None)
@@ -409,7 +416,51 @@ def main(argv: list[str] | None = None) -> int:
     print("【1–2】剧本闭环 + 分镜")
     print("-" * 78)
     t0 = time.perf_counter()
-    res = runner.run(LAVENDER_LEGEND, limit=args.limit)
+    # ---- 中断也要留记录（2026-10-20）----
+    #
+    # 正常结束时 `run.report.json` 会写全。但**中途停下时原来什么都没有** ——
+    # 跑了 26 分钟、第 30 镜发现不对、停下，然后没有任何东西说明
+    # "前 29 镜是怎么判的、卡在哪"。
+    #
+    # 所以这里捕获三类收尾：Ctrl+C、异常、主动停（`--stop-after`）。
+    try:
+        res = runner.run(LAVENDER_LEGEND, limit=args.limit)
+    except (KeyboardInterrupt, StopRequested) as exc:
+        from little_crew.runtime.episode import StopRequested as _SR  # noqa: F401
+        from little_crew.runtime.partial_report import (
+            summary_line,
+            write_partial,
+        )
+
+        pth = write_partial(
+            work,
+            episode_id=args.episode_id,
+            title=args.title,
+            stage=getattr(runner, "stage", ""),
+            reason=str(exc) or "用户中断",
+            trace=getattr(runner, "trace", {}),
+            started_at=getattr(runner, "_t0", None),
+        )
+        print()
+        print("  ⏸ 已停下 —— 半成品报告已写：")
+        print(f"    {pth}")
+        print(f"    {summary_line(pth)}")
+        print("    续跑：用同一个 --workdir 再跑（已算的不重算）")
+        return 0
+    except Exception as exc:                                # noqa: BLE001
+        from little_crew.runtime.partial_report import write_partial
+
+        pth = write_partial(
+            work,
+            episode_id=args.episode_id,
+            title=args.title,
+            stage=getattr(runner, "stage", ""),
+            reason=f"{type(exc).__name__}: {exc}",
+            trace=getattr(runner, "trace", {}),
+            started_at=getattr(runner, "_t0", None),
+        )
+        print(f"  ❌ 出错（{type(exc).__name__}），半成品报告：{pth}")
+        raise
     wall = time.perf_counter() - t0
 
     # 剧本与分镜的中间结果

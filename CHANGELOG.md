@@ -57,6 +57,79 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.123] — 2026-10-20（**A 完成：停下也有记录** + `--stop-after`）
+
+### 做了什么
+
+| 件 | 内容 |
+|---|---|
+| `runtime/partial_report.py` | 半成品报告 `delivery/run.report.partial.json` |
+| `EpisodeRunner` | `stage` / `trace` / `stop_after` + `_mark()`（**纯副作用，不改行为**） |
+| `episode_demo` | `--stop-after <阶段>`；捕获 **Ctrl+C / 异常 / 主动停** 三类收尾 |
+
+### 真机验证
+
+```
+--stop-after storyboard
+  ⏸ 已停下 —— 半成品报告已写
+    停在「分镜」 · 还差 3 个阶段 · 续跑：用同一个 --workdir 再跑
+```
+
+报告里：
+```
+停在: 分镜
+已完成: 剧本闭环 · 导演定调 · 美术设定 · 灯光方案 · 分镜
+还差:  白模预演 · 出图 · 成片合成
+trace:  script 0.0s → director/art/lighting/storyboard 107.2s
+```
+
+### 🔴 第一版把「导演」算进"还差" —— 一个顺序假设的错
+
+`STAGES` 里我把 `storyboard` 写在 `director` 前面（按"产物依赖"想当然），
+而**真实执行顺序是 script → director → art → lighting → storyboard**。
+于是停在分镜时，**已经跑过的导演被列进"还差 6 个阶段"**。
+
+修法不是"把顺序排对"就完事 —— 而是**"已完成"必须按实际 `trace` 的键算**：
+
+```python
+done    = [k for k,_ in STAGES if k in trace_keys]
+pending = [k for k,_ in STAGES if k not in trace_keys]
+```
+
+> **用静态顺序推断"做了什么"，迟早会错。只有记录才知道。**
+
+### `--stop-after` 是功能，也是测试接缝
+
+它同时解决两件事：
+- **功能**：跑到某一阶段就停（不用手忙脚乱按 Ctrl+C）
+- **可测**：中断路径原来**没法测**（总不能自动按 Ctrl+C）
+
+### 一条设计原则
+
+**只写"确定的"**：能从磁盘数出来的（白模几镜、缓存几个文件、有没有母片）就数；
+数不出来的（"剧本为什么没过"）**宁可不写，也不猜**。
+
+**并且明确写出"还差什么"** —— 一份报告说清"缺哪几块"比假装完整有用得多。
+
+### 又一次同一个坑（第 6 次）
+
+`check("C5 ★ 数不出来的字段就不写（不猜"剧本为什么没过"）"` → SyntaxError。
+**中文串里一律用「」，永不用英文双引号。**
+
+### 验证 Verification
+
+```
+ [v] 半成品报告   20 项（新增；含「不覆盖 run.report.json」与「按 trace 判」）
+ [v] 真机         --stop-after storyboard 停下并落盘
+ [v] 1617 项测试通过 + 架构守卫 PASS
+```
+
+### 下一步
+
+B（`--resume`：跳过剧本/分镜，从渲染续跑）→ C（实时）→ D（Gate）。
+
+---
+
 ## [0.4.0-alpha.122] — 2026-10-20（**开新一集 / 中途停止**：补齐三个缺口）
 
 ### 查出来的现状（两个都是真坑）
