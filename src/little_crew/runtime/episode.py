@@ -430,6 +430,8 @@ class EpisodeRunner:
         t0 = time.perf_counter()
 
         # ---- 1) 剧本闭环 ----
+        #: `--limit` 的值。白模与渲染都要用它，否则两者看的镜头不一致。
+        self._limit = int(limit or 0)
         self._mark("script")
         cycle = self.orch.run_script_cycle(
             {"source.novel": source, "episodeId": self.episode_id,
@@ -524,7 +526,7 @@ class EpisodeRunner:
         sched_info = self._run_line_producer()
         self._mark("line_producer")
         self._mark("previs")
-        previs_info = self._run_previs()
+        previs_info = self._run_previs(picked)
         self._mark("previs_done")
         # ---- 4) 渲染 ----
         self._mark("render_start")
@@ -901,7 +903,7 @@ class EpisodeRunner:
             return Path(got)
         return self._previs_frame_for(shot)
 
-    def _run_previs(self) -> dict[str, Any]:
+    def _run_previs(self, shots: Any = None) -> dict[str, Any]:
         """跑**预演师**：分镜 → 布局 → 每镜白模 → 首帧。
 
         产出的首帧存进 `self.previs_first`，供 `_control_frame_for` 取用。
@@ -913,8 +915,23 @@ class EpisodeRunner:
         if "previs" not in impls:
             return {}
         shot_list = self.orch.blackboard.value("shot.list")
+        # 白模只预演**将要渲染的那几镜**（`--limit` 必须同时管这两处）。
+        # 原来取的是全量表 —— 于是 `--limit 3` 仍渲 39 镜的白模，
+        # 多出来的永远不会被用到：白花钱、白等时间。
+        if shots:
+            try:
+                import dataclasses as _dc
+
+                shot_list = _dc.replace(shot_list, shots=tuple(shots))
+            except Exception:                            # noqa: BLE001
+                import types as _t
+
+                shot_list = _t.SimpleNamespace(shots=tuple(shots))
         if shot_list is None:
             return {"ok": False, "reason": "没有镜头表 —— 无法预演"}
+        # ⚠️ 2026-10-21 实测：`--limit 3` 只限制了**渲染**，白模仍按全量
+        # 39 镜跑（多花约 10 分钟），因为这里取的是 `blackboard` 的**全量**表。
+        #
         try:
             out = self.orch.run_stage("previs", "previs.layouts",
                                      {"shot.list": shot_list})

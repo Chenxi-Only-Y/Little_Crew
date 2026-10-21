@@ -167,6 +167,19 @@ def _source_order() -> None:
     check("E5 排期在白模之前（先算钱，再渲白模）",
           lp > 0 and previs > 0 and lp < previs, f"{lp} vs {previs}")
 
+    # ⚠️ 2026-10-21 实测两个 bug，都是「看着生效、实际没生效」：
+    #   ① `--episode-id E300` 报告写 E300，但 shotId 仍是 `SH-E100-...`
+    #      —— 因为 demo 里两处 `episode_id="E100"` 的 replace **静默失败**。
+    #   ② `--limit 3` 只限制了渲染，白模仍跑 39 镜（多花约 10 分钟）。
+    # 这两个都只能在源码里钉住 —— 跑一遍整集要 10 分钟，而且不容易察觉。
+    src_demo = (Path(__file__).parent / "episode_demo.py").read_text(encoding="utf-8")
+    check("E6 ★★★ story 集号不再写死 E100（--episode-id 才真的生效）",
+          'episode_id="E100"' not in src_demo, "还有写死的 E100")
+    check("E7 ★★ 集标题不再写死「薰衣草」",
+          'title="薰衣草", backend=backend' not in src_demo, "标题还写死")
+    check("E8 ★★★ 白模只预演将要渲染的镜头（--limit 必须同时管两处）",
+          "self._run_previs(picked)" in src, "白模没用 picked")
+
 
 def main() -> int:
     try:

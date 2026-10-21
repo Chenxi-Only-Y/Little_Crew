@@ -338,7 +338,7 @@ def main(argv: list[str] | None = None) -> int:
     orch.bind_many(stubs)
 
     # ---------- 装配渲染 ----------
-    ck = RenderCheckpoint(work / "checkpoint", episode_id="E100")
+    ck = RenderCheckpoint(work / "checkpoint", episode_id=args.episode_id)
     if args.dry_run:
         renderer = CachingRenderer(
             RenderSession(_DryChannel(), _null_compiler()),
@@ -361,8 +361,8 @@ def main(argv: list[str] | None = None) -> int:
         backend = be
 
     # ---------- 跑 ----------
-    runner = _Runner(orch, renderer, episode_id="E100",
-                     title="薰衣草", backend=backend)
+    runner = _Runner(orch, renderer, episode_id=args.episode_id,
+                     title=args.title, backend=backend)
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.workdir = work
