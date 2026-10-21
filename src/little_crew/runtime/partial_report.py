@@ -49,7 +49,9 @@ STAGES: tuple[tuple[str, str], ...] = (
     ("art", "美术设定"),
     ("lighting", "灯光方案"),
     ("storyboard", "分镜"),
+    ("line_producer", "制片主任排期"),
     ("previs", "白模预演"),
+    ("previs_done", "白模完成"),
     ("render", "出图"),
     ("assemble", "成片合成"),
 )

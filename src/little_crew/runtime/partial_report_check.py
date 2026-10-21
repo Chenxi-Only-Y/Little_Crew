@@ -134,6 +134,40 @@ def _summary() -> None:
               isinstance(summary_line(bad), str), "崩了")
 
 
+def _source_order() -> None:
+    """**源码顺序守卫**：白模预演必须排在出图之前。
+
+    2026-10-20 实测发现：`_run_previs()` 曾被放在「合成」之后，
+    于是白模控制图**永远来不及用** —— 渲染早就跑完了。
+    那种错**不会报错**，只会让"有白模"这件事永远不生效。
+
+    这里直接查源码里两个 `_mark` 的行号顺序 —— 比跑一遍整集快，也不会漏。
+    """
+    print()
+    print("E. 源码顺序守卫")
+    src = (Path(__file__).parent / "episode.py").read_text(encoding="utf-8")
+    lines = src.splitlines()
+
+    def where(needle: str) -> int:
+        for n, line in enumerate(lines, 1):
+            if needle in line:
+                return n
+        return -1
+
+    previs = where('self._mark("previs")')
+    render = where('self._mark("render_start")')
+    check("E1 ★★ 源码里有 previs 标记", previs > 0, str(previs))
+    check("E2 ★★ 源码里有 render_start 标记", render > 0, str(render))
+    check("E3 ★★★ 白模预演在出图**之前**（否则控制图永远来不及用）",
+          previs > 0 and render > 0 and previs < render,
+          f"previs 在 {previs} 行，render 在 {render} 行")
+    lp = where("self._run_line_producer()")
+    check("E4 ★ 制片主任排期也在出图之前（它是前置预估）",
+          lp > 0 and lp < render, f"排期在 {lp} 行，render 在 {render} 行")
+    check("E5 排期在白模之前（先算钱，再渲白模）",
+          lp > 0 and previs > 0 and lp < previs, f"{lp} vs {previs}")
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -146,6 +180,7 @@ def main() -> int:
     _trace_based()
     _disk()
     _summary()
+    _source_order()
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:

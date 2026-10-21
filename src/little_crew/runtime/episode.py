@@ -513,6 +513,19 @@ class EpisodeRunner:
         if limit is not None:
             irs = irs[:planned]
 
+        # ---- 3.8) 白模预演 + 制片主任排期（**必须在渲染之前**）----
+        #
+        # ⚠️ 2026-10-20 修正：这两步原来被放在「合成」之后，
+        # 后果是**白模控制图永远来不及用** —— 渲染早就跑完了。
+        # 顺序错的功能，看起来「跑了」，实际等于没跑。
+        #
+        # 依赖：白模消费 `shot.list`（分镜之后）、产出控制图（渲染之前要）；
+        #       排期是前置预估，放在渲染之前才有意义（渲染后就是事后记账）。
+        sched_info = self._run_line_producer()
+        self._mark("line_producer")
+        self._mark("previs")
+        previs_info = self._run_previs()
+        self._mark("previs_done")
         # ---- 4) 渲染 ----
         self._mark("render_start")
         rstats = self._render(irs, on_progress=on_progress)
@@ -580,17 +593,6 @@ class EpisodeRunner:
             s.shot_id: artifacts.get(f"G-{self.episode_id}-{s.shot_id}", [])
             for s in picked
         }
-        # ---- 4.5) 制片主任：排期（消费镜头表，**分镜之后**才跑）----
-        #
-        # 产物进 `EpisodeResult.schedule`，**不影响交付判定** ——
-        # 它是"这片要花多少"的前置预估，不是质量门禁。
-        sched_info = self._run_line_producer()
-        # ---- 4.6) 白模预演（2026-10-19）----
-        self._mark("previs")
-        #
-        # 必须在分镜之后（它消费 `shot.list`），在出图之前（控制图要先生成）。
-        # 失败不阻断 —— 没有白模照样能出图，只是失去空间约束。
-        previs_info = self._run_previs()
 
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
