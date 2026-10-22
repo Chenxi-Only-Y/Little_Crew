@@ -57,6 +57,56 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.133] — 2026-10-22（**B 步通了**：ComfyUI 图形态渲染跑通）
+
+### 最后一个硬编码
+
+```python
+backend = self.engine_backend()
+if backend is not None:                      # ← 只判「有没有」
+    return self.renderer.render_http_batch(...)   # ← 于是 ComfyUI 也进了 http 路径
+return self.renderer.render_batch(irs)
+```
+
+**ComfyUI 的后端也非 None** —— 所以真编译器、真控制图都准备好了，
+却仍被送进 `render_http_batch`，被 `ComfyChannel` 以「不能提交 http 形态的任务」拒掉。
+
+修：按 `kind` 分流
+
+```python
+kind = getattr(backend, "kind", None) if backend is not None else None
+if backend is not None and kind is not BackendKind.COMFYUI:
+    ... render_http_batch ...     # local-gen
+return ... render_batch ...        # ComfyUI（图形态，含控制节点）
+```
+
+### 结果
+
+```
+--backend comfyui --use-white-model --comfy-input ...
+  SH-E501-001-001  full  static  6.0s  ✅ 1
+  墙钟 13.6s   硬规则 5/5   覆盖率 100%
+```
+
+**ComfyUI 图形态渲染第一次在整集流水线里跑通。**
+
+### 但还有一层：白模这一集没渲出来
+
+`outputs/_B1/previs/` **是空的** —— 所以 `_control_frame_for()` 返回 `None`，
+`want_ctrl` 被置 False，控制图**没进图**（`alpha.131` 加的守卫让它优雅降级，而不是崩）。
+
+**所以「跑通」≠「用上了控制图」。** 下一步：查 `_run_previs` 为什么在
+`--backend comfyui` 下一个镜头都没产（它的失败是「不阻断」的，所以静默）。
+
+### 验证 Verification
+
+```
+ [v] ComfyUI 图形态渲染跑通（1 镜 / 13.6s / 5/5 硬规则）
+ [v] 1677 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.132] — 2026-10-22（B 步：真编译器已接上，暴露最后一个硬编码）
 
 ### 做了什么

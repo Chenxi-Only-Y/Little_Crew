@@ -1278,7 +1278,16 @@ class EpisodeRunner:
         缓存、检查点、失败分类全部复用。
         """
         backend = self.engine_backend()
-        if backend is not None:
+        # **按后端种类分流**（2026-10-22 修）。
+        #
+        # 原来只判 `backend is not None` —— 而 ComfyUI 的后端**也非 None**，
+        # 于是它被送进 `render_http_batch`（local-gen 的 http 形态），
+        # 被 `ComfyChannel` 以「不能提交 http 形态的任务」拒掉。
+        #
+        # 真编译器、真控制图都准备好了却没生效，卡在这一行判断上。
+        from little_crew.models.spec import BackendKind
+        kind = getattr(backend, "kind", None) if backend is not None else None
+        if backend is not None and kind is not BackendKind.COMFYUI:
             jobs = [(self._values(ir), ir["graphId"]) for ir in irs]
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
