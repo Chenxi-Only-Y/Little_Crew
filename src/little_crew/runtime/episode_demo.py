@@ -563,6 +563,25 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  覆盖率 {res.coverage:.0%}（{res.rendered + res.cache_hits}"
           f"/{res.planned_shots} 镜有产物）")
     print(f"  墙钟 {wall:.1f}s   成片时长 {res.total_seconds:.1f}s")
+    # ---- 资产落盘（2026-10-21）----
+    #
+    # 角色定妆表原来只活在内存与那次报告里 —— 换一集就从头再生成，
+    # 无法「还是这个少女」。这里把它落成 `assets/characters/<角色>/sheet.json`，
+    # 并记下来源（哪一集、什么 seed），供下一集 `--inputs` 复用。
+    try:
+        from little_crew.runtime.assets import write_characters
+
+        _chars = getattr(res, "characters", None) or {}
+        _sheets = _chars.get("sheets") if isinstance(_chars, dict) else None
+        if _sheets:
+            _man = write_characters(work, _sheets,
+                                    episode_id=args.episode_id,
+                                    seed=str(_chars.get("seed") or ""))
+            print(f"  资产：{len(_man['characters'])} 个角色 -> "
+                  f"{work / 'assets' / 'characters'}")
+    except Exception as _e:                                    # noqa: BLE001
+        print(f"  ⚠️ 资产落盘失败（不影响交付）：{type(_e).__name__}: {_e}")
+
     print(f"  交付物写入 {out_dir}")
     print("=" * 78)
     _print_clips(runner, args.video_mode)
