@@ -57,6 +57,52 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.132] — 2026-10-22（B 步：真编译器已接上，暴露最后一个硬编码）
+
+### 做了什么
+
+`episode_demo` 在 `--backend comfyui` 时构造**真的** `ComfyCompiler`
+（探测 `/object_info` → `CapabilityMatrix`），`localgen` 仍用 `_null_compiler()`。
+
+```python
+_comp = (_comfy_compiler(ch, be.endpoint)
+         if be.kind is BackendKind.COMFYUI else _null_compiler())
+```
+
+`ZImageFunControlnet` 的 required 输入是 `model / model_patch / vae / strength`，
+**`default_model_patch` 必须给**，否则提交前就被拦下。
+
+### 但仍报同一个错
+
+```
+[F-SUBMIT-COMFY] ComfyChannel 不能提交 'http' 形态的任务
+```
+
+**说明任务形态不是编译器决定的。** 继续查，定位到：
+
+```
+cached_render.py:384  def render_http(...)
+cached_render.py:530  def render_http_batch(...)
+```
+
+**`EpisodeRunner._render()` 调的是 `render_http_batch`（local-gen 那条路）** ——
+这才是最后一个硬编码：**渲染入口本身也写死了 http 形态**。
+
+### 所以 B 步还差一步
+
+`_render()` 要按后端分流：ComfyUI → `render_batch`（图形态）；
+local-gen → `render_http_batch`（http 形态）。
+
+### 验证 Verification
+
+```
+ [v] 真编译器接上（导入 + 语法 + 分支均在位）
+ [v] localgen 路径未受影响（仍是 _null_compiler）
+ [v] 1677 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.131] — 2026-10-22（**两个真 bug**：桥接顺序 + 无条件控制调用）
 
 ### B 步一跑就崩，崩出两个真 bug

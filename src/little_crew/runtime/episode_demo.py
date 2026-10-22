@@ -110,6 +110,30 @@ def _print_audio(runner: Any, enabled: bool) -> None:
         print(f"      {rep.get('reason')}")
 
 
+#: Z-Image 通路的模型名 + 控制网 patch。
+#: ⚠️ `default_model_patch` **必须给** —— `ZImageFunControlnet` 的 required 输入是
+#: `model / model_patch / vae / strength`，缺 `model_patch` 会在提交前被拦下。
+ZIMAGE_UNET = "z_image_turbo_int8_convrot.safetensors"
+ZIMAGE_PATCH = ("Z-Image-Turbo-Fun-Controlnet-Union-2.1-lite-2601-8steps"
+                ".safetensors")
+
+
+def _comfy_compiler(ch, endpoint: str):
+    """按 ComfyUI 的**真实能力**构造编译器（探测 `/object_info`）。
+
+    为什么必须探测而不是写死规则表：**这台机器上有没有某个节点，决定了哪些算子能编译**。
+    写死会在缺节点时「编译通过、提交失败」，而那时已经离故障点很远了。
+    """
+    from little_crew.capability.capability import probe_from_object_info
+    from little_crew.compiler.compiler import ComfyCompiler
+
+    mat = probe_from_object_info(ch.probe_catalog(), endpoint=endpoint,
+                                 comfy_version="0.39.0")
+    return ComfyCompiler(mat, default_checkpoint=ZIMAGE_UNET,
+                         default_model_patch=ZIMAGE_PATCH,
+                         model_source_kind="model.source_zimage")
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="跑通一集")
     ap.add_argument("--limit", type=int, default=None,
@@ -369,7 +393,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  ❌ {args.backend} 不可用：{why}")
             print("     先启动服务，或加 --dry-run 只验证到分镜。")
             return 1
-        renderer = CachingRenderer(RenderSession(ch, _null_compiler()),
+        # **编译器按后端选**（2026-10-22）：`_null_compiler()` 意味着 IR 从不被编译
+        # —— 一直是「一份 http 形态的任务」，ComfyUI 收不了，而 local-gen 正好要它。
+        _comp = (_comfy_compiler(ch, be.endpoint)
+                 if be.kind is BackendKind.COMFYUI else _null_compiler())
+        renderer = CachingRenderer(RenderSession(ch, _comp),
                                    ContentCache(work / "cache"),
                                    fetcher=artifact_fetcher_for(ch),
                                    checkpoint=ck)
