@@ -5,9 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "little-crew"
 # ⚠️ PEP 440 规范化写法（alpha.1 -> a1）。
-# 人类可读的版本号是 0.4.0-alpha.129，单一来源在 src/little_crew/version.py。
+# 人类可读的版本号是 0.4.0-alpha.130，单一来源在 src/little_crew/version.py。
 # 两处必须同步：version.py 的 VERSION / PEP440_VERSION 与本行。
-version = "0.4.0a129"
+version = "0.4.0a130"
 description = "小剧组 · Little Crew —— 基于多智能体协作的 AIGC 漫剧生成平台（统一 IR、ComfyUI 编译层、三层智能体协议）"
 readme = "README.md"
 requires-python = ">=3.12"

@@ -57,6 +57,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("半成品报告", [sys.executable, "-m", "little_crew.runtime.partial_report_check"], 28),
     # 资产库：角色定妆表落盘 + 读回复用。纯文件。
     ("资产库", [sys.executable, "-m", "little_crew.runtime.assets_check"], 26),
+    # 后端选择：把"用哪个后端"从入口脚本搬出来。含源码守卫（不再写死 HTTP）。
+    ("后端选择", [sys.executable, "-m", "little_crew.runtime.backend_select_check"], 22),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),

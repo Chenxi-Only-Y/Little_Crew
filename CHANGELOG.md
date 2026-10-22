@@ -57,6 +57,82 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.130] — 2026-10-22（**P0-1 的 A 步**：后端选择搬出入口脚本）
+
+### 改造前
+
+```python
+be = next(b for b in spec.backends if b.kind is BackendKind.HTTP)   # ← 写死
+ch = HttpChannel(be, timeout_s=1800)
+```
+
+**后果不是报错，是「整集永远走 local-gen」** ——
+于是 ComfyUI 专用的 `composition.zimage_controlnet` 永远编译不进去，
+白模控制图生成了也**没人用**。
+
+### 改造后
+
+新增 `runtime/backend_select.py`：
+
+```python
+BACKEND_CHOICES = {"localgen": BackendKind.HTTP, "comfyui": BackendKind.COMFYUI}
+DEFAULT_BACKEND = "localgen"          # 与改造前行为一致
+pick_backend(spec, name) -> Backend  # 明确失败，不静默退回
+make_channel(backend, ...)           # 只有这里 import 通道实现
+describe(backend)                    # 一行说明，让人看得见换了后端
+```
+
+入口脚本只剩三个开关：`--backend {localgen,comfyui}`。
+
+### 一个刻意的分层决定
+
+**没有把 endpoint 塞进 IR。** IR 里是「要什么」，不是「连哪台机器」。
+把 endpoint 写进 IR 会让同一份施工单不能在不同机器上重放 —— 那正好毁掉
+「后端可替换」这个卖点。
+
+```
+IR        → 要什么（算子 / 约束 / 分辨率）
+Backend   → 连哪、怎么连（kind / endpoint / 权重是否齐）
+本模块     → 把名字翻译成声明，并造出通道
+```
+
+**判断标准**：同一份 IR 换个 `--backend` 名字就能在另一台机器上跑 = 分层对了。
+
+### 验证（服务未启动的情况下也能验）
+
+```
+后端 localgen -> BackendKind.HTTP    · http://127.0.0.1:8100
+  ❌ localgen 不可用：无法连接 …
+后端 comfyui  -> BackendKind.COMFYUI · http://127.0.0.1:8188
+  ❌ comfyui 不可用：无法连接 …
+```
+
+**两种后端都明确报不可用** —— 不静默退回默认（那会让"配置写错"变成"悄悄换了一台机器"）。
+
+### 源码守卫（防再写死）
+
+```
+E1 ★★★ 不再写死 `b.kind is BackendKind.HTTP`
+E2 ★★  入口用 pick_backend 挑后端
+E3 ★★  入口用 make_channel 造通道
+E5 ★★  不可用时明确打印 + return 1
+```
+
+### 验证 Verification
+
+```
+ [v] 后端选择   22 项（含 5 项源码守卫）
+ [v] 两种后端都能解析并明确探活
+ [v] 1677 项测试通过 + 架构守卫 PASS
+```
+
+### 待办（A 步的收尾）
+
+**「输出与改造前逐字节一致」还没验** —— 需要把 local-gen 起起来跑一次 `--limit 1` 对比。
+服务起来后补这一步，然后才能进 B 步（单镜走 ComfyUI + 控制图）。
+
+---
+
 ## [0.4.0-alpha.129] — 2026-10-22（**策划书重排：§5.10.23 + 一次自我更正**）
 
 ### 🔴 一次自我更正：不存在的缺口

@@ -118,6 +118,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--dry-run", action="store_true",
                     help="不出图，只跑到分镜与桥接")
+    ap.add_argument("--backend", default="localgen",
+                    choices=["localgen", "comfyui"],
+                    help="出图后端（默认 localgen）。comfyui 才能编译控制图节点")
     ap.add_argument("--llm", action="store_true",
                     help="编剧与剧评人改用**真实 LLM**（其余职位仍用规则桩）——"
                          "需要 API key；产出不是确定性的")
@@ -347,11 +350,23 @@ def main(argv: list[str] | None = None) -> int:
         backend = None
     else:
         spec = build_default_registry().get("z-image-turbo")
-        be = next(b for b in spec.backends if b.kind is BackendKind.HTTP)
-        ch = HttpChannel(be, timeout_s=1800)
+        # 后端由 `--backend` 决定（默认 localgen，与改造前一致）。
+        #
+        # 改造前这里写死 `BackendKind.HTTP` —— 于是整集永远走 local-gen，
+        # 而 `composition.zimage_controlnet` 是 **ComfyUI 专用**，
+        # 结果白模控制图生成了也永远编译不进去。
+        from little_crew.runtime.backend_select import (
+            describe as _describe_backend,
+            make_channel as _make_channel,
+            pick_backend as _pick_backend,
+        )
+
+        be = _pick_backend(spec, args.backend)
+        print(f"  后端 {args.backend} -> {_describe_backend(be)}")
+        ch = _make_channel(be, timeout_s=1800)
         okv, why = ch.available()
         if not okv:
-            print(f"  ❌ local-gen 不可用：{why}")
+            print(f"  ❌ {args.backend} 不可用：{why}")
             print("     先启动服务，或加 --dry-run 只验证到分镜。")
             return 1
         renderer = CachingRenderer(RenderSession(ch, _null_compiler()),
