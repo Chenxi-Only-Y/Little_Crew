@@ -57,6 +57,80 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.131] — 2026-10-22（**两个真 bug**：桥接顺序 + 无条件控制调用）
+
+### B 步一跑就崩，崩出两个真 bug
+
+```
+AttributeError: 'NoneType' object has no attribute 'read_bytes'
+  episode.py:1017  _stage_control_image
+  episode.py:1086  _apply_white_model
+  episode.py:1189  _bridge
+```
+
+**① 桥接（IR 编译）在白模预演之前**
+
+```
+预演  _run_previs(picked)
+桥接  [self._bridge(s) for s in picked]     ← 原来在预演之前
+```
+
+于是桥接时 `previs_first` 还是空的，`_control_frame_for()` 返回 `None`。
+
+> **这才是「控制图永远进不了画面」的真正原因。**
+> 不是「后端不支持」，是「**控制图还没生成，施工单就编好了**」。
+
+修：桥接搬到预演之后 → 顺序变成 **预演 → 桥接 → 渲染**。
+
+**② `apply_control` 无条件调用**
+
+```python
+if frame is None:
+    want_ctrl = False      # 这里本来是对的
+...
+apply_control(..., staged_image=self._stage_control_image(frame), ...)   # 但这里无条件求值
+```
+
+Python 会**先求值所有参数**再进函数，所以 `want_ctrl=False` 时
+`_stage_control_image(None)` 照样被执行。
+
+修：`if want_ctrl:` 包起来。
+**白模失败本应「降级为不出控制图」，不该把整集打崩。**
+
+### 修完之后：不再崩，但暴露下一层问题
+
+```
+[F-SUBMIT-COMFY] ComfyChannel 不能提交 'http' 形态的任务
+```
+
+`episode_demo` 用的是 `_null_compiler()`：
+
+```python
+renderer = CachingRenderer(RenderSession(ch, _null_compiler()), ...)
+```
+
+**IR 从来没被编译成 ComfyUI 图** —— 它一直是「一份 http 形态的任务」（给 local-gen 的）。
+切到 ComfyUI 后端，那份任务当然提交不了。
+
+**所以 B 步真正缺的是**：`--backend comfyui` 时要用真的 `ComfyCompiler`
+（`CapabilityMatrix.from_snapshot(probe_from_object_info(...))`），而不是空编译器。
+
+### 另一个反复踩的坑（第 8 次）
+
+补丁脚本里在中文串中用 ASCII 双引号 → SyntaxError，整段未执行。
+**中文串一律用「」。** 另外这次断言抓到了自己算错的结束行（`)` 在下一行），
+**没让半截修改落地** —— 断言值这条命。
+
+### 验证 Verification
+
+```
+ [v] 顺序：预演(524) < 桥接(534) < 渲染
+ [v] `if want_ctrl:` 守卫在位
+ [v] 1677 项测试通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.130] — 2026-10-22（**P0-1 的 A 步**：后端选择搬出入口脚本）
 
 ### 改造前

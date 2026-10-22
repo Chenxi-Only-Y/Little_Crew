@@ -509,11 +509,6 @@ class EpisodeRunner:
         #
         # 只存**文字层**的提示词（外观并入后的镜头描述）：那是本项目控制得住
         # 的那一层；模板/风格后缀是编译期常量，由 `irHash` 覆盖。
-        self._prompts_seen: dict[str, str] = {}
-        irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
-        _prompts = self._prompts_seen
-        if limit is not None:
-            irs = irs[:planned]
 
         # ---- 3.8) 白模预演 + 制片主任排期（**必须在渲染之前**）----
         #
@@ -528,6 +523,18 @@ class EpisodeRunner:
         self._mark("previs")
         previs_info = self._run_previs(picked)
         self._mark("previs_done")
+
+        # ⚠️ **桥接必须在白模预演之后**（2026-10-22 修）。
+        #
+        # 原来桥接（IR 编译）在预演之前，于是 `_control_frame_for()` 拿到的
+        # 永远是 `None` —— **控制图再也不会被编进施工单**。
+        # 这不是「后端不支持」，是「控制图还没生成，施工单就编好了」。
+        # 表现是崩溃（`_stage_control_image(None)`），真因在顺序。
+        self._prompts_seen: dict[str, str] = {}
+        irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
+        _prompts = self._prompts_seen
+        if limit is not None:
+            irs = irs[:planned]
         # ---- 4) 渲染 ----
         self._mark("render_start")
         rstats = self._render(irs, on_progress=on_progress)
@@ -1080,15 +1087,20 @@ class EpisodeRunner:
         # 这一步也抽到了 `runtime/model_source.py`（同理由：A/B 脚本要用它，
         # 而复制即漂移）。
         from little_crew.runtime.model_source import apply_control
-        apply_control(
-            nodes,
-            src=src,
-            staged_image=self._stage_control_image(frame),
-            blur_radius=int(self.previs_blur_radius),
-            blur_sigma=float(self.previs_blur_sigma),
-            strength=float(self.control_strength),
-            channel=str(self.previs_channel),
-        )
+        # **只在真的要用控制图时调用**：
+        # 早先这里无条件调用，于是 `want_ctrl=False`（拿不到控制图）时
+        # 仍会求值 `_stage_control_image(None)` -> `AttributeError`。
+        # 白模失败本应「降级为不出控制图」，不该把整集打崩。
+        if want_ctrl:
+            apply_control(
+                nodes,
+                src=src,
+                staged_image=self._stage_control_image(frame),
+                blur_radius=int(self.previs_blur_radius),
+                blur_sigma=float(self.previs_blur_sigma),
+                strength=float(self.control_strength),
+                channel=str(self.previs_channel),
+            )
         out["nodes"] = nodes
         return out
 
