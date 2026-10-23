@@ -95,6 +95,19 @@ class FailureKind(str, Enum):
     JOB_FAILED = "job_failed"
     #: 超时
     TIMEOUT = "timeout"
+    #: **状态未知 —— 可能还在跑，不可重提**（2026-10-23 审计 M-20）。
+    #:
+    #: 与 `CHANNEL_ERROR` 分开的理由：两者对"下一步做什么"的答案完全相反 ——
+    #: 通道出错可以重来；状态未知必须先对账（任务可能已经烧了一半 GPU/已计费）。
+    #: 早期把 UNKNOWN 压成 `CHANNEL_ERROR`，于是"不可重提"这条信息
+    #: **在数据结构上根本不存在**，只剩 `reason` 里的一句中文。
+    NEEDS_RECONCILE = "needs_reconcile"
+
+
+#: 这些失败**不代表任务没跑起来** —— 上层必须对账，不能直接重提。
+_MAYBE_RUNNING: frozenset[str] = frozenset({
+    FailureKind.NEEDS_RECONCILE, FailureKind.TIMEOUT,
+})
 
 
 @dataclass
@@ -123,6 +136,17 @@ class RenderOutcome:
     @property
     def images(self) -> tuple[ArtifactRef, ...]:
         return tuple(a for a in self.artifacts if a.kind == "image")
+
+    @property
+    def maybe_running(self) -> bool:
+        """**任务可能还在服务端跑**（超时 / 状态未知）。
+
+        上层据此决定"记账成什么"：`maybe_running` 时**绝不能**记成 FAILED ——
+        FAILED 在续跑计划里等于"可安全重提"，而那会造成重复烧 GPU / 重复计费
+        （审计 H-11 / M-20）。
+        """
+        return (not self.ok and self.failure in _MAYBE_RUNNING
+                and self.handle is not None)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -374,7 +398,7 @@ class RenderSession:
                         "graphId": gid},
         )
 
-        prior = self._submitted.get(idem)
+        prior = self._prior_handle(idem)
         reused = prior is not None
         if reused:
             # **复用时不再提交。**
@@ -394,7 +418,7 @@ class RenderSession:
                     reason=f"提交异常 {type(exc).__name__}：{exc}",
                     compile_result=result, notice_count=len(result.notices),
                     seconds=time.perf_counter() - t0)
-            self._submitted[idem] = handle
+            self._remember_submission(self._submitted, idem, handle)
 
         if not wait:
             return RenderOutcome(
@@ -453,7 +477,7 @@ class RenderSession:
                 reason=f"请求构造失败：{type(exc).__name__}: {exc}",
                 seconds=time.perf_counter() - t0)
 
-        prior = self._submitted.get(idem)
+        prior = self._prior_handle(idem)
         reused = prior is not None
         if reused:
             handle = prior
@@ -466,7 +490,7 @@ class RenderSession:
                     failure=FailureKind.CHANNEL_ERROR,
                     reason=f"提交异常 {type(exc).__name__}：{exc}",
                     seconds=time.perf_counter() - t0)
-            self._submitted[idem] = handle
+            self._remember_submission(self._submitted, idem, handle)
 
         if not wait:
             return RenderOutcome(
@@ -477,6 +501,34 @@ class RenderSession:
         return self._await(handle, None, job_id, reused, t0, None)
 
     # ---- 等待与回收 ----------------------------------------------------
+
+    def _prior_handle(self, idem: str) -> JobHandle | None:
+        """会话内幂等表里**可以复用**的句柄。
+
+        ⚠️ 不复用 FAILED / CANCELLED（2026-10-23 审计 M-21）。
+
+        `channel.submit()` 失败有两种形态：抛异常（不写表，正确），以及
+        **返回一个 `status=FAILED` 的句柄**（早期也照样写进表）。后者的后果是
+        「一次确定性的提交失败 -> 这一镜在本次会话内永远失败、且没有重试机会」，
+        而 `reused_submission=True` 还会让日志显示"复用了提交"，把失败掩盖成优化。
+
+        反过来 **UNKNOWN 必须复用**：那表示"任务可能还在跑"，
+        重提就是重复烧 GPU —— 要的是拿同一个句柄继续轮询/对账。
+        """
+        prior = self._submitted.get(idem)
+        if prior is None:
+            return None
+        if prior.status in (JobStatus.FAILED, JobStatus.CANCELLED):
+            return None
+        return prior
+
+    @staticmethod
+    def _remember_submission(table: dict[str, JobHandle], idem: str,
+                             handle: JobHandle) -> None:
+        """把**可信**的句柄记进会话级幂等表（FAILED / CANCELLED 不进）。"""
+        if handle.status in (JobStatus.FAILED, JobStatus.CANCELLED):
+            return
+        table[idem] = handle
 
     def with_backend(self, backend: Any) -> "RenderSession":
         """返回一个**换了通道后端**的浅拷贝。
@@ -528,18 +580,23 @@ class RenderSession:
                     reused_submission=reused,
                     seconds=time.perf_counter() - t0)
             if h.status is JobStatus.UNKNOWN:
-                # 状态未知**不等于失败** —— 必须对账，不可重提
+                # 状态未知**不等于失败** —— 必须对账，不可重提。
+                # 用独立分类而不是 CHANNEL_ERROR：上层要据此决定
+                # "记 UNKNOWN" 还是 "记 FAILED"，两者在续跑计划里天差地别。
                 return RenderOutcome(
-                    graph_id=gid, ok=False, failure=FailureKind.CHANNEL_ERROR,
+                    graph_id=gid, ok=False,
+                    failure=FailureKind.NEEDS_RECONCILE,
                     reason="任务状态未知，需 reconcile 对账（不可重提）",
                     compile_result=result, handle=h,
                     notice_count=notices,
                     reused_submission=reused,
                     seconds=time.perf_counter() - t0)
             if time.time() > deadline:
+                # 超时同样是"可能还在跑" —— 服务端不会因为我们等够了就停下
                 return RenderOutcome(
                     graph_id=gid, ok=False, failure=FailureKind.TIMEOUT,
-                    reason=f"等待超过 {self.timeout_s}s",
+                    reason=f"等待超过 {self.timeout_s}s（任务可能仍在服务端运行，"
+                           f"不可重提）",
                     compile_result=result, handle=h,
                     notice_count=notices,
                     reused_submission=reused,

@@ -37,7 +37,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
-    ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 43),
+    ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 59),
     # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，
     # 而上层只看到 [empty-output]（2026-10-19 实测，稳定复现）。
     ("LLM 调用串行化", [sys.executable, str(PLATFORM / "tests" / "test_llm_lock.py")], 7),
@@ -84,8 +84,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("导演接线", [sys.executable, "-m", "little_crew.runtime.director_wiring_check"], 15),
     ("灯光师", [sys.executable, "-m", "little_crew.agent.gaffer_llm_check"], 30),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 65),
-    ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
-    ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
+    ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 60),
+    ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 60),
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。

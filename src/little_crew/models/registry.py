@@ -501,6 +501,12 @@ def _video_models() -> list[ModelSpec]:
                     async_task=True,
                     status_path="/v1/query/video_generation?task_id={task_id}",
                     status_success_value="Success",
+                    # ⚠️ MiniMax 官方枚举是 Preparing/Queueing/Processing/**Success**/**Fail**。
+                    # 通道里的失败清单曾硬编码 `("failed","error","canceled")` ——
+                    # `Fail` 不在其中，于是**明确失败**被当成"还在跑"，
+                    # 空转到 30 分钟超时（审计 H-12）。
+                    status_failure_values=("Fail",),
+                    artifact_kind="video",
                     notes="官方 API 或自建服务。endpoint 由 config/.env 提供",
                 ),
                 Backend(
@@ -534,6 +540,10 @@ def _video_models() -> list[ModelSpec]:
                     async_task=True,
                     status_path="/v1/videos/generations/{task_id}",
                     status_success_value="succeeded",
+                    # 本地服务实测也用 `succeeded`；失败侧没有独立枚举，
+                    # 靠通道的通用清单（failed/error/canceled/**fail**）兜住。
+                    status_failure_values=("fail", "failed"),
+                    artifact_kind="video",
                     is_local_by_default=True,
                     notes=("local-gen 本地异步通道（零成本）。"
                            "**实测产物自带 AAC 音轨**（容器里 2 条 trak："
@@ -641,6 +651,7 @@ def _audio_models() -> list[ModelSpec]:
                     ' "voice": "{voice}"}}'
                 ),
                 response_path="output.audio.url",
+                artifact_kind="audio",
             ),),
             capability=Capability(native_audio=True),
             cost=CostProfile(kind="metered", cny_per_call=0.02),

@@ -257,7 +257,20 @@ class Channel(Protocol):
     def reconcile(self, job_ids: Sequence[str]) -> Mapping[str, JobHandle]:
         """对账（R3）。**崩溃重启后回收已完成的任务，绝不重复提交。**
 
-        映射的键是 ``idempotency_key``。查不到的任务不出现在结果里
-        （表示"确实没执行过"，可以安全重提）。
+        ## 键约定：**服务端任务 id**（即 ``JobHandle.channel_id``）
+
+        ⚠️ 早期协议写的是 ``idempotency_key``，两个实现各按自己的方便来
+        （ComfyUI 按 ``prompt_id``、HTTP 按幂等键），而调用方
+        （``runtime.checkpoint``）传的是 ``channel_id`` —— 三套约定互不兼容。
+        对 ComfyUI 恰好对上（``channel_id`` 就是 ``prompt_id``），
+        对 HTTP 则**恒查不到**，表现为「服务端无此任务，视为未提交」
+        -> 崩溃重启后必然重复提交 -> **重复计费**（审计 H-9）。
+
+        实现可以额外兼容幂等键，但**调用方只传服务端任务 id**。
+
+        查不到的任务不出现在结果里（= 确实没执行过，可安全重提）。
+        **查询本身失败必须抛 ``ChannelError``**，不要返回空字典 ——
+        「查询失败」与「确实没有」必须可区分，否则在途任务会被当未提交
+        （审计 H-16）。
         """
         ...

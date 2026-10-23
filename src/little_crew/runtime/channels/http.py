@@ -86,6 +86,13 @@ def render_body_template(template: str,
 # 通道
 # ==========================================================================
 
+#: 通用失败状态取值（小写）。后端可用 `Backend.status_failure_values` 追加。
+#: `fail` 单独列出来是**有代价的记忆**：MiniMax 官方用的是 `Fail`，
+#: 缺了它，一个明确失败的任务会被当成"还在跑"空转到超时（审计 H-12）。
+_DEFAULT_FAILURE_VALUES: frozenset[str] = frozenset({
+    "failed", "fail", "error", "canceled", "cancelled", "timeout", "expired",
+})
+
 @dataclass
 class _Record:
     """一次提交的落账。用于 R1 幂等。"""
@@ -94,6 +101,10 @@ class _Record:
     handle: JobHandle
     submitted_at: float
     attempts: int = 0
+    #: 请求**确实发出去过**。为 False 表示"登记了但没发请求"（如服务不可用）——
+    #: 那种情况下幂等键不能被毒化，否则一次「服务没起」就让这一镜永久提交不了
+    #: （审计 M-14）。
+    submitted: bool = False
 
 
 class HttpChannel:
@@ -118,6 +129,10 @@ class HttpChannel:
         self.max_polls = max_polls
         self.channel_id = channel_id or f"http:{backend.endpoint}{backend.path}"
         self._records: dict[str, _Record] = {}
+        #: 服务端任务 id -> 幂等键。`reconcile` 的键约定是**服务端任务 id**
+        #: （审计 H-9：协议说幂等键、comfy 实现用 prompt_id、checkpoint 传
+        #: channel_id —— 三套约定互不兼容，于是 HTTP 通道的对账恒失败）。
+        self._by_channel: dict[str, str] = {}
 
     # ---- 能力自述 ------------------------------------------------------
 
@@ -193,7 +208,7 @@ class HttpChannel:
     # ---- R1 提交 -------------------------------------------------------
 
     def submit(self, job: CompiledJob) -> JobHandle:
-        """提交。``idempotency_key`` 命中时**直接返回既有句柄，不重复请求**。"""
+        """提交。``idempotency_key`` 命中**已受理**的任务时直接返回既有句柄。"""
         if job.kind is not BackendKind.HTTP:
             raise ChannelError("F-SUBMIT-API",
                                f"HttpChannel 不能提交 {job.kind.value!r} 形态的任务")
@@ -203,28 +218,41 @@ class HttpChannel:
                 "HTTP 通道提交必须携带 idempotency_key —— "
                 "远端 API 无幂等键会造成重复计费",
             )
-
-        # R1：幂等去重
-        if job.idempotency_key in self._records:
-            rec = self._records[job.idempotency_key]
-            rec.attempts += 1
-            return rec.handle
-
         if job.request is None:
             raise ChannelError("F-SUBMIT-VALID", "HTTP 任务缺少 request 字段")
 
-        handle = JobHandle(job_id=job.job_id, channel_id="", status=JobStatus.PENDING)
-        self._records[job.idempotency_key] = _Record(
-            idempotency_key=job.idempotency_key, handle=handle,
-            submitted_at=time.time(),
-        )
+        # ---- R1：幂等去重（只认**可能已被受理**的记录）----
+        #
+        # ⚠️ 判据不是"有没有这条记录"，而是"上次那条记录**可能已经在服务端跑起来**了吗"：
+        #   · 有 channel_id（服务端给了任务 id）-> 已受理 -> **绝不能重发**
+        #   · 状态不是 FAILED -> 已受理 -> 不能重发
+        #   · 没有 channel_id 且状态是 FAILED -> **确定没被受理** -> 允许重发
+        #
+        # 早期版本只看"有没有记录"，而记录是在**发请求之前**就建的 ——
+        # 于是「服务没起」这种最常见的可恢复故障会把幂等键**永久毒化**：
+        # 之后每次用同一个键重试都直接返回那个 FAILED 句柄，请求根本不再发
+        # （审计 M-14）。
+        rec = self._records.get(job.idempotency_key)
+        if rec is not None and (bool(rec.handle.channel_id)
+                                or rec.handle.status is not JobStatus.FAILED):
+            rec.attempts += 1
+            return rec.handle
 
+        # ---- 环境检查放在建账**之前**：不可用就别落账 ----
         ok, why = self.available()
         if not ok:
-            handle.status = JobStatus.FAILED
+            handle = JobHandle(job_id=job.job_id, channel_id="",
+                               status=JobStatus.FAILED)
             handle.error = ChannelError("F-SUBMIT-API", why, retryable=True)
             return handle
 
+        handle = JobHandle(job_id=job.job_id, channel_id="", status=JobStatus.PENDING)
+        rec = _Record(idempotency_key=job.idempotency_key, handle=handle,
+                      submitted_at=time.time(), attempts=1)
+        self._records[job.idempotency_key] = rec
+
+        # 从这一刻起"请求已经发出"，网络超时也可能**已被受理** -> 记下来
+        rec.submitted = True
         try:
             raw = self._request(job, job.request)
         except ChannelError as e:
@@ -248,8 +276,10 @@ class HttpChannel:
                 return handle
             handle.channel_id = str(task_id)
             handle.status = JobStatus.RUNNING
+            self._by_channel[handle.channel_id] = job.idempotency_key
         else:
             handle.channel_id = str(extract_path(raw, "id") or job.job_id)
+            self._by_channel[handle.channel_id] = job.idempotency_key
             self._absorb_sync_result(handle, raw)
         return handle
 
@@ -262,7 +292,6 @@ class HttpChannel:
             return handle          # 同步通道在 submit 时已终结
 
         path = self.backend.status_path.replace("{task_id}", handle.channel_id)
-        req = {"method": "GET", "path": path, "body": None}
         try:
             raw = self._request_raw(
                 method="GET",
@@ -270,16 +299,23 @@ class HttpChannel:
                 body=None,
             )
         except ChannelError as e:
-            handle.status = JobStatus.FAILED
+            # ⚠️ **查询失败不等于任务失败**（2026-10-23 审计 M-16）。
+            #
+            # 与 ComfyUI 通道对齐：一次网络抖动不该把一个正在跑（甚至已完成）
+            # 的**计费**任务判死 —— 判成 FAILED 后 checkpoint 会把它归入
+            # "可安全重提"，于是重新提交 -> **重复扣费**。
+            # 标 UNKNOWN 交给对账，由服务端回答"到底跑完没有"。
+            handle.status = JobStatus.UNKNOWN
             handle.error = e
             return handle
 
         handle.raw = raw
         state = str(extract_path(raw, "status") or extract_path(raw, "state") or "")
         success = self.backend.status_success_value
+        failures = _failure_values(self.backend)
         if state == success:
             self._absorb_sync_result(handle, raw)
-        elif state in ("failed", "error", "canceled", "cancelled"):
+        elif state.strip().lower() in failures:
             handle.status = JobStatus.FAILED
             handle.error = ChannelError(
                 "F-SUBMIT-API",
@@ -342,21 +378,82 @@ class HttpChannel:
     # ---- R3 对账 -------------------------------------------------------
 
     def reconcile(self, job_ids: Sequence[str]) -> Mapping[str, JobHandle]:
-        """进程内对账。
+        """对账。**键是服务端任务 id**（``channel_id``）。
 
-        ⚠️ **真正的对账需要持久化** —— 本类只能在**同进程内**回收已提交的任务。
-        崩溃重启后的对账由 ``runtime.checkpoint`` 读持久记录后调用本方法完成。
-        只返回**确实查得到**的任务；查不到的表示"没执行过"，可安全重提。
+        ## 两条路径，缺一不可
+        1. **进程内**：``_records`` 里查得到 -> 顺带 poll 一次（快、不耗往返）
+        2. **跨进程**：查不到就**按任务 id 问服务端**（``status_path``）——
+           这才是"崩溃重启后回收已完成任务"真正需要的那条。
+
+        ⚠️ 只做第 1 条是不够的（2026-10-23 审计 H-9）：重启后 ``_records``
+        是空的，于是 HTTP 通道的对账**恒返回空**，调用方把它解释成
+        「服务端无此任务」-> 判 FAILED -> **重复提交 -> 重复计费**。
+        而 ComfyUI 之所以没这个问题，是因为它本来就查服务端的 ``/history``。
+
+        查询失败**抛出**（契约见 ``base.Channel.reconcile``）：不能猜。
+        唯一例外是服务端明确回 404 —— 那才真的是"没这个任务"。
         """
         out: dict[str, JobHandle] = {}
         for key in job_ids:
             rec = self._records.get(key)
             if rec is None:
+                ik = self._by_channel.get(str(key))
+                if ik:
+                    rec = self._records.get(ik)
+            if rec is not None:
+                if self.backend.async_task and not rec.handle.status.terminal:
+                    rec.handle = self.poll(rec.handle)
+                out[key] = rec.handle
                 continue
-            if self.backend.async_task and not rec.handle.status.terminal:
-                rec.handle = self.poll(rec.handle)
-            out[key] = rec.handle
+            remote = self._reconcile_remote(str(key))
+            if remote is not None:
+                out[key] = remote
         return out
+
+    def _reconcile_remote(self, task_id: str) -> JobHandle | None:
+        """按服务端任务 id 直接查状态（跨进程对账）。
+
+        - 查不到（404）-> ``None``：**确实没这个任务**，可安全重提
+        - 查询失败（网络/5xx）-> 抛出：不能猜
+        - 成功但按 ``response_path`` 取不到产物 -> 标 UNKNOWN 并说明
+          （**不谎报成功、也不重提**：那种情况只可能是取件逻辑还没实现）
+        """
+        if not (self.backend.async_task and self.backend.status_path and task_id):
+            return None
+        path = self.backend.status_path.replace("{task_id}", task_id)
+        try:
+            raw = self._request_raw(method="GET",
+                                    url=self.backend.endpoint.rstrip("/") + path,
+                                    body=None)
+        except ChannelError as e:
+            if int(e.detail.get("status") or 0) == 404:
+                return None
+            raise
+
+        handle = JobHandle(job_id=task_id, channel_id=task_id,
+                           status=JobStatus.RUNNING)
+        handle.raw = raw
+        state = str(extract_path(raw, "status") or extract_path(raw, "state") or "")
+        if state == self.backend.status_success_value:
+            self._absorb_sync_result(handle, raw)
+            if not handle.artifacts:
+                # 服务端说成功，但按 `response_path` 取不到产物 ——
+                # 不谎报成功（那会让续跑把它当"已完成"而永远缺这张图），
+                # 也不重提（那会重复计费）。
+                handle.status = JobStatus.UNKNOWN
+                handle.error = ChannelError(
+                    "F-SUBMIT-API",
+                    f"服务端说已完成，但按 response_path="
+                    f"{self.backend.response_path!r} 取不到产物 —— "
+                    f"需要额外取件步骤（如 MiniMax 的 file_id 下载）",
+                    detail={"raw": raw},
+                )
+        elif state.strip().lower() in _failure_values(self.backend):
+            handle.status = JobStatus.FAILED
+            handle.error = ChannelError(
+                "F-SUBMIT-API", f"任务 {task_id} 在服务端失败: {state}",
+                detail={"raw": raw})
+        return handle
 
     # ---- 内部 ----------------------------------------------------------
 
@@ -428,8 +525,45 @@ class HttpChannel:
             )
             return
         uri = val if isinstance(val, str) else json.dumps(val, ensure_ascii=False)
-        handle.artifacts.append(ArtifactRef(kind=handle.raw.get("_kind", "image"), uri=uri))
+        # ⚠️ 产物类型**由后端声明**，不写死（2026-10-23 审计 H-10）。
+        #
+        # 这里原来读 `handle.raw.get("_kind", "image")` —— 而 `_kind` 这个键
+        # **全代码库没有任何一处写入**，于是 kind 恒为 `"image"`：
+        # H3 的 `.mp4` 被算进 `RenderOutcome.images`，门禁拿 mp4 当图片量尺寸。
+        handle.artifacts.append(
+            ArtifactRef(kind=_artifact_kind(self.backend, uri), uri=uri))
         handle.status = JobStatus.SUCCEEDED
+
+
+def _failure_values(backend: Any) -> frozenset[str]:
+    """失败状态取值集合（**小写**，用于大小写不敏感的比对）。
+
+    默认清单兜住各家常见写法；后端可以用 ``Backend.status_failure_values``
+    追加自己的枚举（MiniMax 官方就是 ``Fail``，不在默认清单里）。
+    """
+    vals = {str(v).strip().lower()
+            for v in (getattr(backend, "status_failure_values", ()) or ())}
+    vals.update(_DEFAULT_FAILURE_VALUES)
+    return frozenset(vals)
+
+
+def _artifact_kind(backend: Any, uri: str) -> str:
+    """产物类型：**以声明为准**，声明为默认值时按扩展名兜底。
+
+    为什么保留扩展名兜底：本地服务有时返回不带扩展名的 URL，
+    而"声明写错了"和"返回值没扩展名"是两件事 —— 前者该改声明，
+    后者只能猜。猜的时候**只在声明是默认值 `image` 时**才覆盖，
+    免得把显式声明压掉。
+    """
+    declared = str(getattr(backend, "artifact_kind", "") or "").strip().lower()
+    if declared and declared != "image":
+        return declared
+    low = str(uri or "").lower().split("?")[0]
+    for suffix, kind in ((".mp4", "video"), (".webm", "video"), (".mov", "video"),
+                         (".wav", "audio"), (".mp3", "audio"), (".m4a", "audio")):
+        if low.endswith(suffix):
+            return kind
+    return declared or "image"
 
 
 def _is_local(endpoint: str) -> bool:

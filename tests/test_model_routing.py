@@ -422,17 +422,56 @@ def main() -> int:
           ch_l.capabilities.metered is False and ch_c.capabilities.metered is True,
           f"local={ch_l.capabilities.metered} cloud={ch_c.capabilities.metered}")
 
-    # R1 幂等：同键重复提交不得产生两次请求
+    # ---- R1 幂等：**已受理**的同键重复提交不得产生两次请求 ----
+    #
+    # ⚠️ 2026-10-23 改（审计 M-14）：这条原来用**连不上的后端**来测，
+    # 断言"同键返回同一句柄"。那等于把 bug 锁成了规范：记录是发请求**之前**
+    # 就落的账，于是「服务没起」这种最常见的可恢复故障会把幂等键**永久毒化** ——
+    # 之后每次重试都直接返回那个 FAILED 句柄，请求根本不再发。
+    #
+    # 正确的两条语义必须**分开测**：
+    #   R1  已受理（拿到服务端任务 id）-> 同键必须复用，绝不重发
+    #   R1c 确定没被受理（没有任务 id 且状态 FAILED）-> 允许重发
+    class _StubHttp(HttpChannel):
+        """把网络层换掉：可用性、请求都可控。"""
+
+        def __init__(self, backend, *, ok: bool = True, reply=None) -> None:
+            super().__init__(backend)
+            self._ok = ok
+            self._reply = reply if reply is not None else {
+                "id": "task-1", "data": [{"url": "http://x/a.png"}]}
+            self.requests = 0
+
+        def available(self):                                  # noqa: D102
+            return (self._ok, "" if self._ok else "服务未启动")
+
+        def _request_raw(self, method, url, body, timeout=None):   # noqa: D102
+            self.requests += 1
+            return dict(self._reply)
+
     job = CompiledJob(
         job_id="j1", kind=BackendKind.HTTP, backend=be_cloud,
         request={"method": "POST", "path": "/v1/images/generations",
                  "body": {"prompt": "x"}},
         idempotency_key="IDEM-1",
     )
-    h1 = ch_c.submit(job)               # 会因无法连接而失败，但**记录已落账**
-    h2 = ch_c.submit(job)
-    check("R1 同幂等键重复提交返回同一句柄（不重复请求）",
-          h1 is h2, f"same_object={h1 is h2}")
+    ch_ok = _StubHttp(be_cloud)
+    h1 = ch_ok.submit(job)
+    h2 = ch_ok.submit(job)
+    check("R1 已受理后同幂等键重复提交返回同一句柄（不重复请求）",
+          h1 is h2 and ch_ok.requests == 1,
+          f"same_object={h1 is h2} requests={ch_ok.requests}")
+    check("R1b 复用不额外请求（计费安全）", ch_ok.requests == 1,
+          f"requests={ch_ok.requests}")
+
+    # 确定没被受理 -> 允许重发（幂等键不许被毒化）
+    ch_down = _StubHttp(be_cloud, ok=False)
+    d1 = ch_down.submit(job)
+    d2 = ch_down.submit(job)
+    check("R1c ★★ 服务不可用**不毒化**幂等键：下次提交会真的重发",
+          d1 is not d2 and not ch_down._records and d1.status is JobStatus.FAILED,
+          f"same={d1 is d2} records={len(ch_down._records)} "
+          f"status={d1.status.value}")
 
     missing_key = False
     try:
@@ -440,7 +479,151 @@ def main() -> int:
                                 request={"method": "POST", "path": "/x", "body": {}}))
     except ChannelError as e:
         missing_key = "idempotency" in e.message.lower()
-    check("R1b 缺幂等键的 HTTP 提交被拒绝（防重复计费）", missing_key)
+    check("R1d 缺幂等键的 HTTP 提交被拒绝（防重复计费）", missing_key)
+
+    # ==================================================================
+    # H. 状态语义（2026-10-23 审计 H-9 / H-10 / H-12 / M-16）
+    # ==================================================================
+    #
+    # 这一组全是"跨层把语义弄丢"的形态，共同后果是**重复提交 / 重复计费**：
+    #   H-9  对账的键不是服务端任务 id -> 恒查不到 -> 判"未提交" -> 重提
+    #   H-12 失败枚举漏了 `Fail`       -> 明确失败被当成在跑 -> 空转 30 分钟
+    #   M-16 查询网络错判 FAILED        -> 同上，且与 ComfyUI 侧语义相反
+    #   H-10 产物类型写死 image         -> mp4 被当图片量尺寸
+    be_async = Backend(
+        kind=BackendKind.HTTP, endpoint="https://api.example.com",
+        path="/v1/video", response_path="task_id", async_task=True,
+        status_path="/v1/q?task_id={task_id}", status_success_value="Success",
+        status_failure_values=("Fail",), artifact_kind="video",
+    )
+
+    class _AsyncStub(_StubHttp):
+        """异步通道替身：可指定轮询时返回的状态 / 让轮询的网络层失败。"""
+
+        def __init__(self, backend, *, reply=None, poll_status: str = "Queueing",
+                     poll_raises: bool = False) -> None:
+            super().__init__(backend, reply=reply or {"task_id": "t-1"})
+            self.poll_status = poll_status
+            self.poll_raises = poll_raises
+
+        def _request_raw(self, method, url, body, timeout=None):   # noqa: D102
+            self.requests += 1
+            if self.poll_raises and self.requests > 1:
+                raise ChannelError("F-TIMEOUT", "查询超时", retryable=True)
+            if method == "GET":
+                return {"status": self.poll_status, "task_id": "t-1"}
+            return dict(self._reply)
+
+    job9 = CompiledJob(job_id="j9", kind=BackendKind.HTTP, backend=be_async,
+                       request={"method": "POST", "path": "/v1/video", "body": {}},
+                       idempotency_key="IDEM-9")
+    ch9 = _AsyncStub(be_async)
+    h9 = ch9.submit(job9)
+    found = ch9.reconcile([h9.channel_id])       # 按**服务端任务 id** 查
+    check("I1 ★★ 对账按服务端任务 id 查得到（三套键约定已统一）",
+          h9.channel_id in found, f"channel_id={h9.channel_id} "
+                                  f"found={list(found)}")
+    check("I2 ★ 也兼容旧的幂等键（老调用方不炸）",
+          "IDEM-9" in ch9.reconcile(["IDEM-9"]))
+
+    # H-12：MiniMax 官方用的是 `Fail`（首字母大写）
+    ch_f = _AsyncStub(be_async, poll_status="Fail")
+    hf = ch_f.poll(ch_f.submit(job9))
+    check("I3 ★★ 服务端 `Fail` 被判为**失败**（不是「还在跑」）",
+          hf.status is JobStatus.FAILED, hf.status.value)
+    check("I4 失败原因带服务端原文（可归因）",
+          hf.error is not None and "Fail" in hf.error.message,
+          (hf.error.message[:60] if hf.error else "无"))
+    ch_p = _AsyncStub(be_async, poll_status="Processing")
+    hp = ch_p.poll(ch_p.submit(job9))
+    check("I5 对照：`Processing` 仍然是「在跑」（不能一律判失败）",
+          hp.status is JobStatus.RUNNING, hp.status.value)
+
+    # M-16：轮询的网络错误 ≠ 任务失败
+    ch_n = _AsyncStub(be_async, poll_raises=True)
+    hn = ch_n.poll(ch_n.submit(job9))
+    check("I6 ★★ 轮询网络错误 -> UNKNOWN（交给对账，不判死）",
+          hn.status is JobStatus.UNKNOWN, hn.status.value)
+
+    # H-10：产物类型按后端声明，声明为默认值时按扩展名兜底
+    be_vid = Backend(kind=BackendKind.HTTP, endpoint="https://api.example.com",
+                     path="/v1/video", response_path="data.0.url",
+                     artifact_kind="video")
+    ch_v = _StubHttp(be_vid, reply={"id": "v1",
+                                    "data": [{"url": "http://x/a.mp4"}]})
+    hv = ch_v.submit(CompiledJob(job_id="jv", kind=BackendKind.HTTP,
+                                 backend=be_vid, idempotency_key="IDEM-V",
+                                 request={"method": "POST", "path": "/v1/video",
+                                          "body": {}}))
+    check("I7 ★★ 视频产物标成 video（不再一律 image）",
+          bool(hv.artifacts) and hv.artifacts[0].kind == "video",
+          f"{[a.kind for a in hv.artifacts]}")
+    be_img = Backend(kind=BackendKind.HTTP, endpoint="https://api.example.com",
+                     path="/v1/img", response_path="data.0.url")
+    ch_i = _StubHttp(be_img, reply={"id": "i1",
+                                    "data": [{"url": "http://x/b.mp4"}]})
+    hi = ch_i.submit(CompiledJob(job_id="ji", kind=BackendKind.HTTP,
+                                 backend=be_img, idempotency_key="IDEM-I",
+                                 request={"method": "POST", "path": "/v1/img",
+                                          "body": {}}))
+    check("I8 声明是默认值（image）时按扩展名兜底（.mp4 -> video）",
+          bool(hi.artifacts) and hi.artifacts[0].kind == "video",
+          f"{[a.kind for a in hi.artifacts]}")
+
+    # ---- 跨进程对账：重启后 `_records` 是空的，必须**问服务端**（H-9 的另一半）----
+    #
+    # 只修"键约定"是不够的：新进程里查 `_records` 必然查不到，
+    # 于是对账恒返回空 -> 调用方判"服务端无此任务" -> 重提 -> 重复计费。
+    # 所以必须真的按任务 id 去问 `status_path`。
+    class _RemoteOnly(_StubHttp):
+        """模拟「重启后」的通道：进程内没有任何记录，只有服务端知道。"""
+
+        def __init__(self, backend, *, raw=None, code: int | None = None) -> None:
+            super().__init__(backend)
+            self._raw = raw if raw is not None else {
+                "status": "succeeded", "result": {"url": "http://x/a.mp4"}}
+            self._code = code
+
+        def _request_raw(self, method, url, body, timeout=None):   # noqa: D102
+            self.requests += 1
+            if self._code:
+                raise ChannelError("F-SUBMIT-API", f"HTTP {self._code}",
+                                   detail={"status": self._code, "url": url})
+            return dict(self._raw)
+
+    be_r = Backend(kind=BackendKind.HTTP, endpoint="https://api.example.com",
+                   path="/v1/video", response_path="result.url", async_task=True,
+                   status_path="/v1/q?task_id={task_id}",
+                   status_success_value="succeeded", artifact_kind="video")
+    got = _RemoteOnly(be_r).reconcile(["t-remote"])
+    h_r = got.get("t-remote")
+    check("I9 ★★ 重启后按服务端任务 id 查得到（不靠进程内记录）",
+          h_r is not None and h_r.status is JobStatus.SUCCEEDED, str(list(got)))
+    check("I10 ★ 且把产物一并回收（类型 video）",
+          h_r is not None and bool(h_r.artifacts)
+          and h_r.artifacts[0].kind == "video",
+          f"{[a.kind for a in (h_r.artifacts if h_r else ())]}")
+
+    check("I11 ★ 服务端 404 -> 不出现在结果里（确实没提交，可安全重提）",
+          _RemoteOnly(be_r, code=404).reconcile(["t-x"]) == {})
+
+    h_0 = _RemoteOnly(be_r, raw={"status": "succeeded"}).reconcile(
+        ["t-y"]).get("t-y")
+    check("I12 ★ 成功但按 response_path 取不到产物 -> UNKNOWN（不谎报成功、也不重提）",
+          h_0 is not None and h_0.status is JobStatus.UNKNOWN
+          and h_0.error is not None,
+          f"{h_0.status.value if h_0 else None}")
+
+    class _Boom(_RemoteOnly):
+        def _request_raw(self, *a, **kw):                     # noqa: D102
+            raise ChannelError("F-TIMEOUT", "查询超时", retryable=True)
+
+    raised = False
+    try:
+        _Boom(be_r).reconcile(["t-z"])
+    except ChannelError:
+        raised = True
+    check("I13 ★★ 对账查询失败 -> 抛出（空字典会被当「没提交」而重提）", raised)
 
     # R2 同步通道不可中断，必须抛错而非静默忽略
     cant = False
@@ -449,6 +632,26 @@ def main() -> int:
     except ChannelError as e:
         cant = "无法中断" in e.message or "不能中断" in e.message
     check("R2 同步通道 cancel 抛错而非静默忽略", cant)
+
+    # ---- R3 对账查询失败必须**抛出**，不能返回空字典（2026-10-23 审计 H-16）----
+    #
+    # 空字典同时表示「查询失败」和「服务端确实没有这个任务」，而调用方
+    # （`checkpoint.reconcile_now`）只会按后者解释 -> 在途任务被当未提交
+    # -> 续跑时**重复提交、重复烧 GPU**。
+    from little_crew.runtime.channels.comfy import ComfyChannel as _CC
+
+    class _ComfyDown(_CC):
+        def _get_json(self, *a, **kw):                        # noqa: D102
+            raise ChannelError("F-EXEC-COMFY", "服务端连不上", retryable=True)
+
+    raised = False
+    try:
+        _ComfyDown(Backend(kind=BackendKind.COMFYUI,
+                           endpoint="http://127.0.0.1:8188")).reconcile(["p1"])
+    except ChannelError:
+        raised = True
+    check("R3 ★★ 对账查询失败 -> 抛出（空字典会被当「确实没提交」而重提）",
+          raised)
 
     # F5 通道协议一致性
     check("F5 HttpChannel 满足 Channel 协议",

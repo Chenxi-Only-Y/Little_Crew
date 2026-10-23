@@ -308,8 +308,17 @@ class CachingRenderer:
     def _render_and_store(self, ir: Mapping[str, Any], gid: str, t0: float,
                           *, store: bool, ir_hash: str = "",
                           **kw: Any) -> CacheOutcome:
+        # ---- 提交前记意图（审计 M-22：IR 路径此前**完全不写检查点**）----
+        #
+        # ComfyUI 是本机的**主渲染路径**，而"跑到一半崩了不用从头跑"
+        # 这个能力在这条路上原来根本不存在：进程被 kill 后每一镜都要重新烧 GPU。
+        self._ck_begin(gid, idempotency_key=ir_hash or gid,
+                       fingerprint=ir_hash or gid,
+                       engine=str(getattr(self.session.channel, "endpoint", "")))
+
         out = self.session.render(ir, **kw)
         dt = time.perf_counter() - t0
+        self._ck_settle(gid, out)
 
         if not out.ok:
             return CacheOutcome(
@@ -370,10 +379,77 @@ class CachingRenderer:
                 out.compile_result.graph_hash if out.compile_result else "",
                 blobs, dt)
 
+        # 成功落账（产物名必须与缓存层命名一致，否则续跑对不上）
+        self._ck_succeed(gid, sorted(blobs))
+
         return CacheOutcome(graph_id=gid, ok=True, artifacts=blobs,
                             render=out, seconds=dt)
 
     # ---- 批量 ----------------------------------------------------------
+
+    # ---- 检查点记账（两条路径共用）-------------------------------------
+    #
+    # 2026-10-23 审计 H-11 / M-22：记账原来只写在 HTTP 路径里，
+    # 而且把"超时/状态未知"也一并写成 FAILED —— 而 FAILED 在续跑计划里
+    # 等于「可安全重提」。**两条路都错**：IR 路径（ComfyUI，本机主路）压根不记，
+    # HTTP 路径把在途任务记成可重提。
+
+    def _ck_begin(self, job_id: str, *, idempotency_key: str,
+                  fingerprint: str, engine: str = "") -> None:
+        """提交**之前**记意图。
+
+        为什么必须在提交前：若只在拿到 channel_id 之后才写，那么在
+        「提交成功、还没来得及写」这一瞬间崩溃，重启后就不知道有个任务在跑 ——
+        只能重提，而服务端其实已经在跑了。**双份 GPU。**
+        """
+        ck = self.checkpoint
+        if ck is None or not job_id:
+            return
+        try:
+            ck.begin(job_id, idempotency_key=idempotency_key,
+                     fingerprint=fingerprint, extra={"engine": engine})
+        except Exception:                                     # noqa: BLE001
+            pass          # 记账失败不该阻断渲染 —— 但下次续跑会不知道它
+
+    def _ck_settle(self, job_id: str, out: RenderOutcome) -> None:
+        """按结果把检查点落到**最保守**的状态。
+
+        | 情形 | 记成 | 续跑时 |
+        |---|---|---|
+        | 成功 | 交给 `_ck_succeed`（要等产物名） | 跳过 |
+        | **超时 / 状态未知**（句柄还在） | `UNKNOWN` | 进 reconcile，**不重提** |
+        | 无 channel_id（确定没被受理） | `FAILED` | 可安全重提 |
+        | 有 channel_id 且服务端明确报错 | `FAILED` | 可重试 |
+        """
+        ck = self.checkpoint
+        if ck is None or not job_id:
+            return
+        try:
+            h = out.handle
+            if out.ok:
+                if h is not None and h.channel_id:
+                    ck.mark_submitted(job_id, h.channel_id)
+                return
+            if h is not None and h.channel_id:
+                # 先记 id：`reconcile` 只能按服务端任务 id 查
+                ck.mark_submitted(job_id, h.channel_id)
+            if out.maybe_running:
+                # ⚠️ **绝不能记 FAILED**：那在 `plan()` 里等于"可安全重提"，
+                # 而任务很可能还在服务端跑（超时只是我们等够了）。
+                ck.mark_unknown(job_id, out.reason or "任务可能仍在服务端运行")
+                return
+            ck.mark_failed(job_id, out.reason or "提交未成功")
+        except Exception:                                     # noqa: BLE001
+            pass
+
+    def _ck_succeed(self, job_id: str, names: Sequence[str]) -> None:
+        ck = self.checkpoint
+        if ck is None or not job_id:
+            return
+        try:
+            ck.mark_succeeded(job_id, tuple(names))
+        except Exception:                                     # noqa: BLE001
+            pass
 
     def render_batch(self, irs: Sequence[Mapping[str, Any]],
                      **kw: Any) -> CachedBatch:
@@ -440,17 +516,8 @@ class CachingRenderer:
                         job_id: str, t0: float, *, store: bool, key: str,
                         provenance: Mapping[str, Any] | None) -> CacheOutcome:
         # ---- 提交前记意图（续跑的地基）----
-        #
-        # **必须在提交之前**：若只在拿到 channel_id 之后才写，
-        # 那么在"提交成功、还没来得及写"这一瞬间崩溃，重启后就不知道
-        # 有个任务在跑 —— 只能重提，而服务端其实已经在跑了。**双份 GPU。**
-        ck = self.checkpoint
-        if ck is not None and key:
-            try:
-                ck.begin(job_id, idempotency_key=key, fingerprint=key,
-                         extra={"engine": getattr(backend, "endpoint", "")})
-            except Exception:                                 # noqa: BLE001
-                pass          # 记账失败不该阻断渲染 —— 但下次续跑会不知道它
+        self._ck_begin(job_id, idempotency_key=key, fingerprint=key,
+                       engine=getattr(backend, "endpoint", ""))
 
         # ⚠️ **换成配这个后端的会话**（2026-10-18 真机事故）。
         # `HttpChannel` 构造时锁死了 `backend`，不换会话就会出现
@@ -460,23 +527,14 @@ class CachingRenderer:
             values, backend=backend, job_id=job_id, provenance=provenance)
         dt = time.perf_counter() - t0
 
-        # ---- 提交成功后立刻记 channel_id ----
-        if ck is not None:
-            try:
-                if out.handle is not None and out.handle.channel_id:
-                    ck.mark_submitted(job_id, out.handle.channel_id)
-                elif not out.ok and out.handle is None:
-                    # 连句柄都没有 → 提交没成功，重提是安全的
-                    ck.mark_failed(job_id, out.reason)
-            except Exception:                                 # noqa: BLE001
-                pass
+        # ---- 落账：**先判"是否可能还在跑"，再决定记什么**（审计 H-11）----
+        #
+        # 原来的写法是「`if not out.ok: mark_failed`」—— 而超时/状态未知
+        # 也走这条路，于是 SUBMITTED 被改写成 FAILED，续跑时被当成
+        # "可安全重提" -> 重复提交 -> 重复烧 GPU / 重复计费。
+        self._ck_settle(job_id, out)
 
         if not out.ok:
-            if ck is not None:
-                try:
-                    ck.mark_failed(job_id, out.reason)
-                except Exception:                             # noqa: BLE001
-                    pass
             return CacheOutcome(graph_id=job_id, ok=False, failure=out.failure,
                                 reason=out.reason, render=out, seconds=dt)
 
@@ -518,11 +576,7 @@ class CachingRenderer:
         #
         # 产物名必须与缓存层的命名一致，否则续跑时对账回来的名字
         # 在缓存里找不到。
-        if ck is not None:
-            try:
-                ck.mark_succeeded(job_id, sorted(blobs))
-            except Exception:                                 # noqa: BLE001
-                pass
+        self._ck_succeed(job_id, sorted(blobs))
 
         return CacheOutcome(graph_id=job_id, ok=True, artifacts=blobs,
                             render=out, seconds=dt)

@@ -405,18 +405,28 @@ class ComfyChannel:
 
         改为查服务端 ``/history``（它跨进程持久），本方法才真正可续跑。
         单个任务查不到**不报错** —— 那正是"还没提交成功"的正常状态。
+
+        ⚠️ **但查询本身失败必须抛出**（2026-10-23 审计 H-16）。
+        早期这里 ``except ChannelError: return {}`` —— 把「查询失败」压成
+        和「服务端确实没有这个任务」同一个空字典，于是调用方
+        （``checkpoint.reconcile_now``）一律判"服务端无此任务，视为未提交"
+        -> 在途任务被放进 todo -> **续跑时重复提交、重复烧 GPU**。
+        而 checkpoint 那边其实写好了「对账本身失败 —— **不能猜**」的分支，
+        只因通道选择返回空字典，那句防线**永远用不上**。
         """
         wanted = {str(j) for j in job_ids if j}
         if not wanted:
             return {}
 
         out: dict[str, JobHandle] = {}
-        try:
-            hist = self._get_json("/history")
-        except ChannelError:
-            return out
+        hist = self._get_json("/history")          # 查询失败 -> 抛出，交给调用方
         if not isinstance(hist, dict):
-            return out
+            raise ChannelError(
+                "F-EXEC-COMFY",
+                f"/history 返回的不是对象（{type(hist).__name__}）—— "
+                f"无法判断任务在不在，不能假定它们没提交过",
+                retryable=True,
+            )
 
         for pid in wanted:
             entry = hist.get(pid)

@@ -60,9 +60,13 @@ _COMPILER = _compiler()
 class FakeChannel:
     """假通道。**记录真实执行次数**，这是"零 GPU"断言的依据。"""
 
-    def __init__(self, *, render_seconds: float = 4.0) -> None:
+    def __init__(self, *, render_seconds: float = 4.0,
+                 unknown_after: int | None = None) -> None:
         self.endpoint = "http://fake:8188"
         self.channel_id = "fake:ch"
+        #: 轮询到第 N 次之后返回 UNKNOWN（模拟"网络断了、查不到状态"）。
+        #: 这是**在途任务**最典型的形态，也是续跑机制最怕被误判成失败的地方。
+        self.unknown_after = unknown_after
         #: **提交调用次数** —— 注意它与"真正执行次数"是两件事。
         #:
         #: 通道自带 R1 幂等：同幂等键重复提交会返回同一句柄、**不重复执行**。
@@ -94,6 +98,10 @@ class FakeChannel:
     def poll(self, handle: JobHandle) -> JobHandle:
         n = self._poll.get(handle.channel_id, 0) + 1
         self._poll[handle.channel_id] = n
+        if self.unknown_after is not None and n > self.unknown_after:
+            # 查询不到状态 —— **不等于失败**，交给对账
+            handle.status = JobStatus.UNKNOWN
+            return handle
         handle.status = JobStatus.RUNNING if n < 2 else JobStatus.SUCCEEDED
         handle.progress = ProgressEvent(current=n, total=2, unit="step")
         return handle
@@ -187,6 +195,7 @@ def main() -> int:
         _invalidate(tmp)
         _persistence(tmp)
         _stats_honesty(tmp)
+        _checkpoint_wiring(tmp)
         _fetcher()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -450,6 +459,85 @@ def _stats_honesty(tmp: Path) -> None:
 
 
 # ---------- G. 抓取器 ----------
+
+def _checkpoint_wiring(tmp: Path) -> None:
+    """检查点记账：**两条路径都要记，且"可能还在跑"绝不能记成 FAILED**。
+
+    ## 这一节存在的理由（2026-10-23 审计 H-11 / M-22）
+    · `H-11`：原来 `if not out.ok: mark_failed(...)` —— 而超时/状态未知
+      也走这条路，于是 SUBMITTED 被改写成 FAILED。FAILED 在 `plan()` 里
+      等于「可安全重提」，续跑就会**重复提交 / 重复计费**。
+    · `M-22`：IR 路径（ComfyUI，本机主路）**一个字都不写检查点** ——
+      「跑到一半崩了不用从头跑」这个能力在那条路上根本不存在。
+    """
+    from little_crew.runtime.checkpoint import JobState, RenderCheckpoint
+
+    # ① 成功：IR 路径必须留痕，且带产物名（续跑时缓存要靠它对上）
+    ck1 = RenderCheckpoint(tmp / "ck1", episode_id="E1")
+    r1, _ch1 = _mk(tmp, "ck1", checkpoint=ck1)
+    o1 = r1.render(_ir("G-CK1"))
+    rec1 = ck1.get("G-CK1")
+    check("H1 ★★ IR 路径也写检查点（此前崩了就得从头烧 GPU）",
+          o1.ok and rec1 is not None, str(ck1.counts()))
+    check("H2 ★ 成功记 SUCCEEDED 且带产物名",
+          rec1 is not None and rec1.state is JobState.SUCCEEDED
+          and bool(rec1.artifacts),
+          f"{rec1.state.value if rec1 else None} / "
+          f"{rec1.artifacts if rec1 else None}")
+
+    # ② 状态未知：记 UNKNOWN，**绝不记 FAILED**
+    ck2 = RenderCheckpoint(tmp / "ck2", episode_id="E1")
+    ch2 = FakeChannel(unknown_after=1)
+    r2 = CachingRenderer(RenderSession(ch2, _COMPILER),
+                         ContentCache(tmp / "ck2cache"),
+                         fetcher=_fake_fetcher, checkpoint=ck2)
+    o2 = r2.render(_ir("G-CK2"))
+    rec2 = ck2.get("G-CK2")
+    check("H3 ★★ 状态未知 -> UNKNOWN（记 FAILED 就等于允许重提）",
+          not o2.ok and rec2 is not None and rec2.state is JobState.UNKNOWN,
+          f"{rec2.state.value if rec2 else None} / {o2.failure}")
+    check("H4 ★ 且它进 reconcile 而不是 todo（plan 的判据）",
+          rec2 is not None and rec2.state.needs_reconcile)
+    check("H5 ★ 记下了 channel_id（对账只能按服务端任务 id 查）",
+          rec2 is not None and bool(rec2.channel_id),
+          f"{rec2.channel_id if rec2 else None}")
+
+    # ③ 超时：同样是「可能还在跑」，不得记 FAILED
+    ck3 = RenderCheckpoint(tmp / "ck3", episode_id="E1")
+    ch3 = FakeChannel()
+
+    def _always_running(h: JobHandle) -> JobHandle:
+        h.status = JobStatus.RUNNING
+        return h
+
+    ch3.poll = _always_running                        # type: ignore[method-assign]
+    r3 = CachingRenderer(RenderSession(ch3, _COMPILER, timeout_s=1,
+                                       poll_interval_s=0.01),
+                         ContentCache(tmp / "ck3cache"),
+                         fetcher=_fake_fetcher, checkpoint=ck3)
+    o3 = r3.render(_ir("G-CK3"))
+    rec3 = ck3.get("G-CK3")
+    check("H6 ★★ 超时 -> UNKNOWN（不是 FAILED；服务端不会因为我们等够了就停下）",
+          not o3.ok and rec3 is not None and rec3.state is JobState.UNKNOWN,
+          f"{rec3.state.value if rec3 else None} / {o3.failure}")
+
+    # ④ 对照：**提交就没成功**（连句柄都没有）才该记 FAILED —— 那才可以重提
+    ck4 = RenderCheckpoint(tmp / "ck4", episode_id="E1")
+    ch4 = FakeChannel()
+
+    def _submit_raises(job: CompiledJob) -> JobHandle:
+        raise RuntimeError("连接被拒绝")
+
+    ch4.submit = _submit_raises                       # type: ignore[method-assign]
+    r4 = CachingRenderer(RenderSession(ch4, _COMPILER),
+                         ContentCache(tmp / "ck4cache"),
+                         fetcher=_fake_fetcher, checkpoint=ck4)
+    o4 = r4.render(_ir("G-CK4"))
+    rec4 = ck4.get("G-CK4")
+    check("H7 ★ 提交异常（确定没被受理）-> FAILED，允许重试",
+          not o4.ok and rec4 is not None and rec4.state is JobState.FAILED,
+          f"{rec4.state.value if rec4 else None} / {o4.failure}")
+
 
 def _fetcher() -> None:
     class Ch:

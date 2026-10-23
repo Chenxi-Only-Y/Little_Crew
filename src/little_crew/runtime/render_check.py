@@ -371,6 +371,11 @@ def _timeout() -> None:
     check("F1 超时被单独识别为 TIMEOUT",
           o.failure == FailureKind.TIMEOUT, o.reason[:60])
     check("F2 超时保留了句柄（可继续对账或取消）", o.handle is not None)
+    # ★ 超时 = **可能还在跑**（2026-10-23 审计 H-11）。
+    # 上层据此必须记 UNKNOWN 而不是 FAILED —— 记 FAILED 在续跑计划里
+    # 等于「可安全重提」，而服务端不会因为我们等够了就停下。
+    check("F3 ★★ 超时标 `maybe_running`（不得被当成「可以重提」）",
+          o.maybe_running, f"maybe_running={o.maybe_running}")
 
 
 # ---------- G. 未知状态 ----------
@@ -378,10 +383,29 @@ def _timeout() -> None:
 def _unknown_status() -> None:
     ch = FakeChannel(statuses=[JobStatus.UNKNOWN])
     o = render_ir(_ok_ir(), ch, _COMPILER)
-    check("G1 状态未知归为 CHANNEL_ERROR（不是 JOB_FAILED）",
-          o.failure == FailureKind.CHANNEL_ERROR, o.reason[:60])
+    # ⚠️ 断言改过（2026-10-23 审计 M-20）：原来断言的是 CHANNEL_ERROR ——
+    # 那等于把「状态未知」和「通道出错」压成同一个分类，而上层对这两件事的
+    # 处置**完全相反**（一个该对账、一个该重试）。旧断言把 bug 锁成了规范。
+    check("G1 ★★ 状态未知归为 NEEDS_RECONCILE（不是 JOB_FAILED，也不是 CHANNEL_ERROR）",
+          o.failure == FailureKind.NEEDS_RECONCILE,
+          f"{o.failure} / {o.reason[:50]}")
+    check("G1b ★ 且 `maybe_running=True`（上层据此记 UNKNOWN 而不是 FAILED）",
+          o.maybe_running, f"maybe_running={o.maybe_running}")
     check("G2 原因明确要求对账而非重提",
           "reconcile" in o.reason and "不可重提" in o.reason, o.reason[:70])
+
+    # ★ 会话级幂等表**不缓存 FAILED 句柄**（2026-10-23 审计 M-21）。
+    # 否则一次确定性失败会让这一镜在本次会话内永远失败、且没有重试机会，
+    # 而 `reused_submission=True` 还会把失败显示成"复用了提交"。
+    ch_fail = FakeChannel(statuses=[JobStatus.FAILED])
+    sess = RenderSession(ch_fail, _COMPILER)
+    o1 = sess.render(_ok_ir())
+    submits_after_first = len(ch_fail.submitted_keys)
+    o2 = sess.render(_ok_ir())
+    check("G4 ★★ 失败的句柄不进会话幂等表（下次会真的重试）",
+          not o1.ok and not o2.reused_submission
+          and len(ch_fail.submitted_keys) == submits_after_first + 1,
+          f"submits={len(ch_fail.submitted_keys)} reused={o2.reused_submission}")
 
 
 # ---------- H. 空产物 ----------

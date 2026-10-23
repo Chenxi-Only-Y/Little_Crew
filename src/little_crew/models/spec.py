@@ -259,6 +259,20 @@ class Backend:
     status_path: str = ""
     #: 异步时的完成状态取值
     status_success_value: str = "succeeded"
+    #: 异步时的**失败**状态取值（与 `status_success_value` 对称）。
+    #:
+    #: 为什么必须声明而不是写死在通道里：各家枚举差别很大 ——
+    #: MiniMax 官方用的是 ``Fail``（首字母大写、无 d），而通道里曾硬编码
+    #: ``("failed","error","canceled")`` —— 于是 ``Fail`` 落到「还在跑」的分支，
+    #: 一个**明确失败**的任务被当成在跑，空转到超时（审计 H-12，30 分钟）。
+    #: 匹配一律**大小写不敏感**。
+    status_failure_values: tuple[str, ...] = ()
+    #: 该通道产物的类型（``image`` / ``video`` / ``audio``）。
+    #:
+    #: 为什么是声明而不是推断：视频后端（H3）的产物是 `.mp4`，
+    #: 而通道曾硬编码 ``kind="image"`` —— 于是 mp4 被算进
+    #: `RenderOutcome.images`，门禁拿它当图片去量尺寸（审计 H-10）。
+    artifact_kind: str = "image"
 
     #: **endpoint 留空时的本地性默认判断。**
     #: 语义：这条 HTTP 通道"按设计"是本地服务还是远端 API。
@@ -286,6 +300,8 @@ class Backend:
             "asyncTask": self.async_task,
             "statusPath": self.status_path,
             "statusSuccessValue": self.status_success_value,
+            "statusFailureValues": list(self.status_failure_values),
+            "artifactKind": self.artifact_kind,
             "isLocalByDefault": self.is_local_by_default,
             "notes": self.notes,
         }
