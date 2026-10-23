@@ -146,6 +146,7 @@ def main() -> int:
     _stage_failures()
     _failure_kind()
     _trace()
+    _blackboard_wiring()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
@@ -586,6 +587,64 @@ def _trace() -> None:
     check("H4 快照含黑板/归属/span 数",
           {"blackboard", "ownership", "spans"} <= set(snap),
           f"blackboard keys={list(snap['blackboard'])[:4]}")
+
+
+# ---------- I. 黑板键空间与依赖（2026-10-23 审计 C-3 / C-2）----------
+
+def _blackboard_wiring() -> None:
+    """黑板的**键空间**与**失效传播**是否真的接上了。
+
+    这两件事都曾在"代码看着没问题"的情况下静默失效：
+      · `run_stage` 写 `deps=spec.requires`（能力名 `shot.image`），
+        而 `_dependents_of` 比对的是 `entry_id`（`bb_000001`）——
+        两个命名空间互不相交，`_propagate_stale` 恒不标记任何条目。
+      · 审核者往黑板写 **dict** 时，`ReviewFeedback.from_dict` **不存在**，
+        必然 `AttributeError`（而它上面那条"未产出可解析的审查意见"是死代码）。
+    """
+    print()
+    print("I. 黑板键空间与依赖")
+
+    o = _orch().bind("screenwriter", ScreenwriterStub()).bind(
+        "dramaturge", ReviewerStub(_fb(Verdict.PASS, _score(80, 80, 80)),
+                                   "script.critique")
+    ).bind("story_editor", ReviewerStub(
+        _fb(Verdict.PASS, _score(80, 80, 80), reviewer="qwen3-max",
+            generator="deepseek-flash"), "style.guard"))
+    res = o.run_script_cycle({"source.novel": "x"})
+    check("I0 前置：闭环通过", res.accepted, res.reason[:50])
+
+    # ---- C-3：deps 必须是 entry_id，且传播真的发生 ----
+    entries = o.blackboard._entries          # 内部结构，仅在自检里用
+    ids = set(entries)
+    bad = [(e.key, e.deps) for e in entries.values()
+           if any(d not in ids for d in e.deps)]
+    check("I1 ★★ deps 里装的是 entry_id（`bb_000001`），不是能力名",
+          not bad, str(bad[:2]))
+
+    marked = o.blackboard.invalidate("script.draft")
+    stale = {e.key for e in o.blackboard.stale_entries()}
+    check("I2 ★★ 改上游 -> 下游被标 stale（失效传播真的接上了）",
+          {"script.critique", "style.guard"} <= stale, str(sorted(stale)))
+    check("I3 传播返回条目 id（可追溯到具体条目）",
+          bool(marked) and all(str(m).startswith("bb_") for m in marked),
+          str(marked[:2]))
+
+    # ---- C-2：审核者写 dict（而非对象）也必须能还原 ----
+    o2 = _orch().bind("screenwriter", ScreenwriterStub()).bind(
+        "dramaturge", ReviewerStub(
+            _fb(Verdict.PASS, _score(82, 82, 82)).as_dict(), "script.critique")
+    ).bind("story_editor", ReviewerStub(
+        _fb(Verdict.PASS, _score(82, 82, 82), reviewer="qwen3-max",
+            generator="deepseek-flash"), "style.guard"))
+    res2 = o2.run_script_cycle({"source.novel": "x"})
+    check("I4 ★★ 审查意见是 dict 也能还原（此前必 AttributeError）",
+          res2.accepted, res2.reason[:70])
+    last = res2.rounds[-1] if res2.rounds else None
+    revs = tuple(getattr(last, "reviews", ()) or ())
+    check("I5 ★ 还原出的是 ReviewFeedback，且审查方归属没丢",
+          bool(revs) and all(isinstance(x, ReviewFeedback) for x in revs)
+          and any(getattr(x, "frm", "") == "dramaturge" for x in revs),
+          str([type(x).__name__ for x in revs]))
 
 
 if __name__ == "__main__":

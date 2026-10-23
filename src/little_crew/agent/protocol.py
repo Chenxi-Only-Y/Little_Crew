@@ -526,10 +526,32 @@ class Blackboard:
         deps: Sequence[str] = (),
         watching: Sequence[str] = (),
         expect_version: int | None = None,
+        aliases: Sequence[str] = (),
     ) -> BlackboardEntry:
-        """写入。expect_version 用于乐观并发控制（None = 不检查）。"""
+        """写入。expect_version 用于乐观并发控制（None = 不检查）。
+
+        ``aliases``：同一份内容的**其他名字**（典型：能力名 ↔ 产物名）。
+
+        ## 为什么需要
+        同一件东西在项目里有两种名字：职位**声明的能力名**（`review.board`）
+        和它**产出的键**（`review.verdict`）。`run_stage` 按产物名写，
+        而调用方经常按能力名取 —— 取到 `None` 时的表现是"它没产出"，
+        而它其实产出了。2026-10-23 审计 H-1/C-3 就是这个形态。
+
+        关键点：**两条名字必须共用一个 `entry_id`**。
+        否则 `_dependents_of`（按 `entry_id` 比对）会再次对不上，
+        失效传播等于没接。登记别名是为了让"名字"和"身份"分开。
+        """
         self._seq += 1
         existing = self._by_key.get(key)
+        if existing is None or existing not in self._entries:
+            # 主键没登记（或登记的是已失效条目）-> 看别名有没有指向活着的条目
+            existing = None
+            for a in aliases:
+                eid = self._by_key.get(a)
+                if eid is not None and eid in self._entries:
+                    existing = eid
+                    break
 
         if existing is None:
             if expect_version is not None:
@@ -539,7 +561,9 @@ class Blackboard:
                 owner=owner, deps=tuple(deps), watching=tuple(watching),
             )
             self._entries[entry.entry_id] = entry
-            self._by_key[key] = entry.entry_id
+            self._bind(key, entry.entry_id)
+            for a in aliases:
+                self._bind(a, entry.entry_id)
             return entry
 
         entry = self._entries[existing]
@@ -553,10 +577,19 @@ class Blackboard:
         entry.deps = tuple(deps)
         entry.watching = tuple(watching)
         entry.stale = False
+        self._bind(key, entry.entry_id)
+        for a in aliases:
+            self._bind(a, entry.entry_id)
 
         # 失效传播：本次写入变更了语义，所有传递依赖者标记 stale
         self._propagate_stale(entry.entry_id)
         return entry
+
+    def _bind(self, name: str, entry_id: str) -> None:
+        """把某个名字绑到条目上。**只填空位，不抢占**另一个活着的条目。"""
+        cur = self._by_key.get(name)
+        if cur is None or cur not in self._entries:
+            self._by_key[name] = entry_id
 
     # ---- 读 ------------------------------------------------------------
 

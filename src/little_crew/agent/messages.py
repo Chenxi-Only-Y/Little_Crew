@@ -443,6 +443,142 @@ def envelope(payload: Mapping[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+# ==========================================================================
+# dict -> 消息（`as_dict` 的逆操作）
+# ==========================================================================
+
+def _enum_or(enum_cls: Any, raw: Any, default: Any) -> Any:
+    """把字符串还原成枚举。**认不出来就退回默认值**，不抛错。
+
+    为什么宽容：消息的 dict 形态来自 agent 输出（其中就有 LLM 生成的 JSON），
+    `verdict` 写成 `"pass"`、漏字段都是**常态** —— 那是数据问题，不是编程错误。
+    编程错误该炸，数据问题该降级并留痕。
+    """
+    if isinstance(raw, enum_cls):
+        return raw
+    if raw is None or raw == "":
+        return default
+    try:
+        return enum_cls(str(raw))
+    except ValueError:
+        return default
+
+
+def _int_or(raw: Any, default: int) -> int:
+    try:
+        return int(raw) if raw not in (None, "") else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _float_or(raw: Any, default: float) -> float:
+    try:
+        return float(raw) if raw not in (None, "") else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _msg_kwargs(d: Mapping[str, Any], *, frm: str, to: str) -> dict[str, Any]:
+    """还原 `Message` 基类字段。缺失的 `from`/`to` 用调用方给的默认值。"""
+    out: dict[str, Any] = {
+        "kind": _enum_or(MessageKind, d.get("kind"), MessageKind.DELIVERABLE),
+        "msg_id": str(d.get("msgId") or ""),
+        "frm": str(d.get("from") or frm or "unknown"),
+        "to": str(d.get("to") or to or "*"),
+        "reply_to": str(d.get("replyTo") or ""),
+        "trace_id": str(d.get("traceId") or ""),
+        "stage": str(d.get("stage") or ""),
+        "refs": tuple(
+            ArtifactRef(key=str(r.get("key") or ""),
+                        kind=str(r.get("kind") or ""),
+                        sha256=str(r.get("sha256") or ""),
+                        version=int(r.get("version") or 0))
+            for r in (d.get("refs") or ())
+            if isinstance(r, Mapping) and r.get("key")),
+        "note": str(d.get("note") or ""),
+    }
+    if d.get("createdAt"):
+        out["created_at"] = str(d["createdAt"])
+    return out
+
+
+def _location_from(raw: Any) -> IssueLocation:
+    if isinstance(raw, IssueLocation):
+        return raw
+    if not isinstance(raw, Mapping):
+        return IssueLocation()
+    try:
+        line = int(raw.get("line") or 0)
+    except (TypeError, ValueError):
+        line = 0
+    return IssueLocation(scene=str(raw.get("scene") or ""),
+                         shot=str(raw.get("shot") or ""),
+                         line=line,
+                         asset=str(raw.get("asset") or ""))
+
+
+def _issue_from(raw: Mapping[str, Any]) -> ReviewIssue | None:
+    """一条意见。构造不出（缺 problem / BLOCKER 无建议）时返回 None。"""
+    try:
+        return ReviewIssue(
+            severity=_enum_or(Severity, raw.get("severity"), Severity.MINOR),
+            dimension=_enum_or(Dimension, raw.get("dimension"), Dimension.QUALITY),
+            location=_location_from(raw.get("location")),
+            problem=str(raw.get("problem") or ""),
+            suggestion=str(raw.get("suggestion") or ""),
+        )
+    except ValueError:
+        return None
+
+
+def _hint_from(raw: Mapping[str, Any]) -> RepairHint | None:
+    """一条返工指令。op 不在白名单 / 缺 graph_id 时返回 None。"""
+    try:
+        return RepairHint(
+            graph_id=str(raw.get("graphId") or raw.get("graph_id") or ""),
+            op=str(raw.get("op") or ""),
+            args=dict(raw.get("args") or {}),
+            from_issue=str(raw.get("fromIssue") or raw.get("from_issue") or ""),
+        )
+    except ValueError:
+        return None
+
+
+def _score_from(raw: Any) -> QcScore | None:
+    """QC 评分。维度名认不出来就丢掉那一维；一维都不剩则返回 None。"""
+    if raw is None:
+        return None
+    if isinstance(raw, QcScore):
+        return raw
+    if not isinstance(raw, Mapping):
+        return None
+    dims: dict[Dimension, float] = {}
+    src = raw.get("dimensions")
+    if isinstance(src, Mapping):
+        for k, v in src.items():
+            dim = _enum_or(Dimension, k, None)
+            if dim is None:
+                continue
+            try:
+                dims[dim] = float(v)
+            except (TypeError, ValueError):
+                continue
+    if not dims:
+        return None
+    claimed = raw.get("claimedScore")
+    try:
+        claimed_f = float(claimed) if claimed is not None else None
+    except (TypeError, ValueError):
+        claimed_f = None
+    try:
+        return QcScore(dimensions=dims,
+                       phase=str(raw.get("phase") or "final"),
+                       claimed_score=claimed_f)
+    except ValueError:
+        # 分数越界（模型常见错误）-> 不作分，但**不阻断**：定性意见仍然有效
+        return None
+
+
 @dataclass
 class Message:
     """消息基类字段。所有具体消息都带这些。
@@ -570,6 +706,68 @@ class ReviewFeedback(Message):
         })
         return d
 
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any], *,
+                  frm: str = "", to: str = "*") -> "ReviewFeedback":
+        """从 dict 还原（`as_dict` 的逆操作）。
+
+        ## 为什么必须有这个方法
+        审核实现可能把 **dict**（而不是 `ReviewFeedback` 对象）写进黑板 ——
+        `crew_llm` / `crew_stubs` 都支持那种数据形态，外部 agent 更是只会给 JSON。
+        而 `CrewOrchestrator.review_artifact` 会用本方法还原。
+
+        ⚠️ 2026-10-23 审计 C-2：**它此前从来不存在**。于是 dict 路径必然
+        `AttributeError`；而紧随其后的 `else` 分支（「未产出可解析的审查意见」）
+        恰好被 `isinstance(fb, Mapping)` 截走 —— 那条诊断永远打不出来。
+        **死代码保护了不存在的实现。**
+
+        宽容原则：单条意见/指令构造不出时**丢掉它并写进 note**（可审计的降级），
+        而不是让整轮审查崩掉。
+        """
+        if isinstance(d, ReviewFeedback):
+            return d
+        issues: list[ReviewIssue] = []
+        dropped_i = 0
+        for r in (d.get("issues") or ()):
+            if not isinstance(r, Mapping):
+                continue
+            got = _issue_from(r)
+            if got is None:
+                dropped_i += 1
+            else:
+                issues.append(got)
+        hints: list[RepairHint] = []
+        dropped_h = 0
+        for r in (d.get("repairHints") or d.get("repair_hints") or ()):
+            if not isinstance(r, Mapping):
+                continue
+            got = _hint_from(r)
+            if got is None:
+                dropped_h += 1
+            else:
+                hints.append(got)
+        note = str(d.get("note") or "")
+        if dropped_i or dropped_h:
+            # **不可用必须报出来**：丢掉的条目必须留痕，否则就是"看起来正常"
+            warn = (f"[还原告警] 丢弃无法构造的意见 {dropped_i} 条 / "
+                    f"返工指令 {dropped_h} 条")
+            note = f"{note} {warn}".strip()
+        kw = _msg_kwargs(d, frm=frm, to=to)
+        kw["kind"] = MessageKind.REVIEW
+        kw["note"] = note
+        return cls(
+            **kw,
+            verdict=_enum_or(Verdict, d.get("verdict"), Verdict.PASS),
+            score=_score_from(d.get("score")),
+            issues=tuple(issues),
+            repair_hints=tuple(hints),
+            round_no=_int_or(d.get("roundNo") or d.get("round_no"), 1),
+            reviewer_model=str(d.get("reviewerModel")
+                               or d.get("reviewer_model") or ""),
+            generator_model=str(d.get("generatorModel")
+                                or d.get("generator_model") or ""),
+        )
+
 
 def _family(model_id: str) -> str:
     """取模型族。用于"跨模型族盲读"判定。
@@ -612,6 +810,32 @@ class ScriptDraft(Message):
             "estimatedSeconds": self.estimated_seconds,
         })
         return d
+
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any], *,
+                  frm: str = "", to: str = "*") -> "ScriptDraft":
+        """从 dict 还原（`as_dict` 的逆操作）。
+
+        与 `ReviewFeedback.from_dict` 同源（2026-10-23 审计 C-2）：
+        `CrewOrchestrator.run_script_cycle` 会用它把黑板上的 dict 草稿还原成对象，
+        而它此前不存在 —— 那条路径必然 `AttributeError`，且**没有 try/except**，
+        于是整个 episode 带 traceback 崩掉，而不是返回 `script-invalid`。
+        """
+        if isinstance(d, ScriptDraft):
+            return d
+        kw = _msg_kwargs(d, frm=frm, to=to)
+        kw["kind"] = MessageKind.DELIVERABLE
+        return cls(
+            **kw,
+            episode_id=str(d.get("episodeId") or d.get("episode_id") or ""),
+            title=str(d.get("title") or ""),
+            scenes=tuple(dict(s) for s in (d.get("scenes") or ())
+                         if isinstance(s, Mapping)),
+            revision=_int_or(d.get("revision"), 1),
+            estimated_seconds=_float_or(
+                d.get("estimatedSeconds") if d.get("estimatedSeconds")
+                is not None else d.get("estimated_seconds"), 0.0),
+        )
 
 
 #: 镜头动作 -> **白模渲染模板名**的映射。

@@ -131,8 +131,43 @@ class CriticLlm:
         self.spec = CRITIC_CHECKS[agent_id]
         self.capability: str = self.spec["capability"]
         self.artifact_key: str = self.spec["artifact"]
+        #: 要写进黑板的键。**是职位的产物名（`produces`），不是能力名。**
+        self.produce_key: str = self._resolve_produce_key(agent_id,
+                                                         self.capability)
         self.client = client or LlmClient("deepseek-flash")
         self.temperature = temperature
+
+    @staticmethod
+    def _resolve_produce_key(agent_id: str, capability: str) -> str:
+        """要写进黑板的键 = 职位声明的**产物名**（`produces[0]`）。
+
+        ## 为什么不能按能力名写（2026-10-23 审计 H-1）
+        `CrewOrchestrator.run_stage` 只写 `spec.produces` 里的键：
+
+            for key in produced:            # produced = spec.produces
+                if key in payload_out:      # 原来这里装的是 capability
+                    blackboard.put(key, ...)
+
+        对 `continuity_supervisor`（能力 `continuity.check` / 产物
+        `continuity.report`）、`compliance_officer`（`compliance.check` /
+        `compliance.report`）、`review_board`（`review.board` /
+        `review.verdict`）三个职位，`key in payload_out` **恒假** ——
+        黑板上什么都不写，而 `run_stage` 仍返回 `ok=True`。
+        随后 `review_artifact` 的两次回退都取不到 -> "未产出可解析的审查意见"
+        -> 整个 `shot.image` 审查链作废为 ESCALATE。
+
+        **名册是唯一真源**：产物名从 `DEFAULT_ROSTER` 取，不在这里再写一份
+        （否则又是一份会漂移的副本）。名册不可用时退回能力名 —— 那是
+        今天唯一"没错但也可能没写进去"的选项，比编一个键名好。
+        """
+        try:
+            from little_crew.agent.roster import DEFAULT_ROSTER
+        except Exception:                                     # noqa: BLE001
+            return capability
+        for a in DEFAULT_ROSTER:
+            if getattr(a, "agent_id", "") == agent_id and getattr(a, "produces", ()):
+                return str(a.produces[0])
+        return capability
 
     # ---- 提示词 --------------------------------------------------------
 
@@ -202,7 +237,8 @@ class CriticLlm:
             # 审核方与生成方分属不同族（跨族审核是硬要求）
             reviewer_model=self.client.model_id,
             generator_model=str(payload.get("generatorModel") or ""))
-        return CallResult.success({self.capability: fb})
+        # ⚠️ **键必须是产物名**，见 `_resolve_produce_key`（审计 H-1）。
+        return CallResult.success({self.produce_key: fb})
 
     # ---- 规整 ----------------------------------------------------------
 

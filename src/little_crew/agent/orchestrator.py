@@ -652,6 +652,8 @@ _REVIEW_FEEDBACK_KEY: dict[str, str] = {
     "dramaturge": "script.critique",
     "story_editor": "style.guard",
     "continuity_supervisor": "continuity.report",
+    "compliance_officer": "compliance.report",
+    "pacing_editor": "pacing.plan",
     "review_board": "review.verdict",
 }
 
@@ -766,14 +768,45 @@ class CrewOrchestrator:
         # 该职位声明它"需要"的上游产物即为依赖 —— 接上 deps 后，
         # 上游变更会经黑板的失效传播标记下游为 stale，
         # 这正是"改一句只重跑受影响镜头"的机制基础。
-        deps = tuple(spec.requires) if spec else ()
+        #
+        # ⚠️ **必须解析成 `entry_id`，不能直接塞能力名**（2026-10-23 审计 C-3）。
+        # `Blackboard._dependents_of` 比对的是 `e.entry_id`（`bb_000001`），
+        # 而 `spec.requires` 是能力名（`shot.image`）——两个命名空间互不相交，
+        # 于是 `"bb_000001" in ("shot.image",)` 恒为 False，
+        # `_propagate_stale` **永远不标记任何条目**：失效传播彻底死掉。
+        # 症状是"改了设定但画面没变"，而报告显示一切正常 —— 静默错误。
+        deps = self._dependency_entry_ids(spec.requires if spec else ())
+        # ⚠️ 别名只在「能力名不在产物名里」时登记。
+        # 反例（会踩）：分镜师的能力就是 `shot.list`，而它同时产出
+        # `shot.list` 与 `shot.breakdown` —— 若把能力名当别名，
+        # 第二次写 `shot.breakdown` 会**顺着别名找回 `shot.list` 那条并覆盖它**，
+        # 表现是 `blackboard.value("shot.list")` 变成了一个 dict。
+        alias = (capability,) if capability not in produced else ()
         for key in produced:
             if key in payload_out:
                 self.blackboard.put(key, payload_out[key], owner=agent_id,
-                                    deps=deps)
+                                    deps=deps, aliases=alias)
                 self._record_ownership(key, agent_id)
+                if alias:
+                    self._record_ownership(capability, agent_id)
         return StageOutcome(stage=stage_name, agent_id=agent_id, ok=True,
                             produced=produced, seconds=dt)
+
+    def _dependency_entry_ids(self, requires: Sequence[str]) -> tuple[str, ...]:
+        """把「需要的能力名」解析成黑板上**已存在条目**的 `entry_id`。
+
+        为什么查不到就跳过（而不是塞个占位）：依赖只能指向**已经存在**的条目。
+        上游还没产出时，这条依赖与被记录的时刻无关 —— 与其存一个永远对不上的
+        名字（那正是本 bug 的形态），不如不记，靠"上游先写、下游后写"的顺序保证。
+        """
+        out: list[str] = []
+        for name in requires:
+            e = self.blackboard.get(name)
+            if e is None:
+                continue
+            if e.entry_id not in out:
+                out.append(e.entry_id)
+        return tuple(out)
 
     def _invoke_as(self, agent_id: str, capability: str,
                    payload: Mapping[str, Any], budget: Budget | None) -> CallResult:
@@ -836,7 +869,8 @@ class CrewOrchestrator:
             if isinstance(fb, ReviewFeedback):
                 reviews.append(fb)
             elif isinstance(fb, Mapping):
-                reviews.append(ReviewFeedback.from_dict(fb))
+                # 送信方就是这位审核者 —— dict 里没写 `from` 时用它兜底
+                reviews.append(ReviewFeedback.from_dict(fb, frm=rid))
             else:
                 self._last_outcomes = tuple(stage_outs)
                 return (), (f"审核者 {rid} 未产出可解析的审查意见"
@@ -891,13 +925,26 @@ class CrewOrchestrator:
 
             new_draft = self.blackboard.value("script.draft")
             if isinstance(new_draft, Mapping):
-                new_draft = ScriptDraft.from_dict(new_draft)
+                # ⚠️ 这里原来没有 try/except，而 `from_dict` 曾经**不存在** ——
+                # 于是整个 episode 带 traceback 崩掉，而不是返回
+                # `script-invalid`（2026-10-23 审计 C-2）。
+                # 现在 dict 能还原了；还原不出来仍然如实报 `script-invalid`。
+                try:
+                    new_draft = ScriptDraft.from_dict(new_draft, frm=screenwriter)
+                except ValueError as exc:
+                    new_draft = None
+                    invalid_reason = f"草稿 dict 无法还原：{exc}"
+                else:
+                    invalid_reason = ""
+            else:
+                invalid_reason = ""
             if not isinstance(new_draft, ScriptDraft):
                 rounds.append(RoundResult(
                     round_index=r, draft=draft or _placeholder_draft(screenwriter),
                     outcomes=tuple(outcomes), verdict=Verdict.ESCALATE,
-                    invalidated_reason=f"编剧未产出可解析的 ScriptDraft"
-                                       f"（得到 {type(new_draft).__name__}）"))
+                    invalidated_reason=(invalid_reason
+                                        or "编剧未产出可解析的 ScriptDraft"
+                                           f"（得到 {type(new_draft).__name__}）")))
                 return CycleResult(rounds=tuple(rounds), final=None, accepted=False,
                                    failure_kind="script-invalid",
                                    reason="编剧产出格式非法")

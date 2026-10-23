@@ -171,7 +171,9 @@ def _call_path() -> None:
           str(out.error_message)[:100])
     if out.ok:
         fb = out.output["style.guard"]
-        check("D2 产出键 = 职位的 capability", fb is not None)
+        # 本职位的能力名与产物名恰好相同（`style.guard`）——
+        # 所以这条断言**区分不出**下面 D10 要抓的那个 bug。
+        check("D2 产出键 = 职位的产物名", fb is not None)
         check("D3 verdict 为 REVISE（有问题）", fb.verdict is Verdict.REVISE,
               fb.verdict.value)
         check("D4 归属正确", fb.frm == "story_editor", fb.frm)
@@ -203,6 +205,47 @@ def _call_path() -> None:
     out5 = c5(envelope=_env({"script.draft": TEXT}), runtime=None)
     check("D9 不可重试错误 -> 失败且升级",
           not out5.ok and out5.escalate, str(out5.error_code))
+
+    # ---- ★★ 产出键必须落在名册声明的 `produces` 里（2026-10-23 审计 H-1）----
+    #
+    # `CrewOrchestrator.run_stage` 只写 `spec.produces` 里的键：
+    #
+    #     for key in produced:            # produced = spec.produces
+    #         if key in payload_out:      # 而 CriticLlm 曾按 capability 返回
+    #             blackboard.put(key, ...)
+    #
+    # 对 `continuity_supervisor`（`continuity.check` vs `continuity.report`）、
+    # `compliance_officer`（`compliance.check` vs `compliance.report`）、
+    # `review_board`（`review.board` vs `review.verdict`）三个职位，
+    # `key in payload_out` **恒假** —— **黑板上什么都不写，而 run_stage 仍 ok=True**。
+    # 随后 `review_artifact` 两次回退都取不到 -> "未产出可解析的审查意见"
+    # -> 整轮审查作废为 ESCALATE。
+    #
+    # ⚠️ D2 抓不到它（story_editor 的能力名与产物名相同）—— 所以必须逐职位查。
+    from little_crew.agent.roster import DEFAULT_ROSTER
+
+    produces_of = {a.agent_id: tuple(a.produces) for a in DEFAULT_ROSTER}
+    stray: list[str] = []
+    for aid in CRITIC_CHECKS:
+        cc = CriticLlm(aid, client=_FakeClient({"issues": []}))
+        o = cc(envelope=_env({cc.artifact_key: TEXT}), runtime=None)
+        keys = tuple((o.output or {}).keys())
+        if not keys or any(k not in produces_of.get(aid, ()) for k in keys):
+            stray.append(f"{aid}:产出 {keys} ⊄ produces {produces_of.get(aid)}")
+    check("D10 ★★ 5 个批评家的产出键都在名册 produces 里", not stray,
+          str(stray[:2]))
+
+    # 与编排器的读取侧对齐：`_REVIEW_FEEDBACK_KEY` 必须覆盖这 5 个职位，
+    # 否则 `review_artifact` 会去一个没人写的键上取值。
+    from little_crew.agent.orchestrator import _REVIEW_FEEDBACK_KEY
+    uncovered = [a for a in CRITIC_CHECKS if a not in _REVIEW_FEEDBACK_KEY]
+    check("D11 ★ 每个批评家都有反馈键映射（编排器按它取意见）",
+          not uncovered, str(uncovered))
+    wrong = [a for a in CRITIC_CHECKS
+             if CriticLlm(a, client=_FakeClient({"issues": []})).produce_key
+             != _REVIEW_FEEDBACK_KEY.get(a)]
+    check("D12 ★★ 产出键与编排器读的键**是同一个**（H-1 的实效判据）",
+          not wrong, str(wrong))
 
 
 def _helpers() -> None:
