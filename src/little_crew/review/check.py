@@ -523,6 +523,120 @@ def _j_audio() -> None:
     check("J11 算子已注册", "audio_track_present" in REGISTRY.names())
 
 
+# ---------- K. 返工动作的语义（2026-10-23 审计 M-10 / M-11 / M-26 / M-29）----------
+#
+# 这一节守的不是"动作能不能跑"，而是「**动作说的和实际病因是不是一回事**」。
+# 归因错了比没有动作更糟：它让人按错误方向排查，还把该重渲的镜头标成不可修。
+
+def _k_repair_semantics() -> None:
+    print()
+    print("K. 返工动作的语义")
+
+    from little_crew.review.constraint import ConstraintAssertion, Enforcement
+    from little_crew.review.repair import plan_repairs
+
+    def _failed(op: str, expected: dict, observed: dict) -> ConstraintAssertion:
+        return ConstraintAssertion(constraint_ref=f"cr_{op}", op=op,
+                                   enforcement=Enforcement.HARD, passed=False,
+                                   expected=expected, observed=observed)
+
+    # ---- M-10：`not_empty` 的归因必须是「字段为空」 ----
+    acts = plan_repairs([_failed("not_empty", {"field": "shot.list"},
+                                 {"shot.list": []})])
+    a = acts[0] if acts else None
+    blob = f"{a.reason}{dict(a.params) if a else ''}"
+    check("K1 ★★ `not_empty` 不得被说成「编码失败」（它根本没有 bytes 观测）",
+          a is not None and "编码" not in a.reason and "bytes" not in blob,
+          blob[:70])
+    check("K2 ★ 且要**点名那个为空的字段**（可定位）",
+          a is not None and "shot.list" in blob, blob[:70])
+
+    # ---- M-11：`count_at_least`（下限）不得复用「削减角色」（上限）的动作 ----
+    acts2 = plan_repairs([_failed("count_at_least",
+                                  {"field": "shotCount", "min": 20},
+                                  {"shotCount": 8})])
+    b = acts2[0] if acts2 else None
+    blob2 = f"{b.reason}{dict(b.params) if b else ''}"
+    check("K3 ★★ `count_at_least` 的方向是**补**，不得报「超过上限」",
+          b is not None and "超过上限" not in blob2 and "reduce_cast" not in (
+              b.kind if b else ""), blob2[:70])
+    check("K4 ★ 且要带上 min（不是 max）",
+          b is not None and b.params.get("min") == 20
+          and "max" not in b.params, str(dict(b.params) if b else {}))
+
+    # ---- 通用：任何动作的文案里都不该出现 `None`（取不到值被格式化的症状）----
+    probes = [
+        ("resolution_matches", {"width": 64, "height": 48}, {"width": 32,
+                                                             "height": 24}),
+        ("aspect_ratio_within", {"ratio": 1.5}, {"height": 100}),
+        ("duration_within", {"max": 10}, {"durationSec": 12}),
+        ("count_at_most", {"field": "characterCount", "max": 3},
+         {"characterCount": 5}),
+        ("count_at_least", {"field": "shotCount", "min": 20},
+         {"shotCount": 8}),
+        ("identity_similarity", {"min": 0.8}, {"similarity": 0.6}),
+        ("token_diff", {"maxRatio": 0.2}, {"diffRatio": 0.5}),
+        ("byte_size_within", {"minBytes": 100}, {"bytes": 10}),
+        ("not_empty", {"field": "prompt"}, {"prompt": ""}),
+    ]
+    polluted = []
+    for op, exp, obs in probes:
+        for act in plan_repairs([_failed(op, exp, obs)]):
+            text = f"{act.reason}{dict(act.params)}{act.blocked_by}"
+            if "None" in text:
+                polluted.append(f"{op}:{text[:50]}")
+    check("K5 ★★ 所有规划器都不产出「None」文案（那是取不到值的症状）",
+          not polluted, str(polluted[:2]))
+
+    # ---- M-26：IR 已是目标值时不许做**恒等写入** ----
+    ir_same = {"nodes": [{"id": "n_latent", "kind": "latent.empty",
+                          "params": {"width": 64, "height": 48}}]}
+    same = plan_repairs([_failed("resolution_matches",
+                                 {"width": 64, "height": 48},
+                                 {"width": 32, "height": 24})], ir_same)[0]
+    check("K6 ★★ IR 已是目标尺寸 -> 标**不可应用**（改 IR 是恒等写入）",
+          same.applicable is False and "编译" in same.blocked_by,
+          f"applicable={same.applicable} blocked={same.blocked_by[:50]}")
+
+    ir_off = {"nodes": [{"id": "n_latent", "kind": "latent.empty",
+                         "params": {"width": 32, "height": 24}}]}
+    off = plan_repairs([_failed("resolution_matches",
+                                {"width": 64, "height": 48},
+                                {"width": 32, "height": 24})], ir_off)[0]
+    check("K7 ★ 对照：IR 确实不同 -> 可应用（真的会改到东西）",
+          off.applicable is True, f"applicable={off.applicable}")
+
+    # ---- M-29：约束结构非法是**数据错误**，不许把整集打断 ----
+    from little_crew.review.gate import Gate, GateVerdict
+
+    g = Gate()
+    bad_cases = {
+        "缺 ref": {"assertion": {"op": "resolution_matches"}},
+        "assertion 非对象": {"ref": "cr_x", "assertion": ["oops"]},
+        "缺 op": {"ref": "cr_y", "assertion": {"min": 1}},
+        "enforcement 非法": {"ref": "cr_z", "enforcement": "不存在的级别",
+                             "assertion": {"op": "not_empty",
+                                           "field": "x"}},
+    }
+    crashed, not_escalated, lost = [], [], []
+    for label, con in bad_cases.items():
+        try:
+            r = g.evaluate([con], _obs({"x": ""}))
+        except Exception as exc:                              # noqa: BLE001
+            crashed.append(f"{label}:{type(exc).__name__}")
+            continue
+        if r.verdict is not GateVerdict.ESCALATE:
+            not_escalated.append(f"{label}:{r.verdict.value}")
+        if not r.assertions:
+            lost.append(label)
+    check("K8 ★★ 结构非法的约束**不抛异常**（数据错误不该打断整集）",
+          not crashed, str(crashed[:2]))
+    check("K9 ★★ 而是如实升级为 ESCALATE（不是静默放行）",
+          not not_escalated, str(not_escalated[:2]))
+    check("K10 ★ 且仍然在报告里留一条记录（4 条约束不能只列出 3 条）",
+          not lost, str(lost[:2]))
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -544,6 +658,8 @@ def main() -> int:
     # L3 盲读算子 + 门禁对它的响应
     _h_operator()
     _h_gate_response()
+    # 返工动作的语义（归因、方向、恒等写入、结构非法的降级）
+    _k_repair_semantics()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

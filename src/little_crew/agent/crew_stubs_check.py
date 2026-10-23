@@ -220,6 +220,30 @@ def _story_editor() -> None:
           any(i.dimension is Dimension.QUALITY for i in fb.issues),
           str([i.dimension.value for i in fb.issues]))
 
+    # ---- D6/D7：文风意见必须**真的能改到稿子**（2026-10-23 审计 M-2）----
+    #
+    # 生产方（文学策划）写 `{"scene", "avoid"}`，而消费方（编剧的 `_apply_critique`）
+    # 原来只读 `{"purpose", "after"}`、且只在 `problem` 里找三个**结构**标签 ——
+    # 于是文风审查的每条意见**两处都落空**，被静默丢弃：
+    # 编剧收到"有意见"，但一个字都没改，而报告里一切正常。
+    scenes = [{"id": "SC-E001-001", "text": "她不禁缓缓地转过身。"}]
+    sw_probe = ScreenwriterRules(introduce_flaw=False)
+    done = sw_probe._apply_critique(scenes, fb.as_dict())
+    check("D6 ★★ 文风意见能改到稿子（不再被静默丢弃）",
+          bool(done) and "不禁" not in scenes[0]["text"],
+          f"applied={done} text={scenes[0]['text'][:24]}")
+    check("D7 ★ 修补记录写明删了哪个俗套表达（可追溯）",
+          any(str(x).startswith("avoid:") for x in done), str(done))
+
+    # 结构类修补不得因此回归（两条协议并存）
+    sc2 = [{"id": "SC-E001-001", "text": "她走了。"}]
+    done2 = sw_probe._apply_critique(
+        sc2, {"repairHints": [{"op": "add_turn",
+                               "args": {"purpose": "转折",
+                                        "after": "SC-E001-001"}}]})
+    check("D8 结构类修补仍然有效（两种协议并存，不是替换）",
+          done2 == ("turn",), str(done2))
+
 
 # ==========================================================================
 # E. 分镜师桩

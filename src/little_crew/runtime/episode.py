@@ -1866,8 +1866,12 @@ class EpisodeRunner:
             return None
 
         constraints: dict[str, list[Mapping[str, Any]]] = {}
+        #: 镜头 id -> 该镜的 IR。返工规划器要用它判"动作会不会真的改变 IR"，
+        #: 否则「把期望值写回已经是期望值的字段」就是恒等写入（审计 M-26）。
+        ir_by_shot: dict[str, Mapping[str, Any]] = {}
         for s, ir in zip(picked, irs):
             constraints[s.shot_id] = list(ir.get("constraints") or ())
+            ir_by_shot[s.shot_id] = ir
 
         # 产物按**镜头 id** 组织。`batch.outcomes` 的 graphId 形如
         # `G-{episode}-{shotId}`，这里减掉前缀还原成 shotId ——
@@ -1925,7 +1929,8 @@ class EpisodeRunner:
         return GateRunner().run(constraints_by_shot=constraints,
                                 artifacts_by_shot=artifacts,
                                 resolve=self.resolve_artifact,
-                                context_by_shot=context)
+                                context_by_shot=context,
+                                ir_by_shot=ir_by_shot)
 
     # ---- 返工闭环 ------------------------------------------------------
 

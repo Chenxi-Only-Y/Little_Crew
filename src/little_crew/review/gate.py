@@ -147,6 +147,32 @@ class GateResult:
         }
 
 
+def _unusable(ref: str, op: str, constraint: Mapping[str, Any], msg: str
+              ) -> tuple[ConstraintAssertion, str]:
+    """约束自身结构非法 -> 「无法求值的断言 + 升级原因」，**不抛异常**。
+
+    与算子抛错时的处理保持**同一形态**（`evidence.evaluated=False` +
+    非空 `esc`），差别只在于失败发生在"能不能算"这一步之前。
+    报告里仍然列出这一条 —— 否则 4 条约束的报告只列 3 条，
+    而缺的那条恰是**没被检查**的那条（C3 要消灭的模式）。
+    """
+    try:
+        enforcement = Enforcement(
+            str(constraint.get("enforcement") or Enforcement.HARD.value))
+    except ValueError:
+        enforcement = Enforcement.HARD
+    raw = constraint.get("assertion")
+    return ConstraintAssertion(
+        constraint_ref=ref, op=op, enforcement=enforcement,
+        passed=False,
+        expected=dict(raw) if isinstance(raw, Mapping) else {},
+        observed={},
+        evidence={"evaluated": False, "reason": "invalid_constraint"},
+        detail=f"⚠️ 约束结构非法，无法判定：{msg}",
+        inconclusive=True,
+    ), msg
+
+
 class Gate:
     """确定性验收门禁。
 
@@ -176,24 +202,45 @@ class Gate:
 
         返回 `(断言 或 None, 升级原因)`。
         `None` 表示**无法求值**（算子缺失/约束结构非法），此时第二个返回值非空。
+
+        ## ⚠️ 结构非法是**数据错误**，不是编程错误（2026-10-23 审计 M-29）
+        `ref` 缺失 / `assertion` 不是对象 / `op` 缺失 —— 这些是 **IR 写错了**
+        （IR 由 LLM 生成，漏字段是常事）。早期版本在这里 `raise`
+        -> 一条写错的约束让**整集跑不完**，而不是"这一镜作废、其余继续"。
+
+        而算子层面的同类错误（约束结构非法）**早有** ESCALATE 降级通道 ——
+        只有这三处没有。现在对齐：返回「无法求值 + 升级原因」，
+        `AssertionError_` 只留给开发者写错调用方式。
         """
         ref = str(constraint.get("ref") or "")
         if not ref:
-            raise AssertionError_("约束缺少 ref —— 没有 ref 就无法追溯，"
-                                  "报告里会出现一条不知道在说谁的断言")
+            return _unusable(
+                "<no-ref>", "", constraint,
+                "约束缺少 ref —— 没有 ref 就无法追溯，"
+                "报告里会出现一条不知道在说谁的断言")
 
         assertion = constraint.get("assertion") or {}
         if not isinstance(assertion, Mapping):
-            raise AssertionError_(f"{ref}: assertion 必须是对象，收到 "
-                                  f"{type(assertion).__name__}")
+            return _unusable(
+                ref, "", constraint,
+                f"{ref}: assertion 必须是对象，收到 "
+                f"{type(assertion).__name__}")
 
         op_name = str(assertion.get("op") or "")
         if not op_name:
-            raise AssertionError_(f"{ref}: assertion 缺少 op —— "
-                                  f"约束必须说明「要检查什么」")
+            return _unusable(
+                ref, "", constraint,
+                f"{ref}: assertion 缺少 op —— 约束必须说明「要检查什么」")
 
-        enforcement = Enforcement(
-            str(constraint.get("enforcement") or Enforcement.HARD.value))
+        try:
+            enforcement = Enforcement(
+                str(constraint.get("enforcement") or Enforcement.HARD.value))
+        except ValueError:
+            # 同样是数据错误（写了个不存在的 enforcement）—— 不能崩
+            return _unusable(
+                ref, op_name, constraint,
+                f"{ref}: enforcement 取值非法"
+                f"（{constraint.get('enforcement')!r}）")
 
         # 算子不存在 -> 无法判定。
         #
@@ -260,8 +307,14 @@ class Gate:
         self,
         constraints: Iterable[Mapping[str, Any]],
         observation: Observation,
+        *,
+        ir: Mapping[str, Any] | None = None,
     ) -> GateResult:
-        """对一个产物的全部约束求值，并给出结论。"""
+        """对一个产物的全部约束求值，并给出结论。
+
+        `ir` 可选：给了之后返工规划器能判"动作会不会真的改变 IR"，
+        从而不会产出恒等写入（审计 M-26）。
+        """
         observed = dict(observation.values)
         # 让算子能看到观测来源（写进 evidence，便于追溯）
         observed.setdefault("__source__", observation.source)
@@ -321,10 +374,13 @@ class Gate:
             # 同一件事的**机器可执行**表达（见 `review/repair.py`）。
             # 语句给人，动作给循环 —— 缺任一个，返工闭环都不成立：
             #   · 只有句子 -> 循环没法执行
-            #   · 只有动作 -> 报告读不懂，人无法判断该不该接受
+            #   · 只有动作 -> 报告读不懂，人是否该接受无从判断
             from little_crew.review.repair import plan_repairs
 
-            actions = plan_repairs(assertions)
+            # 传 `ir`：让规划器能判"这个动作会不会真的改变 IR"
+            # （否则"把期望值写回已经是期望值的字段"就是恒等写入，
+            #   循环会判定"IR 未变化"而空转 —— 审计 M-26）
+            actions = plan_repairs(assertions, ir)
         else:
             repairs = ()
             actions = ()

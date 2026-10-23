@@ -62,7 +62,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),
-    ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 79),
+    ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 82),
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），
     # 那些必须能被**确定性地**断言，不能靠"我看模型像是改了"。
@@ -103,7 +103,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 87),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
-    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 106),
+    ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
     ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 41),

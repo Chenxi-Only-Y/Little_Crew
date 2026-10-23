@@ -268,6 +268,10 @@ class ScreenwriterRules:
         need: dict[str, set[str]] = {}
         #: 无定位时的兜底目标（最后一场）
         fallback: set[str] = set()
+        #: 场次 id -> 该场次要**删掉**的俗套表达（文风审查的意见）
+        avoid: dict[str, set[str]] = {}
+        #: 没有定位的俗套表达：全场次都要删
+        avoid_all: set[str] = set()
 
         def _label_to_key(text: str) -> str | None:
             for key, label, _ in _STRUCTURE_RULES:
@@ -290,17 +294,37 @@ class ScreenwriterRules:
         for h in critique.get("repairHints", ()) or ():
             if not isinstance(h, Mapping):
                 continue
-            purpose = str((h.get("args") or {}).get("purpose", ""))
-            key = _label_to_key(purpose)
-            if key is None:
+            args = h.get("args") or {}
+            # ---- 形态一：结构类（剧本顾问）{"purpose": 标签, "after": 场次} ----
+            key = _label_to_key(str(args.get("purpose", "")))
+            if key is not None:
+                after = str(args.get("after", ""))
+                if after:
+                    need.setdefault(after, set()).add(key)
+                else:
+                    fallback.add(key)
                 continue
-            after = str((h.get("args") or {}).get("after", ""))
-            if after:
-                need.setdefault(after, set()).add(key)
-            else:
-                fallback.add(key)
 
-        if not need and not fallback:
+            # ---- 形态二：文风类（文学策划）{"scene": 场次, "avoid": 俗套表达} ----
+            #
+            # ⚠️ 这一支是补的（2026-10-23 审计 M-2）：生产方写的是
+            # `scene`/`avoid`，而消费方只读 `purpose`/`after` **和**
+            # 只在 `problem` 里找三个结构标签 —— 于是文风审查的每一条意见
+            # 都**同时**在 issues 与 repairHints 两处落空，
+            # 被**静默丢弃**：编剧收到"有意见"，但一个字都没改。
+            #
+            # 文风意见的修补是**确定性的**：删掉俗套表达。
+            # 删得掉就说明真的改了（哈希会变）；删不掉就别假装改过。
+            phrase = str(args.get("avoid", "")).strip()
+            if not phrase:
+                continue
+            sid2 = str(args.get("scene", "")).strip()
+            if sid2:
+                avoid.setdefault(sid2, set()).add(phrase)
+            else:
+                avoid_all.add(phrase)
+
+        if not need and not fallback and not avoid and not avoid_all:
             return ()
 
         # 无定位的意见应用到**最后一场**（结构性缺陷通常收束在结尾）
@@ -310,16 +334,18 @@ class ScreenwriterRules:
         applied: set[str] = set()
         for sc in scenes:
             sid = str(sc.get("id", ""))
-            want_here = need.get(sid)
-            if not want_here:
-                continue
             body = str(sc.get("text", ""))
-            for key in sorted(want_here):
+            for key in sorted(need.get(sid) or ()):
                 sentence = _PATCH_SENTENCE[key]
                 if sentence in body:          # 幂等：已补过就不重复
                     continue
                 body = body + "\n" + sentence
                 applied.add(key)
+            # ---- 文风：删俗套表达（确定性的、可验证的改动）----
+            for phrase in sorted((avoid.get(sid) or set()) | avoid_all):
+                if phrase and phrase in body:
+                    body = body.replace(phrase, "")
+                    applied.add(f"avoid:{phrase}")
             sc["text"] = body
             if applied:
                 sc.setdefault("_patched", [])       # type: ignore[union-attr]

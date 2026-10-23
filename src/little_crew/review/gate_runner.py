@@ -194,6 +194,7 @@ class GateRunner:
         artifacts_by_shot: Mapping[str, Sequence[Any]],
         resolve: Any = None,
         context_by_shot: Mapping[str, Mapping[str, Any]] | None = None,
+        ir_by_shot: Mapping[str, Mapping[str, Any]] | None = None,
     ) -> ShotGateReport:
         """对每个镜头求值。
 
@@ -206,6 +207,10 @@ class GateRunner:
         它们不从产物文件量 —— 但不传的话，依赖它们的约束
         （如 `count_at_most(field="characterCount")`）会被预检判为
         "缺观测"而跳过，**表现为约束默默失效**。
+
+        `ir_by_shot` 是该镜的 IR —— 返工规划器用它判"这个动作会不会真的
+        改变 IR"（否则"把期望值写回已经是期望值的字段"是恒等写入，
+        循环会判定"IR 未变化"而空转，审计 M-26）。
 
         ⚠️ **不给 `resolve` 会显著削弱门禁**：产物引用上的
         `width`/`height`/`bytes` 字段实测为空（见 `observe.py` 的 docstring），
@@ -267,7 +272,8 @@ class GateRunner:
             results.append(self.gate.evaluate(
                 plan.executable,
                 Observation(artifact_id=shot_id, values=values,
-                            source="artifact-ref")))
+                            source="artifact-ref"),
+                ir=(ir_by_shot or {}).get(shot_id)))
 
         return ShotGateReport(results=tuple(results),
                               skipped=tuple(skipped),
