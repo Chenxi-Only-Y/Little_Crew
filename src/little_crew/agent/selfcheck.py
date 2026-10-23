@@ -403,6 +403,31 @@ def main() -> int:
                   bb.put, "shot.SH-001.ir", {"hash": "b"},
                   owner="x", expect_version=99)
 
+    # ---------- T12 黑板别名：读得到，但不能把两条并成一条 ----------
+    #
+    # 同一件东西有两个名字（能力名 `review.board` / 产物名 `review.verdict`）。
+    # 别名让 `get` 两条都能查到，**且两条名字共用一个 entry_id**（否则按
+    # entry_id 比对的失效传播又会对不上）。
+    #
+    # ⚠️ 但别名**不是写入口**：不同主键必须各自成条。第一版允许顺着别名
+    # 找回旧条目，结果是 `shot.list` 与 `shot.breakdown` 互相覆盖 ——
+    # `value("shot.list")` 变成了 breakdown 的字典。`crew_stubs_check` 的
+    # G9 当场抓住。
+    bb2 = Blackboard()
+    ea = bb2.put("prod.key", {"v": 1}, owner="A", aliases=("cap.name",))
+    check("T12 别名可读：按另一个名字取到同一条目",
+          bb2.get("cap.name") is not None
+          and bb2.get("cap.name").entry_id == ea.entry_id,
+          str(bb2.get("cap.name").entry_id if bb2.get("cap.name") else None))
+    eb = bb2.put("other.key", {"v": 2}, owner="B", aliases=("cap.name",))
+    check("T12 ★★ 不同主键不会被别名并成一条（各自独立）",
+          eb.entry_id != ea.entry_id
+          and bb2.value("prod.key") == {"v": 1}
+          and bb2.value("other.key") == {"v": 2},
+          f"{bb2.value('prod.key')} / {bb2.value('other.key')}")
+    check("T12 ★ 已登记的别名不被后写抢占",
+          bb2.get("cap.name").entry_id == ea.entry_id)
+
     # ---------- T10 推理循环有界 ----------
     def runaway(envelope: CallEnvelope, runtime: LayerRuntime) -> CallResult:
         loop = BoundedReasoningLoop(max_steps=3, budget=envelope.budget)

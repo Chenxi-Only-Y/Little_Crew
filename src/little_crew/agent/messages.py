@@ -492,7 +492,7 @@ def _msg_kwargs(d: Mapping[str, Any], *, frm: str, to: str) -> dict[str, Any]:
             ArtifactRef(key=str(r.get("key") or ""),
                         kind=str(r.get("kind") or ""),
                         sha256=str(r.get("sha256") or ""),
-                        version=int(r.get("version") or 0))
+                        version=_int_or(r.get("version"), 0))
             for r in (d.get("refs") or ())
             if isinstance(r, Mapping) and r.get("key")),
         "note": str(d.get("note") or ""),
@@ -518,29 +518,57 @@ def _location_from(raw: Any) -> IssueLocation:
 
 
 def _issue_from(raw: Mapping[str, Any]) -> ReviewIssue | None:
-    """一条意见。构造不出（缺 problem / BLOCKER 无建议）时返回 None。"""
+    """一条意见。**构造不出就降级保留，不丢**。
+
+    ## 为什么不能丢（自查发现，2026-10-23）
+    第一版写的是「构造不出返回 None，由调用方丢弃并计数」。但 `note` 是
+    「仅供人读，不参与任何判定」的字段 —— 于是丢掉一条 **BLOCKER**
+    就等于把「有阻断问题」变成「没有问题」：
+
+        issues 2 条 -> 1 条
+        blocking_issues 1 -> 0
+        effective_verdict REVISE -> PASS      ← 阻断被静默降级成通过
+
+    那正是本项目最忌讳的「看起来通过」。所以：
+      · `problem` 为空 -> 真的没有内容，返回 None（调用方计数）
+      · BLOCKER 缺 `suggestion` -> **保留**，等级记为 MAJOR（同样是 blocking），
+        并把「模型没给建议」写进 suggestion，让返工环节看得见
+    """
+    problem = str(raw.get("problem") or "").strip()
+    if not problem:
+        return None
+    severity = _enum_or(Severity, raw.get("severity"), Severity.MINOR)
+    suggestion = str(raw.get("suggestion") or "").strip()
+    if severity is Severity.BLOCKER and not suggestion:
+        severity = Severity.MAJOR
+        suggestion = "（模型未给出修改建议 —— 仍按阻断处理，需人工确认）"
     try:
         return ReviewIssue(
-            severity=_enum_or(Severity, raw.get("severity"), Severity.MINOR),
+            severity=severity,
             dimension=_enum_or(Dimension, raw.get("dimension"), Dimension.QUALITY),
             location=_location_from(raw.get("location")),
-            problem=str(raw.get("problem") or ""),
-            suggestion=str(raw.get("suggestion") or ""),
+            problem=problem,
+            suggestion=suggestion,
         )
     except ValueError:
         return None
 
 
 def _hint_from(raw: Mapping[str, Any]) -> RepairHint | None:
-    """一条返工指令。op 不在白名单 / 缺 graph_id 时返回 None。"""
+    """一条返工指令。op 不在白名单 / 缺 graph_id 时返回 None。
+
+    ⚠️ `args` 若不是 Mapping，`dict(...)` 会抛 **TypeError**（不是 ValueError）——
+    只捕 ValueError 会让一条畸形指令把整轮审查打崩（2026-10-23 自查）。
+    """
+    args = raw.get("args")
     try:
         return RepairHint(
             graph_id=str(raw.get("graphId") or raw.get("graph_id") or ""),
             op=str(raw.get("op") or ""),
-            args=dict(raw.get("args") or {}),
+            args=dict(args) if isinstance(args, Mapping) else {},
             from_issue=str(raw.get("fromIssue") or raw.get("from_issue") or ""),
         )
-    except ValueError:
+    except (TypeError, ValueError):
         return None
 
 
@@ -728,14 +756,18 @@ class ReviewFeedback(Message):
             return d
         issues: list[ReviewIssue] = []
         dropped_i = 0
+        coerced_i = 0
         for r in (d.get("issues") or ()):
             if not isinstance(r, Mapping):
                 continue
             got = _issue_from(r)
             if got is None:
                 dropped_i += 1
-            else:
-                issues.append(got)
+                continue
+            issues.append(got)
+            if (str(r.get("severity") or "").lower() == "blocker"
+                    and not str(r.get("suggestion") or "").strip()):
+                coerced_i += 1
         hints: list[RepairHint] = []
         dropped_h = 0
         for r in (d.get("repairHints") or d.get("repair_hints") or ()):
@@ -747,11 +779,17 @@ class ReviewFeedback(Message):
             else:
                 hints.append(got)
         note = str(d.get("note") or "")
-        if dropped_i or dropped_h:
+        if dropped_i or dropped_h or coerced_i:
             # **不可用必须报出来**：丢掉的条目必须留痕，否则就是"看起来正常"
-            warn = (f"[还原告警] 丢弃无法构造的意见 {dropped_i} 条 / "
-                    f"返工指令 {dropped_h} 条")
-            note = f"{note} {warn}".strip()
+            parts = []
+            if dropped_i:
+                parts.append(f"丢弃空意见 {dropped_i} 条")
+            if dropped_h:
+                parts.append(f"丢弃无法构造的返工指令 {dropped_h} 条")
+            if coerced_i:
+                parts.append(f"{coerced_i} 条 BLOCKER 缺建议（按 MAJOR 保留，仍阻断）")
+            note = f"{note} [还原告警] " + " / ".join(parts)
+            note = note.strip()
         kw = _msg_kwargs(d, frm=frm, to=to)
         kw["kind"] = MessageKind.REVIEW
         kw["note"] = note

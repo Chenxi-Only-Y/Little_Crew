@@ -1904,6 +1904,32 @@ class ComfyCompiler:
                     if resolved is None:
                         continue
                     tgt, tgt_port = resolved
+                    if tgt not in nodes:
+                        # ⚠️ **兜底目标不在 IR 里**（2026-10-23 自查发现）。
+                        #
+                        # `_remap_table` 的兜底是常量 `MODEL_SOURCE_ID`（`n_ckpt`）。
+                        # 若 IR 走的是**分离式模型源**（`n_src_model_source_zimage`）
+                        # 或压根没声明 `n_ckpt`，这个兜底目标就不存在 ——
+                        # 而下一行 `nodes[tgt]` 是**直接下标**，会抛裸 `KeyError`。
+                        #
+                        # 这个崩溃点审计已记为 H-6（根因是缺「产出图引用自检」）。
+                        # 但 H-13 的修法让「跳过可选节点」成为常规路径，
+                        # 于是它从"罕见"变成"降级时必踩" —— 实测
+                        # 「无 n_ckpt + 下游消费 n_ref」两种 model_source_kind 都抛。
+                        # 这里先把它变回**可诊断的失败**：留空端口 + 发通知，
+                        # 由 3.5) 完整性终检报 INCOMPLETE_GRAPH。
+                        notices.append(DegradationNotice(
+                            kind=NoticeKind.SKIPPED_OPTIONAL, ir_node_id=nid,
+                            severity=Severity.WARNING.value,
+                            frm=f"{src_node_id}.{src['port']}",
+                            to=f"{tgt}.{tgt_port}（该节点不在 IR 中，未接线）",
+                            reason=(f"上游 {src_node_id!r} 已被跳过，兜底重接目标 "
+                                    f"{tgt!r} 既不在 IR 里也不在自动注入的图里"),
+                            impact=f"必需端口 {cname} 将缺输入，提交时会被 ComfyUI 拒绝",
+                            ui_hint=("补齐缺失的权重文件，或在 IR 里显式声明模型源节点；"
+                                     "分离式模型源（Z-Image）通路不要依赖 n_ckpt 兜底"),
+                        ))
+                        continue
                     if not self._output_matches(
                         nodes.get(tgt), tgt_port, chosen, cname, spec,
                         chosen_by_node,

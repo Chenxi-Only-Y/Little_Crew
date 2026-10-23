@@ -32,10 +32,10 @@ SRC = PLATFORM / "src"
 #: 放在 ``tests/`` 下的是**跨层集成测试**（架构守卫允许它那样做）。
 SUITES: list[tuple[str, list[str], int | None]] = [
     ("IR 规范化与哈希", [sys.executable, "-m", "little_crew.ir.test_canonical"], 37),
-    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 155),
+    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 156),
     ("真实环境回归", [sys.executable, "-m", "little_crew.compiler.test_real_env"], 19),
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
-    ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 27),
+    ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 43),
     # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，
@@ -61,7 +61,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("后端选择", [sys.executable, "-m", "little_crew.runtime.backend_select_check"], 22),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
-    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 57),
+    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),
     ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 79),
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），

@@ -162,7 +162,7 @@ class CriticLlm:
         """
         try:
             from little_crew.agent.roster import DEFAULT_ROSTER
-        except Exception:                                     # noqa: BLE001
+        except ImportError:                                   # 名册不可用
             return capability
         for a in DEFAULT_ROSTER:
             if getattr(a, "agent_id", "") == agent_id and getattr(a, "produces", ()):

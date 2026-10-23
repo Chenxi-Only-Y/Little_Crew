@@ -646,6 +646,27 @@ def _blackboard_wiring() -> None:
           and any(getattr(x, "frm", "") == "dramaturge" for x in revs),
           str([type(x).__name__ for x in revs]))
 
+    # ---- 宽容解析的**底线**：阻断级意见不能被"还原"降级成通过 ----
+    #
+    # 自查发现（2026-10-23）：`from_dict` 第一版把构造不出的意见**丢掉**，
+    # 而 `note` 是「仅供人读、不参与判定」的字段 —— 于是丢掉一条 BLOCKER
+    # 就等于让 `effective_verdict` 从 REVISE 回到 PASS。
+    # "宽容"只能作用于**表达形式**，不能作用于**判定强度**。
+    fb_blk = ReviewFeedback.from_dict({
+        "from": "dramaturge", "to": "screenwriter", "verdict": "PASS",
+        "issues": [{"severity": "blocker", "dimension": "quality",
+                    "problem": "第三场整段缺转折", "suggestion": ""}],
+    })
+    check("I6 ★★ BLOCKER 缺 suggestion 也不得被丢弃", len(fb_blk.issues) == 1,
+          f"issues={len(fb_blk.issues)} note={fb_blk.note[:40]}")
+    check("I7 ★★ 且它仍然是阻断级（裁定不得回到 PASS）",
+          len(fb_blk.blocking_issues) == 1
+          and fb_blk.effective_verdict() is not Verdict.PASS,
+          f"blocking={len(fb_blk.blocking_issues)} "
+          f"verdict={fb_blk.effective_verdict().value}")
+    check("I8 降级处置写在 note 里（可审计）",
+          "BLOCKER" in fb_blk.note, fb_blk.note[:60])
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

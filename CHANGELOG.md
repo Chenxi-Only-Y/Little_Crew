@@ -57,6 +57,77 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.135] — 2026-10-23（**复核 alpha.134**：我自己引入的 3 处问题）
+
+修完 9 条之后重跑静态审计 + 人工复核改动，**在改动本身上又找到 3 个问题**。
+三条全是同一种形态：**为修「静默失败」而写的宽容逻辑，自己变成了新的静默失败。**
+
+### ① `from_dict` 把阻断级意见丢掉了（最严重）
+
+第一版：「构造不出的意见返回 `None`，由调用方丢弃并计数」。
+而 `note` 是「仅供人读、**不参与任何判定**」的字段 —— 于是丢掉一条 BLOCKER：
+
+```
+issues 2 条 -> 1 条
+blocking_issues 1 -> 0
+effective_verdict REVISE -> PASS      ← 阻断被静默降级成通过
+```
+
+**宽容只能作用于「表达形式」，不能作用于「判定强度」。** 现在：
+`problem` 为空才丢（真没内容）；BLOCKER 缺 `suggestion` 则**保留**，
+等级记 MAJOR（仍是 blocking），并把「模型没给建议」写进 suggestion + note。
+
+### ② 黑板别名被当成了写入口 → 两条主键并成一条
+
+第一版为了「同一份内容重复写不新建条目」，允许 `put` 顺着别名找回旧条目。
+于是：
+
+```
+put("shot.list",      [...], aliases=("shot.list",))
+put("shot.breakdown", {...}, aliases=("shot.list",))
+-> 第二次顺着别名找到 shot.list 那条并覆盖它
+-> value("shot.list") 变成 breakdown 的字典
+```
+
+`crew_stubs_check` 的 G9 当场抓住（`? 镜`）。正确语义：
+**别名是「给读的人多一个名字」，不是「写的人可以合并条目」** ——
+`put` 只按主键找既有条目；`_bind` 也不抢占已登记的别名。
+
+### ③ H-13 的跳过路径把 H-6 的裸崩溃变成常规可达
+
+`_remap_table` 的兜底是常量 `MODEL_SOURCE_ID`（`n_ckpt`），
+而消费端 `nodes[tgt]` 是**直接下标**（审计 H-6 的崩溃点）。
+H-13 之前，这条路要「权重文件缺失」才走得到；H-13 之后，
+**缺 loraFile 就跳过**成了常规路径 —— 实测两种 `model_source_kind` 都抛
+`KeyError: 'n_ckpt'`（IR 走分离式模型源时没有这个节点，而 `n_ks.model` 正好消费被跳过的 `n_ref`）。
+
+**我的修法把结构化的 `MISSING_BINDING` 换成了裸 `KeyError`** —— 反向退化。
+就地硬化：兜底目标不在 IR 里时不接线 + 发通知，交给 3.5) 完整性终检报
+`INCOMPLETE_GRAPH`（结构化、可诊断）。
+
+> 这**没有**修掉 H-6 的根因（缺「产出图引用自检」，仍是 M-18 的工作），
+> 只是不让"降级"这条路踩到裸崩溃。
+
+### 附带加固
+
+- `CriticLlm` 取名册的 `except Exception` -> `except ImportError`（别吞真 bug）。
+- `refs[].version` 非数字不再抛 `ValueError`（`_int_or`）。
+- 返工指令的 `args` 若不是 Mapping，`dict(...)` 抛的是 **TypeError** 而非
+  ValueError —— 只捕 ValueError 会让一条畸形指令打崩整轮审查。
+
+### 静态审计复核结果
+
+671 条命中（改前 670）：`NESTED_AFTER_RETURN`、`UNREACHABLE` **已从
+`api/server.py` 消失**（C-1 修好的机器证据）；新增 2 条，均无害
+（`critic_llm` 的宽泛异常已改；`test_compiler` 的 `GET_NONE_ATTR` 是 `or {}` 保护下的误报）。
+
+### 测试
+
+**1712/1712 通过 + 架构守卫 PASS**。新增守卫：T12（别名不得合并主键）、
+I6~I8（阻断不得被降级为通过）、L11（兜底重接不得裸崩）。
+
+---
+
 ## [0.4.0-alpha.134] — 2026-10-23（**静态审计的第一批**：9 条「接线断了」的缺陷）
 
 ### 这一批的共同形态

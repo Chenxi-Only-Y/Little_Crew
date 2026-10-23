@@ -543,15 +543,18 @@ class Blackboard:
         失效传播等于没接。登记别名是为了让"名字"和"身份"分开。
         """
         self._seq += 1
+        # ⚠️ **只按主键找既有条目，绝不用别名反查**（自查发现，2026-10-23）。
+        #
+        # 第一版为了"同一份内容重复写不新建条目"，允许顺着别名找回旧条目。
+        # 后果是两个**不同的主键**被并成一条：
+        #   put("shot.list", [...], aliases=("shot.list",))
+        #   put("shot.breakdown", {...}, aliases=("shot.list",))
+        # -> 第二次顺着别名找到 `shot.list` 那条并覆盖它的值，
+        #    于是 `value("shot.list")` 变成了 breakdown 的字典。
+        # **别名是"给读的人多一个名字"，不是"写的人可以合并条目"。**
         existing = self._by_key.get(key)
-        if existing is None or existing not in self._entries:
-            # 主键没登记（或登记的是已失效条目）-> 看别名有没有指向活着的条目
+        if existing is not None and existing not in self._entries:
             existing = None
-            for a in aliases:
-                eid = self._by_key.get(a)
-                if eid is not None and eid in self._entries:
-                    existing = eid
-                    break
 
         if existing is None:
             if expect_version is not None:

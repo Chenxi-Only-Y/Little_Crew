@@ -901,6 +901,57 @@ def _section_optional_lora_degrade() -> None:
     check("L10 缺 loraFile 与能力无关：完整环境里 n_lora 同样被跳过",
           "n_lora" not in res_full.graph, str(sorted(res_full.graph)))
 
+    # ---- L11：兜底重接目标不在 IR 里时，必须是**结构化失败** ----
+    #
+    # `_remap_table` 的兜底是常量 `MODEL_SOURCE_ID`（`n_ckpt`）。
+    # 分离式模型源（Z-Image）通路里没有这个节点 —— 而消费端 `nodes[tgt]`
+    # 是直接下标，曾经抛**裸 `KeyError`**（审计 H-6 的崩溃点）。
+    #
+    # 这条此前要「权重文件缺失」才走得到；L 节（H-13）修好之后，
+    # 「缺 loraFile 就跳过」成了**常规路径** —— 于是降级时必踩。
+    # 所以这条断言必须跟着加：它锁的是「病从结构化变成裸崩溃」这条反向退化。
+    ir_no_ckpt = {
+        "irVersion": "little_crew.ir/v1",
+        "graphId": "G-no-ckpt", "scope": "shot",
+        "bindings": {"C1": {"anchorSet": {"front": "char/C1/front.png"}}},
+        "nodes": [
+            {"id": "n_unet", "kind": "model.source_zimage",
+             "params": {"unet_name": "z_image_turbo_bf16.safetensors"}},
+            {"id": "n_ref", "kind": "identity.reference",
+             "inputs": {"image": {"binding": "C1.anchorSet.front"}},
+             "params": {"weight": 0.65, "weight_type": "linear"},
+             "semantic": {"characterRef": "C1"}},
+            {"id": "n_pos", "kind": "prompt.text",
+             "inputs": {"clip": {"ref": "n_unet", "port": "CLIP"}},
+             "params": {"text": "少女"}},
+            {"id": "n_neg", "kind": "prompt.negative",
+             "inputs": {"clip": {"ref": "n_unet", "port": "CLIP"}},
+             "params": {"text": "多手"}},
+            {"id": "n_latent", "kind": "latent.empty",
+             "params": {"width": 768, "height": 1344, "batch_size": 1}},
+            # ⚠️ model 指向会被跳过的 n_ref —— 与 `ir_bridge` 有锚点时的接线一致
+            {"id": "n_ks", "kind": "sample.ksampler",
+             "inputs": {"model": {"ref": "n_ref", "port": "MODEL"},
+                        "positive": {"ref": "n_pos", "port": "CONDITIONING"},
+                        "negative": {"ref": "n_neg", "port": "CONDITIONING"},
+                        "latent_image": {"ref": "n_latent", "port": "LATENT"}},
+             "params": {"steps": 20, "cfg": 5.5, "sampler": "dpmpp_2m",
+                        "scheduler": "karras", "denoise": 1.0}},
+            {"id": "n_dec", "kind": "decode.vae",
+             "inputs": {"samples": {"ref": "n_ks", "port": "LATENT"},
+                        "vae": {"ref": "n_unet", "port": "VAE"}}},
+            {"id": "n_save", "kind": "io.save_image",
+             "inputs": {"images": {"ref": "n_dec", "port": "IMAGE"}},
+             "params": {"filename_prefix": "probe"}},
+        ],
+        "edges": [],
+    }
+    expect_compile_error(
+        "L11 ★★ 兜底重接目标不在 IR 里 -> 结构化 CompileError（不是裸 KeyError）",
+        CompileErrorCode.INCOMPLETE_GRAPH,
+        ComfyCompiler(m_min, model_source_kind="model.source_zimage").compile,
+        ir_no_ckpt)
+
 
 def main() -> int:
     try:
