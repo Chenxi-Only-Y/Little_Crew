@@ -31,8 +31,8 @@ SRC = PLATFORM / "src"
 #: 放在 ``src/little_crew/<层>/`` 下的是**单层单元测试**（只依赖更低的层）；
 #: 放在 ``tests/`` 下的是**跨层集成测试**（架构守卫允许它那样做）。
 SUITES: list[tuple[str, list[str], int | None]] = [
-    ("IR 规范化与哈希", [sys.executable, "-m", "little_crew.ir.test_canonical"], 36),
-    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 145),
+    ("IR 规范化与哈希", [sys.executable, "-m", "little_crew.ir.test_canonical"], 37),
+    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 155),
     ("真实环境回归", [sys.executable, "-m", "little_crew.compiler.test_real_env"], 19),
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 27),
@@ -61,7 +61,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("后端选择", [sys.executable, "-m", "little_crew.runtime.backend_select_check"], 22),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
-    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 51),
+    ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 57),
     ("核心职位规则桩", [sys.executable, "-m", "little_crew.agent.crew_stubs_check"], 79),
     # 真实 LLM 职位的自检。**用假客户端，不消耗 API** ——
     # 它验的是机制（返工意见真的传到模型了吗、空转会不会被当成成功），
@@ -75,7 +75,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # A 类审查职位的**通用批评家**：一次覆盖 5 个（story_editor /
     # continuity_supervisor / compliance_officer / pacing_editor /
     # review_board）。假客户端，不吃 API。
-    ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 39),
+    ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 37),
     # B 类第一个：导演产出 episode.plan（每场镜头预算 + 基调 + 动机）
     ("导演职位", [sys.executable, "-m", "little_crew.agent.director_llm_check"], 32),
     # 导演**接线**（不是职位本身）：plan 有没有真的注入到分镜师，
@@ -83,7 +83,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签。
     ("导演接线", [sys.executable, "-m", "little_crew.runtime.director_wiring_check"], 15),
     ("灯光师", [sys.executable, "-m", "little_crew.agent.gaffer_llm_check"], 30),
-    ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 64),
+    ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 65),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 57),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 53),
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
@@ -99,14 +99,14 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # video_mode **第二段**：把已有静帧动画化。
     # 反馈循环很贵（2 镜 ≈12 分钟 / 整集 ≈2.4 小时），所以先用假通道验接线。
     # 重点是失败语义：**拿不到本地后端绝不退回付费 API**。
-    ("video_mode 第二段", [sys.executable, "-m", "little_crew.runtime.video_mode_check"], 34),
-    ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 82),
+    ("video_mode 第二段", [sys.executable, "-m", "little_crew.runtime.video_mode_check"], 36),
+    ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 87),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 106),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
-    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 38),
+    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 41),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
 

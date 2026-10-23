@@ -57,6 +57,67 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.134] — 2026-10-23（**静态审计的第一批**：9 条「接线断了」的缺陷）
+
+### 这一批的共同形态
+
+静态审计给出 60 条，先修 9 条。它们的共同点是
+**「函数写对了、测试也过了，但调用点没接上」** ——
+所以 1677 项测试全绿也拦不住：
+
+| # | 病 | 后果 | 现在 |
+|---|---|---|---|
+| `C-0` | `cli/commands.py:334` 是裸表达式 `FAILURE_ACTIONS, CrewOrchestrator`（同步时丢了 `from ... import` 前缀） | **「跑一集」主命令 100% `NameError`** | 补回 import |
+| `C-1` | `_real_compile` 提升为模块级函数时 `episode` 缩进没回退，被吞成它的内部闭包 | `POST /v1/episode` 必 `AttributeError` -> 后台线程里变 FAILED，客户端只看到 202 | 搬回 `_Handlers` |
+| `C-2` | `ReviewFeedback.from_dict` / `ScriptDraft.from_dict` **从来不存在** | 审核者写 dict 必崩；而它上面那条「未产出可解析的审查意见」是**死代码** | 补两个 `from_dict`（宽容 + 丢弃留痕） |
+| `C-3` | `run_stage` 写 `deps=spec.requires`（能力名），`_dependents_of` 比对 `entry_id` | `"bb_000001" in ("shot.image",)` 恒 False -> **失效传播完全失效**：「改了设定但画面没变」 | deps 解析成 `entry_id` |
+| `H-1` | `CriticLlm` 按 **capability** 返回，`run_stage` 只写 **produces** | 3/5 个审查职位的意见**进不了黑板**，而 `run_stage` 仍 `ok=True` | 按产物名返回（名册为唯一真源） |
+| `H-3` | 两条语义不同的约束共用 `ref: cr_cast_{shotId}` | 编译器按 ref 建索引 -> 后者**整条覆盖**前者 | ref 拆开 + 规范化层加 ref 唯一性校验 |
+| `H-13` | 降级到 `identity.lora` 时缺 `loraFile` -> 抛 `MISSING_BINDING` | **降级反而阻断出片**（可选能力把整集挡住） | 改为跳过 + 下游重接 + 通知 |
+| `H-18` | 门禁上下文供给 `plannedDurationSec`，而 `OPERATOR_NEEDS` 要 `durationSec` | **时长硬门禁（防 H3 OOM）从未执行**，报告只写「缺观测」 | 键名对齐 |
+| `H-19` | `clip_video`/`clip_audio` 算完没传进 `EpisodeResult` | H3 片段成果与音轨结论**在报告里永远不可见** | 传进去，并给默认值 |
+
+### 三处「照审计报告的修法会引入新 bug」
+
+写在这里，因为**照抄建议比不修更危险**：
+
+1. `H-19` 建议写 `clip_audio=self._clip_audio` —— `video_mode` 默认 `False`，
+   那个属性**根本不存在**，直接 `AttributeError`。
+2. `M-12` 建议渲染后调 `record_miss(dt)` —— 会**双计 miss**（`cache.py:349` 已调过一次）。
+3. `H-2` 建议「读 `model_families` 判同族作废」 —— 真实信封里 `generator_model=""`，
+   直改会让**每一集的审核都 ESCALATE**。得先把生成方模型标签传下去（未做）。
+
+### 新增守卫（每条修完都必须留一个抓得住它的断言）
+
+- `cli/check.py`：**自由变量守卫**（`symtable`：函数体引用的全局名必须被绑定）
+  + **裸名字表达式语句**守卫 + **`handlers.X` 必须真的存在**守卫。
+  前两条正是 `C-0` 那类「import 前缀丢失」唯一能被机器逮住的形态。
+- `ir/test_canonical.py`：约束 ref 唯一性（与节点/边 id 重复校验同构）。
+- `compiler/test_compiler.py` 新增 L 节：**无 IPAdapter 环境**下缺 `loraFile`
+  必须降级出片 —— 此前夹具装着 IPAdapter，降级路径**从未被端到端走过**。
+- `runtime/episode_check.py` G16/G17：走**真流水线**断言 `durationSec` 到手、
+  且 `cr_dur_*` 不在跳过清单里（旧测试直接调算子并手工传字段，绕过了「谁供给」）。
+- `runtime/video_mode_check.py` X7/X8：构造 `EpisodeResult` 必须传片段字段。
+- `agent/critic_llm_check.py` D10~D12：5 个批评家的产出键 ⊆ 名册 `produces`，
+  且与编排器读的键**是同一个**。
+- `agent/orchestrator_check.py` I 节：deps 必须是 `entry_id`；改上游必须标 stale；
+  审核意见是 dict 也必须能还原。
+
+### 测试
+
+**1705/1705 通过 + 架构守卫 PASS**（上一版 1677/1679）。
+
+> ⚠️ 顺带清掉一个长期误报：`run_all.py` 里「通用批评家 39 项 / 一集流水线 82 项」
+> 与实测（34 / 85）不符，那两条 `⚠` 提示一直在响。
+> **告警响了很久没人看，就等于没有告警** —— 与本批缺陷是同一种病。
+
+### 余下 51 条
+
+见 `附加脚本/审计分诊-该修哪些-2026-10-23.md`：
+29 条排期修（成簇）、19 条等触发条件、3 条建议**不按报告改**。
+
+---
+
 ## [0.4.0-alpha.133] — 2026-10-22（**B 步通了**：ComfyUI 图形态渲染跑通）
 
 ### 最后一个硬编码

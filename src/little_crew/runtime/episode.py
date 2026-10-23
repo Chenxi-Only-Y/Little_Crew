@@ -649,6 +649,13 @@ class EpisodeRunner:
         # ⚠️ **成本**：331s/镜，24 镜 ≈ 2.3 小时。所以 `video_mode` 默认关。
         # ⚠️ **失败不覆盖前一步的结论**：片段没出来，静帧成片仍然有效。
         clip_video = ""
+        # ⚠️ **两个都要有默认值**：`video_mode` 默认 False，
+        # 不开视频时这两行是唯一的赋值点。缺了它们，
+        # 构造 `EpisodeResult` 时传 `self._clip_audio` 会 `AttributeError`
+        # （审计报告 H-19 的建议修法正好踩这个）。
+        clip_audio: dict[str, Any] = {}
+        self._clip_info: dict[str, Any] = {}
+        self._clip_audio: dict[str, Any] = {}
         if self.video_mode and manifest.shot_count:
             clips = self._render_clip_stage(per_shot_artifacts,
                                             on_progress=on_progress)
@@ -657,6 +664,7 @@ class EpisodeRunner:
             self._clip_info = dict(clips)
             # ⚠️ **缺音轨 -> 交付失败**（M3 的定义是"成片含音轨"）
             self._clip_audio = dict(clips.get("audio") or {})
+            clip_audio = dict(self._clip_audio)
             if clips.get("path") and self._clip_audio.get("ok") is False:
                 ok = False
                 reason = str(self._clip_audio.get("reason") or "片段缺音轨")
@@ -680,6 +688,13 @@ class EpisodeRunner:
             failed=len(failed), total_seconds=manifest.total_seconds,
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
+            # ⚠️ **这两个也漏过一次**（2026-10-23 审计 H-19）：
+            # H3 片段渲了 2.3 小时、音轨也查了，但构造 `EpisodeResult` 时没传，
+            # 报告里 `clipVideo`/`clipAudio` 恒为空 ——
+            # 与"没开视频模式"完全一样，而 `:687` 上方那条注释
+            # 记的正是同一个坑（`previs`）。**同一个函数，第二次。**
+            clip_video=clip_video,
+            clip_audio=clip_audio,
             characters=self.characters,
             advisory=advisory,
             director=director_info,
@@ -1882,7 +1897,14 @@ class EpisodeRunner:
         for s in picked:
             entry: dict[str, Any] = {
                 "characterCount": len(getattr(s, "characters", ()) or ()),
-                "plannedDurationSec": float(
+                # ⚠️ **键名必须是 `durationSec`**：这是 `review/observe.py` 的
+                # `OPERATOR_NEEDS["duration_within"]` 要的名字。
+                # 它在 2026-10 之前叫 `plannedDurationSec`，于是
+                # `need - avail` 恒非空 -> 每条 `duration_within`（hard！）
+                # 被**静默跳过**，报告里只写「未执行：缺观测」——
+                # 看起来像"本机能力不足"，实际是字段名拼错。
+                # 那条约束是防 H3 OOM 的硬上限，等于从未生效过。
+                "durationSec": float(
                     getattr(s, "duration_sec", 0.0) or 0.0),
                 #: `cast_consistent_with_text` 要的两个字段（2026-10-17）。
                 # 它们是**文字层**的，产物文件里量不出来 ——

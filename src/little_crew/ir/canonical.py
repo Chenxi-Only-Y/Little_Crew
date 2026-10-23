@@ -321,6 +321,17 @@ def normalize(graph: Mapping[str, Any]) -> dict[str, Any]:
             if "description" in c:
                 norm["description"] = c["description"]
             cons.append(norm)
+        # ⚠️ **ref 唯一性** —— 与上面「节点 id 重复」「边 id 重复」同构。
+        #
+        # 为什么必须有：`compiler.py:1606` 用 `registry[c["ref"]] = c` 建索引，
+        # 重复 ref 会**后写覆盖先写**（一条约束静默消失），
+        # 而 `review/gate.py` 又把 `constraint_ref` 当作断言追溯的唯一身份。
+        # 2026-10-23 实测：`ir_bridge` 的 ⓪ 与 ③ 曾共用 `cr_cast_{shotId}`，
+        # 于是 ⓪ 被 ③ 整条挤掉。**校验放在规范化这一层，所有入口都受益。**
+        refs = [c["ref"] for c in cons]
+        if len(refs) != len(set(refs)):
+            dupes = sorted({r for r in refs if refs.count(r) > 1})
+            raise CanonicalizationError(f"约束 ref 重复: {dupes}")
         out["constraints"] = sorted(cons, key=lambda c: c["ref"])
 
     # 资产绑定：按键排序

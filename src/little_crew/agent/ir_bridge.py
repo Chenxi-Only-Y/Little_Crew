@@ -340,7 +340,13 @@ def shot_to_ir(
     # 正确顺序：`audit` 跑几集 -> 量出真实发生率 -> 再决定升不升 `hard`。
     # （这与 `PASS_THRESHOLD` 的标定是同一套纪律：**先有分布，再有阈值**。）
     constraints.append({
-        "ref": f"cr_cast_{shot.shot_id}",
+        # ⚠️ **ref 必须与 ③ 的 `cr_cast_*` 区分**：
+        # 编译器按 ref 建 `constraint_registry`（`compiler.py:1606`），
+        # 同一个 ref 后者覆盖前者 —— 两处都叫 `cr_cast_xxx` 时，
+        # 这条 `audit` 级约束会被 ③ 的 `count_at_most` **整条挤出注册表**，
+        # 从此再也不会被阈值联动触及。而报告里 `constraint_ref` 是
+        # 断言追溯的唯一身份，两条语义不同的约束共用一个身份 = 歧义。
+        "ref": f"cr_cast_text_{shot.shot_id}",
         "assertion": {"op": "cast_consistent_with_text"},
         "enforcement": "audit",
     })

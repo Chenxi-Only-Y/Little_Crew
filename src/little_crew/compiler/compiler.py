@@ -1319,6 +1319,48 @@ class ComfyCompiler:
 
             eff_rule = target_rule or rule
 
+            # ⚠️ **可选节点"参数取不到"也要跳过，不能整集失败**（2026-10-23 审计 H-13）
+            #
+            # 实测链路：本机没装 IPAdapter -> `identity.reference` 沿
+            # `degrade_to` 降级成 `identity.lora` -> 后者的 `param_map` 要
+            # `lora_name` -> 而平台产出的 binding 只有 `shotId`/`anchorSet`，
+            # **没有 `loraFile`**（角色 LoRA 本机训不出来）-> `_apply_params`
+            # 抛 `MISSING_BINDING` -> **整集编译硬失败**。
+            #
+            # 这是**负向降级**：降级反而比不降级更致命，直接违反
+            # 「降级必须改变图、而不是阻断出片」。而这两个 kind 都是
+            # `required=False` —— 可选能力把整集挡住了，方向就是错的。
+            #
+            # 为什么必须在**这里**判、不能等 `_apply_params` 抛：
+            # 抛错发生在图构造中途，那时已无法再走"跳过 + 下游重接"，
+            # 只剩整集失败一条路。所以提前判，走既有的 skip 机制。
+            shortfall = self._binding_shortfall(node, eff_rule, normalized)
+            if shortfall:
+                if eff_rule.required:
+                    raise CompileError(
+                        CompileErrorCode.MISSING_BINDING,
+                        f"节点 {nid!r}({kind}) 是必需节点，但 {shortfall}",
+                        ir_node_id=nid,
+                    )
+                skip_set.add(nid)
+                remap.update(self._remap_table({nid}, deps, nodes))
+                skipped_constraints.update(
+                    (node.get("semantic") or {}).get("constraintRefs", ())
+                )
+                tgt, tgt_port = remap.get(nid, ("?", "?"))
+                notices.append(DegradationNotice(
+                    kind=NoticeKind.SKIPPED_OPTIONAL, ir_node_id=nid,
+                    severity=Severity.WARNING.value,
+                    frm=f"{kind} @ {chosen}", to=f"(已跳过，下游重接到 {tgt}.{tgt_port})",
+                    reason=(f"{shortfall}。**移除该节点而不是让整集编译失败** —— "
+                            f"身份锁定是可选增强，缺它应当降级而不是阻断出片。"),
+                    impact="该镜不使用角色 LoRA 锁定；锚点图/提示词仍照常生效",
+                    ui_hint=(source_rule.install_hint
+                             or "为本角色补充 loraFile 绑定，或安装 IPAdapter 走锚点图路径"),
+                    reversible=True,
+                ))
+                continue
+
             # 自动注入模型源。
             #
             # 触发条件有两个，缺一不可：
@@ -2433,6 +2475,31 @@ class ComfyCompiler:
 
     # ---- 参数映射 ------------------------------------------------------
 
+    @staticmethod
+    def _binding_shortfall(
+        node: Mapping[str, Any],
+        rule: CompileRule,
+        ir: Mapping[str, Any],
+    ) -> str:
+        """可选节点"参数取不到"的原因；能取到就返回空串。
+
+        目前只覆盖一类：`param_map` 要 `lora_name`，而 binding 里没有
+        `loraFile`。这是 `identity.lora` / `identity.lora_model_only`
+        在本机（角色 LoRA 训不出来）的**常态**，不是异常。
+
+        为什么返回字符串而不是布尔：调用方要把它写进降级通知的
+        `reason` —— "为什么这个节点没进图"必须能被人读懂。
+        """
+        params = node.get("params") or {}
+        if "lora_name" not in rule.param_map or "lora_name" in params:
+            return ""
+        cref = str((node.get("semantic") or {}).get("characterRef") or "")
+        bind = (ir.get("bindings") or {}).get(cref) if cref else None
+        if isinstance(bind, Mapping) and bind.get("loraFile"):
+            return ""
+        return (f"binding {cref!r} 未提供 loraFile"
+                f"（该角色只有锚点图，没有可用的 LoRA 文件）")
+
     def _apply_params(
         self,
         node: Mapping[str, Any],
@@ -2455,9 +2522,14 @@ class ComfyCompiler:
                 if isinstance(bind, Mapping) and bind.get("loraFile"):
                     inputs[cname] = bind["loraFile"]
                 else:
+                    # ⚠️ 走到这里说明前置检查漏了（`_binding_shortfall` 已覆盖
+                    # "可选节点缺 loraFile"）。错误文案必须说清缺的是**字段**，
+                    # 不是 binding —— 早期写"binding 未提供"会把人引去查绑定表，
+                    # 而绑定表其实好好的（2026-10-23 审计 H-13 的第三条）。
                     raise CompileError(
                         CompileErrorCode.MISSING_BINDING,
-                        f"节点 {node['id']!r} 需要 LoRA 文件，但 binding {cref!r} 未提供 loraFile",
+                        f"节点 {node['id']!r} 需要 LoRA 文件，但 binding {cref!r} "
+                        f"存在却没有 `loraFile` 字段",
                         ir_node_id=node["id"],
                     )
 

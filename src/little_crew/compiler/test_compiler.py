@@ -825,6 +825,83 @@ def shot_ir(*, checkpoint: str = "sd_xl_base_1.0.safetensors",
 # 测试
 # ==========================================================================
 
+def _section_optional_lora_degrade() -> None:
+    """可选身份节点缺 LoRA 文件时**降级出片**，而不是整集编译失败。
+
+    ## 这一节存在的理由（2026-10-23 审计 H-13）
+    链路：本机没装 IPAdapter -> `identity.reference` 沿 `degrade_to` 降级成
+    `identity.lora` -> 它的 `param_map` 要 `lora_name` -> 而平台产出的
+    binding 只有 `shotId`/`anchorSet`，**没有 `loraFile`**
+    （角色 LoRA 本机训不出来）-> `_apply_params` 抛 `MISSING_BINDING`
+    -> **整集编译硬失败**。
+
+    两个 kind 都是 `required=False` —— **负向降级**：可选能力把整集挡住了。
+
+    ⚠️ 为什么此前没被测出来：默认夹具 `env_full()` **装着 IPAdapter**，
+    规则永远命中第一候选，降级路径**从未被端到端走过**。
+    所以这里用 `env_minimal()`（无 IPAdapter）。
+
+    ⚠️ 也不能在这里 import `agent` 层（`ir_bridge`）来造 IR ——
+    `compiler` 不得依赖 `agent`（架构守卫 R1 会拦）。因此直接改夹具
+    `shot_ir()` 的 binding：把 `loraFile` 删掉，正是**平台真实产出**的形态
+    （`ir_bridge` 只写 `shotId`/`anchorSet`）。
+    """
+    ir = copy.deepcopy(shot_ir())
+    ir["bindings"]["CHAR-0007"].pop("loraFile", None)
+
+    check("L1 前置：IR 里有 identity.reference 节点",
+          any(n["kind"] == "identity.reference" for n in ir["nodes"]),
+          str([n["kind"] for n in ir["nodes"]]))
+    check("L2 前置：binding 里**没有** loraFile（平台真实产出的形态）",
+          "loraFile" not in (ir["bindings"].get("CHAR-0007") or {}))
+
+    m_min = probe_from_object_info(env_minimal(), endpoint="fixture",
+                                   comfy_version="0.3.x")
+    try:
+        res = ComfyCompiler(m_min).compile(ir)
+    except CompileError as e:
+        check("L3 ★★ 缺 IPAdapter + 缺 loraFile 时仍然能编译（降级不阻断）",
+              False, f"{e.code}: {e.message[:80]}")
+        return
+    check("L3 ★★ 缺 IPAdapter + 缺 loraFile 时仍然能编译（降级不阻断）", True)
+
+    def _kn(n) -> str:
+        return str(getattr(n.kind, "value", n.kind))
+
+    kinds = [_kn(n) for n in res.notices]
+    skipped_ids = {n.ir_node_id for n in res.notices
+                   if _kn(n) == "SKIPPED_OPTIONAL"}
+    check("L4 ★ 发了 DEGRADED（IPAdapter 不在 -> 降到 LoRA）",
+          "DEGRADED" in kinds, str(kinds))
+    check("L5 ★★ 缺 loraFile 的节点被记录为 SKIPPED_OPTIONAL（n_ref / n_lora）",
+          {"n_ref", "n_lora"} <= skipped_ids, str(sorted(skipped_ids)))
+    check("L6 ★★ 被跳过的节点**不在图里**（不留引用不存在文件的节点）",
+          "n_ref" not in res.graph and "n_lora" not in res.graph,
+          str(sorted(res.graph)))
+
+    ks_model = (res.graph.get("n_ks") or {}).get("inputs", {}).get("model")
+    check("L7 ★★ 下游已重接到存活祖先（n_ks.model -> n_ckpt）",
+          isinstance(ks_model, list) and ks_model == ["n_ckpt", 0],
+          str(ks_model))
+
+    dangling = [(nid, port, val) for nid, n in res.graph.items()
+                for port, val in (n.get("inputs") or {}).items()
+                if isinstance(val, list) and len(val) == 2
+                and str(val[0]) not in res.graph]
+    check("L8 ★★ 产出的图没有悬空引用（重接是干净的）",
+          not dangling, str(dangling[:2]))
+
+    # 对照组：完整环境（有 IPAdapter）—— 锚点图那条路仍然成立，
+    # 但**缺 loraFile 的 n_lora 照样要跳过**（与能力无关，是数据缺）
+    m_full = probe_from_object_info(env_full(), endpoint="fixture",
+                                    comfy_version="0.3.x")
+    res_full = ComfyCompiler(m_full).compile(ir)
+    check("L9 有 IPAdapter 时 n_ref 仍在图里（控制组）",
+          "n_ref" in res_full.graph, str(sorted(res_full.graph)))
+    check("L10 缺 loraFile 与能力无关：完整环境里 n_lora 同样被跳过",
+          "n_lora" not in res_full.graph, str(sorted(res_full.graph)))
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -1443,6 +1520,8 @@ def main() -> int:
     _section_optional_ports()
     print()
     _section_blur_rule()
+    print()
+    _section_optional_lora_degrade()
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:

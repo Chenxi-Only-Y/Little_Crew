@@ -89,6 +89,16 @@ def _cast_constraint() -> None:
                   for c in cons),
           f"{[ (c.get('assertion') or {}).get('op') for c in cons ]}")
 
+    # ★ 约束 ref 必须**两两不同**（2026-10-23 审计 H-3）
+    #
+    # 这里曾经有个真 bug：⓪`cast_consistent_with_text`（audit）与
+    # ③`count_at_most`（hard）都叫 `cr_cast_{shotId}`。编译器按 ref 建
+    # `constraint_registry`，后者把前者**整条挤掉** —— 于是那条 audit 约束
+    # 永远不会被阈值联动触及，而报告里两条语义不同的断言共用一个身份。
+    check("J5 ★★ 约束 ref 两两不同（同 ref 会被编译器后写覆盖先写）",
+          len(refs) == len(set(refs)),
+          f"重复：{sorted({r for r in refs if refs.count(r) > 1})}")
+
 
 def main() -> int:
     try:

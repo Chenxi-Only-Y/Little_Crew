@@ -707,6 +707,30 @@ def _section_gate_wiring(tmp: Path) -> None:
           {v.value for v in GateVerdict} == {"KEEP", "RETRY", "ESCALATE"},
           str(sorted(v.value for v in GateVerdict)))
 
+    # ---- ⑦ ★★ 时长硬门禁必须**真的执行**（2026-10-23 审计 H-18）----
+    #
+    # 病根是**字段名**：`observe.OPERATOR_NEEDS["duration_within"]` 要
+    # `durationSec`，而流水线原来供给的是 `plannedDurationSec` ——
+    # 于是每条 `duration_within`（`enforcement=hard`，防 H3 OOM 的那道闸）
+    # 都被判「缺观测」而**静默跳过**，报告里只写「未执行：缺观测」，
+    # 看起来像"本机能力不足"，实际是拼写不一致。
+    #
+    # ⚠️ 这条守卫必须走**真流水线**（`r.run`），不能直接调算子 ——
+    # 直接调算子并手工传 `{"durationSec": ...}` 正是当初漏掉的原因：
+    # 测了公式，没测**谁供给这个字段**。
+    r6, _, _ = _mk(tmp, "g6")
+    r6.verify_artifacts = True
+    r6.max_repair_rounds = 0
+    res6 = r6.run(SCRIPT, limit=2)
+    g6 = _gate_of(res6)
+    avail_d = g6.get("availableObservations") or []
+    skipped_d = g6.get("skippedConstraints") or []
+    check("G16 ★★ 门禁能拿到 `durationSec`（键名与 OPERATOR_NEEDS 对齐）",
+          "durationSec" in avail_d, str(avail_d))
+    check("G17 ★★ 时长硬门禁**真的执行了**（不在跳过清单里）",
+          not any("cr_dur_" in x for x in skipped_d),
+          str(skipped_d[:1])[:70])
+
 
 # ==========================================================================
 # H. 返工闭环：改 IR -> 只重跑那几镜 -> 复检

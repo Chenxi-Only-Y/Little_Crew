@@ -268,6 +268,13 @@ def main() -> int:
                    "nodes": shot_graph()["nodes"] + [shot_graph()["nodes"][0]]})
     expect_raises("错误：边 id 重复", CanonicalizationError, content_hash,
                   {**shot_graph(), "edges": shot_graph()["edges"] * 2})
+    # ★ 约束 ref 唯一性（2026-10-23 审计 H-3）：
+    # 编译器用 `registry[c["ref"]] = c` 建索引，重复 ref 会**后写覆盖先写**
+    # （一条约束静默消失）；而 `gate` 又把 `constraint_ref` 当作追溯身份。
+    # 与上面的「节点 id 重复 / 边 id 重复」同构 —— 校验放在规范化这一层。
+    _dup = copy.deepcopy(cons)
+    _dup["constraints"] = list(cons["constraints"]) + [cons["constraints"][0]]
+    expect_raises("错误：约束 ref 重复", CanonicalizationError, content_hash, _dup)
     expect_raises("错误：边 type 非法", CanonicalizationError, content_hash,
                   {**shot_graph(), "edges": [{"id": "e9", "type": "bogus",
                                               "from": {"node": "n_ks", "port": "x"},

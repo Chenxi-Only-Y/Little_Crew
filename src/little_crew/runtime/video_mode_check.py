@@ -275,6 +275,30 @@ def _audio_gate() -> None:
     check("X6 as_dict 导出 clipAudio", "clipAudio" in d,
           str([k for k in d if "lip" in k]))
 
+    # ---- ★ 2026-10-23 审计 H-19：**算出来了但没传进结果对象** ----
+    #
+    # 这是本项目第二次踩同一个坑：字段声明了、值算出来了、`as_dict` 也导出了，
+    # 唯独构造 `EpisodeResult` 时没传 -> 报告里恒为空，
+    # 与「没开视频模式」在报告上**完全一样**。
+    # （上一次是 `previs`，`episode.py` 里那段注释就是那次的墓志铭。）
+    #
+    # 断言方式：读 `run()` 的源码，检查那一次 `EpisodeResult(...)` 调用
+    # 有没有把两个片段字段真的传进去。
+    src_run = inspect.getsource(EpisodeRunner.run)
+    i_ret = src_run.find("return EpisodeResult(")
+    tail = src_run[i_ret:] if i_ret >= 0 else ""
+    check("X7 ★★ 构造 EpisodeResult 时**真的传了** clip_video / clip_audio",
+          "clip_video=" in tail and "clip_audio=" in tail,
+          f"构造参数里缺：{[k for k in ('clip_video=', 'clip_audio=') if k not in tail]}")
+
+    # ⚠️ 配套：`video_mode` 默认 False，那两个属性必须在 `if self.video_mode`
+    # **之前**就有默认值 —— 否则"照审计建议传 self._clip_audio"会直接
+    # `AttributeError`（审计报告 H-19 给的那一行修法正好踩这个）。
+    i_init = src_run.find("self._clip_audio")
+    i_branch = src_run.find("if self.video_mode")
+    check("X8 ★ `_clip_audio` 有无条件初始化（在 `if self.video_mode` 之前）",
+          0 <= i_init < i_branch, f"init@{i_init} branch@{i_branch}")
+
 
 
 # ---------- F. `_render_clip_stage` 整体（外层）----------
