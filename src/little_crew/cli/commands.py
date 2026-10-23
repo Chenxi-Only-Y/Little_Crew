@@ -331,7 +331,13 @@ _SAMPLE_SCRIPT = """[场1] 山中·午后
 def cmd_episode(args: Any) -> int:
     """跑一集 —— 剧本 → 分镜 → 角色定妆 → 渲染 → 门禁 → 合成。"""
     from little_crew.agent.crew_stubs import default_crew_stubs
-    FAILURE_ACTIONS, CrewOrchestrator
+    # ⚠️ 这一行**曾经是一条裸表达式**（`FAILURE_ACTIONS, CrewOrchestrator`）——
+    # 同步文件时丢了 `from ... import ` 前缀，语法合法、语义是"求值后丢弃"，
+    # 于是整条 `little-crew episode` 在跑到 :415 时 `NameError`。
+    # 静态检查器不报、类型检查器没接、`cli/check.py` 只测 HTTP 接口
+    # —— 产品的"跑一集"主命令 100% 不可用而全绿。守卫见 `cli/check.py` 的
+    # 「自由变量」段（AST 检查函数体里引用的名字必须在本函数内被绑定）。
+    from little_crew.agent.orchestrator import FAILURE_ACTIONS, CrewOrchestrator
     from little_crew.models.spec import BackendKind
     from little_crew.runtime.cache import ContentCache
     from little_crew.runtime.cached_render import (CachingRenderer,

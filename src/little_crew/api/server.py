@@ -211,47 +211,6 @@ class _Handlers:
                             "`POST /v1/compile` 只编译不提交，可安全反复试"}
 
 
-class _CompileFailed(Exception):
-    """编译失败的**规范化**异常 —— 把多种原因收敛成一种呈现。
-
-    IR 不合法的表现有好几种：缺必填字段走 `canonicalize` 抛 `ValueError`，
-    结构问题走编译器抛 `CompileError`，节点类型错抛 `KeyError`/`TypeError`。
-
-    **它们对调用方是同一件事**（"你给的 IR 有问题"），所以必须统一呈现；
-    漏掉一种就会变成 500，让客户端把"我的输入错了"读成"服务端挂了"。
-    """
-
-
-def _real_compile(ir: Mapping[str, Any]) -> dict[str, Any]:
-    """真实编译路径：连 ComfyUI 取能力矩阵，然后编译。"""
-    from little_crew.capability.capability import probe_from_object_info
-    from little_crew.compiler.compiler import ComfyCompiler, CompileError
-    from little_crew.config import env_value
-    from little_crew.models.spec import Backend, BackendKind
-    from little_crew.runtime.channels.comfy import ComfyChannel
-
-    ep = (env_value("COMFYUI_ENDPOINT", "")
-          or "http://127.0.0.1:8188").rstrip("/")
-    ch = ComfyChannel(Backend(kind=BackendKind.COMFYUI, endpoint=ep,
-                              is_local_by_default=True),
-                      endpoint=ep, timeout_s=120)
-    ok, why = ch.available()
-    if not ok:
-        # ⚠️ **环境不可用是 5xx**（服务端的依赖没起来），与 4xx 区分开
-        raise RuntimeError(f"ComfyUI 不可用：{why}")
-
-    m = probe_from_object_info(ch.probe_catalog(), endpoint=ep,
-                               comfy_version="unknown")
-    try:
-        res = ComfyCompiler(m).compile(ir)
-    except (CompileError, ValueError, KeyError, TypeError) as e:
-        raise _CompileFailed(str(e)) from e
-
-    return {"ok": True, "graphHash": res.graph_hash,
-            "irHash": res.ir_hash, "nodeCount": len(res.graph),
-            "notices": [n.as_dict() for n in res.notices],
-            "graph": res.graph}
-
     @staticmethod
     def episode(body: Mapping[str, Any], run: Run) -> dict[str, Any]:
         """跑一集。**同步执行，由 `RunRegistry.start` 放进后台线程。**"""
@@ -323,6 +282,49 @@ def _real_compile(ir: Mapping[str, Any]) -> dict[str, Any]:
                          on_progress=lambda *a, **k: run.emit("渲染中"))
         run.emit("完成", ok=res.ok)
         return res.as_dict()
+
+
+class _CompileFailed(Exception):
+    """编译失败的**规范化**异常 —— 把多种原因收敛成一种呈现。
+
+    IR 不合法的表现有好几种：缺必填字段走 `canonicalize` 抛 `ValueError`，
+    结构问题走编译器抛 `CompileError`，节点类型错抛 `KeyError`/`TypeError`。
+
+    **它们对调用方是同一件事**（"你给的 IR 有问题"），所以必须统一呈现；
+    漏掉一种就会变成 500，让客户端把"我的输入错了"读成"服务端挂了"。
+    """
+
+
+def _real_compile(ir: Mapping[str, Any]) -> dict[str, Any]:
+    """真实编译路径：连 ComfyUI 取能力矩阵，然后编译。"""
+    from little_crew.capability.capability import probe_from_object_info
+    from little_crew.compiler.compiler import ComfyCompiler, CompileError
+    from little_crew.config import env_value
+    from little_crew.models.spec import Backend, BackendKind
+    from little_crew.runtime.channels.comfy import ComfyChannel
+
+    ep = (env_value("COMFYUI_ENDPOINT", "")
+          or "http://127.0.0.1:8188").rstrip("/")
+    ch = ComfyChannel(Backend(kind=BackendKind.COMFYUI, endpoint=ep,
+                              is_local_by_default=True),
+                      endpoint=ep, timeout_s=120)
+    ok, why = ch.available()
+    if not ok:
+        # ⚠️ **环境不可用是 5xx**（服务端的依赖没起来），与 4xx 区分开
+        raise RuntimeError(f"ComfyUI 不可用：{why}")
+
+    m = probe_from_object_info(ch.probe_catalog(), endpoint=ep,
+                               comfy_version="unknown")
+    try:
+        res = ComfyCompiler(m).compile(ir)
+    except (CompileError, ValueError, KeyError, TypeError) as e:
+        raise _CompileFailed(str(e)) from e
+
+    return {"ok": True, "graphHash": res.graph_hash,
+            "irHash": res.ir_hash, "nodeCount": len(res.graph),
+            "notices": [n.as_dict() for n in res.notices],
+            "graph": res.graph}
+
 
 
 # ---------------------------------------------------------------------------

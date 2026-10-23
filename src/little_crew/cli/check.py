@@ -335,6 +335,137 @@ def _is_json(s: str) -> bool:
 
 
 # ==========================================================================
+# F. 源码守卫（静态，不执行被测模块）
+# ==========================================================================
+
+#: 模块级自动存在的名字（`symtable` 不会把它们列进模块符号表）
+_DUNDERS = frozenset({
+    "__file__", "__name__", "__doc__", "__package__", "__spec__",
+    "__loader__", "__builtins__", "__dict__", "__path__",
+})
+
+
+def _unresolved_globals(path) -> list[str]:
+    """列出「函数体里引用了、但模块级与内建都没有绑定」的名字。
+
+    ## 为什么需要它（2026-10-23 审计 C-0）
+    `commands.py` 里曾有一行：
+
+        from little_crew.agent.orchestrator import FAILURE_ACTIONS, CrewOrchestrator
+
+    一次跨副本同步把它弄成了**裸表达式**：
+
+        FAILURE_ACTIONS, CrewOrchestrator
+
+    语法完全合法（元组表达式语句，求值后丢弃、不导入任何东西），
+    **静态检查器不报、类型检查器没接、测试也从不执行那条命令** ——
+    于是产品的「跑一集」主命令 100% `NameError`，而 1153 项测试全绿。
+
+    这类「import 前缀丢失」只有机器能稳定抓住。用标准库 `symtable`
+    而不是手写作用域分析：闭包 / 推导式 / 嵌套函数的作用域规则由它负责。
+    """
+    import builtins
+    import symtable
+
+    src = path.read_text(encoding="utf-8")
+    top = symtable.symtable(src, str(path), "exec")
+    module_names = {s.get_name() for s in top.get_symbols()} | set(_DUNDERS)
+
+    bad: list[str] = []
+
+    def walk(tbl, prefix: str = "") -> None:
+        for child in tbl.get_children():
+            where = f"{prefix}{child.get_name()}"
+            for s in child.get_symbols():
+                name = s.get_name()
+                if (s.is_global() and name not in module_names
+                        and not hasattr(builtins, name)):
+                    bad.append(f"{where}:{name}")
+            walk(child, where + ".")
+
+    walk(top)
+    return bad
+
+
+def _bare_name_statements(path) -> list[str]:
+    """找出「裸名字表达式语句」—— 形如 `A, B` 或单写一个 `A` 的语句。
+
+    它们能通过编译，但**不产生任何效果**，出现即 bug（不是风格问题）。
+    `symtable` 那条守卫只能抓住「名字未绑定」；若那两个名字恰好模块级存在，
+    这条仍然会响 —— 两把锁互补。
+    """
+    import ast
+
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    bad: list[str] = []
+
+    def scan(node) -> None:
+        for stmt in getattr(node, "body", ()):
+            if not isinstance(stmt, ast.Expr):
+                continue
+            val = stmt.value
+            cands = ((val,) if isinstance(val, ast.Name)
+                     else (tuple(val.elts) if isinstance(val, ast.Tuple) else ()))
+            if cands and all(isinstance(x, ast.Name) for x in cands):
+                where = getattr(node, "name", "<module>")
+                bad.append(f"{path.name}:{stmt.lineno} @ {where}")
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef)):
+            scan(node)
+    return bad
+
+
+def _missing_handler_members(server_path) -> list[str]:
+    """`self.handlers.X` 引用了 `_Handlers` 上不存在的成员（审计 C-1 的形态）。
+
+    2026-10-23：`episode` 曾被误缩进成 `_real_compile` 的内部闭包，
+    `_Handlers` 上**根本没有**这个属性，路由 `self.handlers.episode(...)`
+    必然 `AttributeError` —— 而异常发生在后台线程里，客户端只看到 202，
+    随后查任务才是 failed。**"接口正常返回"与"任务 100% 失败"同时成立。**
+    """
+    import ast
+
+    from little_crew.api.server import _Handlers
+
+    tree = ast.parse(server_path.read_text(encoding="utf-8"),
+                     filename=str(server_path))
+    wanted: set[str] = set()
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Attribute)
+                and node.value.attr == "handlers"):
+            wanted.add(node.attr)
+    return sorted(n for n in wanted if not hasattr(_Handlers, n))
+
+
+def _f_source_guards() -> None:
+    import pathlib
+    import sys as _sys
+
+    here = pathlib.Path(__file__).resolve().parent          # .../little_crew/cli
+    cli_files = sorted(p for p in here.glob("*.py") if p.name != "check.py")
+
+    unresolved: list[str] = []
+    for f in cli_files:
+        unresolved += [f"{f.name}:{x}" for x in _unresolved_globals(f)]
+    check("F1 ★ 函数体引用的全局名都真的被绑定了（防 import 前缀丢失）",
+          not unresolved, str(unresolved[:6]))
+
+    bare: list[str] = []
+    for f in cli_files:
+        bare += _bare_name_statements(f)
+    check("F2 ★ 没有「裸名字表达式语句」（`A, B` 那种，求值后丢弃）",
+          not bare, str(bare[:6]))
+
+    from little_crew.api import server as _server_mod
+    missing = _missing_handler_members(pathlib.Path(_server_mod.__file__))
+    check("F3 ★ 路由里 `handlers.X` 的 X 都真的在 `_Handlers` 上",
+          not missing, str(missing))
+    _ = _sys  # 保持导入位置一致（本段只在需要时用 sys）
+
+
+# ==========================================================================
 # E. 安全默认
 # ==========================================================================
 
@@ -373,6 +504,7 @@ def main() -> int:
     _c_json_output()
     _d_http_contract()
     _e_defaults()
+    _f_source_guards()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
