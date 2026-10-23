@@ -37,7 +37,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
-    ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 59),
+    ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 60),
     # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，
     # 而上层只看到 [empty-output]（2026-10-19 实测，稳定复现）。
     ("LLM 调用串行化", [sys.executable, str(PLATFORM / "tests" / "test_llm_lock.py")], 7),

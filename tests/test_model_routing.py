@@ -614,6 +614,23 @@ def main() -> int:
           and h_0.error is not None,
           f"{h_0.status.value if h_0 else None}")
 
+    # ⚠️ MiniMax 这类后端的 `response_path` 就是 `task_id`：
+    # 查询成功的响应里也有这个字段，若直接 absorb 会把**任务 id 当成产物 URI**。
+    be_mm = Backend(kind=BackendKind.HTTP, endpoint="https://api.minimaxi.com",
+                    path="/v1/video_generation", response_path="task_id",
+                    async_task=True,
+                    status_path="/v1/query/video_generation?task_id={task_id}",
+                    status_success_value="Success",
+                    status_failure_values=("Fail",), artifact_kind="video")
+    h_mm = _RemoteOnly(be_mm, raw={"task_id": "1234567890", "status": "Success",
+                                   "file_id": "f-1"}).reconcile(["1234567890"]).get(
+        "1234567890")
+    check("I13 ★★ 任务 id 不会被当成产物 URI（假引用比没有更糟）",
+          h_mm is not None and h_mm.status is JobStatus.UNKNOWN
+          and not h_mm.artifacts,
+          f"{h_mm.status.value if h_mm else None} / "
+          f"{[a.uri for a in (h_mm.artifacts if h_mm else ())]}")
+
     class _Boom(_RemoteOnly):
         def _request_raw(self, *a, **kw):                     # noqa: D102
             raise ChannelError("F-TIMEOUT", "查询超时", retryable=True)
@@ -623,7 +640,7 @@ def main() -> int:
         _Boom(be_r).reconcile(["t-z"])
     except ChannelError:
         raised = True
-    check("I13 ★★ 对账查询失败 -> 抛出（空字典会被当「没提交」而重提）", raised)
+    check("I14 ★★ 对账查询失败 -> 抛出（空字典会被当「没提交」而重提）", raised)
 
     # R2 同步通道不可中断，必须抛错而非静默忽略
     cant = False

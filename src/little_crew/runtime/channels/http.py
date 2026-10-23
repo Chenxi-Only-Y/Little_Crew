@@ -436,15 +436,21 @@ class HttpChannel:
         state = str(extract_path(raw, "status") or extract_path(raw, "state") or "")
         if state == self.backend.status_success_value:
             self._absorb_sync_result(handle, raw)
-            if not handle.artifacts:
-                # 服务端说成功，但按 `response_path` 取不到产物 ——
+            good = [a for a in handle.artifacts if _looks_like_artifact(a.uri)]
+            if not good:
+                # 服务端说成功，但按 `response_path` 取不到**可取的**产物 ——
                 # 不谎报成功（那会让续跑把它当"已完成"而永远缺这张图），
                 # 也不重提（那会重复计费）。
+                #
+                # ⚠️ 这里必须校验"像不像产物引用"：MiniMax 的
+                # `response_path` 是 `task_id`，查询成功的响应里也有 task_id ——
+                # 直接 absorb 会把**任务 id 当成产物 URI**，得到一个假引用。
+                handle.artifacts.clear()
                 handle.status = JobStatus.UNKNOWN
                 handle.error = ChannelError(
                     "F-SUBMIT-API",
                     f"服务端说已完成，但按 response_path="
-                    f"{self.backend.response_path!r} 取不到产物 —— "
+                    f"{self.backend.response_path!r} 取不到可取的产物 —— "
                     f"需要额外取件步骤（如 MiniMax 的 file_id 下载）",
                     detail={"raw": raw},
                 )
@@ -545,6 +551,29 @@ def _failure_values(backend: Any) -> frozenset[str]:
             for v in (getattr(backend, "status_failure_values", ()) or ())}
     vals.update(_DEFAULT_FAILURE_VALUES)
     return frozenset(vals)
+
+
+def _looks_like_artifact(uri: str) -> bool:
+    """这个值**像不像**一个能取回的产物引用？
+
+    ⚠️ 存在的理由（2026-10-23 自查）：对账时按 `response_path` 取值，
+    而有些后端的 `response_path` 是 `task_id`（MiniMax 提交用它）——
+    查询成功的响应里也有这个字段，于是会把**任务 id 当成产物 URI**，
+    得到一个"看着有产物、其实取不回来"的假引用。那种假成功比没有更糟：
+    续跑会认为这一镜已完成，然后永远缺这张图。
+    """
+    s = str(uri or "").strip()
+    if not s:
+        return False
+    if "://" in s:
+        return True
+    if s.startswith(("/", "\\", "./", "../")) or (len(s) > 1 and s[1] == ":"):
+        return True
+    low = s.lower()
+    return any(low.endswith(ext) for ext in (
+        ".png", ".jpg", ".jpeg", ".webp", ".bmp",
+        ".mp4", ".webm", ".mov", ".mkv",
+        ".wav", ".mp3", ".m4a", ".flac"))
 
 
 def _artifact_kind(backend: Any, uri: str) -> str:
