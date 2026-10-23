@@ -152,12 +152,26 @@ class PortSpec:
 
 #: **连线型**端口的数据类型集合。
 #: 其余（INT / FLOAT / STRING / BOOLEAN / COMBO 及各种自定义标量）都是 widget 端口。
-_LINK_PORT_DTYPES: frozenset[str] = frozenset({
+#:
+#: ⚠️ **这张表是唯一的真源**：`compiler._KNOWN_PORT_TYPES`（重接时的类型校验）
+#: 直接由它派生，不再各写一份。
+#:
+#: 2026-10-23 审计 H-14：两张手工维护的表曾经漂移 ——
+#: `MODEL_PATCH` 只有编译器认、capability 不认（于是 3.5) 终检**漏检**它），
+#: `PHOTOMAKER` 反过来只有 capability 认（于是重接时**跳过**类型校验）。
+#: 同一个类型在两个方向上各缺一次 = **两条防线同时失效**。
+LINK_PORT_DTYPES: frozenset[str] = frozenset({
     "MODEL", "CLIP", "VAE", "CONDITIONING", "LATENT", "IMAGE", "MASK",
     "AUDIO", "VIDEO", "CONTROL_NET", "CLIP_VISION", "CLIP_VISION_OUTPUT",
     "STYLE_MODEL", "GLIGEN", "UPSCALE_MODEL", "SAMPLER", "SIGMAS",
     "GUIDER", "NOISE", "WEBCAM", "HOOKS", "IPADAPTER", "PHOTOMAKER",
+    # ComfyUI 的自定义张量类型：加载器注入、由应用器消费。
+    # 它参与 `composition.model_patch` 的连线，**必须**算连线端口。
+    "MODEL_PATCH",
 })
+
+#: 兼容旧名（外部可能引用过私有名）
+_LINK_PORT_DTYPES = LINK_PORT_DTYPES
 
 
 @dataclass(frozen=True)

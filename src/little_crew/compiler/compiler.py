@@ -33,6 +33,7 @@ from little_crew.capability.capability import (
     CapabilityMatrix,
     Drift,
     DriftKind,
+    LINK_PORT_DTYPES,
     NodeSpec,
     PortRequirement,
     Severity,
@@ -151,15 +152,29 @@ class DegradationNotice:
 #: （``MODEL`` / ``CLIP`` / ``IMAGE`` / ``CONDITIONING`` / ``LATENT`` / ``VAE`` / …），
 #: 因此可以用它反查"某个 IR 输出端口产出什么类型"。
 #:
-#: 这个反查存在的理由：**上游被跳过而需要重接时，必须校验类型是否吻合**。
-#: 错接会产出语义错误的图（静默错误），留空至少会被 ComfyUI 的必需输入校验拦住
+#: 这个反查存在的理由：**上游被跳过而需要重接时，必须校验类型是否吻合**。#: 错接会产出语义错误的图（静默错误），留空至少会被 ComfyUI 的必需输入校验拦住
 #: （显式失败）—— 两害相权，宁可选后者。
-_KNOWN_PORT_TYPES: frozenset[str] = frozenset({
-    "MODEL", "CLIP", "VAE", "CONDITIONING", "LATENT", "IMAGE", "MASK",
-    "AUDIO", "VIDEO", "CONTROL_NET", "CLIP_VISION", "CLIP_VISION_OUTPUT",
-    "STYLE_MODEL", "GLIGEN", "UPSCALE_MODEL", "SAMPLER", "SIGMAS",
-    "GUIDER", "NOISE", "WEBCAM", "HOOKS", "IPADAPTER",
-})
+#:
+#: ⚠️ **由 `capability.LINK_PORT_DTYPES` 派生，不另写一份**（2026-10-23 审计 H-14）。
+#: 两张手工表曾经漂移：`MODEL_PATCH` 只有这里缺、`PHOTOMAKER` 只有那边缺 ——
+#: 于是同一个类型在两个方向上各漏一次：漏检完整性、又跳过类型校验。
+_KNOWN_PORT_TYPES: frozenset[str] = frozenset(LINK_PORT_DTYPES)
+
+
+def _as_edge_ref(val: Any) -> tuple[str, int] | None:
+    """把 ``[节点id, 输出索引]`` 认出来；不是连线就返回 ``None``。
+
+    只认我们自己构造的形态（长度 2、首元素非空字符串、次元素非负整数）——
+    判得宽松会把 widget 的普通列表值误当连线，那会让自检报假警。
+    """
+    if not isinstance(val, (list, tuple)) or len(val) != 2:
+        return None
+    tgt, idx = val
+    if not isinstance(tgt, str) or not tgt:
+        return None
+    if isinstance(idx, bool) or not isinstance(idx, int) or idx < 0:
+        return None
+    return tgt, idx
 
 
 # ==========================================================================
@@ -1543,6 +1558,19 @@ class ComfyCompiler:
                 "编译结果为空：所有节点均无可用的目标实现",
             )
 
+        # 3.6) **产出图引用自检**（2026-10-23 审计 M-18）
+        #
+        # 3.5) 只验「必需端口**有没有被填**」，不验「填进去的连线**指向谁、
+        # 指向第几个输出**」。于是两类缺陷能一路流到提交：
+        #
+        #   · **悬空节点 id** —— 重接兜底指到一个不存在的节点（H-6）
+        #   · **越界输出索引** —— 写死 `[n_ckpt, 1]` 而 `UNETLoader` 只有 1 个输出（H-15）
+        #
+        # 它们在 ComfyUI 那边表现为 `required_input_missing` 或 500，
+        # 而归因要重跑一遍才知道。ARCHITECTURE §2.1.2 的要求是
+        # 「**编译器必须自证产出的图是完整的**」—— 这正是缺的那一半。
+        self._check_graph_refs(graph)
+
         graph_hash = "sha256:" + hashlib.sha256(
             canonical_json(graph).encode("utf-8")
         ).hexdigest()
@@ -1879,11 +1907,26 @@ class ComfyCompiler:
         for ir_port, cname in rule.port_map.items():
             src = (node.get("inputs") or {}).get(ir_port)
             if src is None and ir_port in ("model", "clip") and rule.requires_model_source:
-                # 未显式连接 model/clip -> 指向自动注入的模型源
-                out_idx = 0 if ir_port == "model" else 1
+                # 未显式连接 model/clip -> 指向**实际注入的**模型源。
+                #
+                # ⚠️ 这里原来写死 `[MODEL_SOURCE_ID, 0/1]`（2026-10-23 审计 H-15）：
+                #   · 分离式模型源（Z-Image）注入的是 `n_src_model_source_zimage`
+                #     + `n_zimage_clip` / `n_zimage_vae`，**没有** `n_ckpt` ——
+                #     写死就是悬空引用；
+                #   · `clip` 取输出索引 1 —— 而 `UNETLoader` 只有 1 个输出（`[0]`），
+                #     `[1]` 越界。
+                # 正确做法：问**注入时记下的端口 → (节点, 索引)** 映射
+                # （`model_outputs` 就是干这个的），取不到再按配置推导。
+                want = "MODEL" if ir_port == "model" else "CLIP"
                 if spec is not None and not spec.has_port(cname):
                     continue
-                inputs[cname] = [self.MODEL_SOURCE_ID, out_idx]
+                got = (model_outputs or {}).get(want)
+                if got is not None:
+                    inputs[cname] = [got[0], got[1]]
+                    continue
+                sid = self._model_source_default_id()
+                inputs[cname] = [sid,
+                                 self._output_index_for(sid, want, nodes, graph)]
                 continue
             if src is None:
                 continue
@@ -1904,30 +1947,24 @@ class ComfyCompiler:
                     if resolved is None:
                         continue
                     tgt, tgt_port = resolved
-                    if tgt not in nodes:
-                        # ⚠️ **兜底目标不在 IR 里**（2026-10-23 自查发现）。
+                    if tgt not in nodes and tgt not in graph:
+                        # ⚠️ **兜底目标既不在 IR 也不在图里**。
                         #
-                        # `_remap_table` 的兜底是常量 `MODEL_SOURCE_ID`（`n_ckpt`）。
-                        # 若 IR 走的是**分离式模型源**（`n_src_model_source_zimage`）
-                        # 或压根没声明 `n_ckpt`，这个兜底目标就不存在 ——
-                        # 而下一行 `nodes[tgt]` 是**直接下标**，会抛裸 `KeyError`。
-                        #
-                        # 这个崩溃点审计已记为 H-6（根因是缺「产出图引用自检」）。
-                        # 但 H-13 的修法让「跳过可选节点」成为常规路径，
-                        # 于是它从"罕见"变成"降级时必踩" —— 实测
-                        # 「无 n_ckpt + 下游消费 n_ref」两种 model_source_kind 都抛。
-                        # 这里先把它变回**可诊断的失败**：留空端口 + 发通知，
-                        # 由 3.5) 完整性终检报 INCOMPLETE_GRAPH。
+                        # `_remap_table` 的兜底已改成按编译器配置推导
+                        # （审计 H-6），但仍要防"推导出来的那个 id 也没注入"
+                        # —— 例如配置与 IR 不一致时。绝不能再走 `nodes[tgt]`
+                        # 直接下标（那会抛裸 KeyError，审计 H-6 的崩溃点）。
+                        # 这里如实留空 + 发通知，由 3.5) 终检报 INCOMPLETE_GRAPH。
                         notices.append(DegradationNotice(
                             kind=NoticeKind.SKIPPED_OPTIONAL, ir_node_id=nid,
                             severity=Severity.WARNING.value,
                             frm=f"{src_node_id}.{src['port']}",
-                            to=f"{tgt}.{tgt_port}（该节点不在 IR 中，未接线）",
+                            to=f"{tgt}.{tgt_port}（该节点既不在 IR 也不在图中，未接线）",
                             reason=(f"上游 {src_node_id!r} 已被跳过，兜底重接目标 "
-                                    f"{tgt!r} 既不在 IR 里也不在自动注入的图里"),
+                                    f"{tgt!r} 不存在"),
                             impact=f"必需端口 {cname} 将缺输入，提交时会被 ComfyUI 拒绝",
                             ui_hint=("补齐缺失的权重文件，或在 IR 里显式声明模型源节点；"
-                                     "分离式模型源（Z-Image）通路不要依赖 n_ckpt 兜底"),
+                                     "分离式模型源（Z-Image）通路不要依赖固定 id 兜底"),
                         ))
                         continue
                     if not self._output_matches(
@@ -1945,7 +1982,8 @@ class ComfyCompiler:
                             ui_hint="请补齐缺失的权重文件，或在 IR 中改用其他能力路径",
                         ))
                         continue
-                    inputs[cname] = [tgt, self._output_index(nodes[tgt], tgt_port)]
+                    inputs[cname] = [tgt, self._output_index_for(
+                        tgt, tgt_port, nodes, graph)]
                     continue
 
                 if src_node_id not in graph:
@@ -2112,8 +2150,8 @@ class ComfyCompiler:
 
     # ---- 被跳过节点的下游重接 -------------------------------------------
 
-    @staticmethod
     def _remap_table(
+        self,
         skip_set: set[str],
         deps: Mapping[str, set[str]],
         nodes: Mapping[str, Any],
@@ -2128,8 +2166,14 @@ class ComfyCompiler:
             跳掉 n_lora 后，n_ks.model 应重接到 n_ckpt.MODEL。
 
         沿**输入依赖**方向（即数据来源方向）BFS，取第一个非跳过节点。
+
+        ⚠️ **兜底 id 必须按当前编译器配置推导**（2026-10-23 审计 H-6）。
+        原来写死 ``MODEL_SOURCE_ID``（`n_ckpt`）—— 而分离式模型源
+        （Z-Image）注入的是 `n_src_model_source_zimage`，`n_ckpt` 根本不存在，
+        于是重接指向一个不存在的节点（表现为裸 `KeyError`，或提交时被拒）。
         """
         out: dict[str, tuple[str, str]] = {}
+        fallback = self._model_source_default_id()
         for sid in skip_set:
             src_node = nodes.get(sid) or {}
             seen: set[str] = {sid}
@@ -2153,8 +2197,100 @@ class ComfyCompiler:
                 frontier = nxt
 
             # 兜底：图上找不到就从自动注入的模型源取（模型/条件类端口的主要来源）
-            out[sid] = (anchor or ComfyCompiler.MODEL_SOURCE_ID, "MODEL")
+            out[sid] = (anchor or fallback, "MODEL")
         return out
+
+    def _model_source_default_id(self) -> str:
+        """本编译器配置下**自动注入的模型源节点 id**。
+
+        与 `_inject_model_source` 里 `src_id` 的推导必须一致 —— 否则
+        「重接指向哪里」和「实际注入到哪个 id」会各说各话。
+        """
+        kind = str(getattr(self, "model_source_kind", "model.checkpoint"))
+        if kind == "model.checkpoint":
+            return self.MODEL_SOURCE_ID
+        return f"n_src_{kind.replace('.', '_')}"
+
+    def _check_graph_refs(self, graph: Mapping[str, Any]) -> None:
+        """**产出图引用自检**：每条连线的目标必须在图里、输出索引不得越界。
+
+        这是 3.5) 完整性终检缺的那一半（审计 M-18）：
+
+        | 检查 | 缺了会怎样 |
+        |---|---|
+        | 目标节点在图里 | 悬空引用 -> ComfyUI 报 `required_input_missing`（或裸 KeyError） |
+        | 输出索引 < 该节点输出数 | 越界 -> ComfyUI 500，而归因要重跑一遍 |
+
+        单独成方法是为了**能被直接测**：正常路径上，上游的守卫
+        （`_output_index_for` / 重接兜底 / 模型源推导）已经把这两类缺陷挡住了，
+        所以这里更像是"最后一道闸"—— 而闸门必须**证明自己会落下**。
+        """
+        dangling: list[str] = []
+        bad_index: list[str] = []
+        for gid, gnode in graph.items():
+            for pname, val in (gnode.get("inputs") or {}).items():
+                ref = _as_edge_ref(val)
+                if ref is None:
+                    continue
+                tgt, idx = ref
+                tnode = graph.get(tgt)
+                if tnode is None:
+                    dangling.append(f"{gid}.{pname} -> {tgt!r}")
+                    continue
+                tspec = self.matrix.spec(str(tnode.get("class_type") or ""))
+                if tspec is None:
+                    continue          # 环境里没有这个节点的契约，无从判断
+                n_out = len(tspec.outputs or ())
+                if n_out and not (0 <= idx < n_out):
+                    bad_index.append(
+                        f"{gid}.{pname} -> {tgt}[{idx}]"
+                        f"（{tnode.get('class_type')} 只有 {n_out} 个输出）")
+
+        if not (dangling or bad_index):
+            return
+        raise CompileError(
+            CompileErrorCode.DANGLING_REF if dangling
+            else CompileErrorCode.PORT_MISMATCH,
+            (f"产出的图有 {len(dangling)} 条悬空引用、"
+             f"{len(bad_index)} 条越界输出索引 —— "
+             + "; ".join((dangling + bad_index)[:8])
+             + ("…" if len(dangling) + len(bad_index) > 8 else "")),
+            detail={
+                "dangling": dangling,
+                "badIndex": bad_index,
+                "reason": ("这两类缺陷本地看不出来，提交时才会被 ComfyUI 拒绝，"
+                           "而归因只能靠重跑。编译器必须自证产出的图是完整的。"),
+                "remedy": ("悬空：检查重接兜底的模型源 id 是否与实际注入的一致；"
+                           "越界：检查 IR 声明的输出端口是否在该节点的真实输出里"),
+            },
+        )
+
+    def _output_index_for(
+        self,
+        tgt: str,
+        tgt_port: str,
+        nodes: Mapping[str, Any],
+        graph: Mapping[str, Any],
+    ) -> int:
+        """取重接目标的输出索引；**IR 里没有它时按图推断**。
+
+        为什么需要兜底：自动注入的节点（模型源、加载器）只在 `graph` 里、
+        不在 `nodes`（IR）里 —— 对它们无法用 `_output_index`（它读 IR 的
+        `outputs` / 编译规则的 `output_ports`）。
+        推断方式：在该 class_type 的**真实输出类型表**里按端口类型找下标，
+        找不到就用 0。3.6) 的引用自检会再核一遍越界。
+        """
+        ir_node = nodes.get(tgt)
+        if ir_node is not None:
+            return self._output_index(ir_node, tgt_port)
+        gnode = graph.get(tgt) or {}
+        gspec = self.matrix.spec(str(gnode.get("class_type") or ""))
+        if gspec is not None:
+            want = str(tgt_port or "").upper()
+            for i, dt in enumerate(gspec.outputs or ()):
+                if str(dt).upper() == want:
+                    return i
+        return 0
 
     @staticmethod
     def _resolve_remap(
@@ -2752,8 +2888,11 @@ class ComfyCompiler:
             )
         # 模型源的节点 id 按 kind 推导 —— 不同模型源用不同 id，
         # 避免"换模型源后 id 复用"导致 `_model_source_id_for` 找错节点。
-        src_id = (self.MODEL_SOURCE_ID if kind == "model.checkpoint"
-                  else f"n_src_{kind.replace('.', '_')}")
+        #
+        # ⚠️ 走 `_model_source_default_id()` 而**不是**在这里再写一遍公式：
+        # 这个 id 有两个消费者（注入 vs 重接兜底），两处各写一份就会漂移 ——
+        # 而漂移的表现正是 H-6 那种悬空引用。
+        src_id = self._model_source_default_id()
 
         def outputs_map(ct: str, node_id: str) -> dict[str, tuple[str, int]]:
             """端口类型 -> (提供者节点 id, 输出索引)。

@@ -32,7 +32,7 @@ SRC = PLATFORM / "src"
 #: 放在 ``tests/`` 下的是**跨层集成测试**（架构守卫允许它那样做）。
 SUITES: list[tuple[str, list[str], int | None]] = [
     ("IR 规范化与哈希", [sys.executable, "-m", "little_crew.ir.test_canonical"], 37),
-    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 156),
+    ("编译器与能力矩阵", [sys.executable, "-m", "little_crew.compiler.test_compiler"], 166),
     ("真实环境回归", [sys.executable, "-m", "little_crew.compiler.test_real_env"], 19),
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),

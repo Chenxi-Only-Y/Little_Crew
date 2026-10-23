@@ -953,6 +953,107 @@ def _section_optional_lora_degrade() -> None:
         ir_no_ckpt)
 
 
+def _section_self_check() -> None:
+    """产出图引用自检 + 兜底 id 推导 + 端口类型表同源（审计 M-18 / H-6 / H-14 / H-15）。
+
+    ## 为什么这一节最该存在
+    ARCHITECTURE §2.1.2 的要求是「**编译器必须自证产出的图是完整的**」。
+    3.5) 只验「必需端口有没有被填」，不验「填进去的连线指向谁、指向第几个输出」
+    —— 而后者恰恰是重接/注入最容易出错的地方：
+
+      · `H-6`  重接兜底写死 `n_ckpt`，分离式模型源通路里它不存在 -> 悬空
+      · `H-15` `_resolve_inputs` 写死 `[n_ckpt, 0/1]` -> 悬空 + 越界
+      · `H-14` `MODEL_PATCH` 不在连线端口表 -> 终检**漏检**它
+
+    实测：加上自检后，Z-Image 通路的 `n_ctrl.model -> 'n_ckpt'` 立刻被抓住
+    （那是一个一直存在、只在提交时才暴露的悬空引用）。
+    """
+    m = probe_from_object_info(env_zimage(), endpoint="fixture",
+                               comfy_version="0.3.x")
+
+    # ---- M1/M2：闸门必须**证明自己会落下** ----
+    #
+    # 正常路径上，上游守卫（兜底 id 推导 / 输出索引推断 / 模型源映射）
+    # 已经把这两类缺陷挡住了 —— 所以闸门得**直接**测：
+    # 构造一张有悬空引用 / 越界索引的图，看它是否判死。
+    c_ref = ComfyCompiler(m, model_source_kind="model.source_zimage")
+    expect_compile_error(
+        "M1 ★★ 悬空引用 -> DANGLING_REF（而不是让它流到提交）",
+        CompileErrorCode.DANGLING_REF,
+        c_ref._check_graph_refs,
+        {"n_a": {"class_type": "KSampler", "inputs": {"model": ["n_ghost", 0]}}})
+
+    expect_compile_error(
+        "M2 ★★ 越界输出索引 -> PORT_MISMATCH（而不是让 ComfyUI 500）",
+        CompileErrorCode.PORT_MISMATCH,
+        c_ref._check_graph_refs,
+        {"n_ckpt": {"class_type": "CheckpointLoaderSimple", "inputs": {}},
+         "n_a": {"class_type": "KSampler", "inputs": {"model": ["n_ckpt", 9]}}})
+
+    # 合法图不得被误杀（`or {}` 保护下的普通列表值不该被当连线）
+    try:
+        c_ref._check_graph_refs({
+            "n_ckpt": {"class_type": "CheckpointLoaderSimple", "inputs": {}},
+            "n_a": {"class_type": "KSampler",
+                    "inputs": {"model": ["n_ckpt", 0],
+                               "size": [832, 480],          # 普通列表值
+                               "note": "x"}},
+        })
+        check("M2b ★ 自检不误杀合法图（普通列表值不当连线）", True)
+    except CompileError as e:                                 # noqa: BLE001
+        check("M2b ★ 自检不误杀合法图（普通列表值不当连线）", False,
+              f"{e.code}: {e.message[:60]}")
+
+    # ---- M3：正常图**不该**被自检误杀（自检只该抓真缺陷） ----
+    ok = ComfyCompiler(m, model_source_kind="model.source_zimage").compile(
+        zimage_source_ir())
+    dangling = [(nid, p, v) for nid, n in ok.graph.items()
+                for p, v in (n.get("inputs") or {}).items()
+                if isinstance(v, list) and len(v) == 2
+                and isinstance(v[0], str) and str(v[0]) not in ok.graph]
+    check("M3 正常 Z-Image 图零悬空引用（自检不是误报发生器）",
+          not dangling, str(dangling[:2]))
+
+    # ---- M4：兜底 id 按配置推导（H-6） ----
+    c_ck = ComfyCompiler(m, model_source_kind="model.checkpoint")
+    c_z = ComfyCompiler(m, model_source_kind="model.source_zimage")
+    check("M4 ★★ 兜底 id 按配置推导：checkpoint -> n_ckpt / Z-Image -> n_src_*",
+          c_ck._model_source_default_id() == "n_ckpt"
+          and c_z._model_source_default_id() == "n_src_model_source_zimage",
+          f"{c_ck._model_source_default_id()} / {c_z._model_source_default_id()}")
+
+    lonely = {"n_ref": {"id": "n_ref", "kind": "identity.reference",
+                        "inputs": {"image": {"binding": "C1.anchorSet.front"}}}}
+    remap = c_z._remap_table({"n_ref"}, {}, lonely)
+    check("M5 ★★ 无可上溯祖先时，兜底指向**本配置**的模型源（不再是硬编码 n_ckpt）",
+          remap.get("n_ref", ("", ""))[0] == "n_src_model_source_zimage",
+          str(remap))
+
+    # ---- M6/M7：两张端口类型表**同源**（H-14） ----
+    from little_crew.capability.capability import LINK_PORT_DTYPES
+    from little_crew.compiler.compiler import _KNOWN_PORT_TYPES
+
+    check("M6 ★★ 编译器不再维护第二张端口类型表（直接派生自 capability）",
+          set(_KNOWN_PORT_TYPES) == set(LINK_PORT_DTYPES),
+          str(sorted(set(_KNOWN_PORT_TYPES) ^ set(LINK_PORT_DTYPES))[:6]))
+    check("M7 ★ MODEL_PATCH 是连线端口（否则 3.5) 终检**漏检**它）",
+          "MODEL_PATCH" in LINK_PORT_DTYPES)
+    check("M8 ★ PHOTOMAKER 也在同一张表里（否则重接时跳过类型校验）",
+          "PHOTOMAKER" in LINK_PORT_DTYPES)
+
+    # 规则表里声明过的自定义张量类型，必须在表里 —— 否则又会静默漏检
+    from little_crew.compiler.compiler import DEFAULT_RULES
+
+    declared: set[str] = set()
+    for rule in DEFAULT_RULES:
+        declared |= {str(v) for v in (rule.requires_loader or {}).values()}
+    missing = sorted(t for t in declared
+                     if t.upper() not in LINK_PORT_DTYPES
+                     and t.upper() not in {"INT", "FLOAT", "STRING", "BOOLEAN"})
+    check("M9 ★★ 规则表里出现的张量类型都在连线端口表里",
+          not missing, str(missing))
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
@@ -1573,6 +1674,8 @@ def main() -> int:
     _section_blur_rule()
     print()
     _section_optional_lora_degrade()
+    print()
+    _section_self_check()
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
