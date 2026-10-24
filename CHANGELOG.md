@@ -57,6 +57,52 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.141] — 2026-10-23（**指标簇**：两个"核心指标"一直是空数）
+
+审计分诊 B6（`M-12` `M-13` `L-6`）。
+
+三条里前两条属于同一类：**计数器写好了、公式也对，但没人喂数** ——
+于是报告上一栏恒 `1.0`、另一栏恒 `0`，而 0 与 1.0 看起来都像正常值。
+
+### 逐条
+
+- **`M-12` 「提速比」恒为 1.0 或 None** —— `CacheStats.record_miss()` 是
+  在**查缓存未命中时**调用的，那时还不知道要渲染多久；唯一的生产调用点
+  没传时间，于是 `seconds_spent` 恒为 0，`speedup` 永远走
+  「`inf`（序列化成 `None`）/ `1.0`」两个分支。
+  这个数字是 `speedup` 自己称为「成本可控」的**核心证据**。
+  现在新增 `record_spent()`，由 `CachingRenderer` 在真渲染之后补记实耗。
+  自检里直接调 `record_miss(seconds_spent=…)` 验的是**公式**，
+  绕过了接线 —— 所以新守卫让**真的渲染跑一遍**再看统计里有没有数。
+
+- **`M-13` `comfyNodeCacheEvents` 恒为 0** —— `record_comfy_cache()` 早就写好了
+  （还专门注明「**不计入 hits**，那是 ComfyUI 的缓存」），但
+  **生产代码零调用**，只有自检里调过。而 `comfy.py` 确实解析了
+  `execution_cached`，只是把它当进度事件抛掉了。
+  现在：`ComfyChannel` 从 **`/history` 的 `status.messages`**（轮询路径唯一
+  能看到它的地方）与 WS 事件两条路收集命中节点数，`cached_nodes_for(handle)`
+  交给 `CachingRenderer` 记进统计。C2 的「两笔收益不混账」保持不变。
+
+- **`L-6` 报告页遇 `manifest: null` 崩** —— `rep.get("manifest", {}).get(...)`：
+  键**存在但值是 `None`** 时默认值不生效，`None.get()` 直接 `AttributeError`。
+  而 `"manifest": null` 正是 `EpisodeResult.as_dict()` 在没有 manifest 时
+  写出来的形状 —— 这条崩溃路径**真实可达**。
+  另修 `_read_json()`：文件里写着 `null` 时它也把 `None` 当 dict 返回了。
+
+### 测试
+
+**1796/1796 通过 + 架构守卫 PASS**（上一版 1788）。
+
+新增守卫：`cached_render_check` F6~F11（实耗时被记下、提速比不是 1.0/None、
+ComfyUI 命中真的进了统计且不进 hits、`/history` messages 的解析）、
+`cli/check.py` G14~G15（缺 manifest/evidence 时报告页仍能生成、
+且页面里认得出是哪一集）。
+
+> F6/F8 的关键是**走生产路径**：先在自检里调 `record_*` 验公式的写法
+> 永远抓不到这类缺陷 —— 那正是这两条能活到现在的原因。
+
+---
+
 ## [0.4.0-alpha.140] — 2026-10-23（**安全簇**：明文密钥 + 两条路径穿越 + 一句注释）
 
 审计分诊 B2（`H-5` `H-8` `M-25` `L-5`）。

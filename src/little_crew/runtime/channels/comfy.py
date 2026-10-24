@@ -70,6 +70,28 @@ __all__ = ["ComfyChannel", "ComfyEvent", "CACHE_HIT_NODE_KINDS"]
 CACHE_HIT_MESSAGE = "execution_cached"
 
 
+def _cached_nodes(messages: Any) -> int:
+    """从 `/history` 的 `status.messages` 里数出 `execution_cached` 的节点数。
+
+    ComfyUI 把作业事件按 ``[[事件名, {…}], …]`` 记在这里 ——
+    这是**轮询路径**唯一能看到"哪些节点命中了缓存"的地方
+    （WS 的 `execution_cached` 只推一次，而我们默认走轮询）。
+    """
+    if not isinstance(messages, (list, tuple)):
+        return 0
+    total = 0
+    for m in messages:
+        if not isinstance(m, (list, tuple)) or len(m) < 2:
+            continue
+        if str(m[0]) != CACHE_HIT_MESSAGE:
+            continue
+        data = m[1]
+        nodes = data.get("nodes") if isinstance(data, dict) else None
+        if isinstance(nodes, (list, tuple)):
+            total += len(nodes)
+    return total
+
+
 @dataclass
 class ComfyEvent:
     """一条来自 ``/ws`` 的事件。"""
@@ -119,6 +141,13 @@ class ComfyChannel:
         #: prompt_id -> 幂等键，用于 R1 与 R3
         self._by_key: dict[str, str] = {}
         self._by_prompt: dict[str, JobHandle] = {}
+        #: prompt_id -> 该作业里 **ComfyUI 自己**命中的节点数（审计 M-13）。
+        #:
+        #: C2 要求「平台命中与 ComfyUI 命中分开统计」，而
+        #: `CacheStats.record_comfy_cache` 早就写好了、**生产代码从没调用过** ——
+        #: 于是 `comfyNodeCacheEvents` 恒为 0：形式实现、实质没实现。
+        #: 这里把数据收集起来，由 `CachingRenderer` 在渲染成功后记进统计。
+        self._comfy_cached: dict[str, int] = {}
 
     # ---- 能力自述 ------------------------------------------------------
 
@@ -222,6 +251,19 @@ class ComfyChannel:
 
     # ---- R4 进度 -------------------------------------------------------
 
+    def cached_nodes_for(self, handle: JobHandle) -> int:
+        """这个作业里 **ComfyUI 自己**命中了多少个节点（0 = 没有 / 没观测到）。
+
+        ⚠️ **C2**：这个数**不进我们的 `hits`** —— 它是 ComfyUI 的节点级缓存收益，
+        不是平台的三级缓存收益。混记会让"节省比例"虚高且无法向评审解释来源。
+
+        存在的理由（审计 M-13）：`CacheStats.record_comfy_cache` 早就写好了，
+        但**生产代码零调用** —— `comfyNodeCacheEvents` 恒为 0，
+        那个"专门为答辩准备的指标"永远是 0：形式实现、实质没实现。
+        """
+        key = str(getattr(handle, "channel_id", "") or "")
+        return int(self._comfy_cached.get(key, 0) or 0)
+
     def poll(self, handle: JobHandle) -> JobHandle:
         """查 ``/history/{prompt_id}``。
 
@@ -257,6 +299,15 @@ class ComfyChannel:
             return handle
 
         status = entry.get("status") or {}
+        # ---- 记下 ComfyUI **自己**命中缓存的节点（审计 M-13）----
+        #
+        # `/history` 的 `status.messages` 是一串 `[事件名, {…}]`，
+        # 里面就有 `execution_cached`。**轮询路径唯一能看到它**：
+        # WS 那条也会推，但只推一次、且我们默认走轮询。
+        _n = _cached_nodes(status.get("messages"))
+        if _n:
+            key = str(getattr(handle, "channel_id", "") or "")
+            self._comfy_cached[key] = self._comfy_cached.get(key, 0) + _n
         if status.get("status_str") == "error" or status.get("completed") is False:
             handle.status = JobStatus.FAILED
             handle.error = ChannelError(
@@ -316,6 +367,13 @@ class ComfyChannel:
                     idle = 0
                     if ev.type == CACHE_HIT_MESSAGE:
                         nodes = ev.data.get("nodes") or []
+                        # 记进统计的原料（审计 M-13）：WS 这条与 `/history`
+                        # 那条都记，谁先看到算谁 —— 都是**同一作业**的数量，
+                        # 不会把平台命中混进来（C2）。
+                        if nodes:
+                            key = str(getattr(handle, "channel_id", "") or "")
+                            self._comfy_cached[key] = (
+                                self._comfy_cached.get(key, 0) + len(nodes))
                         # 单独上报：这是 ComfyUI 的缓存，**不是我们的三级缓存收益**
                         yield ProgressEvent(0, 0, "cache_hit",
                                             f"ComfyUI 缓存命中 {len(nodes)} 个节点",

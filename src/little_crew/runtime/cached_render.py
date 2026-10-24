@@ -319,6 +319,9 @@ class CachingRenderer:
         out = self.session.render(ir, **kw)
         dt = time.perf_counter() - t0
         self._ck_settle(gid, out)
+        # 记**实耗**与 ComfyUI 自身的命中（审计 M-12 / M-13）——
+        # 两处都是"计数器存在但没人喂"的接线缺失。
+        self._record_metrics(out, dt)
 
         if not out.ok:
             return CacheOutcome(
@@ -451,6 +454,40 @@ class CachingRenderer:
         except Exception:                                     # noqa: BLE001
             pass
 
+    def _record_metrics(self, out: Any, dt: float) -> None:
+        """把这次**实算**的耗时与 ComfyUI 自身的命中记进统计。
+
+        ## 两处都是"计数器存在但没人喂"（2026-10-23 审计 M-12 / M-13）
+
+        | 指标 | 症状 | 根因 |
+        |---|---|---|
+        | `secondsSpent` -> `speedup` | 恒为 0，提速比永远是 1.0 / None | 唯一调用点 `record_miss()` 不传时间 |
+        | `comfyNodeCacheEvents` | 恒为 0 | `record_comfy_cache()` **生产零调用** |
+
+        两个指标都是"成本可控 / 缓存收益"这条论点的**核心证据**，
+        而它们一直是空数 —— 报告上看不出任何异常，因为 0 看起来像个正常值。
+        """
+        stats = getattr(self.cache, "stats", None)
+        if stats is not None:
+            try:
+                stats.record_spent(dt)
+            except Exception:                                 # noqa: BLE001
+                pass
+        ch = getattr(self.session, "channel", None)
+        fn = getattr(ch, "cached_nodes_for", None)
+        handle = getattr(out, "handle", None)
+        if not callable(fn) or handle is None or stats is None:
+            return
+        try:
+            n = int(fn(handle) or 0)
+        except Exception:                                     # noqa: BLE001
+            return
+        if n > 0:
+            try:
+                stats.record_comfy_cache(n)
+            except Exception:                                 # noqa: BLE001
+                pass
+
     def render_batch(self, irs: Sequence[Mapping[str, Any]],
                      **kw: Any) -> CachedBatch:
         return CachedBatch(outcomes=tuple(self.render(ir, **kw) for ir in irs))
@@ -533,6 +570,7 @@ class CachingRenderer:
         # 也走这条路，于是 SUBMITTED 被改写成 FAILED，续跑时被当成
         # "可安全重提" -> 重复提交 -> 重复烧 GPU / 重复计费。
         self._ck_settle(job_id, out)
+        self._record_metrics(out, dt)
 
         if not out.ok:
             return CacheOutcome(graph_id=job_id, ok=False, failure=out.failure,

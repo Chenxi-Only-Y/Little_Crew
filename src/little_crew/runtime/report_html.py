@@ -74,10 +74,19 @@ def _esc(v: Any) -> str:
 
 
 def _read_json(p: Path) -> dict[str, Any]:
+    """读一个 JSON 对象；**读不到、或读到的不是对象，都返回空 dict**。
+
+    ⚠️ 文件里写着 `null` 时 `json.loads` 返回的是 `None` —— 那不是 dict，
+    后面 `man.get(...)` 会 `AttributeError`，**报告页直接崩**（审计 L-6）。
+    而 `run.report.json` 里的 `"manifest": null` 正是
+    `EpisodeResult.as_dict()` 在"没有 manifest"时写出来的形状 ——
+    也就是说这条崩溃路径**真实可达**，不是理论风险。
+    """
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        data = json.loads(p.read_text(encoding="utf-8"))
     except Exception:                                        # noqa: BLE001
         return {}
+    return data if isinstance(data, dict) else {}
 
 
 CSS = """
@@ -151,8 +160,11 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
             if sid and lay.get("reason"):
                 reason_by_shot[sid] = str(lay["reason"])
 
+    # ⚠️ `rep.get("manifest") or {}` 而不是 `rep.get("manifest", {})`（审计 L-6）：
+    # 键**存在但值是 None** 时，默认值不生效 —— 而 `"manifest": null`
+    # 正是没有 manifest 时写出来的形状，于是 `None.get(...)` 直接崩。
     hard = (evidence.get("hardRules") or evidence.get("checks")
-            or rep.get("manifest", {}).get("checks") or {})
+            or (rep.get("manifest") or {}).get("checks") or {})
     hard_txt = ""
     if isinstance(hard, Mapping) and hard:
         okn = sum(1 for v in hard.values()

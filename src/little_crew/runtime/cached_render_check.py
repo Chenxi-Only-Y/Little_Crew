@@ -457,6 +457,56 @@ def _stats_honesty(tmp: Path) -> None:
           s["hits"] > 0 and s.get("comfyNodeCacheEvents", 0) == 0,
           f"ours={s['hits']} comfy={s.get('comfyNodeCacheEvents')}")
 
+    # ---- M-12：实算时耗必须**在生产的调用点上**被记下 ----
+    #
+    # ⚠️ 这一条与 F1~F5 的区别很重要：F1~F5 测的是**统计对象的形状**，
+    # 而 M-12 的病是"形状全对、数没人喂"。自检里直接调
+    # `record_miss(seconds_spent=…)` 验公式，永远抓不到它 ——
+    # 必须让**真的渲染跑一遍**，然后看统计里有没有数。
+    st = r.cache.stats
+    check("F6 ★★ 实算时耗被记下（`secondsSpent` 不再是 0）",
+          st.seconds_spent > 0, f"spent={st.seconds_spent:.3f}s")
+    check("F7 ★★ 提速比反映真实收益（不是恒 1.0 / 恒 None）",
+          st.speedup != 1.0 and st.speedup != float("inf"),
+          f"speedup={st.speedup:.2f} saved={st.seconds_saved:.2f} "
+          f"spent={st.seconds_spent:.2f}")
+
+    # ---- M-13：ComfyUI 自身的命中必须**从生产路径**记进统计 ----
+    #
+    # `record_comfy_cache` 早就写好了，但生产代码零调用 —— 那个
+    # "专门为答辩准备的指标"永远是 0。这里给假通道装上
+    # `cached_nodes_for()`（真通道的接口），看渲染完有没有记上。
+    class _Comfyish(FakeChannel):
+        """带 `cached_nodes_for()` 的假 ComfyUI 通道。"""
+
+        def cached_nodes_for(self, handle: Any) -> int:      # noqa: D102
+            return 3
+
+    ch2 = _Comfyish()
+    cache2 = ContentCache(tmp / "g")
+    r2 = CachingRenderer(RenderSession(ch2, _COMPILER), cache2,
+                         fetcher=_fake_fetcher)
+    o = r2.render(_ir("G-G"))
+    check("F8 ★★ ComfyUI 的命中被记进 `comfyNodeCacheEvents`（生产路径，不是自检）",
+          o.ok and cache2.stats.comfy_node_cache_events == 3,
+          f"comfy={cache2.stats.comfy_node_cache_events}")
+    check("F9 ★★ 且**不计入**我们的 hits（C2：两笔收益不能混账）",
+          cache2.stats.hits == 0,
+          f"our_hits={cache2.stats.hits} "
+          f"comfy={cache2.stats.comfy_node_cache_events}")
+
+    # 解析 `/history` 的 `status.messages` —— 轮询路径唯一能看到它的地方
+    from little_crew.runtime.channels.comfy import _cached_nodes
+
+    msgs = [["execution_start", {"prompt_id": "p"}],
+            ["execution_cached", {"nodes": ["1", "2", "3"]}],
+            ["execution_success", {"prompt_id": "p"}]]
+    check("F10 ★★ 从 `/history` 的 messages 里数出 `execution_cached` 的节点",
+          _cached_nodes(msgs) == 3, str(_cached_nodes(msgs)))
+    check("F11 没有该事件 -> 0（不臆造）",
+          _cached_nodes([["execution_success", {}]]) == 0
+          and _cached_nodes(None) == 0)
+
 
 # ---------- G. 抓取器 ----------
 

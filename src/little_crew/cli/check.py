@@ -486,6 +486,32 @@ def _g_entry_contract() -> None:
         check("G13 找不到就返回 None（不猜、不抛）",
               artifact_resolver(w)("nope.png") is None)
 
+    # ---- L-6：报告页不许因为「某个字段是 null」而崩 ----
+    #
+    # `EpisodeResult.as_dict()` 在没有 manifest/evidence 时**正是写 `null`**
+    # （不是省略键），而 `rep.get("manifest", {})` 对"键在、值是 None"
+    # 不生效 —— 于是 `None.get(...)` 直接 AttributeError，报告页整页打不开。
+    from little_crew.runtime.report_html import build_report
+
+    with tempfile.TemporaryDirectory() as td:
+        w = pathlib.Path(td)
+        (w / "delivery").mkdir(parents=True)
+        (w / "delivery" / "run.report.json").write_text(_json.dumps({
+            "episodeId": "E900", "ok": True, "manifest": None,
+            "evidence": None, "shots": [], "wallSeconds": 0.5,
+            "failures": None, "previs": None,
+        }, ensure_ascii=False), encoding="utf-8")
+        crashed, detail = False, ""
+        try:
+            html = build_report(w).read_text(encoding="utf-8")
+        except Exception as exc:                              # noqa: BLE001
+            crashed, detail = True, f"{type(exc).__name__}: {exc}"
+            html = ""
+        check("G14 ★★ 缺 manifest / evidence（值为 null）时报告页仍能生成",
+              not crashed, detail[:80])
+        check("G15 ★ 且页面里认得出是哪一集（不是空白页）",
+              "E900" in html, f"{len(html)} 字节")
+
 
 # ==========================================================================
 # F. 源码守卫（静态，不执行被测模块）

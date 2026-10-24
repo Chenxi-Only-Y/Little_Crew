@@ -208,6 +208,24 @@ class CacheStats:
         self.misses += 1
         self.seconds_spent += max(0.0, seconds_spent)
 
+    def record_spent(self, seconds: float) -> None:
+        """补记一次**实算**花掉的秒数（`misses` 已经在查缓存时计过）。
+
+        ## 为什么需要单独一个入口（2026-10-23 审计 M-12）
+
+        `record_miss()` 是在**查缓存未命中时**调用的 —— 那时还不知道这次渲染
+        要花多久；实耗时间只有渲染完才知道。而两个生产调用点都没传时间，
+        于是 `seconds_spent` **恒为 0**：
+
+        * 有过命中 -> `speedup` 走 `inf` 分支（序列化成 `None`）
+        * 没命中   -> `speedup` 恒为 `1.0`
+
+        也就是说「提速比」这个被 `speedup` 自己称为"成本可控的核心指标"的数字，
+        **从不反映真实收益**。而自检里直接调 `record_miss(seconds_spent=…)`
+        验的是**公式**，绕过了接线 —— 典型的"测公式不测接线"。
+        """
+        self.seconds_spent += max(0.0, float(seconds))
+
     def record_comfy_cache(self, n: int = 1) -> None:
         """记录 ComfyUI 的节点级缓存事件。
 

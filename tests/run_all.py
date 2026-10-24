@@ -85,7 +85,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("灯光师", [sys.executable, "-m", "little_crew.agent.gaffer_llm_check"], 30),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 65),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 60),
-    ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 60),
+    ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 66),
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。
@@ -106,7 +106,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
-    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 60),
+    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 62),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
 
