@@ -20,16 +20,71 @@ GET  /v1/runs/{id}/events   -> SSE 流（给要实时进度的客户端）
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 import traceback
 import uuid
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any, Callable, Mapping
 from urllib.parse import urlparse
 
 __all__ = ["RunState", "RunRegistry", "ApiServer", "serve"]
+
+
+def out_root() -> Path:
+    """`POST /v1/episode` 允许写盘的**唯一根目录**。
+
+    默认 `outputs/`（相对进程工作目录）；可用 `LITTLE_CREW_OUT_ROOT` 覆盖。
+    存在的理由见 `safe_out()` —— 写盘范围必须有一处**可声明**的边界。
+    """
+    raw = os.environ.get("LITTLE_CREW_OUT_ROOT") or "outputs"
+    return Path(raw).expanduser().resolve()
+
+
+def resolve_out(raw: Any) -> Path:
+    """**只解析与校验** `out`，不建目录；越界抛 `ValueError`。
+
+    分成两步的理由：路由层要在**开后台任务之前**就拦住越界请求 ——
+    否则客户端拿到 `runId`、任务在后台失败，它永远等不到结果
+    （而"错在客户端"这种情况本来能立刻说清）。
+    """
+    root = out_root()
+    want = Path(str(raw or "outputs/api")).expanduser()
+    target = (want if want.is_absolute() else Path.cwd() / want).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError:
+        raise ValueError(
+            f"out 越界：{raw!r} 不在允许的根目录 {root} 之内"
+            f"（要改根目录请设 LITTLE_CREW_OUT_ROOT）") from None
+    return target
+
+
+def safe_out(raw: Any) -> Path:
+    """把请求体里的 `out` 变成**根目录之内**的真实路径并建目录；越界就拒。
+
+    ## 为什么必须有（2026-10-23 审计 M-25）
+
+    原来是：
+
+        out = Path(str(body.get("out") or "outputs/api"))
+        out.mkdir(parents=True, exist_ok=True)
+
+    于是请求体里的 `out` 可以是**绝对路径**（`C:\\Windows\\...`）或含 `..`
+    的相对路径（`../../.ssh`）—— `mkdir(parents=True)` 会照单创建，
+    而它随后成为整集的**工作目录**（产物、缓存、检查点、报告全写进去）。
+    本服务**没有鉴权**，默认只绑 127.0.0.1，但同机任何进程/网页都能打它。
+
+    判据与 `runtime.studio._static` 一致：`resolve()` 之后必须 `relative_to(root)`。
+    相对路径仍按**进程 cwd** 解析（保持既有调用方的行为不变），
+    只是解析完必须落在根目录里 —— 这才是把 `..` 夹住的地方。
+    """
+    target = resolve_out(raw)
+    target.mkdir(parents=True, exist_ok=True)
+    return target
 
 
 class RunState:
@@ -166,11 +221,22 @@ class _Handlers:
 
     @staticmethod
     def env(body: Mapping[str, Any]) -> dict[str, Any]:
-        from little_crew.config import describe, env_value
+        """当前配置概况（**密钥一律打码**）。
+
+        ⚠️ 原来用的是 `describe()`，它返回**明文 `value`**（含 `LLM_API_KEY`
+        / `VLM_API_KEY`）—— 而 `config.describe` 的 docstring 明写
+        「包括密钥，只该用在本机排查里」。本服务**没有鉴权**，
+        一旦有人按提示 `--host 0.0.0.0` 对外暴露，密钥即公开可读
+        （2026-10-23 审计 H-5）。
+
+        项目早就写了 `config.masked()`（值只留头尾），这里改用它 ——
+        "配没配、从哪来、像不像"这三件排查需要的事一点都不少。
+        """
+        from little_crew.config import env_value, masked
 
         keys = ("COMFYUI_ENDPOINT", "LOCAL_GEN_ENDPOINT", "LLM_API_KEY",
                 "VLM_API_KEY")
-        return {"config": describe(keys),
+        return {"config": masked(keys),
                 "comfyui": env_value("COMFYUI_ENDPOINT", "") or "(默认)",
                 "localGen": env_value("LOCAL_GEN_ENDPOINT", "") or "(默认)"}
 
@@ -234,8 +300,8 @@ class _Handlers:
         steps = int(body.get("steps") or 8)
         seed = int(body.get("seed") or 7)
         gate = bool(body.get("gate", True))
-        out = Path(str(body.get("out") or "outputs/api"))
-        out.mkdir(parents=True, exist_ok=True)
+        # 写盘范围必须夹在 `out_root()` 里 —— 见 `safe_out()` 的说明（审计 M-25）
+        out = safe_out(body.get("out"))
 
         # ⚠️ **从注册表取后端声明，不要在这里另写一份。**
         #
@@ -370,6 +436,15 @@ class ApiServer:
             return (200 if out.get("ok") else 400), out
 
         if method == "POST" and parts == ["v1", "episode"]:
+            # **同步**校验"客户端能自己发现"的错误，再开后台任务：
+            #   · 缺 script      -> 400（否则后台失败，客户端拿着 runId 干等）
+            #   · out 越界       -> 400（审计 M-25；绝不能在任意目录建目录）
+            if not str(body.get("script") or "").strip():
+                return 400, {"error": "请求体缺少 `script`"}
+            try:
+                resolve_out(body.get("out"))
+            except ValueError as e:
+                return 400, {"error": str(e)}
             run = self.runs.create("episode")
             # 直接传函数（返回值会被 `start` 当作结果）——
             # 不要用 lambda 包一层去赋值 `run.result`，那会绕过异常处理机制。

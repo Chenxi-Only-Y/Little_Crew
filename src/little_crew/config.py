@@ -162,7 +162,11 @@ def describe(keys: Iterable[str],
 
     ⚠️ **`value` 字段会带上真实值，包括密钥。** 它只该用在
     **本机排查**里，不要打印到日志、不要放进 CI 输出、不要写进报告。
-    要安全地看，用 `mask=True`。
+    要安全地看，用 :func:`masked`（值只留头尾）。
+
+    （这段曾经写的是「用 `mask=True`」，而本函数**没有**这个参数 ——
+    照着文档写会 `TypeError`。审计 M-8 就是它；而 H-5 正是因为
+    没人照着做，`api/server.py` 误用 `describe()` 把密钥明文发进了 HTTP 响应。）
     """
     file_vals, secret_vals = load_env(root), load_secrets(root)
     out: list[dict[str, str]] = []

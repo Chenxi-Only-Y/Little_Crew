@@ -52,7 +52,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 发布器：把产物变成 URL（视频模型只收 URL）。接口可替换，实现按需加。
     ("产物发布器", [sys.executable, "-m", "little_crew.runtime.publish_check"], 14),
     # 工作室：图上改一镜的布局并只重渲那一镜。真起服务、不调 Blender。
-    ("工作室编辑", [sys.executable, "-m", "little_crew.runtime.studio_check"], 24),
+    ("工作室编辑", [sys.executable, "-m", "little_crew.runtime.studio_check"], 31),
     # 半成品报告：中途停下时把「到哪了」落成文件。纯文件读写。
     ("半成品报告", [sys.executable, "-m", "little_crew.runtime.partial_report_check"], 28),
     # 资产库：角色定妆表落盘 + 读回复用。纯文件。
@@ -106,7 +106,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
-    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 54),
+    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 60),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
 

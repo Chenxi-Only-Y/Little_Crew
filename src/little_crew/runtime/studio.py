@@ -32,6 +32,7 @@
 from __future__ import annotations
 
 import json
+import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -39,6 +40,50 @@ from typing import Any, Mapping
 from urllib.parse import unquote, urlparse
 
 __all__ = ["StudioServer", "load_layout", "patch_and_render"]
+
+
+#: 回环地址（只有这些 host 才算「不对外」）
+_LOOPBACK = frozenset({"127.0.0.1", "localhost", "::1", "[::1]"})
+
+
+def is_loopback_host(host: str) -> bool:
+    """这个 host 是不是「只在本机」。"""
+    return str(host or "").strip().lower() in _LOOPBACK
+
+
+def safe_child(root: Path, name: str) -> Path | None:
+    """把**用户给的路径片段**变成 `root` 之内的真实路径；越界返回 None。
+
+    ## 为什么必须有（2026-10-23 审计 H-8）
+
+    静态文件路由 `_static()` 有越界检查，而 `/api/shot/<sid>` 的两条路由
+    （GET / POST）**直接把用户输入拼进文件系统路径**：
+
+        sid = path[len("/api/shot/"):]          # 未校验
+        d = srv.workdir / "previs" / sid        # 直接拼
+
+    而 `path` 是 `unquote()` 过的，所以 `%2e%2e%2f` 会变成 `../` ——
+    **workdir 之外的任意目录**都能被读（GET 返回它的 layout.json/shot.json），
+    也能被 POST 重渲覆盖。同一份代码里两个路由一个有一个没有，正是
+    「接线断了而不是实现错了」的典型。
+
+    判据与 `_static` 一致（`resolve()` 后必须 `relative_to`），
+    外加一条更早的拦截：镜头目录名里**不该**出现任何分隔符。
+    """
+    if not name or name in (".", ".."):
+        return None
+    if "/" in name or "\\" in name or "\x00" in name:
+        return None
+    try:
+        base = Path(root).resolve()
+        target = (base / name).resolve()
+    except OSError:
+        return None
+    try:
+        target.relative_to(base)
+    except ValueError:
+        return None
+    return target
 
 #: 允许通过工时改的字段（其余一律忽略 —— 别让请求体能改任意键）
 EDITABLE = ("shot_size", "azimuth_deg", "angle_deg", "duration_sec",
@@ -178,6 +223,15 @@ class StudioServer:
         self._httpd: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
         self.last_result: dict[str, Any] = {}
+        # ⚠️ **「只绑 127.0.0.1」原来是注释，不是约束**（2026-10-23 审计 L-5）。
+        # 注释拦不住 `StudioServer(host="0.0.0.0")` —— 而它能改文件、能起 Blender，
+        # 一旦对外暴露，同网段任何人都能改你的镜头、跑任意 Blender 脚本。
+        # 现在照 `api/__main__.py` 的做法：非回环一律**出声警告**。
+        if not is_loopback_host(host):
+            print(f"⚠️ Studio 绑定到 {host} 而不是回环地址 —— "
+                  f"本服务**没有鉴权**，同网段任何人都能改你工作目录里的文件、"
+                  f"并让服务起 Blender 渲任意路径。"
+                  f"只在完全可信的隔离网络里这样做。", file=sys.stderr)
 
     # ---- 生命周期 ----
     def start(self) -> "StudioServer":
@@ -198,7 +252,10 @@ class StudioServer:
                     return self._file(srv._ensure_console(), "text/html")
                 if path.startswith("/api/shot/"):
                     sid = path[len("/api/shot/"):]
-                    d = srv.workdir / "previs" / sid
+                    d = safe_child(srv.workdir / "previs", sid)
+                    if d is None:
+                        # 越界（含 `..`、分隔符、绝对路径）—— 明确 403，不泄露存在性
+                        return self._json({"ok": False, "reason": "越界路径"}, 403)
                     if not d.is_dir():
                         return self._json({"ok": False, "reason": "镜头不存在"}, 404)
                     try:
@@ -219,7 +276,9 @@ class StudioServer:
                 if not path.startswith("/api/shot/"):
                     return self._json({"ok": False, "reason": "未知路径"}, 404)
                 sid = path[len("/api/shot/"):]
-                d = srv.workdir / "previs" / sid
+                d = safe_child(srv.workdir / "previs", sid)
+                if d is None:
+                    return self._json({"ok": False, "reason": "越界路径"}, 403)
                 if not d.is_dir():
                     return self._json({"ok": False, "reason": "镜头不存在"}, 404)
                 n = int(self.headers.get("Content-Length") or 0)

@@ -186,6 +186,60 @@ def _d_http_contract() -> None:
                   for x in (j.get("config") or [])),
               str((j.get("config") or [{}])[0])[:80])
 
+        # ---- H-5：密钥**不许**明文出门 ----
+        #
+        # 这个接口**没有鉴权**，默认只绑 127.0.0.1 —— 但同机任何进程/网页都能打它，
+        # 而项目自己在 `api/__main__.py` 里就知道"别对外暴露"这件事。
+        # 原来它用 `config.describe()`，那个函数**明文返回 value**。
+        import os as _os
+
+        secret = "sk-THIS-MUST-NOT-LEAK-0123456789"
+        _os.environ["LLM_API_KEY"] = secret
+        try:
+            st, j2 = s.call("/v1/env")
+            blob = json.dumps(j2, ensure_ascii=False)
+            check("D5b ★★ /v1/env 不返回明文密钥（它无鉴权、可能对外）",
+                  st == 200 and secret not in blob, blob[:120])
+            check("D5c ★ 但仍能看出「配没配、像不像」（打码而非抹掉）",
+                  any("…" in str(x.get("value", "")) or "*" in str(
+                      x.get("value", ""))
+                      for x in (j2.get("config") or [])),
+                  str((j2.get("config") or [{}])[0])[:80])
+        finally:
+            _os.environ.pop("LLM_API_KEY", None)
+
+        # ---- M-25：`out` 不许越出允许的根目录 ----
+        #
+        # `out` 来自请求体，之后成为整集的**工作目录**（产物/缓存/检查点/报告
+        # 全写进去）。原来直接 `Path(...) + mkdir(parents=True)`，
+        # 绝对路径与 `../..` 都被照单创建 —— 而服务无鉴权。
+        from little_crew.api.server import out_root, safe_out
+
+        root = out_root()
+        check("D5d 写盘根目录可声明（默认 outputs/）",
+              root.name == "outputs" or bool(
+                  __import__("os").environ.get("LITTLE_CREW_OUT_ROOT")),
+              str(root))
+        escaped = 0
+        for bad in ("../escape", "../../.ssh", str(root.parent / "escape")):
+            try:
+                safe_out(bad)
+            except ValueError:
+                escaped += 1
+        check("D5e ★★ `out` 越界（`..` / 绝对路径）一律拒（400，不是照单创建）",
+              escaped == 3, f"{escaped}/3 被拒")
+        inside = safe_out("outputs/_selfcheck_ok")
+        check("D5f ★ 根目录之内的 `out` 仍然可用（不误伤正常调用）",
+              inside == (root / "_selfcheck_ok").resolve(), str(inside))
+        import shutil as _sh
+
+        _sh.rmtree(inside, ignore_errors=True)
+
+        st, j3 = s.call("/v1/episode", "POST",
+                        {"script": "x", "out": "../escape_ep"})
+        check("D5g ★★ `POST /v1/episode` 的越界 out -> 400（不是 500）",
+              st == 400, f"{st} {j3}")
+
         # ---- 404 / 400 的语义 ----
         st, j = s.call("/v1/runs/nope")
         check("D6 未知 runId -> 404（不是 500）",

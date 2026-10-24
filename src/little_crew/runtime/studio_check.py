@@ -214,6 +214,101 @@ def _server() -> None:
                   f"{code3} {str(j3.get('reason'))[:50]}")
 
 
+def _traversal() -> None:
+    """`/api/shot/<sid>` 的路径穿越 + 绑定告警（2026-10-23 审计 H-8 / L-5）。
+
+    ## 为什么单独测这条
+    同一个文件里，静态路由 `_static()` 有越界检查，而 `/api/shot/<sid>`
+    的两条路由**直接把用户输入拼进文件系统路径** —— 一个有一个没有。
+    那正是本项目反复出现的形态：**不是实现错了，是接线断了一处**。
+
+    这里造一个"workdir 之外"的目录放合法布局：修好之前，GET 会把它读出来
+    （200 + 内容），修好之后必须 403。
+    """
+    print()
+    print("F. 路径穿越与绑定告警")
+    from little_crew.runtime.studio import safe_child
+
+    # ---- 判据本身 ----
+    with tempfile.TemporaryDirectory() as d:
+        base = Path(d)
+        inner = base / "previs"
+        (inner / "SH-T-001").mkdir(parents=True)
+        (base / "outside").mkdir()
+        check("F1 ★ 正常镜头名 -> 解析到 previs/ 之内",
+              safe_child(inner, "SH-T-001") == (inner / "SH-T-001").resolve())
+        bad = {
+            "上跳": "..",
+            "../escape": "../escape",
+            "越界相对": "../../outside",
+            "分隔符": "sub/dir",
+            "反斜杠": "sub\\dir",
+            "绝对路径": str(base / "outside"),
+            "空": "",
+        }
+        passed = [k for k, v in bad.items() if safe_child(inner, v) is None]
+        check("F2 ★★ 上跳/分隔符/绝对路径一律拒（返回 None，不是拼出去）",
+              len(passed) == len(bad), str([k for k in bad if k not in passed]))
+
+    # ---- 真打服务：GET 与 POST 都要拦住 ----
+    with tempfile.TemporaryDirectory() as d:
+        base = Path(d)
+        root = base / "work"
+        _shotdir(root)                                  # 合法镜头（对照）
+        evil = base / "evil"                            # workdir **之外**
+        evil.mkdir()
+        (evil / "layout.json").write_text(json.dumps({
+            "shotId": "EVIL", "resolution": [64, 48], "frames": 1,
+            "camera": {"azimuth_deg": 0.0},
+            "objects": [{"name": "ground"}],
+        }), encoding="utf-8")
+
+        with StudioServer(root, blender="") as srv:
+            base_url = srv.url
+            # ⚠️ 请求行必须 ASCII —— 用 %2f 编码，不写中文
+            codes = {}
+            for label, suffix, method in (
+                ("GET", "api/shot/..%2f..%2fevil", "GET"),
+                ("POST", "api/shot/..%2f..%2fevil", "POST"),
+            ):
+                data = None
+                if method == "POST":
+                    data = json.dumps({"azimuth_deg": 5}).encode("utf-8")
+                req = urllib.request.Request(
+                    base_url + suffix, data=data, method=method,
+                    headers={"Content-Type": "application/json"})
+                try:
+                    body = urllib.request.urlopen(req, timeout=10).read()
+                    codes[label] = (200, body[:80])
+                except urllib.error.HTTPError as e:
+                    codes[label] = (e.code, b"")
+            check("F3 ★★ GET /api/shot/<越界> -> 403（读不到 workdir 之外）",
+                  codes["GET"][0] == 403, str(codes["GET"]))
+            check("F4 ★★ POST /api/shot/<越界> -> 403（写不到 workdir 之外）",
+                  codes["POST"][0] == 403, str(codes["POST"]))
+            j = json.loads(urllib.request.urlopen(
+                base_url + "api/shot/SH-T-001", timeout=10).read().decode("utf-8"))
+            check("F5 ★ 合法镜头不受影响（守卫不是把功能一起关了）",
+                  j.get("ok") is True, str(j.get("reason")))
+
+    # ---- L-5：非回环 host 必须出声 ----
+    import contextlib
+    import io
+
+    with tempfile.TemporaryDirectory() as d:
+        buf = io.StringIO()
+        with contextlib.redirect_stderr(buf):
+            StudioServer(Path(d), host="0.0.0.0")       # 只构造，不 start（不绑端口）
+        warn = buf.getvalue()
+        check("F6 ★★ 绑非回环地址 -> 出声警告（注释拦不住参数）",
+              "0.0.0.0" in warn and "鉴权" in warn, warn[:70])
+        buf2 = io.StringIO()
+        with contextlib.redirect_stderr(buf2):
+            StudioServer(Path(d), host="127.0.0.1")
+        check("F7 回环地址 -> 不吵（默认路径保持安静）", buf2.getvalue() == "",
+              buf2.getvalue()[:60])
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -227,6 +322,7 @@ def main() -> int:
     _validate()
     _resolution()
     _server()
+    _traversal()
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
