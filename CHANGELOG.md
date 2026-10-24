@@ -57,6 +57,53 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.139] — 2026-10-23（**产品入口簇**：CLI 与项目其余部分对不上）
+
+审计分诊 B1（`H-4` `H-21` `M-28` `M-27`）。
+
+四条都不是"功能不对"，而是**入口和平台其余部分对不上** ——
+而每一种对不上，表现都是"静默成功"：跑完了、没报错、报告是空的。
+
+### 逐条
+
+- **`H-4` 集号写死成 `"CLI"`** —— 三处（两个 `RenderCheckpoint` + `EpisodeRunner`）
+  全部硬编码。于是每一集共用同一个 shotId 命名空间、同一个检查点账本、
+  同一片缓存，而报告一切正常。现在：`--episode-id`（默认 `E100`）、
+  `--title`、`--fresh`、`--allow-reuse`，且**防串集守卫与 demo 共用同一实现**
+  （抽成 `runtime.episode.check_workdir_episode`）。
+  换集进老目录 -> 退出码 3 + 说清后果（镜头重名/缓存串）。
+
+- **`H-21` 从不设 `resolve_artifact`** —— 于是 `--no-video` 形同虚设：
+  `assemble_video=True` 只表示"想合成"，而合成要从**产物名**找到真实文件；
+  解析器为 `None` 时 `_assemble()` 直接 `return (None, None)` ——
+  视频永远合不出来，且不报错。现在设 `artifact_resolver(work)`
+  （同样抽出来与 demo 共用）。
+
+- **`M-28` 报告写到根目录** —— 报告页读的是
+  `<workdir>/delivery/{run.report,episode.master,delivery.evidence}.json`，
+  而产品 CLI 只写 `<workdir>/run.report.json`。于是**用 CLI 跑完一集、
+  打开报告页看到的是空页面**。现在统一走
+  `runtime.episode.write_delivery()`，demo 与 CLI 同一份实现。
+  守卫 G10 直接断言「报告页里能找到这一集的集号」。
+
+- **`M-27` 用法错误退出码 2** —— argparse 默认 `sys.exit(2)`，
+  而本项目的 `2` 是**环境不可用**。于是 CI 把"命令写错了"当成"环境没装好"，
+  去重装依赖而不是改命令。现在覆盖 `ArgumentParser.error()` -> `USAGE(3)`。
+
+### 一个共同的做法
+
+这四条里有三条是"两处各抄一份"造成的（守卫、解析器、落盘）。
+**抽出到 `runtime/episode.py` 让两个入口共用**，才不会再漂移 ——
+这也是本项目的既有教训：复制即漂移。
+
+### 测试
+
+**1775/1775 通过 + 架构守卫 PASS**（上一版 1762）。
+新增 `cli/check.py` G1~G13：退出码分类、集号参数、防串集三态、
+交付三件套的落盘位置、报告页真能读到、解析器能按名找回产物。
+
+---
+
 ## [0.4.0-alpha.138] — 2026-10-23（**返工/门禁簇**：动作说的和病因不是一回事）
 
 审计分诊 B5（`M-2` `M-10` `M-11` `M-26` `M-29`）。

@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 from pathlib import Path
@@ -34,7 +33,13 @@ from little_crew.runtime.channels.base import ArtifactRef, JobHandle, JobStatus
 from little_crew.runtime.channels.http import HttpChannel
 from little_crew.runtime.cached_render import CachingRenderer, artifact_fetcher_for
 from little_crew.runtime.checkpoint import RenderCheckpoint
-from little_crew.runtime.episode import EpisodeRunner, StopRequested
+from little_crew.runtime.episode import (
+    EpisodeRunner,
+    StopRequested,
+    artifact_resolver,
+    check_workdir_episode,
+    write_delivery,
+)
 from little_crew.runtime.render import RenderSession
 
 # ==========================================================================
@@ -222,26 +227,17 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[3]
     work = root / args.workdir
 
-    # ---- 防串集（2026-10-20 加）----
+    # ---- 防串集（2026-10-20 加；判据抽到 `runtime.episode`，与 CLI 共用）----
     #
     # 最常见的出错方式不是"写错代码"，是**把新的一集写进老目录** ——
     # 然后两集的 shotId 会重名（`SH-E100-S01-001`），缓存也会串，
     # 而报告看起来一切正常。
-    _prev = work / "delivery" / "run.report.json"
-    if _prev.is_file() and not args.fresh and not args.allow_reuse:
-        try:
-            import json as _json
-
-            _old = _json.loads(_prev.read_text(encoding="utf-8"))
-            _old_id = str(_old.get("episodeId") or "")
-        except Exception:                                 # noqa: BLE001
-            _old_id = ""
-        if _old_id and _old_id != args.episode_id:
-            print(f"  [X] 这个目录里已经有一集：{_old_id}；"
-                  f"而你要跑的是 {args.episode_id}")
-            print("      换一个 --workdir（推荐），或加 --fresh 清空，"
-                  "或加 --allow-reuse 强行覆盖")
-            return 2
+    old_id, conflict = check_workdir_episode(work, args.episode_id)
+    if conflict and not args.fresh and not args.allow_reuse:
+        print(f"  [X] {conflict}")
+        print("      换一个 --workdir（推荐），或加 --fresh 清空，"
+              "或加 --allow-reuse 强行覆盖")
+        return 2
     print(f"  集号 {args.episode_id} · 标题 {args.title}")
     if args.fresh:
         import shutil
@@ -440,19 +436,11 @@ def main(argv: list[str] | None = None) -> int:
     # 产物散落在缓存的**分片目录**里，所以要能按文件名找回来。
     # 视频层要求调用方提供解析方式 —— 它不该去猜目录结构。
     #
-    # 渲染发生在 run() 内部，所以索引必须在**调用时**才建立，
-    # 用一个惰性解析器：先查索引，未命中就现搜一次。
-    _idx: dict[str, Path] = {}
-
-    def _resolve(name: str) -> Path | None:
-        if name in _idx:
-            return _idx[name]
-        for q in work.rglob(name):
-            _idx[name] = q
-            return q
-        return None
-
-    runner.resolve_artifact = None if args.no_video else _resolve
+    # 解析器抽在 `runtime.episode.artifact_resolver`（2026-10-23 审计 H-21）：
+    # 产品 CLI 也需要同一个东西，两处各写一份必然漂移 ——
+    # 而漂移的表现是"demo 能合视频、CLI 永远合不出来"。
+    runner.resolve_artifact = (None if args.no_video
+                               else artifact_resolver(work))
     if not args.no_video:
         print(f"  视频合成已启用（产物按名解析于 {work.name}/）")
 
@@ -584,14 +572,9 @@ def main(argv: list[str] | None = None) -> int:
     _print_advisory(res)
 
     # ---------- 落盘 ----------
-    out_dir = work / "delivery"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "episode.master.json").write_text(
-        json.dumps(m.as_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
-    (out_dir / "delivery.evidence.json").write_text(
-        json.dumps(ev.as_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
-    (out_dir / "run.report.json").write_text(
-        json.dumps(res.as_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+    # 与产品 CLI 共用同一份实现（`runtime.episode.write_delivery`）——
+    # 报告页按 `<work>/delivery/` 读三份文件，两边必须一致（审计 M-28）。
+    out_dir = write_delivery(work, result=res, manifest=m, evidence=ev)
 
     print()
     print("=" * 78)

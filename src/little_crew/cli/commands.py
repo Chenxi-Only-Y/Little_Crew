@@ -343,10 +343,29 @@ def cmd_episode(args: Any) -> int:
     from little_crew.runtime.cached_render import (CachingRenderer,
                                                    artifact_fetcher_for)
     from little_crew.runtime.checkpoint import RenderCheckpoint
-    from little_crew.runtime.episode import EpisodeRunner
+    from little_crew.runtime.episode import (EpisodeRunner, artifact_resolver,
+                                             check_workdir_episode,
+                                             write_delivery)
     from little_crew.runtime.render import RenderSession
 
+    # ---- 集号与防串集 ----
+    #
+    # ⚠️ 集号原来写死成 `"CLI"`（2026-10-23 审计 H-4）：每一集都进同一个
+    # shotId 命名空间、同一个检查点账本、同一片缓存，而报告一切正常。
+    ep_id = str(getattr(args, "episode_id", "") or "E100")
+    title = str(getattr(args, "title", "") or "CLI 一集")
+
     work = Path(args.out)
+    old_id, conflict = check_workdir_episode(work, ep_id)
+    if conflict and not getattr(args, "allow_reuse", False):
+        print(f"[X] {conflict}", file=sys.stderr)
+        print("      换一个 --out（推荐），或加 --fresh 清空，"
+              "或加 --allow-reuse 强行覆盖", file=sys.stderr)
+        return ExitCode.USAGE
+    if getattr(args, "fresh", False) and work.exists():
+        import shutil
+
+        shutil.rmtree(work, ignore_errors=True)
     work.mkdir(parents=True, exist_ok=True)
 
     if args.script:
@@ -380,7 +399,7 @@ def cmd_episode(args: Any) -> int:
                                    ContentCache(work / "cache"),
                                    fetcher=artifact_fetcher_for(ch),
                                    checkpoint=RenderCheckpoint(
-                                       work / "checkpoint", episode_id="CLI"))
+                                       work / "checkpoint", episode_id=ep_id))
         backend = None
     else:
         from little_crew.models.registry import build_default_registry
@@ -414,7 +433,7 @@ def cmd_episode(args: Any) -> int:
                                    ContentCache(work / "cache"),
                                    fetcher=artifact_fetcher_for(ch),
                                    checkpoint=RenderCheckpoint(
-                                       work / "checkpoint", episode_id="CLI"))
+                                       work / "checkpoint", episode_id=ep_id))
         backend = be
 
     # ---- 组装剧组 ----
@@ -425,12 +444,18 @@ def cmd_episode(args: Any) -> int:
         def engine_backend(self) -> Any:
             return backend
 
-    runner = _R(orch, renderer, episode_id="CLI", title="CLI 一集")
+    runner = _R(orch, renderer, episode_id=ep_id, title=title)
     runner.workdir = work
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.verify_artifacts = not args.no_gate
     runner.assemble_video = not args.no_video
+    # ⚠️ **必须设解析器**（2026-10-23 审计 H-21）。
+    #
+    # `assemble_video=True` 只表示"想合成"，而合成要从**产物名**找到真实文件；
+    # 解析器为 None 时 `_assemble()` 直接 `return (None, None)` ——
+    # 于是 `--no-video` 形同虚设：视频永远合不出来，且不报错。
+    runner.resolve_artifact = None if args.no_video else artifact_resolver(work)
     if args.white_model:
         runner.use_white_model = True
         runner.use_zimage_source = True
@@ -466,9 +491,17 @@ def cmd_episode(args: Any) -> int:
         lines.append(f"  处置   {FAILURE_ACTIONS[res.failure_kind]}")
     lines.append(f"  结果   {'✅ ' if res.ok else '⚠️ '}{res.reason}")
 
-    # 报告落盘（`--json` 只是把它也打到 stdout）
-    (work / "run.report.json").write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    # ---- 交付落盘 ----
+    #
+    # ⚠️ 落到 `<work>/delivery/`，**不是** `<work>/run.report.json`（2026-10-23
+    # 审计 M-28）。报告页（`report_html.build_report`）读的是
+    # `<work>/delivery/run.report.json` —— 产品 CLI 写到根目录时，
+    # 用 CLI 跑完一集、打开报告页看到的是**空页面**，而且没人报错。
+    # 同一段逻辑抽在 `runtime/episode.write_delivery`，demo 与 CLI 共用。
+    out_dir = write_delivery(work, result=res,
+                             manifest=res.manifest, evidence=res.evidence)
+    lines.append(f"  交付   {out_dir}（run.report / episode.master / "
+                 f"delivery.evidence）")
 
     _emit(args, "\n".join(lines), payload)
     return ExitCode.OK if res.ok else ExitCode.FAILED

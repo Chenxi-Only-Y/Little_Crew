@@ -301,6 +301,114 @@ class EpisodeResult:
 
 
 # ==========================================================================
+# 交付落盘 / 工作目录守卫 / 产物解析（入口脚本共用的三件小事）
+# ==========================================================================
+#
+# ## 为什么单独抽出来（2026-10-23 审计 M-28 / H-4 / H-21）
+# 这三件事原来各自被抄在两个入口里（`episode_demo` 与 `cli.commands`），
+# 而**抄写必然漂移**：
+#   · 报告页读 `<workdir>/delivery/run.report.json`，而产品 CLI 写的是
+#     `<workdir>/run.report.json` —— 于是用 CLI 跑完一集，报告页是**空的**
+#     （M-28）；顺带 CLI 也从不写 `episode.master.json` / `delivery.evidence.json`。
+#   · 防串集守卫只有 demo 有，CLI 没有；而 CLI 的 `episode_id` 还写死成 "CLI"。
+#   · `resolve_artifact` 只有 demo 设，CLI 从不设 —— 于是 `--no-video` 形同虚设
+#     （H-21）：`assemble_video=True` 但解析器为 None，视频永远合不出来。
+#
+# 结论与项目一贯的做法一致：**不要复制，要抽出**。
+
+def write_delivery(
+    workdir: str | "Path",
+    *,
+    result: Any = None,
+    manifest: Any = None,
+    evidence: Any = None,
+) -> "Path":
+    """把一集的交付物**统一**落到 ``<workdir>/delivery/``。
+
+    三份文件、一个目录 —— 这是报告页（``report_html.build_report``）约定的位置。
+    任何入口（demo / CLI / API）都该走这里，否则报告页读不到东西。
+
+    参数都可以省略：能拿到什么就写什么（例如只有 `result` 时才写 run.report.json）。
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    out = _Path(workdir) / "delivery"
+    out.mkdir(parents=True, exist_ok=True)
+
+    def _dump(name: str, obj: Any) -> None:
+        data = obj.as_dict() if hasattr(obj, "as_dict") else obj
+        if data is None:
+            return
+        (out / name).write_text(
+            _json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    if manifest is not None:
+        _dump("episode.master.json", manifest)
+    if evidence is not None:
+        _dump("delivery.evidence.json", evidence)
+    if result is not None:
+        _dump("run.report.json", result)
+    return out
+
+
+def check_workdir_episode(workdir: str | "Path", episode_id: str
+                          ) -> tuple[str, str]:
+    """看看这个工作目录里**已经跑过哪一集**。
+
+    返回 ``(已有集号, 冲突说明)``；没有冲突时两者都是空串。
+
+    **为什么必须有**：最常见的出错方式不是"写错代码"，是**把新的一集写进老目录** ——
+    两集的 shotId 会重名（`SH-E100-S01-001`），缓存会串（同 irHash 直接命中上一集的图），
+    而报告看起来一切正常。那正是本项目最忌讳的形态：**看起来成功**。
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    prev = _Path(workdir) / "delivery" / "run.report.json"
+    if not prev.is_file():
+        return "", ""
+    try:
+        old = _json.loads(prev.read_text(encoding="utf-8"))
+    except Exception:                                     # noqa: BLE001
+        return "", ""
+    old_id = str((old or {}).get("episodeId") or "")
+    if not old_id or not episode_id or old_id == episode_id:
+        return old_id, ""
+    return old_id, (f"这个目录里已经跑过 {old_id}，而你要跑的是 {episode_id}"
+                    f"（镜头号会重名、缓存会串）")
+
+
+def artifact_resolver(workdir: str | "Path"):
+    """按**文件名**在工作目录里找产物，返回 ``name -> Path | None`` 的回调。
+
+    给 `EpisodeRunner.resolve_artifact` 用：视频合成要从产物名找到真实文件。
+    用 `rglob` + 一次索引缓存：产物散落在 `outputs/<镜头>/...` 各处，
+    按名字全盘找一遍是最省事也最不容易漏的做法。
+    """
+    from pathlib import Path as _Path
+
+    root = _Path(workdir)
+    index: dict[str, "Path"] = {}
+
+    def _resolve(name: str):
+        if name in index:
+            return index[name]
+        if not name:
+            return None
+        direct = root / name
+        if direct.is_file():
+            index[name] = direct
+            return direct
+        for q in root.rglob(name):
+            index[name] = q
+            return q
+        return None
+
+    return _resolve
+
+
+# ==========================================================================
 # 合成剪辑（规则桩）
 # ==========================================================================
 

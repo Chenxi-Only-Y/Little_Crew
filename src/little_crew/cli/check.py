@@ -335,6 +335,105 @@ def _is_json(s: str) -> bool:
 
 
 # ==========================================================================
+# G. 产品入口的交付契约（2026-10-23 审计 B1：H-4 / H-21 / M-28 / M-27）
+# ==========================================================================
+#
+# 这四条都不是"功能不对"，而是**产品入口与项目其余部分对不上**：
+#   · 集号写死 -> 每一集共用 shotId/检查点/缓存（H-4）
+#   · 从不设产物解析器 -> `--no-video` 形同虚设，视频永远合不出来（H-21）
+#   · 报告写到根目录 -> 报告页读 `delivery/`，打开是**空页面**（M-28）
+#   · 用法错误退 2 -> 撞 `ExitCode.ENVIRONMENT`，CI 把"命令写错"当"环境没装"（M-27）
+
+def _g_entry_contract() -> None:
+    import inspect
+    import json as _json
+    import pathlib
+    import tempfile
+
+    from little_crew.cli import ExitCode
+    from little_crew.cli import commands as _cmds
+
+    # ---- M-27：用法错误必须是 USAGE(3)，不能撞 ENVIRONMENT(2) ----
+    rc, out = _run_cli(["episode", "--no-such-flag"])
+    check("G1 ★★ 用法错误 -> USAGE(3)（不是 argparse 默认的 2，那等于「环境不可用」）",
+          rc == ExitCode.USAGE and rc != ExitCode.ENVIRONMENT, f"rc={rc}")
+    check("G2 且说清是用法错误（不是静默退出）",
+          "用法错误" in out, out.strip().splitlines()[-1][:60] if out else "")
+
+    # ---- H-4：集号必须可指定、且默认不是写死的 "CLI" ----
+    from little_crew.cli.__main__ import build_parser
+
+    ns = build_parser().parse_args(["episode"])
+    check("G3 ★★ CLI 有 --episode-id（集号不再写死）",
+          getattr(ns, "episode_id", "") == "E100", str(getattr(ns, "episode_id", "")))
+    check("G4 ★ 且有 --fresh / --allow-reuse（新一集进老目录时能显式处理）",
+          hasattr(ns, "fresh") and hasattr(ns, "allow_reuse"))
+
+    src = inspect.getsource(_cmds.cmd_episode)
+    check("G5 ★★ `cmd_episode` 里不再出现 `episode_id=\"CLI\"`",
+          'episode_id="CLI"' not in src,
+          "仍有硬编码" if 'episode_id="CLI"' in src else "")
+
+    # 防串集的判据（与 demo 共用同一实现）
+    from little_crew.runtime.episode import check_workdir_episode
+
+    with tempfile.TemporaryDirectory() as td:
+        w = pathlib.Path(td)
+        old, conflict = check_workdir_episode(w, "E200")
+        check("G6 空目录 -> 无冲突", not conflict and not old, conflict[:40])
+        (w / "delivery").mkdir(parents=True)
+        (w / "delivery" / "run.report.json").write_text(
+            _json.dumps({"episodeId": "E100"}), encoding="utf-8")
+        old2, c2 = check_workdir_episode(w, "E100")
+        check("G7 ★ 同一集重跑 -> 不拦（续跑是正常操作）",
+              not c2 and old2 == "E100", c2[:40])
+        old3, c3 = check_workdir_episode(w, "E200")
+        check("G8 ★★ 换集进同一目录 -> 拦住并说清后果（镜头重名/缓存串）",
+              bool(c3) and old3 == "E100" and "缓存" in c3, c3[:50])
+
+        # ---- M-28：交付必须落到 delivery/，且报告页**读得到** ----
+        from little_crew.runtime.episode import write_delivery
+        from little_crew.runtime.report_html import build_report
+
+        out_dir = write_delivery(
+            w, result={"episodeId": "E200", "ok": True,
+                       "shots": [], "wallSeconds": 1.0},
+            manifest={"episodeId": "E200", "title": "t", "shots": [],
+                      "shotCount": 0},
+            evidence={"episodeId": "E200", "cacheHits": 0, "rendered": 0,
+                      "secondsSaved": 0.0, "artifacts": [], "irHashes": [],
+                      "checks": {}},
+        )
+        files = sorted(p.name for p in out_dir.glob("*.json"))
+        check("G9 ★★ 交付落在 `delivery/` 三件套（不是根目录那份孤零零的报告）",
+              out_dir == w / "delivery"
+              and {"run.report.json", "episode.master.json",
+                   "delivery.evidence.json"} <= set(files), str(files))
+        page = build_report(w)
+        html = page.read_text(encoding="utf-8")
+        check("G10 ★★ 报告页能读到这一集（空页面 = 交付物白写了）",
+              "E200" in html, f"页面 {len(html)} 字节，含集号={'E200' in html}")
+
+    # ---- H-21：必须设产物解析器，否则视频永远合不出来 ----
+    check("G11 ★★ `cmd_episode` 设置了 `runner.resolve_artifact`"
+          "（否则 assemble_video=True 也只是空调用）",
+          "resolve_artifact" in src and "artifact_resolver" in src)
+
+    from little_crew.runtime.episode import artifact_resolver
+
+    with tempfile.TemporaryDirectory() as td:
+        w = pathlib.Path(td)
+        deep = w / "cache" / "t1" / "ab" / "cd"
+        deep.mkdir(parents=True)
+        (deep / "SH-E100-001.png").write_bytes(b"x")
+        got = artifact_resolver(w)("SH-E100-001.png")
+        check("G12 ★ 解析器能在缓存分片目录里按名找回产物",
+              got is not None and got.name == "SH-E100-001.png", str(got))
+        check("G13 找不到就返回 None（不猜、不抛）",
+              artifact_resolver(w)("nope.png") is None)
+
+
+# ==========================================================================
 # F. 源码守卫（静态，不执行被测模块）
 # ==========================================================================
 
@@ -505,6 +604,7 @@ def main() -> int:
     _d_http_contract()
     _e_defaults()
     _f_source_guards()
+    _g_entry_contract()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

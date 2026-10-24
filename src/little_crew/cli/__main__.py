@@ -41,8 +41,27 @@ from little_crew.cli import ExitCode
 __all__ = ["main", "ExitCode", "build_parser"]
 
 
+class _Parser(argparse.ArgumentParser):
+    """用法错误一律退出 `ExitCode.USAGE`（3）。
+
+    ## 为什么必须覆盖（2026-10-23 审计 M-27）
+
+    argparse 默认 `sys.exit(2)`，而本项目的 `2` 是**环境不可用**
+    （服务没起、缺权重）。两者混用会让 CI 把"命令写错了"当成"环境没装好" ——
+    于是它去重装依赖，而不是改命令。**退出码是分类而不是二值**这件事，
+    在参数这一层就失效了。
+
+    子命令解析器由 `add_subparsers` 自动用同一个类构造，所以只改这一处即可。
+    """
+
+    def error(self, message: str) -> None:                # noqa: D102
+        self.print_usage(sys.stderr)
+        print(f"{self.prog}: 用法错误：{message}", file=sys.stderr)
+        raise SystemExit(ExitCode.USAGE)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
+    p = _Parser(
         prog="little-crew",
         description="小剧组 · Little Crew —— AIGC 漫剧生成平台",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -96,6 +115,17 @@ def build_parser() -> argparse.ArgumentParser:
     se.add_argument("--no-video", action="store_true", help="不做视频合成")
     se.add_argument("--white-model", default="",
                     help="白模序列根目录（启用空间控制）")
+    # ⚠️ 2026-10-23 审计 H-4：集号原来写死成 "CLI" ——
+    # 于是每一集都进同一个 shotId 命名空间、同一个检查点账本、同一片缓存，
+    # 而报告一切正常。开新一集必须换它。
+    se.add_argument("--episode-id", default="E100",
+                    help="集号，写进 shotId 与报告（默认 E100）。"
+                         "**开新一集必须换它**，否则镜头号会重名、缓存会串")
+    se.add_argument("--title", default="CLI 一集", help="集标题")
+    se.add_argument("--fresh", action="store_true",
+                    help="先清空工作目录（新一集进同一个目录时用）")
+    se.add_argument("--allow-reuse", action="store_true",
+                    help="允许往已有**别的集**的工作目录里写（默认拒绝）")
     se.add_argument("--json", action="store_true")
 
     return p
