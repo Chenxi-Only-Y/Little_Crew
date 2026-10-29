@@ -611,12 +611,40 @@ class EpisodeRunner:
             _script_text = str(getattr(script_draft, "text", None)
                                or getattr(script_draft, "content", None)
                                or script_draft or "")
+            # **先打印「它拿什么在比」** —— 黑盒判定不可核对（2026-10-29）。
+            # 之前只输出结论，重跑就不复现；看不出是"输入变了"还是"判定变了"。
+            from little_crew.review.scene_subject import subjects_in as _subj
+
+            _s_set = _subj(_script_text)
+            print(f"  剧本场景主体 {sorted(_s_set) or '（空：抽取失败或剧本无场景）'}")
+            self.scene_trace = []
             for _s in picked:
                 _desc = str(getattr(_s, "description", "") or "")
                 _r = check_scene_subject(_script_text, _desc)
+                _sid = getattr(_s, "shot_id", "")
+                self.scene_trace.append(
+                    {"shotId": _sid, "script": _r["script"], "prompt": _r["prompt"],
+                     "severity": _r["severity"], "descHead": _desc[:60]})
                 if not _r["ok"]:
-                    self.scene_conflicts.append(
-                        {"shotId": getattr(_s, "shot_id", ""), **_r})
+                    self.scene_conflicts.append({"shotId": _sid, **_r})
+            # ⚠️ **不许 except: pass**（2026-10-29 自己犯的）：
+            # 这段第一次写的时候吞了异常，于是 `scene_check.json` 没生成而毫无提示 ——
+            # **我为修"静默失败"加的代码，自己静默失败了。**
+            try:
+                import json as _json
+
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if not _wd:
+                    raise RuntimeError("runner 上没有 workdir，无法落盘")
+                _out = Path(str(_wd)) / "delivery"
+                _out.mkdir(parents=True, exist_ok=True)
+                (_out / "scene_check.json").write_text(
+                    _json.dumps({"scriptSubjects": sorted(_s_set),
+                                 "scriptHead": _script_text[:200],
+                                 "shots": self.scene_trace},
+                                ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception as _e:                          # noqa: BLE001
+                print(f"  ⚠️ scene_check.json 未写出：{type(_e).__name__}: {_e}")
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
         if self.scene_conflicts:
