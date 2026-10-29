@@ -59,6 +59,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("资产库", [sys.executable, "-m", "little_crew.runtime.assets_check"], 26),
     # 后端选择：把"用哪个后端"从入口脚本搬出来。含源码守卫（不再写死 HTTP）。
     ("后端选择", [sys.executable, "-m", "little_crew.runtime.backend_select_check"], 22),
+    # 场景主体冲突：下游越权新增场景主体（2026-10-29 实测撞出来的真事）。
+    ("场景主体冲突", [sys.executable, "-m", "little_crew.review.scene_subject_check"], 14),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),
