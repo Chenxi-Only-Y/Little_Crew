@@ -1,0 +1,37 @@
+[
+  {
+    "file": "A_no_control.png",
+    "purplePct": 3.12,
+    "horizonRow": 38,
+    "horizonPctOfHeight": 47.5,
+    "label": "A 无控制"
+  },
+  {
+    "file": "B_with_control.png",
+    "purplePct": 6.22,
+    "horizonRow": 50,
+    "horizonPctOfHeight": 62.5,
+    "label": "B strength=1.0"
+  },
+  {
+    "file": "B_strength_0.5.png",
+    "purplePct": 1.96,
+    "horizonRow": 25,
+    "horizonPctOfHeight": 31.2,
+    "label": "B strength=0.5"
+  },
+  {
+    "file": "B_strength_0.35.png",
+    "purplePct": 2.81,
+    "horizonRow": 38,
+    "horizonPctOfHeight": 47.5,
+    "label": "B strength=0.35"
+  },
+  {
+    "file": "B_with_props_0.35.png",
+    "purplePct": 2.67,
+    "horizonRow": 38,
+    "horizonPctOfHeight": 47.5,
+    "label": "B 0.35 + 道具"
+  }
+]

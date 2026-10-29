@@ -1,0 +1,22 @@
+{
+  "b1.png": {
+    "label": "B strength=0.5",
+    "origin": "B_strength_0.5.png"
+  },
+  "b2.png": {
+    "label": "B strength=1.0",
+    "origin": "B_with_control.png"
+  },
+  "b3.png": {
+    "label": "A 无控制（基线）",
+    "origin": "A_no_control.png"
+  },
+  "b4.png": {
+    "label": "B strength=0.35",
+    "origin": "B_strength_0.35.png"
+  },
+  "b5.png": {
+    "label": "B 0.35 + 道具",
+    "origin": "B_with_props_0.35.png"
+  }
+}
