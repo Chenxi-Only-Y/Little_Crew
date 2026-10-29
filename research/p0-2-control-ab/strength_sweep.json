@@ -1,0 +1,18 @@
+[
+  {
+    "strength": 1.0,
+    "note": "已在 step3 测过：18.74% / 98.05%"
+  },
+  {
+    "strength": 0.5,
+    "meanDiff255": 36.71,
+    "pct255": 14.39,
+    "changedPct": 84.68
+  },
+  {
+    "strength": 0.35,
+    "meanDiff255": 33.84,
+    "pct255": 13.27,
+    "changedPct": 80.1
+  }
+]
