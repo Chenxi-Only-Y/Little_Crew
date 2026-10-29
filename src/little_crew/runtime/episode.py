@@ -505,6 +505,8 @@ class EpisodeRunner:
                  checkpoint: Any = None) -> None:
         # **每实例**一份，避免不同 episode 之间串控制图。
         self.previs_first: dict[str, Path] = {}
+        #: 场景主体冲突（分镜越权引入了剧本没有的场景主体）
+        self.scene_conflicts: list[dict] = []
         self.orch = orchestrator
         self.renderer = renderer
         self.episode_id = episode_id
@@ -593,6 +595,34 @@ class EpisodeRunner:
         shots = tuple(shot_list.shots)
         planned = len(shots) if limit is None else min(len(shots), int(limit))
         picked = shots[:planned]
+
+        # ---- 场景主体冲突（2026-10-29 接入）----
+        #
+        # **先记录，不拦截。** 理由：这条判据刚上线，还不知道会命中多少镜头；
+        # 直接当门禁会让一整集大面积 RETRY，而那种代价没量过。
+        # （同一天的教训：`set` 规则被三次否定，就是因为它先被当成"该加的规则"。）
+        #
+        # 记录进 `self.scene_conflicts`，并打印一行摘要 ——
+        # 先看命中率，再决定它是 WARN 还是 RETRY。
+        self.scene_conflicts = []
+        try:
+            from little_crew.review.scene_subject import check_scene_subject
+
+            _script_text = str(getattr(script_draft, "text", None)
+                               or getattr(script_draft, "content", None)
+                               or script_draft or "")
+            for _s in picked:
+                _desc = str(getattr(_s, "description", "") or "")
+                _r = check_scene_subject(_script_text, _desc)
+                if not _r["ok"]:
+                    self.scene_conflicts.append(
+                        {"shotId": getattr(_s, "shot_id", ""), **_r})
+        except Exception as _e:                              # noqa: BLE001
+            print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
+        if self.scene_conflicts:
+            _first = self.scene_conflicts[0]
+            print(f"  ⚠️ 场景主体冲突 {len(self.scene_conflicts)} 镜"
+                  f"（如 {_first.get('shotId')}：{_first.get('reason', '')[:60]}）")
 
         # ---- 2.5) 角色定妆（文字半）----
         #
