@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import threading
 import time
 import traceback
@@ -32,6 +33,10 @@ from typing import Any, Callable, Mapping
 from urllib.parse import urlparse
 
 __all__ = ["RunState", "RunRegistry", "ApiServer", "serve"]
+
+#: 集号的合法形状。它会进 shotId、检查点账本与报告 ——
+#: 放行任意字符串等于把那三处都交给调用方决定。
+_EPISODE_ID = re.compile(r"^[A-Za-z0-9_-]{1,32}$")
 
 
 def out_root() -> Path:
@@ -302,6 +307,9 @@ class _Handlers:
         gate = bool(body.get("gate", True))
         # 写盘范围必须夹在 `out_root()` 里 —— 见 `safe_out()` 的说明（审计 M-25）
         out = safe_out(body.get("out"))
+        # 集号可指定（审计 H-4 的同一类问题）：原来写死 `"API"`，
+        # 于是**每一次 API 调用**都进同一个 shotId / 检查点 / 缓存命名空间。
+        ep_id = str(body.get("episodeId") or "API")
 
         # ⚠️ **从注册表取后端声明，不要在这里另写一份。**
         #
@@ -327,7 +335,7 @@ class _Handlers:
             RenderSession(ch, None), ContentCache(out / "cache"),
             fetcher=artifact_fetcher_for(ch),
             checkpoint=RenderCheckpoint(out / "checkpoint",
-                                        episode_id="API"))
+                                        episode_id=ep_id))
 
         orch = CrewOrchestrator(max_rounds=3, model_families={})
         orch.bind_many(default_crew_stubs())
@@ -336,7 +344,7 @@ class _Handlers:
             def engine_backend(self) -> Any:
                 return be
 
-        runner = _R(orch, renderer, episode_id="API", title="API 一集")
+        runner = _R(orch, renderer, episode_id=ep_id, title=f"API {ep_id}")
         runner.workdir = out
         runner.engine_steps = steps
         runner.engine_seed = seed
@@ -347,6 +355,19 @@ class _Handlers:
         res = runner.run(source, limit=limit,
                          on_progress=lambda *a, **k: run.emit("渲染中"))
         run.emit("完成", ok=res.ok)
+        # ---- 交付落盘 ----
+        #
+        # ⚠️ 与 CLI / demo 共用同一份实现（审计 M-28）。这里原来**一个字都不写** ——
+        # 于是 API 跑完一集，`<out>/delivery/` 是空的，报告页与任何下游
+        # 都看不到这一集。修 CLI 时漏了这个入口，复核时才发现。
+        try:
+            from little_crew.runtime.episode import write_delivery
+
+            write_delivery(out, result=res, manifest=res.manifest,
+                           evidence=res.evidence)
+        except Exception as exc:                              # noqa: BLE001
+            # 落盘失败不该让"跑完了"变成"失败了" —— 但要留痕
+            run.emit("交付落盘失败", error=f"{type(exc).__name__}: {exc}")
         return res.as_dict()
 
 
@@ -439,12 +460,24 @@ class ApiServer:
             # **同步**校验"客户端能自己发现"的错误，再开后台任务：
             #   · 缺 script      -> 400（否则后台失败，客户端拿着 runId 干等）
             #   · out 越界       -> 400（审计 M-25；绝不能在任意目录建目录）
+            #   · episodeId 非法 -> 400（它会进 shotId 与检查点）
+            #   · 换集进老目录   -> 400（审计 H-4 的同一类；显式 allowReuse 才放行）
             if not str(body.get("script") or "").strip():
                 return 400, {"error": "请求体缺少 `script`"}
+            ep_id = str(body.get("episodeId") or "API")
+            if not _EPISODE_ID.match(ep_id):
+                return 400, {"error": (f"episodeId 非法：{ep_id!r}"
+                                       "（只允许字母数字与 _-，1~32 字符）")}
             try:
-                resolve_out(body.get("out"))
+                target = resolve_out(body.get("out"))
             except ValueError as e:
                 return 400, {"error": str(e)}
+            from little_crew.runtime.episode import check_workdir_episode
+
+            _old, conflict = check_workdir_episode(target, ep_id)
+            if conflict and not bool(body.get("allowReuse")):
+                return 400, {"error": (f"{conflict}（换一个 out，"
+                                       "或传 allowReuse=true 强行覆盖）")}
             run = self.runs.create("episode")
             # 直接传函数（返回值会被 `start` 当作结果）——
             # 不要用 lambda 包一层去赋值 `run.result`，那会绕过异常处理机制。

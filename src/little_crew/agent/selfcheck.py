@@ -415,18 +415,23 @@ def main() -> int:
     # G9 当场抓住。
     bb2 = Blackboard()
     ea = bb2.put("prod.key", {"v": 1}, owner="A", aliases=("cap.name",))
+    # ⚠️ 取值先落到变量再断言：直接写 `bb2.get("cap.name").entry_id` 在
+    # "取不到"时会抛 AttributeError（整个自检崩掉），而不是**报一条失败**。
+    # 自检里也该避免这种链式取值 —— 那正是它要抓的 L-6 那类写法。
+    got_alias = bb2.get("cap.name")
     check("T12 别名可读：按另一个名字取到同一条目",
-          bb2.get("cap.name") is not None
-          and bb2.get("cap.name").entry_id == ea.entry_id,
-          str(bb2.get("cap.name").entry_id if bb2.get("cap.name") else None))
+          got_alias is not None and got_alias.entry_id == ea.entry_id,
+          str(getattr(got_alias, "entry_id", None)))
     eb = bb2.put("other.key", {"v": 2}, owner="B", aliases=("cap.name",))
     check("T12 ★★ 不同主键不会被别名并成一条（各自独立）",
           eb.entry_id != ea.entry_id
           and bb2.value("prod.key") == {"v": 1}
           and bb2.value("other.key") == {"v": 2},
           f"{bb2.value('prod.key')} / {bb2.value('other.key')}")
+    got_alias2 = bb2.get("cap.name")
     check("T12 ★ 已登记的别名不被后写抢占",
-          bb2.get("cap.name").entry_id == ea.entry_id)
+          got_alias2 is not None and got_alias2.entry_id == ea.entry_id,
+          str(getattr(got_alias2, "entry_id", None)))
 
     # ---------- T10 推理循环有界 ----------
     def runaway(envelope: CallEnvelope, runtime: LayerRuntime) -> CallResult:

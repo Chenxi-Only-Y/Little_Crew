@@ -338,10 +338,10 @@ def write_delivery(
 
     def _dump(name: str, obj: Any) -> None:
         data = obj.as_dict() if hasattr(obj, "as_dict") else obj
-        if data is None:
-            return
-        (out / name).write_text(
-            _json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        if data is not None:
+            (out / name).write_text(
+                _json.dumps(data, ensure_ascii=False, indent=2),
+                encoding="utf-8")
 
     if manifest is not None:
         _dump("episode.master.json", manifest)

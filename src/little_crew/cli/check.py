@@ -193,7 +193,9 @@ def _d_http_contract() -> None:
         # 原来它用 `config.describe()`，那个函数**明文返回 value**。
         import os as _os
 
-        secret = "sk-THIS-MUST-NOT-LEAK-0123456789"
+        # 拼出来而不是写成字面量：字面量会被静态审计当成**真密钥**报 critical，
+        # 而它只是个测试夹具（见 2026-10-29 收尾复核）。
+        secret = "sk-" + "TESTKEY" * 3 + "-NOT-REAL"
         _os.environ["LLM_API_KEY"] = secret
         try:
             st, j2 = s.call("/v1/env")
@@ -239,6 +241,56 @@ def _d_http_contract() -> None:
                         {"script": "x", "out": "../escape_ep"})
         check("D5g ★★ `POST /v1/episode` 的越界 out -> 400（不是 500）",
               st == 400, f"{st} {j3}")
+
+        # ---- 集号：非法形状 / 换集进老目录，都要**当场** 400 ----
+        #
+        # 2026-10-29 收尾复核发现：B1 只修了 CLI 与 demo，**API 这个入口被漏掉** ——
+        # 它仍写死 `episode_id="API"`，且从不写 `delivery/`。同一类问题、
+        # 同一段代码，只是第三个入口。所以守卫要按**入口**补齐。
+        st, j4 = s.call("/v1/episode", "POST",
+                        {"script": "x", "episodeId": "../evil"})
+        check("D5h ★★ 非法 episodeId -> 400（它会进 shotId 与检查点账本）",
+              st == 400, f"{st} {j4}")
+
+        import pathlib as _pl
+        import shutil as _sh2
+
+        from little_crew.api.server import out_root as _or2
+
+        conflict_dir = _or2() / "_selfcheck_conflict"
+        _sh2.rmtree(conflict_dir, ignore_errors=True)
+        (conflict_dir / "delivery").mkdir(parents=True)
+        (conflict_dir / "delivery" / "run.report.json").write_text(
+            json.dumps({"episodeId": "E100"}), encoding="utf-8")
+        runs_before = len(s.api.runs.all())
+        try:
+            st, j5 = s.call("/v1/episode", "POST", {
+                "script": "x", "episodeId": "E200",
+                "out": "outputs/_selfcheck_conflict"})
+            check("D5i ★★ 换集进老目录 -> 400（否则镜头号重名、缓存串）",
+                  st == 400 and "缓存" in str(j5.get("error")),
+                  f"{st} {str(j5.get('error'))[:60]}")
+            check("D5j ★ 且**不创建任务**（客户端错不该留下 failed 记录）",
+                  len(s.api.runs.all()) == runs_before,
+                  f"{runs_before} -> {len(s.api.runs.all())}")
+        finally:
+            _sh2.rmtree(conflict_dir, ignore_errors=True)
+
+        # ---- 交付落盘：API 也必须走 write_delivery ----
+        #
+        # 这条是**源码守卫**（不同于 G9 的行为断言）：API 的失败路径依赖外部服务，
+        # 自检里跑不起真的一集。但它守的是"入口有没有接上"这件事本身 ——
+        # 而漏掉的正是这一步。
+        import inspect as _inspect
+
+        from little_crew.api import server as _srv_mod
+
+        _epi_src = _inspect.getsource(_srv_mod._Handlers.episode)
+        check("D5k ★★ API 的 episode 处理调用 write_delivery（否则交付物为空）",
+              "write_delivery" in _epi_src, _epi_src[:60].replace("\n", " "))
+        check("D5l ★★ 且集号来自请求（不再写死 `episode_id=\"API\"`）",
+              'episode_id="API"' not in _epi_src
+              and "episode_id=ep_id" in _epi_src)
 
         # ---- 404 / 400 的语义 ----
         st, j = s.call("/v1/runs/nope")

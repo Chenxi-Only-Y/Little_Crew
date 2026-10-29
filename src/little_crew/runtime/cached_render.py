@@ -236,6 +236,14 @@ class CachingRenderer:
         #: 两者的分工：缓存让"没变的镜头"不用跑，检查点让"跑到一半崩了"
         #: 不用从头跑。**互补，不替代。**
         self.checkpoint = checkpoint
+        #: 记账/指标失败的留痕。
+        #:
+        #: ⚠️ 这两类操作**都不该阻断渲染**（记账失败只是续跑信息缺失，
+        #: 指标失败只是数字不准），但也**不该像没发生过一样**：
+        #: `except: pass` 会让"检查点一直写不进去"这种情况完全无人知晓。
+        #: 所以统一记进这两个列表 —— 报告可以读，守卫也可以断言。
+        self.checkpoint_errors: list[str] = []
+        self.metric_errors: list[str] = []
         #: 内容哈希 -> (图哈希, 产物, 渲染耗时)。
         #:
         #: ⚠️ **必须记耗时**。早期版本只存了图哈希与产物，于是进程内命中
@@ -411,8 +419,10 @@ class CachingRenderer:
         try:
             ck.begin(job_id, idempotency_key=idempotency_key,
                      fingerprint=fingerprint, extra={"engine": engine})
-        except Exception:                                     # noqa: BLE001
-            pass          # 记账失败不该阻断渲染 —— 但下次续跑会不知道它
+        except Exception as exc:                              # noqa: BLE001
+            # 记账失败不阻断渲染，但**必须留痕** —— 否则「检查点一直写不进去」
+            # 会表现为"续跑信息莫名缺失"，而日志里一个字都没有。
+            self.checkpoint_errors.append(f"begin: {type(exc).__name__}: {exc}")
 
     def _ck_settle(self, job_id: str, out: RenderOutcome) -> None:
         """按结果把检查点落到**最保守**的状态。
@@ -442,8 +452,8 @@ class CachingRenderer:
                 ck.mark_unknown(job_id, out.reason or "任务可能仍在服务端运行")
                 return
             ck.mark_failed(job_id, out.reason or "提交未成功")
-        except Exception:                                     # noqa: BLE001
-            pass
+        except Exception as exc:                              # noqa: BLE001
+            self.checkpoint_errors.append(f"settle: {type(exc).__name__}: {exc}")
 
     def _ck_succeed(self, job_id: str, names: Sequence[str]) -> None:
         ck = self.checkpoint
@@ -451,8 +461,8 @@ class CachingRenderer:
             return
         try:
             ck.mark_succeeded(job_id, tuple(names))
-        except Exception:                                     # noqa: BLE001
-            pass
+        except Exception as exc:                              # noqa: BLE001
+            self.checkpoint_errors.append(f"succeed: {type(exc).__name__}: {exc}")
 
     def _record_metrics(self, out: Any, dt: float) -> None:
         """把这次**实算**的耗时与 ComfyUI 自身的命中记进统计。
@@ -468,25 +478,21 @@ class CachingRenderer:
         而它们一直是空数 —— 报告上看不出任何异常，因为 0 看起来像个正常值。
         """
         stats = getattr(self.cache, "stats", None)
-        if stats is not None:
-            try:
-                stats.record_spent(dt)
-            except Exception:                                 # noqa: BLE001
-                pass
-        ch = getattr(self.session, "channel", None)
-        fn = getattr(ch, "cached_nodes_for", None)
+        if stats is None:
+            return
         handle = getattr(out, "handle", None)
-        if not callable(fn) or handle is None or stats is None:
-            return
         try:
-            n = int(fn(handle) or 0)
-        except Exception:                                     # noqa: BLE001
-            return
-        if n > 0:
-            try:
-                stats.record_comfy_cache(n)
-            except Exception:                                 # noqa: BLE001
-                pass
+            stats.record_spent(dt)
+            ch = getattr(self.session, "channel", None)
+            fn = getattr(ch, "cached_nodes_for", None)
+            if callable(fn) and handle is not None:
+                n = int(fn(handle) or 0)
+                if n > 0:
+                    stats.record_comfy_cache(n)
+        except Exception as exc:                              # noqa: BLE001
+            # 指标记录失败不阻断渲染，但**留痕**（`except: pass` 会让
+            # "指标一直是 0" 永远查不出来 —— 那正是 M-12/M-13 的处境）
+            self.metric_errors.append(f"{type(exc).__name__}: {exc}")
 
     def render_batch(self, irs: Sequence[Mapping[str, Any]],
                      **kw: Any) -> CachedBatch:
