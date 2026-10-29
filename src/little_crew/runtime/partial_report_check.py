@@ -180,6 +180,16 @@ def _source_order() -> None:
     check("E8 ★★★ 白模只预演将要渲染的镜头（--limit 必须同时管两处）",
           "self._run_previs(picked)" in src, "白模没用 picked")
 
+    # 2026-10-29：`_run_previs` 曾在「没绑上实现」时 `return {}`。
+    # 空 dict 与「白模跑了但没产出」在报告里无法区分 ——
+    # 于是「没绑实现」被误读成「白模失败」，而白模失败不阻断，
+    # 最终一集「跑通」了、控制图一张没进画面。
+    src_ep = (Path(__file__).parent / "episode.py").read_text(encoding="utf-8")
+    i_pre = src_ep.find("def _run_previs(")
+    seg = src_ep[i_pre:i_pre + 1200]
+    check("E9 ★★★ 无 previs 实现时给 reason，不返回空 dict",
+          "没有绑定 previs 实现" in seg, "仍是 return {}（静默）")
+
 
 def main() -> int:
     try:

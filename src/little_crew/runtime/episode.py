@@ -1043,7 +1043,16 @@ class EpisodeRunner:
         """
         impls = getattr(self.orch, "_impls", {}) or {}
         if "previs" not in impls:
-            return {}
+            # **不能返回空 dict**（2026-10-29 修）。
+            #
+            # `{}` 与「白模跑了但没产出」在结报告里长得一模一样 ——
+            # 于是「没绑上实现」会被误读成「白模失败」，而白模失败又被
+            # 设计成"不阻断"，最终表现是：一集"跑通"了，控制图一张没进画面。
+            #
+            # 本项目一条硬规矩：**不可用必须报出来，不能假装成功。**
+            return {"ok": False,
+                    "reason": "没有绑定 previs 实现 —— 加 --llm"
+                              "（--llm-previs 需要它）"}
         shot_list = self.orch.blackboard.value("shot.list")
         # 白模只预演**将要渲染的那几镜**（`--limit` 必须同时管这两处）。
         # 原来取的是全量表 —— 于是 `--limit 3` 仍渲 39 镜的白模，
