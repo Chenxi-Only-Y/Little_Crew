@@ -51,9 +51,11 @@ def _conflict() -> None:
     ok = check_scene_subject(SCRIPT, "少女走在山坡上，篮里是紫色花穗。旁边的岩石很冷。")
     check("B4 ★ 同一场景（不新增主体）-> KEEP", ok["verdict"] == "KEEP", ok["reason"])
     lost = check_scene_subject(SCRIPT, "少女的脸，泪水滑落。")
-    check("B5 ★ 剧本有场景、提示词全丢 -> RETRY（丢掉场景也算问题）",
-          lost["verdict"] == "RETRY" and "一个都没" in lost["reason"],
-          lost["reason"][:60])
+    check("B5 ★★ 剧本有场景、提示词全丢 -> **warn**（特写本来就不写场景，不算失败）",
+          lost["verdict"] == "KEEP" and lost["severity"] == "warn"
+          and "一个都没" in lost["reason"], str(lost.get("severity")))
+    check("B6 ★★★ 越权新增才是 error（协作冲突）",
+          r["severity"] == "error", str(r.get("severity")))
 
 
 def _no_false_positive() -> None:

@@ -84,7 +84,15 @@ def check_scene_subject(
     intruded = sorted(p - s) if s else []
     lost = bool(s) and not p
 
-    ok = not intruded and not lost
+    # **两个子判据性质不同，必须分开定性**（2026-10-29 真跑发现的）：
+    #
+    #   越权新增（剧本没有、提示词有）→ error  → RETRY
+    #   丢掉场景（剧本有、提示词没提）→ warn   → 不算失败
+    #
+    # 为什么"丢场景"只能是 warn：**特写/局部镜头本来就不写场景**。
+    # 拍一张脸为什么要提山坡？把它判成失败，会拦住大量本来正确的镜头。
+    severity = "error" if intruded else ("warn" if lost else "none")
+    ok = severity != "error"
     if intruded:
         reason = ("提示词引入了剧本里没有的场景主体："
                   + "、".join(intruded)
@@ -97,7 +105,8 @@ def check_scene_subject(
 
     return {
         "ok": ok,
-        "verdict": "KEEP" if ok else "RETRY",
+        "verdict": "RETRY" if severity == "error" else "KEEP",
+        "severity": severity,
         "script": sorted(s),
         "prompt": sorted(p),
         "intruded": intruded,

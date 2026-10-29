@@ -620,9 +620,16 @@ class EpisodeRunner:
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
         if self.scene_conflicts:
-            _first = self.scene_conflicts[0]
-            print(f"  ⚠️ 场景主体冲突 {len(self.scene_conflicts)} 镜"
-                  f"（如 {_first.get('shotId')}：{_first.get('reason', '')[:60]}）")
+            # **按严重度分开报**：越权新增 = 协作冲突（该退）；丢场景 = 特写的常态（不该退）
+            _err = [c for c in self.scene_conflicts if c.get("severity") == "error"]
+            _warn = [c for c in self.scene_conflicts if c.get("severity") == "warn"]
+            if _err:
+                _f = _err[0]
+                print(f"  ⚠️ 场景越权 {len(_err)} 镜"
+                      f"（如 {_f.get('shotId')}：{_f.get('reason', '')[:56]}）")
+            if _warn:
+                print(f"  ℹ️ 镜头未提场景 {len(_warn)} 镜"
+                      f"（特写常态，不算失败）")
 
         # ---- 2.5) 角色定妆（文字半）----
         #
