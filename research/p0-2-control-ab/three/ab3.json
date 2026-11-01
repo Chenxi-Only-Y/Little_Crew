@@ -1,0 +1,20 @@
+[
+  {
+    "shotId": "SH-E801-S01-001",
+    "shotSize": "full",
+    "meanDiff255": 18.98,
+    "pct": 7.44
+  },
+  {
+    "shotId": "SH-E801-S01-002",
+    "shotSize": "medium_full",
+    "meanDiff255": 28.41,
+    "pct": 11.14
+  },
+  {
+    "shotId": "SH-E801-S01-003",
+    "shotSize": "close",
+    "meanDiff255": 32.19,
+    "pct": 12.62
+  }
+]
