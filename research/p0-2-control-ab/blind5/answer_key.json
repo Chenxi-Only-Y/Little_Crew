@@ -1,0 +1,26 @@
+{
+  "b1.png": {
+    "label": "镜2 · A 无控制",
+    "origin": "2A.png"
+  },
+  "b2.png": {
+    "label": "镜2 · C strength=1.0",
+    "origin": "2C.png"
+  },
+  "b3.png": {
+    "label": "镜1 · C strength=1.0",
+    "origin": "1C.png"
+  },
+  "b4.png": {
+    "label": "镜3 · A 无控制",
+    "origin": "3A.png"
+  },
+  "b5.png": {
+    "label": "镜1 · A 无控制",
+    "origin": "1A.png"
+  },
+  "b6.png": {
+    "label": "镜3 · C strength=1.0",
+    "origin": "3C.png"
+  }
+}
