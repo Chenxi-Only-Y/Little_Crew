@@ -549,6 +549,52 @@ class EpisodeRunner:
         cycle = self.orch.run_script_cycle(
             {"source.novel": source, "episodeId": self.episode_id,
              "title": self.title})
+
+        # ---- 剧本闭环逐轮落盘（2026-11-01）----
+        #
+        # 为什么：`research/retry-cost` 的 10 次记录里只有分数，
+        # **没有一句"为什么被退回"** —— 于是只能回答"变没变"，
+        # 回答不了"是返工没用，还是退回指令写得太差"。
+        #
+        # 这里把每轮的 verdict / 分数 / 可用的 issues 文本尽量 dump 出来。
+        # **用 getattr 防御式取**：不同 critic 的字段名不一定一致，
+        # 取不到就留空，**绝不因为"记录"而让主流程失败**。
+        try:
+            import json as _json
+
+            _rounds = []
+            for _r in (getattr(cycle, "rounds", None) or ()):
+                _item = {"verdict": str(getattr(_r, "verdict", ""))}
+                for _k in ("total", "score", "blocker", "advisory",
+                           "scenesWithIssues", "round"):
+                    _v = getattr(_r, _k, None)
+                    if _v is not None and not callable(_v):
+                        _item[_k] = _v if isinstance(_v, (int, float, str)) else str(_v)
+                # 退回原因：把可能承载文本的属性都试一遍
+                for _k in ("issues", "notes", "reasons", "advice", "detail", "feedback"):
+                    _v = getattr(_r, _k, None)
+                    if _v:
+                        _item[_k] = _json.loads(_json.dumps(_v, ensure_ascii=False, default=str))
+                if hasattr(_r, "as_dict"):
+                    try:
+                        _item["asDict"] = _r.as_dict()
+                    except Exception:                        # noqa: BLE001
+                        pass
+                _rounds.append(_item)
+            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd and _rounds:
+                _out = Path(str(_wd)) / "delivery"
+                _out.mkdir(parents=True, exist_ok=True)
+                (_out / "script.rounds.json").write_text(
+                    _json.dumps({"episodeId": self.episode_id,
+                                 "rounds": _rounds,
+                                 "accepted": bool(getattr(cycle, "accepted", False)),
+                                 "reason": str(getattr(cycle, "reason", ""))[:400]},
+                                ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+                print(f"  剧本轮次已落盘：{len(_rounds)} 轮 -> delivery/script.rounds.json")
+        except Exception as _e:                              # noqa: BLE001
+            print(f"  ⚠️ 剧本轮次未落盘：{type(_e).__name__}: {_e}")
         if not cycle.accepted and not self.force_accept_script:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
