@@ -589,6 +589,19 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  覆盖率 {res.coverage:.0%}（{res.rendered + res.cache_hits}"
           f"/{res.planned_shots} 镜有产物）")
     print(f"  墙钟 {wall:.1f}s   成片时长 {res.total_seconds:.1f}s")
+    # ---- 场景越权 -> 否决（2026-11-01）----
+    #
+    # 下游（分镜）引入了上游（剧本）没有的场景主体时，产物**不算交付成功**。
+    # 实测依据：三镜盲判里两镜只得 1 分，根因就是提示词里「山坡」与「花田」并存。
+    if getattr(runner, "scene_veto", False):
+        print()
+        print("  ❌ 场景越权 —— 交付被否决（下游改了上游要的场景）")
+        for _c in runner.scene_conflicts[:3]:
+            if _c.get("severity") == "error":
+                print(f"     {_c.get('shotId')}: {_c.get('reason', '')[:88]}")
+        print("     处置：退回分镜重写（不得引入剧本未授权的场景主体）")
+        return 3
+
     # ---- 资产落盘（2026-10-21）----
     #
     # 角色定妆表原来只活在内存与那次报告里 —— 换一集就从头再生成，

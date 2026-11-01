@@ -507,6 +507,9 @@ class EpisodeRunner:
         self.previs_first: dict[str, Path] = {}
         #: 场景主体冲突（分镜越权引入了剧本没有的场景主体）
         self.scene_conflicts: list[dict] = []
+        #: 场景越权是否构成**否决**（severity=error 时置 True）。
+        #: 与 scene_conflicts 分开：后者是记录，这个是「能不能交付」的结论。
+        self.scene_veto: bool = False
         self.orch = orchestrator
         self.renderer = renderer
         self.episode_id = episode_id
@@ -652,8 +655,9 @@ class EpisodeRunner:
             _err = [c for c in self.scene_conflicts if c.get("severity") == "error"]
             _warn = [c for c in self.scene_conflicts if c.get("severity") == "warn"]
             if _err:
+                self.scene_veto = True
                 _f = _err[0]
-                print(f"  ⚠️ 场景越权 {len(_err)} 镜"
+                print(f"  ❌ 场景越权 {len(_err)} 镜（**否决交付**）"
                       f"（如 {_f.get('shotId')}：{_f.get('reason', '')[:56]}）")
             if _warn:
                 print(f"  ℹ️ 镜头未提场景 {len(_warn)} 镜"
