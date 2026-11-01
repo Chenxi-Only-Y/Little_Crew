@@ -181,3 +181,104 @@ class TunnelPublisher:
 
     def publish(self, path: Path) -> str:                     # pragma: no cover
         raise NotImplementedError
+
+# ---------------------------------------------------------------------------
+# 落地暂存 + 公网基址（2026-11-01）
+# ---------------------------------------------------------------------------
+
+class PublishError(RuntimeError):
+    """发不出去（缺公网基址 / 文件不存在 / 名字非法）。**明确失败，不返回假 URL。**"""
+
+
+class StagingPublisher:
+    """把产物**暂存到一个目录**，并拼出公网 URL。
+
+    ## 为什么这样设计
+
+    实测（`docs/05-云API接入调研.md`）：多数厂商要求**公网可访问的素材 URL**，
+    不接受本地文件。而本机**没有任何隧道工具**（cloudflared / ngrok / frpc 全无）。
+
+    所以真正缺的不是"上传代码"，是**一个公网地址**。这一步拆成两半：
+
+        ① 暂存（本类负责）：内容寻址地复制到 `root/`，写 manifest
+        ② 暴露（外部负责）：对象存储上传 / 隧道 / 已有域名，把 base 填进来
+
+    **对象存储和隧道将来只是"填 base_url"的两种方式，不用改本类。**
+
+    ## 三个刻意的决定
+
+    **① 内容寻址命名**：`<sha16>_<原名>` —— 同一份内容重复发布不会产生新文件，
+       也避免同名覆盖（之前踩过"两个测试文件写同一路径导致哈希相同"的坑）。
+
+    **② 没有公网基址就报错**，不返回 `http://127.0.0.1/...` 冒充可访问。
+       本地 URL 传给云端会得到一个莫名其妙的 404，那比直接报错更难查。
+
+    **③ 记 manifest**：发布过什么、多大、哈希多少 —— 事后能对账。
+    """
+
+    def __init__(self, root: Path, *, public_base: str = "") -> None:
+        self.root = Path(root)
+        self.public_base = (public_base or "").rstrip("/")
+        self._entries: list[dict] = []
+
+    # ---- 发布 ----
+    def publish(self, path: Path) -> str:
+        import hashlib
+        import shutil
+
+        src = Path(path)
+        if not src.is_file():
+            raise PublishError(f"文件不存在：{src}")
+        self.root.mkdir(parents=True, exist_ok=True)
+        data = src.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()[:16]
+        name = f"{digest}_{src.name}"
+        dst = self.root / name
+        if not dst.is_file():
+            shutil.copyfile(src, dst)
+            self._entries.append({"name": name, "bytes": len(data),
+                                  "sha256_16": digest, "source": str(src)})
+        if not self.public_base:
+            raise PublishError(
+                "没有公网基址，无法给出可访问 URL。"
+                "设置 public_base（环境变量 LITTLE_CREW_PUBLIC_BASE）"
+                "或改用对象存储上传后填它的域名。"
+                f"文件已暂存于 {dst}")
+        return f"{self.public_base}/{name}"
+
+    # ---- 观测 ----
+    def files(self) -> list:
+        return self.root.glob("*") if self.root.is_dir() else []
+
+    def manifest(self) -> dict:
+        """**以磁盘为准**，不以实例内存为准。
+
+        踩过：第一个实例发布后报错，第二个实例发布同一文件时
+        "已存在则跳过"，于是第二个实例的 entries 是空的 ——
+        清单看起来"什么都没发布"，但文件明明在那儿。
+        """
+        entries = []
+        if self.root.is_dir():
+            for f in sorted(self.root.glob("*")):
+                if f.is_file():
+                    entries.append({"name": f.name, "bytes": f.stat().st_size,
+                                    "hasPublicUrl": bool(self.public_base)})
+        return {"kind": "publish.manifest",
+                "root": str(self.root), "publicBase": self.public_base,
+                "entries": entries}
+
+    # ---- 环境探测（给人看的） ----
+    @staticmethod
+    def missing_tunnel_tools() -> list:
+        """本机缺哪些隧道工具。**返回缺失列表，不抛** —— 用来打印提示。"""
+        import shutil as _sh
+
+        return [t for t in ("cloudflared", "ngrok", "frpc")
+                if _sh.which(t) is None]
+
+
+def public_base_from_env() -> str:
+    """从 `LITTLE_CREW_PUBLIC_BASE` 取公网基址（空串 = 未配置）。"""
+    import os
+
+    return (os.environ.get("LITTLE_CREW_PUBLIC_BASE") or "").strip()

@@ -61,6 +61,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("后端选择", [sys.executable, "-m", "little_crew.runtime.backend_select_check"], 22),
     # 场景主体冲突：下游越权新增场景主体（2026-10-29 实测撞出来的真事）。
     ("场景主体冲突", [sys.executable, "-m", "little_crew.review.scene_subject_check"], 19),
+    ("暂存发布", [sys.executable, "-m", "little_crew.runtime.staging_publish_check"], 13),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),
