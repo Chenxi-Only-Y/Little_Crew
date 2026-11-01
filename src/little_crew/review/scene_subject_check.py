@@ -7,6 +7,7 @@ from __future__ import annotations
 import sys
 
 from little_crew.review.scene_subject import (
+    has_veto,
     SCENE_NOUNS,
     check_scene_subject,
     subjects_in,
@@ -78,6 +79,23 @@ def _no_false_positive() -> None:
     check("C4 ★ 形容词不触发（只认名词表）", adj["verdict"] == "KEEP", adj["reason"])
 
 
+
+
+def _veto() -> None:
+    print()
+    print("D. 否决判定（可单测）")
+    check("D1 空列表不否决", has_veto([]) == "", has_veto([]))
+    check("D2 ★★ 只有 warn 不否决",
+          has_veto([{"shotId": "S1", "severity": "warn"}]) == "", "被否决了")
+    check("D3 ★★★ 有 error 才否决",
+          has_veto([{"shotId": "S1", "severity": "warn"},
+                    {"shotId": "S2", "severity": "error", "reason": "引入花田"}]) != "",
+          "没否决")
+    why = has_veto([{"shotId": "S2", "severity": "error", "reason": "引入花田"}])
+    check("D4 ★ 否决理由里带镜号与原因",
+          "S2" in why and "花田" in why, why[:50])
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -89,6 +107,7 @@ def main() -> int:
     _extract()
     _conflict()
     _no_false_positive()
+    _veto()
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:

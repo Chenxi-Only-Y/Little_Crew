@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from typing import Iterable, Mapping
 
-__all__ = ["SCENE_NOUNS", "subjects_in", "check_scene_subject"]
+__all__ = ["SCENE_NOUNS", "subjects_in", "check_scene_subject", "has_veto"]
 
 #: 场景主体名词表。**只放可辨识的地点/地物**，不放形容词。
 SCENE_NOUNS: dict[str, tuple[str, ...]] = {
@@ -112,3 +112,18 @@ def check_scene_subject(
         "intruded": intruded,
         "reason": reason,
     }
+
+
+def has_veto(conflicts) -> str:
+    """给定冲突列表，判断是否**否决交付**。返回否决理由（空串 = 不否决）。
+
+    **抽成纯函数是为了可测**：原先这个判断埋在 `run()` 里，
+    只能靠"跑一整集看它开不开火"来验证 —— 而那种验证既慢又不可靠
+    （分镜内容每次都不一样，可能根本不触发）。
+    """
+    for c in conflicts or ():
+        if isinstance(c, dict) and c.get("severity") == "error":
+            sid = str(c.get("shotId") or "?")
+            why = str(c.get("reason") or "下游引入了上游未授权的场景主体")
+            return f"{sid}：{why}"
+    return ""

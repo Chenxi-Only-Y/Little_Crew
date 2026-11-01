@@ -655,7 +655,9 @@ class EpisodeRunner:
             _err = [c for c in self.scene_conflicts if c.get("severity") == "error"]
             _warn = [c for c in self.scene_conflicts if c.get("severity") == "warn"]
             if _err:
-                self.scene_veto = True
+                from little_crew.review.scene_subject import has_veto as _hv
+
+                self.scene_veto = bool(_hv(_err))
                 _f = _err[0]
                 print(f"  ❌ 场景越权 {len(_err)} 镜（**否决交付**）"
                       f"（如 {_f.get('shotId')}：{_f.get('reason', '')[:56]}）")
