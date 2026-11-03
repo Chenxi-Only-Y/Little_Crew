@@ -1,0 +1,165 @@
+{
+  "episodeId": "E141",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：对峙不成立。少女问“你家在北边？”，旅人“没有答”；她说“你说话啊”的压力要到 S05 才出现。本场实际内容是她单方面的观察（看靴底、看腰间、想他叫什么），对方不还手也不反击，冲突退化为纯信息悬念。', suggestion='让追问在此场就撞上阻力：例如少女逼问时，旅人突然清醒、抓住她或说出一句反制的话（“你再问，伤好那天我就走”），把 S05 的对峙拆一半到这里，形成两次递进。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：离家这一场几乎没有阻力。旅人只说了一句“你不知道我是谁”，既不阻止也不回应“我知道你是要往北走的人”，随即接受；老奶奶是送花的，母亲只在帘后，父亲“没有出来”。所有人都是静态背景，没有人真正出手拦她。', suggestion='给离场加一道实体阻力：让旅人明确拒绝（“你的代价还没付”），或让母亲掀帘出来抢包袱、父亲挡在门口——她必须挣脱或付出某个具体动作才能走出村口。阻力越大，S05 的掷花越有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：反转用台词直给：“我就是你想远行的心啊。”这句替观众完成了全部解读，把 S01—S04 累积的悬念一次性说破，转折的余味被解释掉了；同时“心象”这一揭示让 S02 父亲的通牒、村里人绕道的真实代价变得可疑——观众会追问：一个幻影值得她与家庭决裂吗？', suggestion='删掉或后置那句点题，让揭示只靠动作完成（花散、人淡、香起）；另在 S04 或 S06 留一个“代价确实发生过”的硬锚点——比如她起身时碰落了自己的一件实物留在原地，或让父亲的寻找以一个具体细节出现，而非“托人问过两回”的转述。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：最后的转变不是演出来的，是念出来的。从“她没有哭”到“走进雾里”，场内没有一个决定性的动作或瞬间；真正的离场情绪由旁白承担（“后来村里人说……”“也有人说，她是循着花香……”），场景本身是平的。', suggestion='在场内补一个可见的转折点：例如她站起来时把包袱解开又重新打上一个更紧的结，或那篮晒着的薰衣草在此刻从门口一闪而过——用一个动作完成“放下/带走”的抉择，旁白只留最后一句收尾。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.222
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 91.763
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力只有一句口头威胁——“你再问，伤好那天我就走”，而少女回一句“我跟你走”之后，他既没有真的动身、也没有进一步阻拦，只淡淡说了句“你不知道我是谁”。冲突在最该升级的地方（他转身要走/她追上去）被一句台词直接化解，对抗没有来回。', suggestion='让阻力落到实处：他当真迈步往北走一段，她追上拦在身前；或他动手要把她推回村口（呼应 S01/S04 抓手腕的动作线）。让“我跟你走”成为一个需要挣脱阻拦才完成的动作，而不是一句宣告。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：母亲设下极端条件——“你要走，从他身上跨过去”，但少女既没有跨、母亲也没有真的拦，转折是靠“母亲的手没有抓紧”自行瓦解的（原文：把包袱从母亲怀里抽了出来——母亲的手没有抓紧）。最强的对抗台词没有被兑现，阻力凭空消失。', suggestion='要么让“跨过去”这个动作真实发生（她真的俯身从父亲膝前/母亲身侧挤过去，代价是彻底的羞辱与决裂），要么删掉这句狠话，换成母亲用更弱但更缠的方式阻拦（拽住衣角不放），使“抽走包袱”成为一个需要挣脱的动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：面对少女的逼问“你到底是谁”，旅人的反应只有“笑了”——他既不抵抗也不回答，消失完全由她举花束这个单方面动作触发。他此前两次以“抓手腕”建立的对抗性在这里归零，等于对手自己卸下了戏。', suggestion='给他一个反向动作：在她举花的一瞬伸手去挡/去抓住花束，或说出半句就被打断（正好接上结尾“只来了半截就被撕碎”的那句话），让他的消失是一次“抵抗失败”而非“配合退场”。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有任何阻力：捡东西、打结、别簪、走进雾里，是一条直线。人物没有面临新的选择，局势也没有变化（她早在 S05 就已失去旅人），整场只是 S05 结尾情绪的匀速延续，观众容易走神。', suggestion='给她一个微小但真实的抉择点作为收尾的转折：例如捡到一样旅人留下的东西（刀鞘？那句没听清的话的实物载体），她可以选择带走或留下；或山下传来村里的钟声/喊声，她停步的那一下变成“被叫住”与“继续走”的对抗，再走进雾里。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.799
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 99.732
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价以叙述句直接宣告——「代价是她从此再没去过村里的集会；起初是父亲不许，后来她自己也不去了」。这是旁白在替场面说话，观众看到的是碎瓷、划破的手指（这些是她当场的付出），而真正的长期代价（被村子排斥、自我放逐）没有被任何动作或画面承载，等于没演出来。', suggestion='把代价折回场景内：比如结尾处窗外传来村中集会的鼓乐声与笑语，她坐在灯下换湿布，头也不抬——用她主动忽略热闹的一刻，替代旁白里的那句「代价」。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折本身够猛（他化烟消散），但揭示信息被拦腰打断：「我说过，我是你想远行的——」话没说完就被她抽走花束，真正的答案「……心啊」又散在风里、只剩半截。观众在转折发生的那一瞬不知道他是什么，情绪冲击被语义破碎抵消了，只能靠 S06 的余韵反推。', suggestion='让关键语义在消散前落地：他可以先说完「我是你想远行的那颗心」，再被花束的拉扯夺走声音；或把「心啊」保留为回声，但让观众先在他完整的一句话里明白他是谁，再承受他消失的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：她最终选择的代价——永别母亲的呼喊、永别村子——没有在场内兑现，而是被结尾的传闻旁白遮蔽：「后来村里人说，再没有人见过她；也有人说，她是循着花香，去寻他去了。」一个「也有人说」把结局悬置成闲谈，她付出的代价从场景降格成了道听途说。', suggestion='保留旁白可以，但要在它之前让代价可见：比如她走出晨雾时，母亲的喊声第三次追上来，她脚步顿住、却没有回头——把「不回头」这一个动作作为她付清代价的瞬间，传闻只作尾声。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.381
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 127.285
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}

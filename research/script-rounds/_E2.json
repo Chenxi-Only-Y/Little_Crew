@@ -1,0 +1,164 @@
+{
+  "episodeId": "E142",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.98,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场唯一的阻力是高烧本身，而它在场内自行消解——“天快亮时，热度退了”。她“换布条、喂水、按着他烧得发抖的肩”，全程没有面临任何选择或对抗，“药碗太烫，手心烫出一圈红”只是轻微不适，不构成阻力。', suggestion='给这一夜加一个真正的两难：比如她发现高烧不退，唯一的办法是用掉父亲塞给母亲、并叮嘱“别让她知道是我给的”那瓶伤药——用了就等于向父亲低头、打破 S03 的决裂，不用旅人可能撑不到天亮。守夜才守得出代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本该构成最大阻力的家人全线沉默放行——“父亲站在最远处，背对着这边，始终没有回头”“母亲扶着门框……也没有喊她”，实际对抗只剩下“人群里有人低声议论”。阻力缺席，她的“我跟你走”没有遇到任何需要她突破的东西。', suggestion='让阻拦真的发生：父亲转过身来说一句绝话（或母亲追出来抱住她），她挣脱之后才走出村口。被拦过再走，离家才算付了钱；否则这场的离开是白送的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：“她举起花束，朝他掷了过去”是她揭示真相付出的唯一行动代价，而下一场立刻写“把散落的花瓣一枝一枝拾起来，放进怀里”——代价被原样收回，她什么都没失去，幻影的消散也就变得廉价。', suggestion='让代价留下且无法挽回：比如她只能拾回一半花瓣，或她意识到“拾回来”正是不肯放手的表现，于是起身把花瓣留在原地。扔出去的东西不许捡回来，这一掷才值钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：结局用“有人说她死在山里，有人说她被妖怪带走了……也有人说，她是循着花香，去寻他去了”一串传闻收束，主角的抉择始终没有落地；且与 S06 的揭示“我就是你想远行的心啊”（她已斩断远行）互相抵消——她既没留下也没出发，情绪自高潮后直接归零，最后一场是平的。', suggestion='给她一个明确的落点动作来收尾：她拾完花瓣后朝两个方向中的哪一个迈出了第一步（回村，或继续北上），让观众看清她到底把“远行的心”留下了还是带走了；传闻只能做余韵，不能替她做决定。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.98,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.342
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 157.542
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：救人一场全程没有对手：'他比她想的沉得多''血从指缝里渗出来'都只是物理难度，不是阻力。少女从看到人到架起人走，中间没有任何'救/不救'的对抗被摆上台面——她是毫不犹豫就冲下去的，冲突缺席，这一场只能靠风景和动作撑住观众注意力。\", suggestion=\"给这场加一道显性对抗：比如她蹲下时先犹豫'外乡人'的身份风险（被人看见/父亲的规矩），或伤势处理出现反复（血止不住、天光将尽必须决定抬回家还是弃下），让'救'成为一次有阻力的抉择，而不是本能反应。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：父亲的反对没有正面交锋就化解了——'少女没有低头，也没有辩解……转身往里去'，随后父亲的让步是通过母亲转述完成的：'你爹让给的。他说别让你知道是他给的。'对手的态度变化完全发生在台下，本场真正的对抗（'他是外乡人'那句话）没有被回应，也没有升级。\", suggestion='把父亲的让步搬上台面并让他付代价：例如母亲偷拿药被父亲撞见、父亲夺回药又自己放回桌上；或让少女必须当面顶回那句话（哪怕只一句）才换来这瓶药——冲突要在场内完成一次往返。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：转折被旁白提前宣告：'拾回来，就是不肯放手；不肯放手，他就还得在她心里走一趟'先说出了结论，'她张开手'落地时已无新信息；而'离开村庄、走向北方'这个局势转折在 S05 已经完成过一次，本场没有新的阻力或风险介入，情绪变化全靠叙述交代。\", suggestion=\"把'松手'改造成一次带对抗的选择：例如母亲追到岔路口、或她必须把旅人留下的某样实物丢在原处才能上路，让'放手'由事件兑现而非由旁白解释；同时给她一个 S05 没付过的新代价（独自上路的具体危险），转折才不重复。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 45.8
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 127.384
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场是全剧最关键的出走决定，但阻力全部退到背景：「人群里有人低声笑」只是旁观，父亲更是「没有过来，也没有拦」——S02 中放狠话的对立面在决胜场主动退出了对抗，少女等于无人阻挡地离开。', suggestion='让父亲做出一个具体动作：抢在她前面把包袱夺下、把院门从里面闩死、或当众说一句定性的话（如「走出这门就不是我家的人」）。阻力越实，S07 的「不回头」才越重。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场唯一的阻力是母亲重复 S02 已经说过的「你爹把院门闩了……你想清楚」，属于同一句警告的复述；此后整场只剩她独自照料，「后半夜他的烧退了一点」是生理变化，不是戏剧对抗，情绪线是平的。', suggestion='给一场戏加一个硬障碍：旅人病情恶化到必须外出找药（会撞见村里人）、或他烧糊涂时说出的话引来母亲的怀疑并当场对峙。让「守着他」这件事本身要付出被发现的风险。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：母亲从「挡在路中间」到「侧身让开半步」的转变只靠一句「路上……别喝生水」完成，情感拐点埋在台词里但没有被演出来；她来时的明确目的「回去」没有被少女驳倒，是自己撤的。', suggestion='让少女用一句话正面顶回母亲的来意（把 S02 里「看着他死在坡上，村里人就看得起我了」的逻辑续上），逼母亲承认拦不住她，再让母亲松手——转变要有触发点。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.265
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.432
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.7（REVISE）；最好的是第 2 轮（58.7 分）"
+}

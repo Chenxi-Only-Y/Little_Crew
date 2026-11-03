@@ -1,0 +1,58 @@
+{
+  "episodeId": "E146",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：这是全剧赌注最大的一场（少女抛下父母村庄、随陌生人远走），但对抗完全缺席：村里只有「人群里起了一阵低低的议论」，父亲「站在门口，没有出来」，母亲「手搭在门框上」——没有一个人开口阻拦，旅人也只说了句「走吧」。她那句「我跟你走」对面无人接招，抉择来得毫无阻力，离别的代价（与父母此生不见）也因此只靠「回头看了一眼」带过，显得很轻。', suggestion='给这场加一道实的阻力：让父亲跨出门槛挡住她、或说出一句具体的话（哪怕只是「你出了这个门，就别再回来」），让老奶奶的薰衣草同时成为双方争夺的东西；阻力顶住她半步，她仍转身走掉，离家的代价才付得出去，S06 父亲「在村口站了一个春天」也才有落点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒「今年的集会，你别去了」被少女以「好」接下，这本是本场的代价；但紧接着「母亲伸手拉住父亲的袖子……父亲的嘴动了一下，最终没再出声」，惩罚当场被撤回，代价在场内没有兑现物——她只是说了一句话，什么也没失去，情绪高点被自己泄掉。', suggestion='让代价在本场落地：要么父亲坚持执行、把这句威胁顶到本场最后一句再收；要么让少女自己完成放弃的动作（把备好的集会物件一件件放回柜里、母亲默默收起她的那份干粮），用一个具体动作替代口头承诺，S03 村妇再封杀集会时，观众已替她疼过一次。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 13.41
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 147.731
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.9）"
+}

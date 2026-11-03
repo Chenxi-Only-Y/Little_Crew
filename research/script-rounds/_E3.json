@@ -1,0 +1,83 @@
+{
+  "episodeId": "E143",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：开场场次没有明确的阻力。少女发现伤者后「你不能死在这里」便直接施救，全程无人、无物、无内心挣扎阻拦她——「她抬头望了一眼村子的方向」只是氛围暗示，构不成对抗。救人这个决定来得毫无代价感，观众看不到她为什么犹豫、怕什么。', suggestion='给救人动作加一道明确的阻碍：让她先起身要走（呼应父亲后来的「外乡人」立场），再被旅人喉头那声「别……」或某个细节拽回来；或把「村子方向的注视」具象成一个真的看见她抱人回村的人，让社会压力在第一场就落地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：出走这场戏里没有人真正拦她。旅人只问了一句「你知道我是什么人？」，父亲「站在门后的阴影里，没有出来，也没有喊她」——两个本该构成阻力的人都选择了沉默。她的「我跟你走」没有撞上任何硬东西，冲突是自问自答式的。', suggestion='让父亲出声或出手一次（哪怕只是把院门推上、把包袱夺下又放下），把「沉默」留到她已经走出十几步之后作为余味；或让旅人明确拒绝她上路，把「跟我走」变成一场需要她强行争取的对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场只有独白式的情绪收束，没有任何对抗。「她没有哭。她把包袱重新系紧，沿着那条路继续往前走」——她与外部世界、与自己留恋之间都没有发生交锋，「回头望了一眼」之后直接「然后转身，走了」，决定下得太顺，S05 失去旅人的余痛没有以阻力的形式回流。', suggestion='给结尾一个小小的对抗瞬间：让她在雾中真的往回走了两步才停住；或让村里追来一个人/传来父亲开院门的声音，逼她做最后一次选择，然后才是「再没有人见过她」。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 69.14
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.279
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 2,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：编剧调用失败：[empty-output] 模型剧本为空",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "编剧调用失败：[empty-output] 模型剧本为空",
+            "seconds": 1547.7
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 2 轮编剧阶段失败：编剧调用失败：[empty-output] 模型剧本为空"
+}

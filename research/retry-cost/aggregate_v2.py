@@ -42,8 +42,12 @@ def _suggestion_ratio(issues) -> float | None:
 
 
 def load_new() -> list[dict]:
+    """**优先扫 `research/script-rounds/`**（不会被清理），再补 `outputs/`。"""
     rows = []
-    for f in sorted(glob.glob(str(ROOT / "outputs" / "*" / "delivery" / "script.rounds.json"))):
+    seen = set()
+    files = sorted(glob.glob(str(ROOT / "research" / "script-rounds" / "*.json")))
+    files += sorted(glob.glob(str(ROOT / "outputs" / "*" / "delivery" / "script.rounds.json")))
+    for f in files:
         try:
             d = json.loads(Path(f).read_text(encoding="utf-8"))
         except Exception:                                    # noqa: BLE001
@@ -52,6 +56,9 @@ def load_new() -> list[dict]:
         if not rounds:
             continue
         ep = d.get("episodeId") or Path(f).parts[-3]
+        if ep in seen:
+            continue
+        seen.add(ep)
         rows.append({"episode": ep, "kind": "new", "rounds": rounds,
                      "accepted": d.get("accepted")})
     return rows

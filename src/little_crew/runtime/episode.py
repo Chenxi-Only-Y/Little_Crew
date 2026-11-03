@@ -592,7 +592,20 @@ class EpisodeRunner:
                                  "reason": str(getattr(cycle, "reason", ""))[:400]},
                                 ensure_ascii=False, indent=2, default=str),
                     encoding="utf-8")
-                print(f"  剧本轮次已落盘：{len(_rounds)} 轮 -> delivery/script.rounds.json")
+                # ⚠️ **必须双写**（2026-11-03）：`outputs/` 是会定期清理的目录，
+                # 而实验记录不能跟着被删 —— 上一次清理就把 E3 的 7 对样本删掉了，
+                # 导致汇总结果从 +2.81 翻成 -2.08，差点当成「结论翻转」。
+                try:
+                    _repo = Path(__file__).resolve().parents[3]
+                    _dst = _repo / "research" / "script-rounds"
+                    _dst.mkdir(parents=True, exist_ok=True)
+                    (_dst / f"{self.episode_id}.json").write_text(
+                        (_out / "script.rounds.json").read_text(encoding="utf-8"),
+                        encoding="utf-8")
+                except Exception as _e2:                     # noqa: BLE001
+                    print(f"  ⚠️ 实验记录未备份到 research/：{type(_e2).__name__}: {_e2}")
+                print(f"  剧本轮次已落盘：{len(_rounds)} 轮"
+                      f" -> delivery/ 与 research/script-rounds/")
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 剧本轮次未落盘：{type(_e).__name__}: {_e}")
         if not cycle.accepted and not self.force_accept_script:
