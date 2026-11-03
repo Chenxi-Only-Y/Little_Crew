@@ -32,6 +32,7 @@ python research/agent-ab/run_ab.py --quick    # 1 剧本 × 1 重复，先验通
 from __future__ import annotations
 
 import json
+import os
 import math
 import pathlib
 import statistics
@@ -181,10 +182,18 @@ def _run_condition(name: str, draft: ScriptDraft, *, client: LlmClient,
     """跑一次。`plan=None` 就是单智能体（**同一个实现**）。"""
     sb = StoryboardArtistLlm(client=client, max_shots=MAX_SHOTS,
                              plan=plan)
+    def _call(sub):
+        return sb(envelope=CallEnvelope.root(
+            "storyboard_artist", "shot.list", {"script.final": sub},
+            Budget.unlimited(), callee_kind="agent"), runtime=None)
+
     t0 = time.perf_counter()
-    out = sb(envelope=CallEnvelope.root(
-        "storyboard_artist", "shot.list", {"script.final": draft},
-        Budget.unlimited(), callee_kind="agent"), runtime=None)
+    # `PER_SCENE=1` -> 逐场生成（结构上消灭"输出被截断"）
+    if os.environ.get("PER_SCENE") == "1":
+        from little_crew.agent.storyboard_llm import storyboard_per_scene
+        out = storyboard_per_scene(_call, draft)
+    else:
+        out = _call(draft)
     dt = time.perf_counter() - t0
     if not out.ok:
         return {"condition": name, "ok": False,

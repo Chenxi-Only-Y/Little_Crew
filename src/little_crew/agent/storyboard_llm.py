@@ -35,6 +35,26 @@ from little_crew.agent.messages import (
 
 __all__ = ["StoryboardArtistLlm", "STORYBOARD_SYSTEM", "LEGAL_VOCAB"]
 
+def scene_budget_cap(text: str, plan_budget: int = 0) -> int:
+    """**每场镜头数的上限**：导演预算与"内容量"取小。
+
+    ## 为什么需要
+
+    实测（`research/agent-ab/raw.json`，逐场生成后）：余下的 2 条失败都是
+    一句十几字的静态场（如「屋子空了，墙上留着家具压出的印子」），
+    导演却要求 5 镜 —— 模型写不出，于是要么只交 1 镜（违反 ≥2 硬约束），
+    要么硬凑到输出截断。
+
+    **预算应该是"上限"，不是"必须凑够的指标"。**
+
+    规则：`min(导演预算, max(2, 字数 // 12))`
+      17 字 -> 2 镜 · 23 字 -> 2 镜 · 80 字 -> 6 镜
+    """
+    n = max(2, len(str(text or "")) // 12)
+    own = int(plan_budget or 0)
+    return min(own, n) if own > 0 else n
+
+
 
 def _legal_vocab() -> dict[str, tuple[str, ...]]:
     """合法取值 —— **从数据契约推导，不手写**。
@@ -253,13 +273,14 @@ class StoryboardArtistLlm:
             if sid:
                 budgets[sid] = s
         if budgets:
-            budget_lines.append("【导演给的镜头预算 —— 必须遵守】")
+            budget_lines.append("【导演给的镜头预算 —— **上限**，不是必须凑够】")
             for sc in draft.scenes:
                 sid = str(sc.get("scene_id") or sc.get("id") or "?")
                 b = budgets.get(sid)
                 if b:
                     budget_lines.append(
-                        f"  {sid}: **{b.get('shotBudget')} 镜**"
+                        f"  {sid}: **≤{scene_budget_cap(sc.get('text', ''), b.get('shotBudget'))} 镜**"
+                    f"（导演要 {b.get('shotBudget')} 镜，本场内容只够这么多）"
                         + (f"　保住：{b.get('focus')}" if b.get("focus") else ""))
                 else:
                     budget_lines.append(f"  {sid}: （导演未给预算，按 ≥2 镜）")
@@ -436,3 +457,93 @@ def _as_draft(x: Any) -> Any:
     from little_crew.agent.crew_llm import _as_draft as _d
 
     return _d(x)
+
+
+# ---------------------------------------------------------------------------
+# 逐场生成（2026-11-03）
+# ---------------------------------------------------------------------------
+
+def storyboard_per_scene(call, draft, *, scenes=None):
+    """**逐场**调用分镜师，再合并 —— 结构上消灭"输出被截断"。
+
+    ## 为什么要它
+
+    实测（`research/agent-ab/raw.json`，30 组 × 2）：15 条失败里
+      · 9 条「S02/S03… 只有 0 个镜头」—— 只写了 S01 就停
+      · 6 条「找不到合法 JSON」—— 输出以 `{"shots": [{"sceneId": "S01"` 开头但没闭合
+    **一个根因：一次要求 6~8 场 × 每场 4 镜 × 每镜 7 个字段，输出撞上限被截断。**
+
+    修法不是"让模型写短点"，而是**改粒度**：分镜师本来就能处理一场戏，
+    是我们一次喂了八场。每场一次调用，**每次输出都短到不可能被截断**。
+
+    ## 为什么不改 `__call__` 内部
+
+    改内部要同时动主流程、场次校验、预算对账 —— 一处错就静默出错。
+    这里只在**调用方**循环，`StoryboardArtistLlm` 一行不改：
+    它收到的永远是一份"只有一场"的剧本，本来就是它的正常工作范围。
+
+    ## 参数
+
+    `call(sub_draft) -> CallResult`：调用方提供的闭包（封装信封构造）。
+    `scenes`：可选，只跑这些场（默认全部）。
+
+    返回合并后的 `CallResult`：**任何一场失败即整体失败** ——
+    因为每场都要 ≥2 镜，缺一场的产物不合格。
+    """
+    import dataclasses
+
+    from little_crew.agent.protocol import CallResult
+
+    want = [s for s in (draft.scenes or ())
+            if scenes is None or str(s.get("scene_id") or s.get("id")) in scenes]
+    if not want:
+        return CallResult.fail("F-OUTPUT-EMPTY", "剧本没有可切分的场次")
+
+    shots, fails, evidence = [], [], []
+    for sc in want:
+        sid = str(sc.get("scene_id") or sc.get("id") or "?")
+        try:
+            sub = dataclasses.replace(draft, scenes=(sc,))
+        except Exception:                                    # noqa: BLE001
+            # 不是 dataclass 时的兜底：浅拷贝后改 scenes
+            import copy as _copy
+            sub = _copy.copy(draft)
+            object.__setattr__(sub, "scenes", (sc,))
+        r = call(sub)
+        if not r.ok:
+            fails.append(f"{sid}：{getattr(r, 'error_message', '') or '失败'}")
+            continue
+        sl = (r.output or {}).get("shot.list")
+        got = list(getattr(sl, "shots", ()) or ())
+        if not got:
+            fails.append(f"{sid}：0 镜")
+            continue
+        shots.extend(got)
+        evidence.extend(getattr(r, "evidence", ()) or ())
+
+    if fails:
+        return CallResult.fail(
+            "F-CONSTRAINT-VIOLATED",
+            "逐场分镜有场次未通过：" + "；".join(fails[:6]))
+
+    base = None
+    for e in evidence:
+        if isinstance(e, dict) and "shotCount" in e:
+            base = dict(e)
+            break
+    base = base or {}
+    base.update({"shotCount": len(shots), "sceneCount": len(want),
+                 "perScene": True})
+    out = (evidence and None) or None                              # noqa: F841
+    from little_crew.agent.messages import ShotList
+
+    sl = ShotList(
+        frm="storyboard_artist", to="*", stage="storyboard",
+        episode_id=getattr(draft, "episode_id", ""),
+        shots=tuple(shots),
+        total_seconds=round(sum(float(getattr(s, "duration_sec", 0) or 0)
+                                for s in shots), 2),
+    )
+    return CallResult.success(
+        {"shot.list": sl, "shot.breakdown": _breakdown(sl, shots)},
+        evidence=[base])
