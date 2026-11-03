@@ -169,7 +169,17 @@ def normalize_plan(data: Mapping[str, Any], *,
         # 也就是说：**预算没考虑剧本长度，把短剧本压成了呆板的等长切分。**
         #
         # 现在取两者较小：2 场 -> 8 · 4 场 -> 16 · 6 场 -> 20（与原一致）
-        cap = max(2 * len(scenes), min(int(total_shots), 4 * len(scenes)))
+        # 每场预算随**场数递减**（2026-11-03 第二修）。
+        #
+        # 依据：盲判 ≤4 分样本（n=14）反查 ——
+        #   低分：5.4 场 / 17.9 镜    满分：3.9 场 / 13.5 镜
+        #   而"相邻同景别率 4% vs 2%""碎切 0% vs 0%"几乎无差别 ——
+        #   **所以节奏差的主因不是镜头技法，是场多、镜密。**
+        #
+        # 固定 4 镜/场 在 2~3 场合适，5 场以上就偏多（每场内容量反而更小）。
+        # 改成 6 - 0.5×场数：2场→5 · 4场→4 · 6场→3 · 8场→2（下限 2）
+        _per = max(2.0, 6.0 - 0.5 * len(scenes))
+        cap = max(2 * len(scenes), min(int(total_shots), int(round(_per * len(scenes)))))
         if total > cap and total > 0:
             for x in scenes:
                 x["shotBudget"] = max(2, int(x["shotBudget"] * cap / total))
