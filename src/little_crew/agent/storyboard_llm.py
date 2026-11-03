@@ -35,25 +35,6 @@ from little_crew.agent.messages import (
 
 __all__ = ["StoryboardArtistLlm", "STORYBOARD_SYSTEM", "LEGAL_VOCAB"]
 
-def scene_budget_cap(text: str, plan_budget: int = 0) -> int:
-    """**每场镜头数的上限**：导演预算与"内容量"取小。
-
-    ## 为什么需要
-
-    实测（`research/agent-ab/raw.json`，逐场生成后）：余下的 2 条失败都是
-    一句十几字的静态场（如「屋子空了，墙上留着家具压出的印子」），
-    导演却要求 5 镜 —— 模型写不出，于是要么只交 1 镜（违反 ≥2 硬约束），
-    要么硬凑到输出截断。
-
-    **预算应该是"上限"，不是"必须凑够的指标"。**
-
-    规则：`min(导演预算, max(2, 字数 // 12))`
-      17 字 -> 2 镜 · 23 字 -> 2 镜 · 80 字 -> 6 镜
-    """
-    n = max(2, len(str(text or "")) // 12)
-    own = int(plan_budget or 0)
-    return min(own, n) if own > 0 else n
-
 
 
 def _legal_vocab() -> dict[str, tuple[str, ...]]:
@@ -273,14 +254,13 @@ class StoryboardArtistLlm:
             if sid:
                 budgets[sid] = s
         if budgets:
-            budget_lines.append("【导演给的镜头预算 —— **上限**，不是必须凑够】")
+            budget_lines.append("【导演给的镜头预算 —— 必须遵守】")
             for sc in draft.scenes:
                 sid = str(sc.get("scene_id") or sc.get("id") or "?")
                 b = budgets.get(sid)
                 if b:
                     budget_lines.append(
-                        f"  {sid}: **≤{scene_budget_cap(sc.get('text', ''), b.get('shotBudget'))} 镜**"
-                    f"（导演要 {b.get('shotBudget')} 镜，本场内容只够这么多）"
+                        f"  {sid}: **{b.get('shotBudget')} 镜**"
                         + (f"　保住：{b.get('focus')}" if b.get("focus") else ""))
                 else:
                     budget_lines.append(f"  {sid}: （导演未给预算，按 ≥2 镜）")
