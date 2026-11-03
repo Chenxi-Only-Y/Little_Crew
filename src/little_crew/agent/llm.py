@@ -223,6 +223,11 @@ def extract_json(text: str, *, what: str = "输出") -> dict[str, Any]:
 # 客户端
 # ==========================================================================
 
+#: 输出上限。**不设就吃服务商默认值**，而默认值会截断长输出
+#: （实测：分镜一次写 6~8 场时输出被截断 -> JSON 不闭合 / 后几场 0 镜）。
+MAX_OUTPUT_TOKENS = 8192
+
+
 class LlmClient:
     """按注册表条目调用 LLM。**同步、无重试、零依赖**。
 
@@ -336,6 +341,9 @@ class LlmClient:
             "messages": messages,
             "temperature": (self.temperature if temperature is None
                             else temperature),
+            # 输出上限：不设就吃服务商默认值，而默认值会截断长输出
+            # （实测：分镜一次写 6~8 场时 JSON 不闭合 / 后几场 0 镜）
+            "max_tokens": MAX_OUTPUT_TOKENS,
             "model_name": self.model_id,
         }
 
