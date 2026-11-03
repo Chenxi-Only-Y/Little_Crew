@@ -160,7 +160,16 @@ def normalize_plan(data: Mapping[str, Any], *,
     # 总和超预算 -> 按比例收回（不低于 2）
     if scenes:
         total = sum(x["shotBudget"] for x in scenes)
-        cap = max(2 * len(scenes), int(total_shots))
+        # ⚠️ **同时受「每场 4 镜」约束**（2026-11-02 修）。
+        #
+        # 原来只有 `total_shots`（默认 20）这一个上限：
+        #   2 场剧本 -> max(4, 20) = 20 -> 永不收缩
+        # 结果 2 场的小剧本也被切成 20 镜。盲判（30 组×2，人读节奏）实测：
+        #   短剧本 A 组 7 镜、B 组 20.7 镜 -> 节奏分 5.00 vs 3.53（−1.47）
+        # 也就是说：**预算没考虑剧本长度，把短剧本压成了呆板的等长切分。**
+        #
+        # 现在取两者较小：2 场 -> 8 · 4 场 -> 16 · 6 场 -> 20（与原一致）
+        cap = max(2 * len(scenes), min(int(total_shots), 4 * len(scenes)))
         if total > cap and total > 0:
             for x in scenes:
                 x["shotBudget"] = max(2, int(x["shotBudget"] * cap / total))
