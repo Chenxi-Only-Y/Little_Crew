@@ -57,6 +57,44 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.156] — 2026-11-04（**接口缺陷清单**：验证输出从 PASS/FAIL 升级为可定位缺陷）
+
+### 为什么
+
+验证只会说「这一集不合格」→ 下游只能**整篇重抽** → 那就是抽卡。
+要让它变成"局部手术"，验证必须指向：**哪个单元、哪个接口、哪类缺陷**。
+（对应策划书 §3.10.2 第一层）
+
+### 三类接口（都是已有信号，只差格式化）
+
+| 接口 | 缺陷类型 | 严重度 |
+|---|---|---|
+| `script->storyboard` | `scene.intrusion` 越权新增 | error |
+| `director->storyboard` | `budget.deviation` 预算 5 实给 2 | warn（只记录） |
+| `storyboard->render` | `duration.over` 单镜超 10 秒 | error |
+
+### 设计纪律
+
+1. **只输出有证据的缺陷**，没信号不编（`defects` 可为空）
+2. **每条都能定位到单元**（`unit` 至少带 `shotId` 或 `sceneId`）
+3. **不参与门禁判决** —— 附加产物，不改 PASS/FAIL
+4. `warn`（丢掉场景）不进清单 —— 特写丢掉场景是常态
+
+### 产物
+
+`delivery/interface_defects.json`
+`{kind, episodeId, total, byInterface, defects[]}`，每条含
+`interface / unit / kind / severity / detail / reason / fix`
+
+### 验证 Verification
+
+```
+ [v] 自检 16/16（A越权 B超时 C预算 D汇总落盘）
+ [v] 全量 1850 项通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.146] — 2026-10-29（**P0-2 第一组数据：控制图真的有用，但强度是主变量**）
 
 ### 实验设计（一次只变一个变量）
