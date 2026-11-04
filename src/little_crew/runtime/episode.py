@@ -753,7 +753,15 @@ class EpisodeRunner:
                     from little_crew.runtime import rework_pipeline as _rwp
 
                     _on = (_os.environ.get("LITTLE_CREW_REWORK") or "1") != "0"
-                    if _on and _rw2.should_rework(_payload.get("defects")):
+                    _want = bool(_on and _rw2.should_rework(_payload.get("defects")))
+                    if not _want:
+                        # **无论有没有重做，都写一条结论** ——
+                        # 否则 `reworkRun` 缺失会被误读成"没接上"（真跑时踩过）。
+                        _payload["reworkRun"] = {
+                            "ok": True, "skipped": True,
+                            "reason": ("开关关闭" if not _on else "无需重做"),
+                        }
+                    if _want:
                         _res = _rwp.rework_targets(
                             run_stage=self.orch.run_stage,
                             draft=script_draft,
@@ -775,6 +783,32 @@ class EpisodeRunner:
                             picked = tuple(_res["shots"])
                             shots = picked
                             print(f"  ↻ {_res.get('reason')}")
+                            # ---- 重做后**必须复验**（2026-11-05 真跑发现）----
+                            #
+                            # 原来重做完不复验：`self.scene_conflicts` 还是重做前那份，
+                            # 于是打印「场景越权否决交付」—— **重做了却按旧结论判**。
+                            # 这里用同一个判据重扫一遍合并后的镜头：
+                            #   干净了 -> 清掉 error；还在 -> 保留（并说明是复验结果）
+                            try:
+                                from little_crew.review.scene_subject import (
+                                    check_scene_subject as _csc,
+                                    subjects_in as _s_in,
+                                )
+
+                                _allowed = set(_s_in(_script_text))
+                                _fresh = []
+                                for _sh in picked:
+                                    _r2 = _csc(_script_text, _sh.description,
+                                               allowed=_allowed)
+                                    _fresh.append({"shotId": _sh.shot_id, **_r2})
+                                self.scene_conflicts = _fresh
+                                _err2 = [c for c in _fresh
+                                         if c.get("severity") == "error"]
+                                print(f"  复验：越权 {len(_err2)} 镜"
+                                      + ("（已修好）" if not _err2 else "（仍在）"))
+                            except Exception as _e2:               # noqa: BLE001
+                                print(f"  ⚠️ 重做后未能复验："
+                                      f"{type(_e2).__name__}: {_e2}")
                         elif _res.get("reason"):
                             print(f"  ⚠️ 定向返工未生效：{_res.get('reason')}")
                 except Exception as _e:                        # noqa: BLE001

@@ -1,0 +1,137 @@
+{
+  "episodeId": "E34",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.14,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02里父亲立下了明确威胁——“你要留下他，往后村子里的集会，你别去了”；到了真正离村的S04，阻力却凭空消失：“父亲站在最外面，两只手垂着，什么也没说，转身往村里走”。全集最强的对抗者在决胜场选择了沉默让路，没有阻拦、没有最后通牒、没有把S02的禁令兑现。', suggestion='让父亲在村口把威胁落到实处：堵在路口、夺包袱、或当众宣布她不再是村里的人——哪怕被母亲或老奶奶拦下，也要让这场对抗正面撞上一次再分开。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全集的高潮抉择没有任何实际阻力：“雾里隐约传来人声……隔着很远在喊什么”。村人只是远远地喊，没有人上山、没有人拦路，她走或不走都是自由的。没有被拉住的告别，选路就不成其为搏斗。', suggestion='把声音变成实体：安排一个追上来的村人（或父亲）抓住她的手臂，逼她在雾中做出“应一声还是挣开”的肢体对抗，然后再放她走。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价由旁白直接宣布：“天亮时她才明白，代价不止是集会——她已经不知道该怎么回那个村子了”。这一句把本该由后续剧情兑现的成本提前说尽，而S04、S06又始终没有让“回不去的村子”真的找上门来，导致成本停在纸面上。', suggestion='删掉这句总结，把“回不去”留成悬念，交给S04的对峙和S06的追喊去兑现；本场只保留烫手背、守一夜这类可见的损失。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.14,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.799
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 126.386
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.11,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场唯一转折是\"旅人忽然睁眼，一把攥住她的手腕\"，但紧接着\"喉咙里滚出半个字，又昏了过去\"——威胁在一句话内被撤回，且那\"半个字\"没有内容，场面回到平静的掰手指收尾，起伏被抹平，没留下任何钩子。', suggestion='让那半个字可辨（一个地名、一个名字或一个\"别\"字），并让抓握延续到本场结束（她掰不开，直到听见院里动静才挣脱），使转折产生后果并牵住下一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：结尾\"柴刀劈进木墩的声音，一下，又一下\"是全场压力最高点，但 S03 直接跳到春、旅人已能下地行走，这把柴刀既未在本场落地，也未被下一场承接——情绪高点悬空，成了纯气氛。', suggestion='让威胁兑现一部分：父亲掀帘进里屋、看见她守夜后的下一个动作；或把柴刀带到 S03 开头（父亲握着柴刀出现在院门口/村口），让 S02 的尾音变成 S03 的阻力。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的对手父亲只以画外音出现（\"门里传来父亲的声音\"），旅人也只说了一句\"路很长\"便接受；她答\"我知道\"后\"往前走了一步\"，本场内没有交锋、没有支付任何代价，真正的对抗全部推迟到 S04，单看本场接近通报式铺垫。', suggestion='把对手放进画面并给出反作用力：父亲堵在门内抓她的包袱，或让旅人在本场提出真实异议（他坦白不能带她走、要她留下），使这一场自身产生对抗与代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：\"我就是你想远行的心啊\"意味着旅人是幻象，但 S01 中她亲手为他包扎、S02 父亲称\"他是外乡人\"、S03 他在村口与众人同场，都是实体事实；转折与前文直接矛盾，且 S04 之后旅人凭空不再出现，无人交代，削弱了这个核心揭示的可信度。', suggestion='把幻象的起点后移并划清界限：从 S05 起他的言行先出现异样（不再受伤、不答旧事），她掷花只是确认；或保留他是真人，把结尾改成他主动告别/独自北上，让\"远行的心\"成为她的领悟而非对既往事实的推翻。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：收尾场没有对抗，全部信息靠\"村里人说……也有人说……\"转述；本场唯一被付出的代价——\"他爹那年把桥头的石板扫了整个秋天\"——也是转述而非场面，情绪落点没有落在观众眼前的动作上。', suggestion='把父亲扫石板搬进画面：用一个当下镜头（黄昏桥头，他弯腰扫，扫帚停在她跪过的位置）承接代价，让老奶奶闻花的台词叠在这个画面上，代价由转述变为可视。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.11,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.982
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 187.189
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 3,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：编剧调用失败：[empty-output] 模型剧本为空",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "编剧调用失败：[empty-output] 模型剧本为空",
+            "seconds": 26.911
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 3 轮编剧阶段失败：编剧调用失败：[empty-output] 模型剧本为空"
+}

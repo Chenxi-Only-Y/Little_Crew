@@ -1,0 +1,58 @@
+{
+  "episodeId": "E35",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力只有一句\"路远，会死人\"，被少女一句\"留下，才会死\"当场化解，随后他便\"看着她笑\"。对立面一击即溃，且立刻转为配合，这场的核心对抗没有形成拉锯——\"我跟你走\"的决定来得太轻易。', suggestion='让旅人的拒绝更硬、更有理由（例如他清楚自己被追捕/此行必死，或他知道少女为他已付出的代价而拒绝再拖累她），把少女说服他的过程写出至少一次反复；也可让老奶奶的介入不是祝福而是更强的阻力（劝阻、警告），使出发真正带着对抗完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有任何对立面：\"风推着她往回走了一步，她停住，又转身\"是唯一动作，且被立刻化解；情绪句连续使用否定式（\"却没有哭\"\"她也没有回头\"）把张力放掉，最后改用旁白传闻（\"后来村里人说……也有人说……\"）替人物收尾，场内冲突被叙述取代。', suggestion='给她一个具体的阻力来完成最后的选择——例如回村的路清晰可辨而她必须亲手毁掉来路的标记，或花香/幻象再次引诱她回头，让她在\"回去\"与\"向前\"之间付出一次可见的代价后再迈步；传闻式的双结局可保留为尾声，但不应替代场内的最后对抗。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.308
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 72.027
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.5）"
+}

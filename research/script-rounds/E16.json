@@ -1,0 +1,110 @@
+{
+  "episodeId": "E16",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力在一个动作里就瓦解了——\"母亲的手先一步拉住他的袖子，很轻地摇了摇头……父亲的手在半空僵了一阵，最终落回桌上\"，少女一句\"药要凉了\"便过关，冲突没有真正交锋就收场；而她实际付出的代价被移到场外用旁白补叙：\"从那以后，她再没有回过村子里的任何一次集会\"，观众在这一场里看不到她失去了什么。', suggestion='让父亲的反对产生当场可见的后果：或逼她二选一（送走外乡人／离开这个家），或当场毁掉她在意的东西（摔了药碗、撕了她要带去集会的花环），使\"留下旅人\"这个选择在场内就支付代价；春日集会的损失改为一个具体动作——她放下做好的花环、闩上门——而不是事后旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场的冲突是被旅人自己解除的：\"然后他松开手，闭上眼，又睡沉了\"，少女全程只留下\"一圈红印\"；决定性的那句\"可她已经没有退路了\"是叙述者替她说出来的结论，场内她没有交出任何东西，\"明白过来\"也没有伴随任何行动上的让步。', suggestion='让\"没有退路\"变成一个她当场做出的、回不了头的行动：为掩护他的身份对母亲撒谎并被识破、烧掉/藏起能证明自己来历的东西、或被迫说出一件自己的秘密作为交换。红印要连着一个具体的失去，而不是一句旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：出发这一场的阻力被文本主动抹平了——\"村口聚了些人，没人上前\"（人群不拦），旅人的反对只有一句\"你不知道我是什么人\"，被\"那我就自己去看\"一句顶回，他在同一场内就接受了；离开家与跟随的对抗没有留下任何摩擦。', suggestion='给上路设置一个必须付出代价才能跨过的实际障碍：父亲追到路口拦人、旅人明确拒绝并先走一步把她甩在身后、或村人当众堵住去路需要她当场决裂。让\"跟上\"这个动作本身是挣来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：整场没有一个场内事件，全部是事后补叙（\"后来村里人说……也有人说……只有一件事是确定的\"），情绪停在S05已经完成的离散上，局势没有再发生任何变化；\"也有人说，她没死\"的两可结尾还反过来削弱了S05\"化作一阵紫色的轻烟／散了\"已经确立的落点。', suggestion='把结尾压成一两句画外音，或给她一个当场可见的转折动作作为收束——例如把那穗花放进水里看它沉底、抬头时看见父亲远远站在坡上而她仍转身走进雾里——让最后一场有一个正在发生的变化，而不是纯旁白总结。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.532
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 95.118
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 76.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：父女线从 S02 的“送走，还是你走，今天给我一句话”、S04 的“从今往后，你不再是我家的人”一路加压，到本场却写成“两个人隔着一道坡，谁也没喊”“她没有喊他”——对抗被双方主动回避，全场零交锋，阻力凭空消失。', suggestion='让冲突落地：父亲开口（一句质问、一句认错，或“跟我回去”），她当面拒绝；哪怕只有一句对白，也比“谁也没喊”更有戏。若坚持沉默处理，就给沉默设置压力源——比如父亲做出要下坡拽她的动作，她后退半步，才构成对抗。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 76.65,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 40.257
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 81.902
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 76.7）"
+}

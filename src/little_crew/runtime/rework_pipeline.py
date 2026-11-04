@@ -40,6 +40,7 @@ def _sub_draft(draft, scene):
 
 
 def rework_targets(*, run_stage, draft, defects, shots, max_scenes: int = 3,
+                   max_new_per_scene: int = 6,
                    get_shots=None, put_back=None) -> dict:
     """按缺陷重跑受影响场次，返回合并后的镜头表。
 
@@ -94,6 +95,16 @@ def rework_targets(*, run_stage, draft, defects, shots, max_scenes: int = 3,
         if not got:
             failed.append(f"{sid}：重跑后没有镜头")
             continue
+        # ⚠️ **不许借"定向返工"放大镜头数**（2026-11-05 真跑发现）：
+        # 重跑一场时模型给了 11~16 镜（原表该场只有 1 镜），
+        # 合并后整集镜头数暴涨 —— 那不是"修一处"，是"顺手重写一场"。
+        # 上限取"该场原有镜数"；原表没有该场时取 `max_new_per_scene`。
+        _orig = sum(1 for s in (shots or ())
+                    if str(getattr(s, "scene_id", "")) == sid)
+        _cap = _orig if _orig > 0 else int(max_new_per_scene)
+        if len(got) > _cap:
+            print(f"  ↻ {sid}: 重跑给了 {len(got)} 镜，按上限截到 {_cap} 镜")
+            got = got[:_cap]
         new_shots.extend(got)
         reworked.append(sid)
 

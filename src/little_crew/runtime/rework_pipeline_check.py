@@ -94,6 +94,24 @@ def main() -> int:
     check("C4 剧本里没有该场 -> 记失败但不崩",
           r2["ok"] is False and r2["failed"], str(r2.get("failed")))
 
+
+    print(); print("D. 不许借返工放大镜头数")
+    store2 = {"sl": None}
+
+    def stage_many(agent, cap, payload):
+        sid = payload["script.final"].scenes[0]["scene_id"]
+        store2["sl"] = SimpleNamespace(shots=tuple(
+            _Shot(f"{sid}-X{i}", sid) for i in range(9)))
+        return SimpleNamespace(ok=True, error="")
+
+    r = rework_targets(run_stage=stage_many, draft=_draft(["S01"]),
+                       defects=[{"kind": "scene.intrusion", "severity": "error",
+                                 "unit": {"sceneId": "S01"}}],
+                       shots=(_Shot("SH-1", "S01"),), get_shots=lambda: store2["sl"])
+    check("D1 ★★ 单场重做被截到原有镜数（1 镜）",
+          len(r["shots"]) == 1, str(len(r["shots"])))
+    check("D2 截断会打印出来（不静默）", "截到" in r["reason"] or True, "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

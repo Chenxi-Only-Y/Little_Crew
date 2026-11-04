@@ -1,0 +1,58 @@
+{
+  "episodeId": "E15",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.3,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力几乎为零。旅人唯一的拒绝是“你不知道我是谁”，少女一句“所以才要走”便当场化解；老奶奶的警告（“这花的香气能让不洁的东西现形”）本该是最大的外部阻力，却只被塞进手里，没有对少女形成任何劝阻、争辩或迟疑——“她再抬头时，旅人已经走出几步……她把包袱背紧，跟了上去”，整场是顺流而下的决定，没有对抗。', suggestion='给这场加一道硬阻力：让旅人明确拒绝甚至甩开她的手（“跟着我你会死”之类的具体威胁），或让老奶奶当众阻拦、把花抢回去不许她带走。让她的“我跟你走”变成顶着压力挣来的选择，而不是顺口一句。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：结局的情绪落点被旁白接管：“后来村里人说，再没有人见过她。也有人说，她是循着花香，去寻他去了。”最后的悬念与余味靠叙述交代，场面本身只剩“捡花瓣—转身—走进雾里”，转折（放弃回头）在雾中被一句话带过，观众看不到她的脸。', suggestion='把传说式旁白改成一个可见的动作收尾：让她在雾中把那片褪色布条也捡进篮子，或让她停在岔路口、把花香的方向指给自己看——用一个具体动作承载“去寻他”的含义，旁白只留最后一句“再没有人见过她”。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 67.3,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 19.576
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 61.691
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 67.3）"
+}

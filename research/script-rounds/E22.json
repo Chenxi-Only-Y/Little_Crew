@@ -1,0 +1,164 @@
+{
+  "episodeId": "E22",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场唯一的阻力是旅人昏着不动，少女从「停了脚—喊—掷石子—走近」一路顺畅到底，她决定救人没有付出任何对抗成本，「你不能死在这里」是一句宣告而非抉择。', suggestion='给救助加一道外部或内心阻力：例如她掷石子时旅人突然抓住她的手腕（误认/惊厥），或远处已有同村人望见、她必须在被看见前把人拖走——让「救」这个动作本身带有被抓包的风险。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：「灯油添了两次」「一勺一勺喂水」是流程铺陈，全夜无任何对抗：没有病情恶化、没有父亲来敲门要赶人、没有她支撑不住的瞬间，场次情绪是一条直线。', suggestion='在深夜插入一次真正的险情——例如旅人烧到抽搐、她被迫做出超出能力的处置（用凉水浸巾、按住他），或父亲在门外下令天亮前必须送走，让这场戏有一次「差点失败」的峰值。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：对峙只有一问一答：「你到底是谁？」→「他没有回答，他只是笑」，旅人既不辩解也不反诱，少女随即掷花，冲突在零阻力下结束；而他是她「远行的心」，本该最有说服力的一方却没有说出任何挽留她的话，她的胜利来得太便宜。', suggestion='让旅人给出一个真实的诱饵来抵抗——他指向更远的路、许诺她从未见过的风景，甚至伸手要牵她；少女必须在「跟他走就能一直远行」的诱惑中亲手掷出花束，这样 S06 的失去才付得起价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾「也有人说，她是循着花香，去寻他去了」把刚付出的代价又退了回去——若她去寻他，S05 的决裂与 S06 的「手里什么也没有」就不再成立，观众的损失感被这句传说消解。', suggestion='保留歧义但改指向：传说应落在「她走的方向」而非「她去找他」，例如「也有人说，她一路往北，再没停过」——路还在延伸，人已不在，代价才能封口。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.228
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 95.466
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲在门外下了最后通牒“天亮之前，送走”“听见没有”，这是本场最强的阻力；但场内持续的对抗只有病人的抽搐，抽搐一停（“快天亮时，抽搐停了”），通牒也随之无疾而终——父亲没有再进来，她也没有真正回应这个期限，冲突被生理事件自然化解了。', suggestion='把“天亮”变成可见的倒计时：让父亲在门外等待或直接推门进来，她必须在场内做一个有风险的动作（挡门、藏人、谎称人已送走）来硬顶这句通牒，让“留下”成为当场付出代价的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场几乎没有阻力：她说“我跟你走”，旅人只是“眼神躲了一下”；老奶奶意味深长的“记住”被他一句“走吧，路远”立刻带过。S02/S03 铺垫的“她要是非留，就当没这个家”和“天亮之前，送走”在这里完全消失，她“身上只有一个小包袱”就走出了村口，无人拦、无人收账。', suggestion='让离家的代价在场内兑现：父亲堵在门口，或母亲把包袱塞回来，形成一次正面冲突；或让旅人的退缩制造实际阻力（他先独自上路，她必须追上去），使“我跟你走”是一次挣来的决定，而不是顺口一句话。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S05 她掷花拒绝了他，放弃的是“海的另一边……亮到天亮都不熄”的许诺；可 S06 她“站起来，沿着那条路继续往前走”“一路往北，再没停过”——拒绝几乎没有损失，反倒把他许诺的行程自己拿走了，S05 抉择的代价被结尾抵消。', suggestion='让拒绝落到地上：她确实回头、放下包袱走另一条路；或明确她后来的“往北”与他许诺的城无关（方向不同、没有灯、走走停停），使掷花那一刻真正放弃点什么。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.988
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 233.609
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救人是单向行动，全场唯一阻力来自伤者无意识的抓握——“喉咙里滚出半个字，手又松了，人沉下去”，这半个字被浪费了，之后她倒花、背人一路没有再遇到任何对抗，救与不救之间没有真正的拉扯。', suggestion='把那半个字写成明确的拒绝（如“走”“别管”），让她明知对方不愿意仍坚持背走，救人变成对伤者意志的违背；再加一个实际阻力（天色、下山的路、他不断挣动使伤口重新裂开），使“你不能死在这里”是对抗之后的结论而非开场白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全集高潮的对手自己先松手：“旅人没有回答。他只是笑了一下”，随后她一句“我丢了一整个村子，换来的东西不是人”就把他掷散了。指控的触发点不足（只有一个“从前没见过的笑”），而旅人零抵抗、零辩解、零诱惑，反派在最该加压的一场里直接放弃抵抗，冲突在最响的地方消失。', suggestion='给她一个看得见的疑心触发（他下意识躲开花香、或对村子/父亲的事毫无真实反应），再给旅人一到两个反压动作——否认、反问、或抛出城与远行的诱饵逼她当场选边——让“掷花”成为挣脱诱惑后的动作，而不是自说自话的处决。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾连着两个转身（“她朝北走了七步，停下……她转身，往山下走”“她转身往南去”），但第二个转向没有任何可见动因；且前一句“风把最后一点紫色吹向北方”，她却往南走，末句“循着花香，去寻他去了”与风向互相抵消，转折变成作者替人物做的决定。', suggestion='给第八步的停滞一个具体钩子（推开自家门、烟囱是冷的、台阶上扣着的碗——这些已经有了），再给“往南”一个感官扳机：花香的余味往南散、或北风把最后一缕香吹向相反的方向。让方向的选择本身承担意义，观众才接得住这个转身。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 32.616
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 72.605
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}

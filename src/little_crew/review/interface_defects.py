@@ -23,9 +23,23 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 SCENE, BUDGET, DURATION = "script->storyboard", "director->storyboard", "storyboard->render"
+
+
+_SCENE_IN_SHOT = re.compile(r"-(S\d{1,3})-")
+
+
+def _scene_of(shot_id: str) -> str:
+    """从 shotId 里抠场次号（`SH-E15-S01-001` -> `S01`）。
+
+    为什么需要：越权冲突记录里只有 shotId，**没有 sceneId** ——
+    于是定向返工"找不到场级目标"，只能跳过（真跑验证时发现）。
+    """
+    m = _SCENE_IN_SHOT.search(str(shot_id or ""))
+    return m.group(1) if m else ""
 
 
 def from_scene_conflicts(conflicts) -> list[dict]:
@@ -34,9 +48,11 @@ def from_scene_conflicts(conflicts) -> list[dict]:
     for c in conflicts or ():
         if not isinstance(c, dict) or c.get("severity") != "error":
             continue
+        _shot = str(c.get("shotId") or "")
+        _scene = str(c.get("sceneId") or "") or _scene_of(_shot)
         out.append({
             "interface": SCENE,
-            "unit": {"shotId": str(c.get("shotId") or "")},
+            "unit": {"shotId": _shot, "sceneId": _scene},
             "kind": "scene.intrusion",
             "severity": "error",
             "detail": {"intruded": list(c.get("intruded") or ()),

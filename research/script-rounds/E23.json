@@ -1,0 +1,167 @@
+{
+  "episodeId": "E23",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突的代价是用叙述交代出来的，不是本场演出来的：\"她端起药碗，转身走进里屋\"之后，直接接\"代价从这天开始：她再没去过村里的集会……人们在井边看见她，会停下话头\"。这是剧本外的总结，观众看不到她为这次对抗付出任何当场的代价；同时冲突本身被\"转身离开\"回避掉了，父亲的阻拦既没被压服也没升级，两人第一次正面交锋无结果收场。', suggestion='把孤立的代价拆成一个可拍的短场或本场内的动作：她端药碗进屋时父亲掀翻药碗、她跪着把碗碎片捡起来；下一场直接呈现她在井边被议论、提水走开的具体一幕（而非旁白），让代价与冲突发生在同一场因果链里。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的核心转折是纯内心的：\"她忽然明白过来：她怕的不是他死，是他醒来之后要走\"，随后\"她转过身，把这句话咽了回去\"——情绪变化只存在于角色意识里，没有任何外部动作、对白或局势改变来承载，观众只能靠读心。', suggestion='把\"怕他走\"外化成一个可见动作：她下意识去闩门、把他的外衣压在包袱下藏起来，或在他清醒后故意不告诉他通向北方的路——让转折变成一个会被对方或父亲看见的行为。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S03 刚建立的转折\"她怕的是他醒来之后要走\"，在本场完全没被兑现：旅人一说\"我要回去\"，她立刻\"背着一个小包袱走出来：我跟你走\"，中间没有迟疑、没有对抗、没有为那个恐惧付出任何挣扎，转折点被跳过去了。', suggestion='在村口补一个她与自己恐惧对撞的节拍：她先退回门内（对应 S03 的怕），听见父亲\"别再叫我爹\"反而把她推回去——让她\"跟走\"的决定是克服恐惧的结果，而不是预设好的动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：这一场的对抗是单方面的：少女\"举起花束，朝他掷了过去\"，而旅人\"没有回答。他只是笑\"——旅人不辩解、不躲避、不阻拦，没有给出任何反作用力，冲突退化成了她一个人的执行动作。', suggestion='给旅人一个抵抗的节拍：他伸手拦花、或在紫雾散开前说一句劝她回头的话（与\"你总跟着我\"的立场一致），让她的掷出必须突破他的阻力才成立；他越温柔地阻拦，她这一掷的代价越重。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有局势或情绪的变化：\"她没有哭\"\"她只是站了很久\"\"然后她背起包袱……继续往前走\"，动作是线性的、平的，唯一的动态来自\"后来村里人说\"的旁白式尾声，而不是场景内的事件。', suggestion='在她的停留里埋一个反转动作：她把包袱放下又拿起、或转身朝村子方向走了两步再折回——用一次方向上的反复制造最后的转折，再让她走进晨雾；旁白只作为余韵保留。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 18.704
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 89.936
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：村妇泼水嘲讽、父亲冷言，压力堆到最满，但主角的全部回应只是「她弯腰，把桶沉下去……转身走」和结尾「停了一下——还是推门进去了」。情绪和局势从头到尾是同一条直线：受辱—隐忍—照常做事，没有任何一步让局面变好或变坏。', suggestion='给这场一个最小的动作转折：比如她被泼水后本要发作，却因屋里传出旅人的呻吟而硬生生把话咽回去；或她把水挑回后做了一件此前不会做的事（反闩门、藏起药罐、第一次对母亲开口）。让隐忍产生一个可见的、有后果的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲下了最重的通牒「你走出这个门，就不是我家的人」，这是全剧最贵的代价，但解决方式是她「脚步很稳」地走出去，父亲仅「背过身去」。代价喊出口却没有兑现——没有追出、没有母亲的反应、没有任何她此后必须背负的痕迹，决裂被一秒钟的背身消化掉了。', suggestion='让代价落地：父亲在她跨出门槛后做出一个不可逆的动作（把门闩落下、把她的名字从族谱/户籍相关物件上划掉、母亲追出来塞东西又缩回），或让她在说出「我跟你走」时明显付出一个具体的牺牲（褪下代表家的镯子/留下某物）。这样 S05、S06 的出走才背得动重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「我就是你想远行的心啊」把旅人揭示为心象，这一转直接把前四场的成本清零：S01 的救人、S02 被掀翻药碗逼到跪地捡碎片、S03 的全村唾骂、S04 的父女决裂，全都变成她在跟自己较劲。冲突是靠撤销对手的方式解决的，代价没有真正支付。', suggestion='保留心象揭示，但让她为前四场付出的成本有一个不可撤销的实体着落——例如旅人的外衣、包袱里的旧物在她掷出花束时真的留下，成为她此后必须携带之物；或暗示村里人已按「私奔」定性她，家回不去是既成事实。让虚的对手带走实的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这场有两次转向——朝村子走，又折返往北——但中间没有任何触发。「往村子方向走」走完只写了「能看见自家屋顶的炊烟」，接着「她站住，没有哭」就直接改道往北。第二次转折没有对手、没有信息、没有内心的决定点，观众不知道她为什么放弃回家。', suggestion='在炊烟与折返之间补一个决定性的瞬间：让村子给她一个回不去的信号（炊烟断了、门关着、井边有人转身走开），或让她走到村口只在远处看一眼便明白代价已经不可逆。转折必须由一个具体的刺激触发，否则「再没有人见过她」的结局是飘的。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 30.601
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 55.159
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：离村这场没有真正的对抗：原文只有「人群散开一条缝」「身后有人啐了一口」，阻力是被动的、礼让式的；S04 里刚刮掉她名字、划下断绝线的父亲全程缺席，没有人堵路、夺包袱或逼她表态，「我跟你走」未经任何挑战就成立。', suggestion='在村口安一个实际拦阻：父亲或井台村妇堵住那条缝、伸手拦下包袱，她必须推开或绕过什么人；或者让旅人本人先拒绝她随行，把阻力从外部社会挪到「她要说服他」上，让这一走有明确的对抗动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转折缺触发点：S05 她还笑着答应「我跟你走」，S06 突然「她忽然停下脚步……『你到底是谁？』」并直接掷花，怀疑由作者递到她手里；前面没有任何她能察觉的破绽，揭穿因此像信息告知而非人物发现。', suggestion='在 S05 或更早埋一个她能亲眼验证的裂缝——例如包袱里那件外衣的补丁针脚是她自己的、她却想不起何时缝过；或他从不进食、不踩出脚印、村里无人与他对视。让她由这个破绽推到「你到底是谁」，掷花才有依据。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：被逐的代价未经争取就落定：她隔着距离看见「横着一道新落的门闩，从外面扣死了」，没有叩门、没有喊人、没有推那一下，就接受了「再也回不去」；冲突全部发生在她视野里，她没有出手，也就没有真正付出。', suggestion='给她一个叩门/推门的动作：闩推不动，屋里灶膛的火刚被抽走（炊烟已断）、无人应声，甚至母亲在门内始终不出声——让她亲手确认被关在外面，再转身，S08 的北上才付了钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结尾全场无对抗也无状态变化：「她走得很慢，但没有停」之后转为村人口传的传说与旁白收束，情绪仍停在 S07 转身的那一刻，最后一场只是平移加解说。', suggestion='在结尾安一个微小的选择动作收束人物弧光——例如她抬手摸到腕上三条布条，指尖停了一下，最终没有解（或解下一条又缠回去），让最后一镜是她做的决定；村人传说可压缩为尾声字幕。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 30.839
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 302.509
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 3 轮（49.6 分）"
+}

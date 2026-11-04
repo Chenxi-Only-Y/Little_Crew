@@ -1,0 +1,110 @@
+{
+  "episodeId": "E21",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这场的核心动作是逼问（“我救了一个连名字都不肯说的人，村里人问起来，我答什么？”），但少女没有为此付出任何代价，也没有拿出任何筹码——旅人一句“名字对你没用”“你后悔了吗”就把问题挡了回来，她随即以“睡。天亮之前别死”收场。问与不问的结果完全一样，信息战没有输赢。', suggestion='让逼问产生代价：比如她为换取一个名字而说出自己的软肋（集会被父亲除名、她为什么救他），使这场问答变成交换而非单方面落空；或者让旅人的拒绝直接损害她——他用某个真相反将一军，迫使她中断追问并付出情绪/处境上的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场两处阻力都在同一场内被无对抗化解：旅人的警告“你不知道我是什么人”，被少女一句“我问过，你不答”当场顶回，旅人再无后手；父亲的阻拦则以“把手里的柴刀慢慢放下”“背过身去，抬手抹了一下脸”自行消解。两股阻力都没有拉锯、升级或讨价还价，观众看到的是阻力自行退场，而非主角撞过去。', suggestion='给阻力一个回合：旅人明确拒绝她同行并说出理由（或以行动甩下她），逼她以放弃某样东西为代价换来同行；父亲那边则让他真正出手阻拦一次（拦路、夺包袱），她的离开必须是从父亲手里挣出来的，而不是父亲让出来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这场戏真正的代价——与父亲永别、永远离开村庄——不是少女当场付出的，而是以转述交代的：“后来村里人说，再没有人见过她”“她父亲每年春天都到村口站一会儿”。她本人的镜头里只有捡花枝、系布条，代价全部落在了场外和旁人身上，她为这一选择承担了什么，观众没有看见。', suggestion='把代价压回她的行动里：让她在走之前回一次家门、留下一件能表明决绝的东西（比如把那半截血布条留在父亲必经之处），或让她有一个明确放弃的动作（摘下什么、折返一步又停住）。父亲的等待保留，但需先有她当面付出的镜头作为对应。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.087
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 101.084
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场的核心阻力只有一句问答——“你到底是谁？”旅人没有回答，随后由“花瓣散开、化作轻烟”这一超自然事件自动揭示真相，配以“我就是你想远行的心啊”直接点题。对抗没有经过拉扯就被外力抹平，且台词替观众完成了解读。', suggestion='把揭示改成她主动试探逼出来的：例如她注意到他始终不碰花、不越过某条路/某个界，她用花或用“往前走一步”设局，他露馅后才被迫承认；真相留给意象呈现，删掉或压低那句解释性台词。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S02 立起的父女对抗（“走出这个村口，就别回来”）到收尾场被悬置：她抬手又落下，门在她走出七八步后才开，父亲“没有喊她”，两人始终没有正面交锋，出走是在零阻力中完成的。', suggestion='让对抗落地：或她在门口出声回应那句“别回来”（把禁令接过来、认下来），或父亲开门时追出一步有实际阻拦动作她挣脱，再或她在门槛处留下明确的话；即便坚持“错身而过”的处理，也应给父亲一个可见的、被她听见的动作作为交锋的回声。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 67.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.172
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 133.397
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 67.9）"
+}
