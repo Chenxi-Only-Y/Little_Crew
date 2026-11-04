@@ -104,6 +104,12 @@ class DeliveryEvidence:
     artifacts: tuple[str, ...] = ()
     #: 内容哈希链：镜头 id -> IR 哈希（改一镜即可看出变了哪个）
     ir_hashes: Mapping[str, str] = field(default_factory=dict)
+    #: 产物**文件内容**哈希（文件名 -> sha256）。
+    #:
+    #: 与 `ir_hashes` 不是一回事：那个是**施工单**的哈希，回答"当时要做什么"；
+    #: 这个是**产物字节**的哈希，回答"交付的东西有没有被改过"。
+    #: 没有它，`tools/verify_evidence.py` 无法独立核验——只能信证据自述。
+    artifact_hashes: Mapping[str, str] = field(default_factory=dict)
     #: 缓存命中统计（成本证据）
     cache_hits: int = 0
     rendered: int = 0
@@ -145,6 +151,7 @@ class DeliveryEvidence:
             "artifactCount": len(self.artifacts),
             "artifacts": list(self.artifacts),
             "irHashes": dict(self.ir_hashes),
+            "artifactHashes": dict(self.artifact_hashes),
             "cache": {
                 "hits": self.cache_hits, "rendered": self.rendered,
                 "secondsSaved": round(self.seconds_saved, 2),
@@ -866,6 +873,34 @@ class EpisodeRunner:
             except Exception:                                 # noqa: BLE001
                 ir_hashes[s.shot_id] = ""
 
+        # ---- 产物文件哈希（2026-11-04，§3.10.2 第三层）----
+        #
+        # 证据里原来只有 `irHashes`（施工单哈希），**没有产物文件哈希** ——
+        # 于是"这一集说它渲染了 40 个镜头"只能**信它自述**。
+        # 这里补上：逐个文件算 sha256，独立脚本才能重算比对。
+        artifact_hashes: dict[str, str] = {}
+        try:
+            import hashlib as _hl
+
+            _base = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _base:
+                _base = Path(str(_base))
+                for _names in artifacts.values():
+                    for _n in _names:
+                        _f = _base / _n
+                        if not _f.is_file():
+                            _hits = list(_base.rglob(_n))
+                            _f = _hits[0] if _hits else None
+                        if _f is None or not _f.is_file():
+                            continue
+                        _h = _hl.sha256()
+                        with _f.open("rb") as _fh:
+                            for _c in iter(lambda: _fh.read(1 << 20), b""):
+                                _h.update(_c)
+                        artifact_hashes[_n] = "sha256:" + _h.hexdigest()
+        except Exception as _e:                                # noqa: BLE001
+            print(f"  ⚠️ 产物文件哈希未生成：{type(_e).__name__}: {_e}")
+
         per_shot_artifacts = {
             s.shot_id: artifacts.get(f"G-{self.episode_id}-{s.shot_id}", [])
             for s in picked
@@ -882,6 +917,9 @@ class EpisodeRunner:
                 "secondsSpent": batch.seconds_spent,
             },
             gate=gate_dict, prompts=_prompts)
+
+        if artifact_hashes:
+            evidence.artifact_hashes = dict(artifact_hashes)
 
         failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
                         "reason": o.reason[:200]} for o in batch.failed)

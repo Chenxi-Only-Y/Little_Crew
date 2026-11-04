@@ -57,6 +57,43 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.157] — 2026-11-04（**证据链可校验**：补产物文件哈希 + 独立校验脚本）
+
+### 缺的是什么
+
+`delivery.evidence.json` 里原来只有 `irHashes` —— 那是**施工单**（IR）的哈希，
+回答"当时要做什么"，**不是产物字节的哈希**。
+于是"这一集说它渲染了 40 个镜头"**只能信它自述**，第三方无从核验。
+
+### 改了什么
+
+1 `DeliveryEvidence` 新增 `artifactHashes`（文件名 -> `sha256:`…）：
+   合成前逐文件算 sha256，与 `irHashes` **分开记录**。
+2 `tools/verify_evidence.py`：**独立脚本，只用标准库，不 import little_crew**，
+   自己找文件、自己算哈希，与证据比对。四种结论：
+   `ok` / `MISMATCH` / `missing` / `no-hash-recorded`。
+3 旧证据（无 `artifactHashes`）会**明确说明"不能核验文件有没有被改"**，
+   而不是假装通过 —— 这是刻意的：**缺观测 ≠ 通过**。
+
+### 实测
+
+```
+ep_white（本版之前生成的证据）
+  结论: FAIL
+  ⚠️ 证据里没有 artifactHashes —— 只能核验"有没有文件"，不能核验"有没有被改"
+```
+
+**这正是补它的理由。**
+
+### 验证 Verification
+
+```
+ [v] 自检 9/9（A 证据对象记哈希 · B 脚本分辨四种情况）
+ [v] 全量 1859 项通过 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.156] — 2026-11-04（**接口缺陷清单**：验证输出从 PASS/FAIL 升级为可定位缺陷）
 
 ### 为什么

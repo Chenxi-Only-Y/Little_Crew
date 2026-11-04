@@ -63,6 +63,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("场景主体冲突", [sys.executable, "-m", "little_crew.review.scene_subject_check"], 19),
     ("暂存发布", [sys.executable, "-m", "little_crew.runtime.staging_publish_check"], 13),
     ("接口缺陷清单", [sys.executable, "-m", "little_crew.review.interface_defects_check"], 16),
+    ("证据链可校验", [sys.executable, "-m", "little_crew.runtime.evidence_verify_check"], 9),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),

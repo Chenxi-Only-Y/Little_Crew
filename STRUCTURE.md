@@ -136,6 +136,7 @@ Little_Crew/
 | `research/` | 调研原文与第三方源码快照（**只读归档**） | 任何被代码 import 的东西 |
 | `outputs/` | 生成的图片/视频/报告 | 任何需要入库的内容 |
 | `logs/` | 运行日志 | — |
+| `tools/` | 独立校验/运维脚本。只用标准库、不 import 本包 —— 它核验的是「证据链与磁盘是否一致」，不能由被测系统自己提供。首个脚本：`verify_evidence.py`（重算产物 sha256） |
 
 > **`research/` 的定位**：它是**证据留存**，不是代码。里面的第三方源码快照
 > （`research/github-survey/src-*/`）已加入 `.gitignore`——它们是可重新下载的派生物，

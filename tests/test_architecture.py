@@ -391,6 +391,12 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 目录（§1 目录职责表逐条对应）
     "src", "tests", "config", "docs", "research", "outputs", "logs",
+    # 独立校验脚本（2026-11-04）：`tools/verify_evidence.py`
+    #
+    # 独立的意义：只用标准库、不 import little_crew，
+    # 这样它能核验「证据链说的和盘上的一致」，而不依赖被核验方。
+    # 放进 src/ 会变成「被测系统自己给自己出证明」。
+    "tools",
     # 前代实现（v0.3.0，LangGraph 版）。
     #
     # ⚠️ 它**不是本项目的一部分**，是**同仓库的历史归档**。
