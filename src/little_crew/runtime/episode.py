@@ -709,6 +709,36 @@ class EpisodeRunner:
                 print(f"  ⚠️ scene_check.json 未写出：{type(_e).__name__}: {_e}")
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
+        # ---- 接口缺陷清单（§3.10.2 第一层，2026-11-04）----
+        #
+        # 验证的输出不该只是 PASS/FAIL —— 那下游只能整篇重抽。
+        # 这里把三类「单元之间的接口」信号格式化成可定位的缺陷，
+        # 落 delivery/interface_defects.json，供定向返工与证据链使用。
+        # **它是附加产物，不参与门禁判决。**
+        try:
+            from little_crew.review import interface_defects as _idef
+
+            _plan = None
+            try:
+                _plan = self.orch.blackboard.value("director.plan")
+            except Exception:                                  # noqa: BLE001
+                _plan = None
+            if not isinstance(_plan, dict):
+                _plan = None
+            _payload = _idef.collect(
+                scene_conflicts=self.scene_conflicts,
+                shots=picked,
+                limit_s=10.0,
+                plan=_plan,
+                episode_id=self.episode_id,
+            )
+            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd:
+                _dst = _idef.write(_wd, _payload)
+                print(f"  接口缺陷 {_payload['total']} 条 -> {_dst.name}")
+        except Exception as _e:                                # noqa: BLE001
+            print(f"  ⚠️ 接口缺陷清单未生成：{type(_e).__name__}: {_e}")
+
         if self.scene_conflicts:
             # **按严重度分开报**：越权新增 = 协作冲突（该退）；丢场景 = 特写的常态（不该退）
             _err = [c for c in self.scene_conflicts if c.get("severity") == "error"]
