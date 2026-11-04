@@ -741,6 +741,13 @@ class EpisodeRunner:
             )
             _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wd:
+                # §3.10.2 第二层：把缺陷换成「只重做哪几处」的计划
+                try:
+                    from little_crew.runtime import rework as _rw
+
+                    _payload["reworkPlan"] = _rw.plan(_payload.get("defects") or [])
+                except Exception:                          # noqa: BLE001
+                    pass
                 _dst = _idef.write(_wd, _payload)
                 print(f"  接口缺陷 {_payload['total']} 条 -> {_dst.name}")
         except Exception as _e:                                # noqa: BLE001
