@@ -65,21 +65,45 @@ def select_targets(defects) -> dict:
 def merge_reworked(shots, new_shots, targets) -> tuple:
     """用重做结果替换目标镜头；**未命中的原镜头一律保留**。
 
-    - `targets["shots"]` 里的 shotId：用 `new_shots` 中同 id 的替换
-    - `targets["scenes"]` 里的场：该场所有镜头用 `new_shots` 里同场的替换
-    - 新结果里没有的，保留旧的（**不因重做而丢镜头**）
+    ## 为什么是「整场替换」而不是「按 id 逐个替换」
+
+    重跑一场会产出**新的 shotId**（`SH-2` 变成 `S02-NEW-1`），
+    按 id 对齐永远对不上 —— 于是"重做了但没换上"。这个坑在自检 B3 里抓到过。
+
+    所以：目标场次的旧镜头**整体让位**给新镜头；
+    新结果里没有这场时，**旧镜头原样保留**（宁可没换上，也不许丢镜头）。
     """
     tgt_shots = set((targets or {}).get("shots") or ())
     tgt_scenes = set((targets or {}).get("scenes") or ())
-    new_by_id = {str(getattr(s, "shot_id", "")): s for s in (new_shots or ())}
-    out = []
+
+    new_by_id = {}
+    new_by_scene: dict[str, list] = {}
+    for s in (new_shots or ()):
+        sid = str(getattr(s, "shot_id", ""))
+        sc = str(getattr(s, "scene_id", ""))
+        new_by_id[sid] = s
+        new_by_scene.setdefault(sc, []).append(s)
+
+    out: list = []
+    placed: set[str] = set()
     for s in shots or ():
         sid = str(getattr(s, "shot_id", ""))
         scene = str(getattr(s, "scene_id", ""))
-        if sid in tgt_shots or scene in tgt_scenes:
-            out.append(new_by_id.get(sid, s))
-        else:
-            out.append(s)
+        if sid in tgt_shots and sid in new_by_id:
+            out.append(new_by_id[sid])                     # 同 id 直接换
+            continue
+        if scene in tgt_scenes and new_by_scene.get(scene):
+            if scene not in placed:                        # 整场替换，只插一次
+                out.extend(new_by_scene[scene])
+                placed.add(scene)
+            continue                                       # 旧镜头让位
+        out.append(s)
+
+    # 新结果里有、但原表里没有的场次 —— 补到末尾（不丢新产物）
+    for sc, group in new_by_scene.items():
+        if sc not in placed and sc in tgt_scenes:
+            out.extend(group)
+
     return tuple(out)
 
 

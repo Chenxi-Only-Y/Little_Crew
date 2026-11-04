@@ -58,9 +58,10 @@ def main() -> int:
     old = [_S("SH-1", "S01"), _S("SH-2", "S02", "old"), _S("SH-3", "S02", "old")]
     new = [_S("SH-2", "S02", "new")]
     out = merge_reworked(old, new, {"shots": [], "scenes": ["S02"]})
-    check("C1 ★ 目标场用新结果", [x.tag for x in out][1:] == ["new", "old"], 
-          str([x.tag for x in out]))
-    check("C2 ★★ 非目标镜头原样保留", out[0].tag == "" and len(out) == 3, str(out))
+    check("C1 ★★ 目标场整场替换（旧镜头让位）",
+          [x.tag for x in out] == ["", "new"], str([x.tag for x in out]))
+    check("C2 ★★ 非目标镜头原样保留（S01 那镜还在）",
+          len(out) == 2 and out[0].shot_id == "SH-1", str(out))
     out2 = merge_reworked(old, [], {"shots": ["SH-2"], "scenes": []})
     check("C3 ★★★ 重做没返回时**保留旧的**（不丢镜头）",
           len(out2) == 3 and out2[1].tag == "old", str(out2))

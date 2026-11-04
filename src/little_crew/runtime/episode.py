@@ -741,6 +741,45 @@ class EpisodeRunner:
             )
             _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wd:
+                # ---- 定向返工（§3.10.2 第二层执行，2026-11-04）----
+                #
+                # 有 error 级缺陷时，只重跑受影响的那几场（默认最多 3 场），
+                # 再整场替换回镜头表 —— 不做整篇重抽。
+                # ⚠️ 关了开关就退回"只记录不重做"：`LITTLE_CREW_REWORK=0`
+                try:
+                    import os as _os
+
+                    from little_crew.runtime import rework as _rw2
+                    from little_crew.runtime import rework_pipeline as _rwp
+
+                    _on = (_os.environ.get("LITTLE_CREW_REWORK") or "1") != "0"
+                    if _on and _rw2.should_rework(_payload.get("defects")):
+                        _res = _rwp.rework_targets(
+                            run_stage=self.orch.run_stage,
+                            draft=script_draft,
+                            defects=_payload.get("defects") or [],
+                            shots=picked,
+                            max_scenes=3,
+                            get_shots=lambda: self.orch.blackboard.value("shot.list"),
+                            put_back=lambda sl: self.orch.blackboard.put(
+                                "shot.list", sl, owner="storyboard_artist"),
+                        )
+                        _payload["reworkRun"] = {
+                            "ok": bool(_res.get("ok")),
+                            "reworked": _res.get("reworked") or [],
+                            "failed": _res.get("failed") or [],
+                            "addedShots": _res.get("addedShots", 0),
+                            "reason": _res.get("reason", ""),
+                        }
+                        if _res.get("ok"):
+                            picked = tuple(_res["shots"])
+                            shots = picked
+                            print(f"  ↻ {_res.get('reason')}")
+                        elif _res.get("reason"):
+                            print(f"  ⚠️ 定向返工未生效：{_res.get('reason')}")
+                except Exception as _e:                        # noqa: BLE001
+                    print(f"  ⚠️ 定向返工未运行：{type(_e).__name__}: {_e}")
+
                 # §3.10.2 第二层：把缺陷换成「只重做哪几处」的计划
                 try:
                     from little_crew.runtime import rework as _rw
