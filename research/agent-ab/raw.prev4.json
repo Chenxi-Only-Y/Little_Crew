@@ -1,0 +1,4731 @@
+[
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 11.7,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.557,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 1,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "雨夜的房间，只亮着一盏很低的台灯。少女穿浅色棉布睡衣，抱着膝盖坐在窗台前的木椅上，肩膀微微塌着。窗玻璃糊满雨痕，外面的街灯被水汽揉成一团黄。桌上摊着信纸、笔和一封压皱的信封，地板上一小片从窗缝渗进来的湿痕。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "镜头靠近桌面。少女的双手捧着那封信，纸边已经被雨气泡得发皱，一行写到一半的字被洇开，墨往四周散成淡淡的灰晕。她的拇指来回蹭着纸角，指腹有一点墨。窗外雨声贴着玻璃下个不停。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "point",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "笔尖悬在纸面上方一寸，停住不动，纸上留着一个小小的墨点慢慢扩开。她的呼吸很轻，喉头动了一下，笔尖始终没落下去。灯光从侧面照来，把她的手影投在半句未完的话上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "横向掠过她半侧的脸和手：她低下头写了两笔，随即停住，把纸揉皱又慢慢摊平，掌根压着折痕来回抹。头发垂下来遮住一边眼睛，桌上散着两三团揉过的纸球。台灯的光在她指节上发亮，雨在窗外不停。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-005",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "摊平的信纸占了画面大部分，折痕很深，中间只有半句话，后面是大片空白，最底下的落款处什么也没写。她松开手指，纸角轻轻弹回一点，一滴从发梢落下的水在纸边晕开。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a66f3462de75c757",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-006",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "look_back",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "她抬起头望向窗外的雨，脸被玻璃上的水痕切成几条模糊的亮线，倒影和夜色叠在一起。手里的笔放下又拿起，最后搁在纸边。台灯昏黄，房间大半沉在暗里，雨声一直在，信仍旧没有写完。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d8eeb90ce0875eb1",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。清晨的街角，天光泛白但发灰，薄雾贴着地面缓慢流动。一只深绿色旧邮筒立在画面右侧，表面布满细密水珠，投信口是一道潮湿的黑缝。少女穿浅色外套站在邮筒前，背对镜头，身形被雾的边缘轻轻磨软，脚下的砖地还残留夜雨的湿痕。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d8eeb90ce0875eb1",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "point_forward",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的手捏着一封信凑近邮筒投信口，信纸边缘被雨水洇开的墨迹微微发晕，折痕只折到一半，末页留着一片没有落款的空白。指节因用力而泛白，指尖在冰冷湿润的金属口沿停住，几颗水珠被指尖推着滑落。镜头缓缓贴近那道黑缝，光在手背上收窄。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d8eeb90ce0875eb1",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女侧身面对邮筒，下颌低垂，睫毛上挂着极细的水汽。信已滑入黑缝，只剩最后一角纸边被指腹压着，停了半拍才松开。她的呼吸很浅，肩线几乎没有起伏，雾从她身后漫过来，把发梢和衣领的边缘吃掉一层。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d8eeb90ce0875eb1",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。少女转过身，垂着手向街道深处走去，脚步很慢，湿砖地上映出模糊的浅影。她不回头，背影一点点被浓白的雾吞没，先是鞋跟，再是小腿、肩，最后只剩一团淡色轮廓融进雾墙。邮筒留在画面前景，表面水珠静静往下淌。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 12.6,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 8,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.56,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0,
+    "shotCountRatio": 0.4,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_cf2d00283c81612f",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:22+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的房间，窗外整片雨幕压着玻璃，水痕不停往下淌。少女侧身坐在窗台边的木椅上，双膝并拢，肩背微微弓起。屋里只有桌角一盏旧台灯亮着，暖黄的光圈落在她半边身子和窗框上，另一半沉在冷蓝的夜色里。地板上有她拖鞋和散落的一张纸。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_cf2d00283c81612f",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:22+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "她低着头，双手捧着一封信纸，纸被捏出皱褶，边缘有点潮。信上只写了短短几行字，末尾悬着一个没落下的墨点。指尖抵住纸角，慢慢收紧。台灯的光把她的手和信纸照得很暖，身后的窗玻璃上映出雨水的流痕。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_cf2d00283c81612f",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:22+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "她的脸被窗外的冷光和台灯的暖光分成两半，睫毛很湿，眼睛定定望着玻璃外面。雨水在玻璃上扭曲成一条条亮线滑下去，光影在她瞳孔里晃动。嘴唇轻轻张开又合上，像要说一句没出声的话。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_cf2d00283c81612f",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:22+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "半页信纸摊在她膝上，笔滚到椅子边缘。她抬手把信纸按平，指尖停在最后一行字后面，迟迟没有落下。画面从她和信纸之间缓缓移过窗台，湿漉漉的玻璃外是模糊的路灯光斑，雨一整夜都没有停。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ea553c4daca81e1a",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:29+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。清晨的旧街被灰白薄雾笼罩，路灯刚熄还留着一圈微光，少女穿浅色外套从画面左侧走近街角那只褪色的红邮筒，湿润的石板路反着天光，她的影子被拉得很淡。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ea553c4daca81e1a",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:29+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 4.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女的双手把一只米白色信封推进邮筒的投递口，指尖在冰凉的铁皮边缘停顿了一瞬，邮筒表面凝着细密的水珠，晨雾在缝隙间缓缓流动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ea553c4daca81e1a",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:29+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 3.5,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的侧脸布满柔和的冷调晨光，睫毛上挂着细小的雾珠，她轻轻呼出一口白气，目光越过邮筒望向远处的雾色，嘴唇微微抿着。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ea553c4daca81e1a",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:29+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。少女转身背对邮筒，沿着空无一人的街道向雾气深处走去，浅色外套的下摆随步伐轻晃，身影一点点被灰白的雾吞没，只剩远处一盏路灯的昏黄光晕。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 10.7,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.557,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0,
+    "shotCountRatio": 0.5,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2bade0279019c4f6",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的房间，一扇大窗占据了画面大半。窗外是密密的雨线，玻璃上挂满水珠，路灯的橘黄光被雨水揉成一片模糊的光斑。少女穿着宽松的浅色长袖衣，蜷坐在窗台边的木椅上，膝盖微微收拢，身影在灰蓝色的暗调房间里显得很小，只有窗光勾出她的轮廓和发丝的边。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2bade0279019c4f6",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女侧身坐在窗前，背靠着窗框，一条腿垂下来。她低着头，双手把一张折过的信纸捏在膝上，纸边被手指压出浅浅的褶痕。桌上一盏旧台灯亮着暖黄的光，照亮她的手臂和纸面，身后的窗玻璃映出室内昏黄的一小块反光，雨在玻璃另一侧不停流下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2bade0279019c4f6",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女的胸口以上和双手占据画面。她垂着眼，睫毛压得很低，嘴唇轻轻抿着。手里的信纸被举到胸前，纸上有几行写到一半就停住的字迹，末尾是一道拖长的笔痕。台灯的暖光从下方打上来，把她半张脸照暖，另半边落在窗外的冷蓝光里。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2bade0279019c4f6",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写少女的脸。她慢慢抬起视线望向窗外，眼里映着窗外晃动的雨光和路灯的亮点，眼白泛着微微的水色。脸颊侧面有一层薄薄的暖光，发丝贴在额角。背景完全是虚化的雨幕与流动的光斑，冷调，只有她的脸是暖的。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2bade0279019c4f6",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女把没写完的信纸轻轻按在膝上，另一只手无意识地揉了揉纸角，随后低下头，肩膀松下来。台灯的光圈慢慢变小，房间的暗处扩大，窗外的雨依旧不停，玻璃上的水痕一道接一道往下爬。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c0063e7ce50e1094",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。清晨的空街还浸在薄雾里，路面湿亮，反射着灰白的天光。街角立着一只掉了漆的绿色邮筒，一个穿浅色外套的少女从画面深处慢慢走来，身影被雾柔化了边缘，呼吸在冷空气里留下淡淡的白。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c0063e7ce50e1094",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。少女停在邮筒前，侧身对着镜头，双手捏着一只米白色信封，指节因为用力微微发白。晨雾在她身后缓缓流动，路灯已经熄灭，天空是均匀的浅灰，邮筒的绿漆剥落处露出铁锈。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c0063e7ce50e1094",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "point_forward",
+        "durationSec": 4.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。一只手把信封推进邮筒狭窄的投信口，信封边缘擦过金属，投信口的翻盖轻轻抬起又落下。冷白的晨光落在手背上，能看清指甲边缘和信封上没写完的一行字迹。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c0063e7ce50e1094",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "look_back",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中景。少女的手从邮筒上收回来，她侧过脸朝街道尽头望了一瞬，然后转身，头发被雾里的风带起。她身后是空荡的人行道、一排沉默的旧楼和挂在墙上的褪色招牌。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c0063e7ce50e1094",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-005",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。少女背对镜头走进雾里，脚步不快也不慢，轮廓一层层被白雾吃掉，最后只剩一个模糊的浅色影子。邮筒留在画面前景，孤零零地立在湿漉漉的街角，天光一点点变亮。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 11.6,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.366,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 1,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "夜晚的房间，唯一光源是窗外街灯透进来的冷白光。少女侧坐在窗前旧木椅上，膝上摊着一封写到一半的信，背微驼。整面窗玻璃上爬满雨痕，水珠把光拉成一道道细长的斜线，落在她半边脸颊上。桌角一只搪瓷杯，杯口没有热气。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女双手捏着那张信纸，纸边被指尖捏出浅浅的褶皱，右下角有一小片墨迹被洇开的灰蓝湿痕。窗外雨声成了背景里持续的白噪音，玻璃上的水痕在她手背上投下晃动的暗纹。她低头看着纸面，肩膀一动不动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。她的手从桌沿拿起钢笔，笔尖悬在纸面上方一寸处停住，久久不落。指节因为用力而泛白，笔尖在光下有一点细微的颤。纸面上已经写了半行字，墨色还没有干透，反着微光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女俯身落笔，写了几个字便停下，眼睛在字迹上来回扫。她忽然把纸稍稍推开，指尖在刚写的那句上按住，随即把整张纸从中间揉起来，指腹压出凌乱的折痕。窗上的雨水顺着玻璃往下淌，把她的影子切成碎片。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "她把揉皱的纸团在膝上一点点摊平，掌心来回抹过那些折痕，纸面像被雨水泡软的旧布，怎么也回不到平整。桌上已经躺着两三张同样揉过又摊开的废纸。她垂着眼，呼吸很轻，窗外的雨一直在下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_12807480ba634ef9",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-006",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。摊平的信纸下半部大片空白，句子断在半途，末尾没有落款，只有一处未干的墨点慢慢晕开。她的手松开笔，笔滚到纸边停住。玻璃上的雨痕在画面里缓缓下滑，把整张纸罩进细密的湿影中。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2510d6c3d71b0cf4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "dolly_in",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "清晨的雾很重，一条湿漉漉的旧街，柏油路面泛着灰白的水光。少女穿一件深色外套，从画面右侧慢慢走向街角那只墨绿色的旧邮筒，脚步很轻，雾在她身后合拢。邮筒表面挂满细小水珠，投信口的黑缝里透不出一丝光。天空是压低的灰白，路灯还没熄，光线又冷又软。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2510d6c3d71b0cf4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "近景。少女的手停在邮筒口，指节微微发白，捏着一只折了一半的信封，纸角被雾气泡得发软，边缘有洇开的墨痕。她的指尖伸进那道黑缝，停住，没有立刻松开——手在半空里悬着，像在等自己改主意。邮筒金属表面的水珠顺着缝隙滑下，一滴落在她手背上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2510d6c3d71b0cf4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "point",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。她的手一松，信封滑进投信口，纸边与铁皮摩擦，最后一点白色被黑缝吞没。她没有立刻收回手，掌心还保持着握信的弧度，指尖沾着水汽。侧脸上没有表情，只有眼睛低垂，睫毛上挂着细小的雾珠。背景的雾几乎贴到她的肩上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2510d6c3d71b0cf4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:12:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。少女转身，背对镜头往街深处走，一次也没有回头。雾从街道尽头涌过来，先吞掉她的脚，再吞掉外套的下摆、肩膀、后脑，最后整条街只剩一片灰白，邮筒孤零零立在原地，表面的水珠还在慢慢往下滑。画面停在雾与空街的未完成感上。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 15.9,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.505,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 1,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。深夜的旧房间，少女侧身坐在窗前木椅上，膝上摊着一张信纸，右手捏着一支笔。窗外雨下得密，水痕顺着玻璃一道道往下淌，把街灯的橙光拉成细长的流线。屋内只有桌角一盏小台灯亮着，暖黄的圈只罩住她的前臂和信纸，其余地方沉在灰蓝的暗里。她背后的墙皮有些发潮，椅脚边落着一团揉皱的纸。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。信纸占据画面下半部，纸上写着半句话，墨迹停在句子中间，被纸边洇开的一小片潮气晕成一团淡淡的灰蓝。笔尖悬在离纸面一寸的地方，久久不落。少女的手很瘦，指节因为用力泛白，拇指无意识地在笔杆上来回摩擦。台灯的光从右上方压下来，把纸的折痕照得很清楚——那条折痕只折到一半就停住了。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的脸侧对着窗，玻璃上的水光在她脸颊和眼睑上流动，像一层没擦干的湿。她的眼睛没有看纸，落在窗外某个不存在的点上，睫毛很轻地颤了一下。嘴唇抿着，抿到有些发白才松开。呼吸的起伏很小，胸口几乎不动。背景是虚的雨和窗框的黑影。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "recoil",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中景。少女把笔放回桌面，手腕刚落下又像被烫到一样缩回来，手掌在信纸上方停住，指尖蜷了一下。台灯的光照出桌面木纹里的水渍，笔滚了半圈撞上杯底。窗上的雨水在她肩膀的轮廓上投下一层晃动的暗纹，她的影子被灯光拉长，压在椅子后面的墙角。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女低下头，两只手把先前揉皱的信纸一点点摊平，用掌根从中间往四边推，折痕还是压不平。她把纸对折——折到一半停住，指尖停在纸的中央，没有继续。纸角有一小块被水浸软的地方，软得塌了下去。她的指甲很短，指腹上沾着一点化开的墨。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_ec6407f4839cbbcb",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:00+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-006",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "look_back",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。房间退远，少女的身影缩在窗框这一块亮里，半边脸转回来看向玻璃，另半边沉在暗处。窗上的雨水密密地往下爬，把她的轮廓泡得有些发虚。桌上那张只折了一半的信纸摊在那里，末尾留着大片空白，没有落款。窗外的街灯在水痕里碎成一片一片，雨声把整间屋子填满。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_72a9d9c7e12b6603",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "清晨的空街，天色是没亮透的青灰，浓雾贴着地面缓慢流动。一个穿浅色外套的少女从画面右侧走入，脚步很轻，鞋底带起湿漉漉的水痕。街角立着那只绿色旧邮筒，铁皮上密布水珠，投信口是一道细细的黑缝。远处路灯还留着一点昏黄的余晕，被雾气散成一团柔光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_72a9d9c7e12b6603",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "point_forward",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女的手捏着一封信，信封边缘被雨水泡得发软，角上有一道折了一半又摊平的痕，纸面上一行字被水汽洇开。她的手停在邮筒投信口那道黑缝前，指尖悬着没有立刻松开，指节因为用力泛白，随后又缓缓松了一点。邮筒铁皮上的水珠顺着弧面滑下，滴在她手背上。冷青的晨光落在她的手与信之间。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_72a9d9c7e12b6603",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的脸侧与肩，短发被雾气打湿贴在颊边，睫毛上挂着极细的水。她垂下眼，嘴唇轻轻抿了一下又放开，呼出一口白色的气，旋即被雾吞没。背景全是虚的灰白，只有她下颌一线被晨光勾出边缘。她没有表情，也没有看向别处。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_72a9d9c7e12b6603",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 10.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。少女转身，背对镜头向外走，肩线很平，始终没有回头。雾比刚才更厚、更白，一寸寸漫上来，先吞掉她的脚，再吞掉她的腰和肩，最后只余一团极淡的浅色轮廓，然后连轮廓也没有了。邮筒留在画面左侧，湿淋淋地立着。整条街空下来，只剩雾在缓慢移动。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 9.4,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 9,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.581,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0.25,
+    "shotCountRatio": 0.45,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_8041eb71d8330919",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:13+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-001",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "夜晚的旧房间，窗外大雨滂沱，雨痕在玻璃上不断滑落。少女侧身坐在木窗台边，双腿蜷起，穿一件宽松的浅色旧毛衣，头发松松挽着。屋内只有一盏小台灯，暖黄光落在她的肩背和地板上的旧木纹；窗外的冷蓝夜光打在她半边脸上，明暗交界分明。桌角摊着一沓信纸和一支笔。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_8041eb71d8330919",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:13+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女低头，双手捏着一封写到一半的信，纸边已被指腹压出褶皱，墨迹在中间断掉。台灯的光贴近纸面，能看清钢笔字迹与一小片晕开的墨点。她的拇指缓慢地摩过纸缘，窗上的雨影在水汽里一晃一晃。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_8041eb71d8330919",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:13+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女的脸靠近窗玻璃，眼里映着一条条往下淌的雨水。她睫毛微微垂下，嘴唇抿了一下又松开，呼吸在玻璃上留下一小片雾气。背景是虚化的、被雨糊成一片的夜色街灯。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_8041eb71d8330919",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:13+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女把没写完的信轻轻按在胸口，转头望向窗外无尽的雨。画面渐渐退开，露出整扇被雨水冲刷的窗、她蜷坐的剪影，以及地板上那盏小台灯投出的暖光。窗外雨声仿佛更密，屋里安静得只剩纸页的一角被风轻轻掀起。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_62b710e769cafa7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。清晨薄雾笼罩的街口，青灰色天空泛着微白的光，一只旧绿色邮筒立在湿漉漉的路边，路面积水映出天光。少女穿浅色外套站在邮筒前，背影被雾气半掩，远处屋檐还在往下滴水。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_62b710e769cafa7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "point_forward",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女侧身靠近邮筒，手指捏着一封微微泛黄的信，信封上有手写的字迹和一点雨渍。晨光从她身后斜照过来，勾出发梢的水汽，她的表情平静而郑重。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_62b710e769cafa7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 4.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。投信口的金属边缘，少女的手把信封缓缓推进去，指尖在缝口停了一瞬才松开。金属表面有薄薄的水痕，映出她模糊的手指和天光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_62b710e769cafa7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "look_back",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。少女把空手收回身侧，转身走出两步，又半侧回头看了一眼邮筒。雾从街尾漫上来，把她的轮廓一点点吞淡，路灯光只剩一团柔白。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_62b710e769cafa7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:16+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A1-S02-005",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。少女的背影沿着湿街往前走，肩膀微收，脚步不快不慢。她的身影渐渐没入浓白的晨雾，最后只余一片空街、邮筒和滴水声似的安静。"
+      }
+    ],
+    "script": "短·雨夜",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜违反平台硬约束：S01 第 5 项 action='static' 非法",
+    "seconds": 7.9,
+    "script": "短·集市",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 13.9,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 9,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.581,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0.25,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6430f5a35df2549d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "清晨的集市全景，青石板路面还带着湿气，两侧摊位刚支起来。老人站在画面右侧自己的小摊后，一张旧木凳、一只铁皮水桶，桶里插着十几枝刚剪下的月季与白菊，花瓣上还有水珠。晨光斜照，人流从他摊前经过，没有一个人停下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6430f5a35df2549d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "摊位的正面，镜头缓缓横移过一排花朵：月季、白菊、几枝康乃馨，都新鲜挺立，插在铁桶里。老人的深灰外套下摆垂在摊边，一只手垂在身侧，另一只手扶着桶沿，指尖粗糙、指节发白。身后的集市人影来来去去，虚化成流动的色块。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6430f5a35df2549d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "特写。老人的手放在摊前的旧木板上，手掌摊开又慢慢收拢，掌心的纹路和老年斑清晰可见。木板上一小片水渍正一点点干掉。旁侧的花影投在他手背上，随风轻轻晃动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6430f5a35df2549d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "午后偏晚，光从侧面斜进来，颜色开始发暖发黄。老人坐在矮凳上，背微微佝偻，双手交叠放在膝头，眼睛望着摊前的路，不招呼也不吆喝。摊上的花仍整齐，只是外圈几枝的花瓣边缘已稍稍卷起。他身后摊主们陆续收摊，箱子挪动的声音隐约传来。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6430f5a35df2549d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "point_forward",
+        "durationSec": 9.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "黄昏，光收拢成低角度的橙金色，只照亮摊位一角。一个小女孩从画面边缘走近，踮脚指着铁桶里那枝最白的菊。老人低头看她，慢慢从桶里抽出那枝花，递过去，女孩把攥在手心的一颗水果糖放进他掌心。两只手在画面中央短暂相接——一只大而干枯，一只小而温热，糖纸在夕光里反出一点亮。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_11dfc96e139b98ae",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:44+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.5,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "全景。黄昏的露天集市正在收摊，两侧摊位的帆布一顶顶落下，地上散着菜叶和压扁的纸箱。画面右侧，老人守着最后一只竹篮，篮里只剩七八枝薰衣草，紫灰色在斜阳下显得发暗。女孩背着书包站在篮子前两三步远，个子很小，影子被拉得很长。低角度的夕阳从摊位缝隙里横穿过来，把两个人的影子推向画面左侧。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_11dfc96e139b98ae",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:44+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "point_forward",
+        "durationSec": 4.0,
+        "characters": [
+          "女孩"
+        ],
+        "description": "特写。女孩的手从画面下方伸进光里，掌心摊着一颗包着透明糖纸的水果糖，糖纸边缘有点皱，被捏得微微发热。她的手很小，指甲剪得很短，袖口洗得发白。背景是虚化的竹篮边缘和薰衣草细长的茎。黄昏的暖光从侧面压过来，糖纸反出一小点白亮的光斑，她的手停在半空，没有抖。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_11dfc96e139b98ae",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:44+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中近景。老人半蹲在竹篮旁，抬起头，眉毛和眼角的皱纹挤在一起，视线落向画面外的下方，嘴唇动了一下却没出声。他穿着洗旧的深蓝外套，领口磨出毛边，一只手搭在膝盖上，指节粗大、指缝里有洗不掉的泥色。身后是已经空了半边的摊位和堆叠的木箱，夕阳贴着他的侧脸，光在颧骨上收成一条窄窄的亮边，眼睛落在暗处。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_11dfc96e139b98ae",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:44+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_out",
+        "action": "point",
+        "durationSec": 6.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "中景。老人从篮里抽出一枝薰衣草，动作不快不慢，茎上的小花穗轻轻晃；女孩同时把糖放进他摊开的另一只手里，两只手在同一高度交错，没有谁高谁低。女孩接过花，握在胸前，肩膀放松下来，转身走进收摊后空荡的通道。老人在原地把糖放进外套口袋，低头看了一眼剩下的花。镜头拉开，露出整条正在暗下去的集市，摊位帆布收拢，地面上一片零散的影子，天边的橙色已经褪成灰蓝。"
+      }
+    ],
+    "script": "短·集市",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 7.2,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 9,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.581,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0.25,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_24e26c38660ecbac",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "清晨的集市，青灰天光。老人站在一张旧木桌后，桌上两只铁皮水桶里插满刚剪下的花，花瓣上还带露水。周围摊位陆续开张，人从他摊前匆匆走过，没有人停。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_24e26c38660ecbac",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "上午，日光转白。镜头沿摊面缓缓移过：一排排扎好的花束整齐立着，价签是手写的。老人穿旧夹克站在摊后，双手交叠在身前，目光跟着过往行人的脚步移动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_24e26c38660ecbac",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "正午偏后，阳光短而硬。老人坐在摊后的小马扎上，背微驼，粗糙的手把一支歪掉的花重新插正，又用指尖抹掉叶片上的灰。花仍然新鲜，摊前的空地空着。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_24e26c38660ecbac",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "黄昏，光线变成长而暖的橙黄，斜斜压在桌面上。特写老人放在膝上的手，指节粗大，掌心有泥；旁边桶里还剩大半的花，影子被拉得很长。他不说话，只是抬眼看了一下街口。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_24e26c38660ecbac",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "point",
+        "durationSec": 9.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "收摊前的最后一段天光。一个小女孩站到摊前，踮脚指了指桶里的一枝花，又摊开手心露出一颗糖。老人的手从桶里抽出那枝花，与女孩的小手在桌面上方交接，糖落进他掌心。斜阳把两只手照成同一个颜色。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_78b70491de83ef16",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "黄昏的集市正在收摊，长条木桌与折叠棚架向远处排开，地上散落纸箱与菜叶。一个老人弯着腰把空筐叠到桌上，一个穿洗旧外套的小女孩沿着摊位间的窄道慢慢走近，手里攥着一样小东西。夕阳从棚布缝隙斜射进来，把两人的影子拉得很长。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_78b70491de83ef16",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "老人站在摊后，桌上只剩一只铁皮桶，里面插着十几枝紫灰色薰衣草，花瓣有些蔫。他抬头看向站在桌前的女孩，手停在半空没继续收。斜阳照在铁皮桶上，桶身有一道旧凹痕；背景是已经搬空的邻摊和卷起的塑料布。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_78b70491de83ef16",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "point",
+        "durationSec": 5.0,
+        "characters": [
+          "女孩",
+          "老人"
+        ],
+        "description": "近景。女孩把攥紧的手指摊开，掌心放着一颗包着彩纸的糖，纸角被汗浸得发软。她抬眼看老人，嘴唇抿得很紧，表情认真得像在谈一笔正经买卖。暖橙色夕照落在她的小手和糖纸上，桌面木纹可见。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_78b70491de83ef16",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "中近景。老人的手在铁皮桶里停了一下，迟疑着抽出一枝薰衣草，与女孩递过来的糖在桌面上方同时停住，两只手一高一低，一粗糙一细小。老人的手指关节粗大、指甲缝里有泥，女孩的手背上有一道浅浅的划痕。黄昏的光从侧面收拢，桌面被压成暗金色，两人都没有先松手。"
+      }
+    ],
+    "script": "短·集市",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 12.0,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.609,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0,
+    "shotCountRatio": 0.5,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d4f221ccef52fc08",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:57+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "清晨的露天集市，青灰石板路两侧排开一排排摊位，遮阳布棚被晨风吹得微微晃动。一位穿洗旧蓝布褂的老人挑着两只竹篮从画面右侧缓缓走过，篮里插满沾着露水的白菊与粉月季，花瓣在淡金色斜射的晨光中透亮。远处有人挑担、有人卸货，暖白炊烟升起。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d4f221ccef52fc08",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:57+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "action": "sit_down",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "老人把两只竹篮并排放在石阶边，弯下腰，慢慢坐到一只矮木凳上，双手在膝上搓了搓。篮里的花按颜色扎成小把，用麻绳捆着，旁边放一块写价的旧硬纸板。身后是灰砖墙和一串褪色的红塑料绳，晨光把他的影子拉得很长。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d4f221ccef52fc08",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:57+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "point",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "日头升高，集市人来人往。老人坐在花篮后，抬起手臂朝路过的一个提菜篮的中年妇人指了指花，嘴唇张开又合上，脸上堆着小心讨好的笑。妇人匆匆走过，没有停步。花篮前空出的一小片地上没有脚印停留。光线变成明亮偏白的顶光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d4f221ccef52fc08",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:57+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "近景偏中。午后，老人的上半身占住画面，肩膀微微垮下，老人低头看着自己膝前那两篮花，花叶已有些发蔫。他用手背抹了一下额头，脸上被晒出红痕，眼角的皱纹很深。周围摊贩在收摊，背景人影模糊、走得很急。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d4f221ccef52fc08",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:13:57+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-005",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "傍晚的橙红斜阳落在老人脸侧，光把他的白发染成暖色。老人半眯着眼，望着空荡下来的石板路，嘴唇抿着，慢慢伸手把篮里一枝倒伏的花扶正。花篮里一把把花仍旧原样扎着，一枝没少，麻绳和纸板价签静在旁边。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_66cc2141fd6af287",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:03+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "黄昏的露天集市，石板路被夕照染成橘红色。摊位上的遮阳布正被卷起，木箱、藤篮堆叠在一旁。老人穿深灰旧布衫，站在摊位后，摊上只剩几只陶罐和一大把紫色薰衣草，花瓣在斜光里泛着毛边。远处几个摊主在收摊，人影被拉得很长。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_66cc2141fd6af287",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:03+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "女孩",
+          "老人"
+        ],
+        "description": "一个扎双马尾的小女孩背着书包，从画面一侧沿着摊位慢慢走过来，鞋底踩在石板上有细小的水光。她仰头看着那一大把薰衣草，手指攥着书包带。老人低头整理陶罐，侧脸被夕阳描出金边，薰衣草的影子落在木台面上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_66cc2141fd6af287",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:03+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 9.0,
+        "characters": [
+          "女孩",
+          "老人"
+        ],
+        "description": "小女孩踮起脚，把手心摊开伸向老人，掌心里躺着一颗裹着彩纸的糖，糖纸在暖光下反出一点亮。老人停下手中的动作，微微弯下腰看着她，眉头松开，眼角的皱纹堆起。背景里薰衣草成束斜靠在陶罐边，风把花瓣吹得轻轻晃动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_66cc2141fd6af287",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:03+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-004",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "女孩",
+          "老人"
+        ],
+        "description": "特写。老人粗糙的手掌托着那颗糖，彩纸上的褶皱被夕照照得透亮，指缝间还沾着泥土和草屑。糖被轻轻放进围裙口袋，背景是虚化的紫色花束和一片温热的橘色光晕。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_66cc2141fd6af287",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:03+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-005",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_out",
+        "action": "point_forward",
+        "durationSec": 8.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "老人从花束里抽出一枝薰衣草，茎上还带着细叶，递到小女孩面前。小女孩伸出两只手郑重地接住，把花举到鼻子前闻，肩膀轻轻耸起，笑了。夕阳把两个人的影子叠在石板路上，摊位后的布幔在风里慢慢摆动。"
+      }
+    ],
+    "script": "短·集市",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 9.5,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 10,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.557,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0,
+    "shotCountRatio": 0.5,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d0776ca13a855c7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "全景。清晨的乡村集市，土路两旁摆满摊位，晨光斜照在遮阳布上。老人背着竹筐从画面右侧缓缓走入，筐里伸出几枝带露水的月季，周围人来人往，地上散落着菜叶和水渍。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d0776ca13a855c7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "sit_down",
+        "durationSec": 7.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中远景。老人蹲坐在摊位后的小木凳上，把竹筐里的花一枝枝摆到塑料布上，红白月季排成整齐一排，装水的小铁桶放在旁边。清晨的光打在他花白的头发和褪色的蓝布衫上，身后是喧闹的早点摊。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d0776ca13a855c7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "point_forward",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中景。集市上午，阳光明亮。老人半站起身，伸手向路过的两位提菜篮的中年妇女示意，摊前一束束月季在阳光下颜色很艳，却没有人停下，人影从他面前滑过。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d0776ca13a855c7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "近景。老人坐在凳子上，目光望着远处叫卖的摊位，嘴唇微抿，抬手抹了一下额头。他手边那排花依旧满满当当，一枝没少，铁桶水面反着一点天光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d0776ca13a855c7e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:07+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中远景。夕阳把集市照成橙红色，摊贩们陆续收摊，塑料袋和纸箱堆在路边。老人独自坐在几乎空了的摊位后，面前一排月季还整整齐齐没卖出一枝，他的影子被拉得很长。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a83d27ec37ebec98",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "黄昏的集市尽头，天边泛着橘红色。老人弯腰把一只旧木箱搬上小推车，脚边铺着沾了花瓣的麻布，木架上剩下几束紫色薰衣草，风一吹轻轻摇晃。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a83d27ec37ebec98",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "老人直起身，用手背擦了擦额头，身上的旧围裙磨得发白。斜射的夕阳穿过木架，把薰衣草照成半透明的暖紫色，摊前的石板路泛着金光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a83d27ec37ebec98",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "walk",
+        "durationSec": 5.0,
+        "characters": [
+          "女孩"
+        ],
+        "description": "一个穿碎花裙的小女孩从石板路那头小跑过来，裙摆一晃一晃，鞋尖沾着灰。她右手紧紧攥着一颗包着彩色糖纸的糖，眼睛盯着木架上的薰衣草。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a83d27ec37ebec98",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "point",
+        "durationSec": 4.5,
+        "characters": [
+          "女孩"
+        ],
+        "description": "女孩踮起脚，把攥着糖的小手举到老人面前，糖纸在夕照里闪着碎光；她另一只手伸向木架，指尖指向那束薰衣草，脸上带着试探的笑。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_a83d27ec37ebec98",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-005",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "老人弯腰，把一枝薰衣草轻轻放进女孩掌心，女孩摊开的另一只手心里躺着那颗糖。暖橙色的夕阳落在两人交叠的手上，身后是空下来的木架和长长的影子。"
+      }
+    ],
+    "script": "短·集市",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 14.1,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 9,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0
+    },
+    "sizeEntropy": 1.369,
+    "scenesWithShots": 2,
+    "shotsPerSceneVariance": 0.25,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e9faa158b464494e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:18+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "清晨的集市外景，青灰色水泥地面上摊位一字排开。老人站在自己的花摊后，穿洗旧的深蓝布衫，袖口卷到小臂。摊上一只只铁皮水桶里插着刚剪的月季和雏菊，花瓣上还带水珠，绿叶挺直。晨光低斜，从侧面照亮桶沿和老人半张脸，他双手垂在身前，看着来往的人。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e9faa158b464494e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:18+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中景。镜头沿着摊位横向掠过，背景里赶集的人流匆匆走过，手提塑料袋、推着小车，没有一张脸转向花摊。老人始终站在原处，眼睛跟着行人移动又落回自己的花桶。光线比刚才亮一些，桶里的水面反着白光，花一枝未少。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e9faa158b464494e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:18+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "特写。老人的手搭在铁皮水桶边沿，指节粗大，指甲缝里有泥，拇指慢慢摩过桶壁上的一处锈斑。桶中月季的花瓣边缘在午后的强光下微微卷起，水面漂着一片落叶。阳光从头顶直落，老人手背的皮肤干而发亮。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e9faa158b464494e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:18+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "stand",
+        "durationSec": 9.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "中全景。黄昏，集市大半收了，四周的摊位空着、地上散落菜叶和纸片。老人独自守着一桶没卖出去的花，橙红的斜阳从街尾照来，把他的影子和花桶的影子拉得很长。他挺直地站着，慢慢把散乱的花枝一枝枝扶正、理齐，动作仔细，像在整理自己的衣领。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e9faa158b464494e",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:18+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S01-005",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 8.0,
+        "characters": [
+          "老人"
+        ],
+        "description": "特写。暮色里光线收拢成温暖的橘调。一只小小的女孩的手伸进画面，掌心里放着一颗包着透明糖纸的水果糖，糖纸反着最后一点天光；老人粗糙的手从另一侧伸过来，指尖迟疑了一下才接过糖，然后抽出一枝最新鲜的月季，轻轻放进那只小手里。两个手掌一交一接，花的红与糖纸的亮色靠在一起。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_37fe36d190bb027c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:27+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 5.0,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "黄昏的露天集市，大半摊位已收空，只剩老人脚边一只木桶插着几枝紫色薰衣草。他穿着洗得发白的灰蓝外套，正低头把布单折起。远处橙红色光斜穿过空荡的过道，把地面的影子拉得很长。一个背小布包的女孩从画面右侧慢慢走来，站在桶前停下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_37fe36d190bb027c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:27+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 4.5,
+        "characters": [
+          "女孩",
+          "老人"
+        ],
+        "description": "中景。女孩站在木桶前，个子还不到摊面高，双手捧着一样东西举到胸前：一颗包着透明纸、纸角拧成小结的水果糖。她的眼睛直直看着老人，表情很认真，没有笑。暖橙色的夕照落在她的侧脸和手心里，糖纸反出一点亮。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_37fe36d190bb027c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:27+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-003",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "point",
+        "durationSec": 3.5,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "近景。画面里是老人的手：粗糙、指节发红、指缝带泥。那只手在薰衣草上方停住，犹豫了一下，食指才轻轻点向其中一枝，指尖碰到细小的紫色花穗。旁边是女孩捧着糖的小手，干净、小小的，两种手在同一画面里。背景是收拢中的黄昏光线。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_37fe36d190bb027c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:27+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A2-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 5.5,
+        "characters": [
+          "老人",
+          "女孩"
+        ],
+        "description": "中全景。老人把那枝薰衣草递过去，女孩伸手接过，同一时刻把糖放进他掌心。两人的手一交一接，动作干脆，没有多说话。女孩转身抱着花向过道深处走去，走出几步才低头看了看花。老人站在原地摊开手掌看那颗糖，身后是空摊和剩下几枝花，橙光正一点点退到画面边上。"
+      }
+    ],
+    "script": "短·集市",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 31.3,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 15,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0,
+      "S03": 0,
+      "S04": 0
+    },
+    "sizeEntropy": 1.494,
+    "scenesWithShots": 4,
+    "shotsPerSceneVariance": 0.188,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_23ad4841ad728698",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:41+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.5,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "全景。深夜的土屋，一盏将熄的柴火在灶膛里明灭，光只够照亮半间屋子。右侧角落的草席上，旅人裹着薄被仰躺着，脸烧得发红；左侧，少女端着一只铜盆站在屋子中央，脚边放着一只木凳，她始终没有坐下。正中的窗纸糊得发白，纸外一枝被积雪压弯的树枝贴着窗面，雪层正在一点点加厚。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_23ad4841ad728698",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:41+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-002",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "近景。烛火般的暖橙光贴着旅人的侧脸晃动，他半靠着土墙撑起身子，额上全是汗，嘴唇干裂起皮；他每一次呼吸都吐出一小团白气，白气在冷空气里散得很快。火光一亮一暗，他的眼窝随光影陷下去又浮出来，眼睛半睁着，焦点落在虚空里，没有对准任何东西。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_23ad4841ad728698",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:41+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女站在铜盆前，袖子挽到小臂，双手把湿毛巾拧成一股，水线从指缝里一股股垂落，砸进盆底的水面，溅起细小的水花。火光从下方打亮她的下颌和手背，指节因用力而发白，肩膀轻微起伏。她拧完没有立刻走过去，只是站着，眼睛望向画面外的草席方向。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_23ad4841ad728698",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:41+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "action": "stand",
+        "durationSec": 4.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "近景转开。少女的手停在铜盆边缘，一颗铜扣从掌心滑落，磕在盆沿上，随后镜头拉远：她的手离开铜盆，垂回身侧，始终没有伸向草席；灶膛里的柴只剩暗红的炭，两人的身影一起被压暗，少女口鼻前的白气慢慢变淡，窗纸外那枝被雪压弯的树枝轻轻一弹，抖落一片雪。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_344b2d07cb3e2953",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-001",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的木屋一角。少女裹着一条薄毯，坐在炉边的矮木凳上，背微微弓着。炉膛里的柴只剩暗红的余烬，暖光很弱，只够照亮她半张脸和膝头那只铜盆；屋子另一侧是冷的青蓝色。她身后的窗纸上糊着一层薄霜，窗外一截树枝被积雪压得弯下来，雪还在无声地落。她呼出的白气很淡，散得很快。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_344b2d07cb3e2953",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "干裂发红的一双手把湿毛巾拧成一股，指节用力到发白，水线一缕缕垂下来，滴进膝上的铜盆，溅起细小的水花。微弱的橙红火光在手指和手背上明明灭灭地跳，指甲缝里还留着水光。毛巾的粗布纹理被拧得扭曲，水珠挂在布角上迟迟不落。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_344b2d07cb3e2953",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女第三次把毛巾摊开、折好、拧干，动作比先前明显慢下来，肩膀塌着，手在盆沿上多停了一拍。她抬起眼往炉膛里看，橙光已经矮下去，只在她下巴和睫毛上晃。冷蓝的夜色从窗纸那边压过来，她嘴边的白气比刚才更薄、更短。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_344b2d07cb3e2953",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:14:51+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-004",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "她手里捏着一根柴，停在炉口上半空，没有立刻送进去。眼睛映着最后一点将熄的火星，瞳孔里那点光在缩小。她屏住呼吸，喉咙动了一下，白气在唇边凝住又散开——迟疑了整整一瞬，才把柴推进炉膛。火苗从柴缝里重新窜起来，暖光一层层铺满她的脸。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e039b60f05fb6836",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:01+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-001",
+        "sceneId": "S03",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "description": "黎明前的屋内全景。窗纸透进青白色的天光，纸面被外面的雪压出一道弯影。火塘里只剩暗红的余烬，光很弱。旅人靠着土墙坐在草席上，棉被滑落到腰际，唇边呼出的白气又淡又短。屋子另一头，少女趴在木桌边睡着，桌上摆着一只铜盆，盆里的水映着一点火光，湿毛巾搭在盆沿，水珠正慢慢往下坠。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e039b60f05fb6836",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:01+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-002",
+        "sceneId": "S03",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "旅人半靠在墙边，肩上盖着薄被。他的睫毛先动了一下，眼睛缓缓睁开，视线从模糊慢慢聚焦，落向画面外的桌边。火光从下方照上来，一半脸是暖的，一半脸沉在冷青的晨色里。他没有起身，也没有开口，只是呼吸变深了一点，白气在唇边散开又消失。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e039b60f05fb6836",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:01+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-003",
+        "sceneId": "S03",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "木桌边，少女侧趴在手臂上睡着，脸颊压出浅浅的褶痕，头发散在袖口。她的一只手还搭在盆沿的湿毛巾上，袖口被水洇湿了一小片。火塘的光在她脸上一明一灭，随余烬的呼吸般起伏。窗纸的冷光从她背后铺过来，把她的轮廓勾出一道白边。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e039b60f05fb6836",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:01+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-004",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "description": "特写。桌上那只铜盆，水面浮着一层薄薄的凉气，湿毛巾垂在盆沿，一滴水正悬在布角上，将落未落。旁边是少女垂下的指尖，指甲边还带着被水泡皱的白。画面边缘，旅人的手停在半空，最终没有伸过去，只是慢慢收拢成拳，搭回自己膝上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_209bd5433d14c4d0",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:04+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-001",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 6.5,
+        "characters": [
+          "旅人"
+        ],
+        "description": "全景。雪停后的清晨，山道口的石台上覆着一层新雪，天光冷白泛青，远山被雾吞掉一半；旅人背着旧布包站在石台前，肩头落着未化的雪粒，脚边雪地上一串深深的脚印通向山下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_209bd5433d14c4d0",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:04+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-002",
+        "sceneId": "S04",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "特写。一只冻得发红、指节粗裂的手在石台上摊开，掌心压着一枚磨得发亮的黄铜扣，扣面映出一点冷天光；手指松开时没有一丝迟疑，铜扣落进雪里，压出一个小小的凹坑，雪屑轻轻弹起。手随即收回，衣袖带走的雪粉留在原处。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_209bd5433d14c4d0",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:04+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-003",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中全景。旅人的背影沿着雪坡往山下走，没有回头，呼出的白气一团团散在冷空气里，越走越淡；前景石台上那枚铜扣留在画面下方，孤零零一点暗黄。远处被雪压弯的树枝忽然一弹，雪簌簌落下。"
+      }
+    ],
+    "script": "中·守夜",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 21.8,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 18,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.6,
+    "scenesWithShots": 4,
+    "shotsPerSceneVariance": 0.25,
+    "shotCountRatio": 0.9,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6ad25ae0cf87e0e4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:08+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "全景。夜里的木屋室内，一盏油灯放在矮桌上，暖黄的光晕铺开，照到土墙和木床。窗外积雪堆在窗台，一根被雪压弯的树枝贴在玻璃外侧。少女坐在床边的小凳上，背对着窗户，身体微微前倾。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6ad25ae0cf87e0e4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:08+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "中景。少女从凳上起身，双手端着一只粗陶碗，碗里冒着热气。旅人半躺在铺着旧毯的木床上，脸色发红，额头贴着布巾，眼睛半闭。油灯的光从侧面打在两人脸上，把影子投到身后的土墙上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6ad25ae0cf87e0e4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:08+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit_down",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "中近景。少女在床沿轻轻坐下，一手托着旅人的后背，一手把碗凑到他嘴边。旅人的睫毛颤了一下，微微张口。两人之间只隔着一碗热气，碗口的热气在他们脸前散开，光线柔软发暖。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6ad25ae0cf87e0e4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:08+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-004",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的脸，眼睛一眨不眨地看着床上的人，嘴唇抿紧，额角有细密的汗。油灯的火苗在她瞳孔里映出一小点光，她抬手用手背探了探旅人的额头，随即轻轻收回。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_6ad25ae0cf87e0e4",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:08+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "look_back",
+        "durationSec": 8.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "中全景。少女重新坐回床边的凳子上，双手交叠放在膝盖上。旅人睡着了，胸口随呼吸微微起伏。镜头缓缓拉远，露出小窗外被雪压弯的树枝、窗棂上积的白雪，油灯的光在屋内收成一小团暖色，四下的黑暗安静地围拢过来。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5db0a5c3f059b733",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:14+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-001",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的土屋内，靠墙一只旧泥炉，炉膛里只剩几点暗红余烬，微弱红光贴着地面铺开，屋角堆着几根干柴与一只豁口水盆。少女盘腿坐在炉前草席上，肩上披着单薄的旧棉衣，身形被炉火映出长长影子拖在墙面上，屋里其余地方沉在冷蓝的暗里。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5db0a5c3f059b733",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:14+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女冻得发红的双手把一条湿毛巾在指间拧紧，水珠顺着指缝一颗颗坠进膝上的旧搪瓷盆里，水面荡开涟漪。手背皮肤起皱发白，指节泛红，袖口湿了一截。背景是虚化的暗红炉光，光从下方打上来，照亮她手上细小的水汽。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5db0a5c3f059b733",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:14+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女侧身坐在炉前，微微前倾，一缕乱发贴在颊边。她抬眼望向快要熄灭的炉膛，眼白被暗红余烬映出一点微光，嘴唇干裂，睫毛低垂。房里飘着极淡的白汽，光只够照亮她半张脸，另一半沉在阴影里，身后墙上是空荡的黑暗。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5db0a5c3f059b733",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:14+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女扶着膝盖直起身，走到墙边弯腰抱回一根粗柴，再蹲跪到炉口前，把柴小心塞进将熄的炉膛，伸手拨了拨。火舌先舔上柴皮边缘，随即腾起一小簇橙黄的火苗，暖光一下子涨开，照亮她低垂的侧脸、鼻尖和被风吹乱的头发，屋子四壁也随之亮起来，她抬手挡了一下扑来的热气。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c22f1e3419ec0696",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-001",
+        "sceneId": "S03",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "黎明前的屋内，窗外天色由墨蓝转为浅灰，一线冷白晨光斜落进房间。旅人半躺在墙边的床褥上，薄被滑到腰际，额头不再冒汗，眼神刚睁开还带着迷糊，微微抬头望向画面外。桌上一盏油灯将熄，余火发暗，墙上有淡淡的烟痕。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c22f1e3419ec0696",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-002",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "look_back",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "特写。旅人睁开的眼睛，睫毛上还挂着一点湿气，瞳孔在晨光里缓缓聚焦。他侧过脸，越过肩头看向桌子的方向，嘴唇微张，喉结动了一下，脸颊上退烧后的红正在消下去。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c22f1e3419ec0696",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-003",
+        "sceneId": "S03",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "中景。画面从旅人床边横向移到木桌旁：少女趴在桌沿睡着了，手臂垫在脸下，长发散落在袖口和桌面上，呼吸轻轻带动肩背。晨光正好落在她的后颈和搭在椅背的外衣上。旅人在画面右侧背景里抬着身子看她。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c22f1e3419ec0696",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-004",
+        "sceneId": "S03",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女的侧脸压在手臂上，睫毛轻轻颤动，嘴边有一道被衣褶压出的痕迹，额前一缕碎发随呼吸微动。桌面上放着一个空了半截的粗陶碗和叠着的湿布，晨光从她背后透来，勾出头发边缘的浅金色。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c22f1e3419ec0696",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-005",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "特写。桌面上一只空碗和叠好的湿布，旁边是少女摊开的手，指节因为守夜而微微蜷着。背景里旅人虚焦的轮廓缓慢坐起又停住，晨光把桌面木纹和碗沿照得发亮，屋子里很静。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_4e314a26e25fad90",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:26+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-001",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "全景。雪后的山脊，天光呈淡青灰的清晨色，岩石与矮松都覆着厚雪，旅人裹着旧披风立在崖边，脚边一串上山的深脚印，呼出的白气在冷空气里散开。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_4e314a26e25fad90",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:26+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-002",
+        "sceneId": "S04",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "point",
+        "durationSec": 4.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中近景。一块平整的青石上，旅人俯身，冻得发红的指尖把一枚磨得发亮的铜扣按在石面正中，铜扣边缘映着冷白晨光，披风的粗布袖口垂在石边。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_4e314a26e25fad90",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:26+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-003",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中全景。旅人转身沿山道下行，披风一角被风掀起，身后雪地上留下新踩出的脚印，山道两侧压弯的松枝垂着雪块，远处山谷浮着薄雾。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_4e314a26e25fad90",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:26+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-004",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "全景。旅人缩成雪坡上的小小身影，一点点往下移动，层叠的远山被晨光染出淡金色的轮廓，山谷雾气缓缓流动，天空靠近地平线处透出一点暖色。"
+      }
+    ],
+    "script": "中·守夜",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": true,
+    "seconds": 21.7,
+    "hasPlan": false,
+    "violations": 0,
+    "problems": [],
+    "shots": 20,
+    "budgetDev": null,
+    "perScene": {},
+    "sizeEntropy": 1.597,
+    "scenesWithShots": 4,
+    "shotsPerSceneVariance": 0.5,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_86fd175e51cc73c5",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:30+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "全景，深夜的小木屋。窗外大雪纷飞，积雪把窗外的树枝压得低垂，几乎贴住玻璃。屋里只有一盏油灯和壁炉的余火，橙红的光把土墙照得温暖。少女坐在床边的矮凳上，旅人裹着厚毛毯躺在窄床上，额头冒着细汗，脸色发红。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_86fd175e51cc73c5",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:30+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中近景。少女俯身探向旅人的额头，用手背轻轻试温度，眉头微蹙。油灯的光从侧面打在她脸上，一半明亮一半沉在阴影里，耳边的碎发被呼吸带动。背景是模糊的木墙和窗外飘落的雪。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_86fd175e51cc73c5",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:30+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 4.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "特写。旅人闭着眼躺在枕上，汗湿的额发贴在皮肤上，嘴唇干裂微张，胸口随急促的呼吸起伏。炉火的暖光在脸颊上晃动，睫毛在眼下投出细影。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_86fd175e51cc73c5",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:30+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中景。少女从矮凳上站起，转身走向桌边，拿起铜壶往陶碗里倒热水，白色的水汽在冷空气里升起。她回头望了一眼床上的人，又继续手里的事。墙面上的影子随她的动作缓缓移动。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_86fd175e51cc73c5",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:30+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-005",
+        "sceneId": "S01",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_out",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "中全景。少女端着陶碗回到床边坐下，把碗放在床头的小几上，拧干布巾敷在旅人额上。镜头缓慢拉开，露出整间屋子：壁炉余烬、挂着的外衣、窗玻璃上结的霜，以及窗外在风雪中弯曲的树枝。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的土屋内，一盏油灯把光压得很低，墙角火塘里只剩几粒暗红的炭。少女抱着膝盖坐在火塘边的矮木凳上，身影被拉长投在斑驳的土墙上，窗纸透着冷蓝的夜色，屋内有淡淡的烟。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-002",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中景。少女侧身俯向躺在草席上的病人，手里捏着一条湿毛巾，轻轻覆上病人的额头。炭火的红光从下方照上她的脸，额角有细汗，眼神疲惫却专注。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 4.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "近中景。少女把毛巾从病人额上取下，在膝边的木盆里浸了浸，拧干，水珠顺着她的指节滴回盆里，盆水面浮着一层薄薄的热气。火光在她手背上一明一暗。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-004",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "recoil",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女抬眼望向火塘，火光已经矮成一小片将熄的橘红，只照亮她半边脸。她眉头一紧，身体微微前倾，眼底映着那点快要消失的光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-005",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中全景。少女撑膝站起，走到门边柴堆前弯腰抱起一捆干柴，转身回到火塘边蹲下，把柴一根根添进去。镜头横移，掠过墙上的旧草帽、挂着的布巾和窗外的黑夜。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_5042dd6fb39e8019",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:35+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-006",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "中景。新柴被炭火舔上，火苗猛地窜起，暖黄的光一下铺满整间屋子，也照亮少女的脸和身后的土墙。她把手伸向火光烘了烘，长长呼出一口气，肩膀松下来。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_f6604bc7251f2f1c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-001",
+        "sceneId": "S03",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "全景。黎明前的木屋室内，窗纸透出灰蓝色的微光，一盏油灯将熄未熄，光晕昏黄。土炕上，旅人裹着粗布薄被仰躺，额头搭着一条叠好的湿布；桌边，少女伏在臂弯里睡熟，发丝散落在桌面上。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_f6604bc7251f2f1c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-002",
+        "sceneId": "S03",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中近景。镜头缓缓推近土炕。旅人的眼皮轻颤着张开，睫毛上还挂着汗气，脸色由潮红褪成苍白。他撑起一条手臂，薄被从肩头滑落到腰际，湿布片歪在一旁。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_f6604bc7251f2f1c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-003",
+        "sceneId": "S03",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "look_back",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "description": "中景。旅人半坐起身，一手扶炕沿，肩膀微微发僵。他的目光越过熄灭的火塘，落在桌边伏睡的少女身上——她侧脸贴着衣袖，呼吸均匀，肩背随呼吸轻轻起伏，桌角还立着一只空药碗。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_f6604bc7251f2f1c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-004",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女伏睡的侧脸，睫毛在灯下投出细密的影子，嘴角带着一点放下心来的松弛。灰蓝的晨光沿着她的发梢慢慢爬上来，桌上的灯焰最后跳了一下，熄了。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_f6604bc7251f2f1c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:39+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-005",
+        "sceneId": "S03",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 7.0,
+        "characters": [
+          "旅人",
+          "少女"
+        ],
+        "description": "中全。镜头自左横移，掠过熄灭的灯、空药碗、散落的湿布，停在轻轻站起的旅人身上。他赤脚踩在微凉的地上，把滑落的薄被拾起，小心翼翼地走到桌边，替少女披上，晨光正从窗纸一寸寸漫进屋子。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_054213a6f12ddb09",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-001",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "清晨的雪山垭口，雪刚停，天地一片灰白。旅人独自立在齐膝的雪地里，厚重斗篷下摆被风掀起一角，肩上落着薄雪，身后是一串从山下来的脚印。低角度晨光把雪面照出淡金色，远山轮廓模糊在冷雾中。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_054213a6f12ddb09",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-002",
+        "sceneId": "S04",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "point",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "一块被雪半掩的青灰石台，台面正中压着一枚暗黄铜扣，扣面刻着细密纹路，边缘被摩挲得发亮。一只戴着毛线手套的手指轻轻将铜扣按稳，随后缓缓收回，指腹带起一小撮雪粒。环境光冷白，铜扣是画面里唯一暖色的东西。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_054213a6f12ddb09",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-003",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "truck_left",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "旅人背对镜头沿着雪坡一步步向下走，脚步陷进雪里又拔出，留下深深浅浅的坑。斗篷在风里鼓起，右手拎着一根短木杖。斜射的晨光把人和脚印的影子拉得很长，雪坡下方是一片灰蓝色的山谷雾气。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_054213a6f12ddb09",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:47+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-004",
+        "sceneId": "S04",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "action": "look_back",
+        "durationSec": 6.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "旅人在半坡停住，侧过脸回头望向垭口，呼出的白气在冷空气里散开，眉眼被围巾遮住只露出眼睛，睫毛上结着细霜。随着视角后拉，他的身影在茫茫雪原中越来越小，上方山脊线上那块青灰石台几乎看不见了，整个雪谷安静得只剩风声。"
+      }
+    ],
+    "script": "中·守夜",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": true,
+    "seconds": 31.4,
+    "hasPlan": true,
+    "violations": 0,
+    "problems": [],
+    "shots": 15,
+    "budgetDev": 0.0,
+    "perScene": {
+      "S01": 0,
+      "S02": 0,
+      "S03": 0,
+      "S04": 0
+    },
+    "sizeEntropy": 1.587,
+    "scenesWithShots": 4,
+    "shotsPerSceneVariance": 0.188,
+    "shotCountRatio": 1.0,
+    "shotList": [
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c8da69d18f8112f7",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:54+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "action": "walk",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "雪夜的一间土屋，泥炉里的炭火把土墙映成暗橙，屋里只这一团暖光。窗纸糊得薄，能看见外面院中的枯枝被积雪压得弯下去，雪还在无声地落。少女穿着一件洗得发白的厚棉袄，端着铜盆从屋角走到土炕边，脚步很轻，怕吵醒人。炕上旅人半躺着，身上盖着两件叠起来的旧衣，脸颊烧得通红，额角有一层薄汗。炉火一动，两个人的影子在墙上跟着晃。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c8da69d18f8112f7",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:54+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-002",
+        "sceneId": "S01",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女站在炕沿边，没有坐下，膝盖离炕沿还差半尺。她两只手在铜盆上拧一条湿毛巾，手背冻得发红，指节用力泛白。水被拧出来，一串一串滴回盆里，溅起细小的水星，盆底映着一点炉火的红。她的头发有些散，垂下来挡了半边脸，眼睛一直往下看着，看的是人，却又不敢看得太实。炉火忽亮了一下，她的侧脸跟着明了一瞬，又暗回去。背后窗纸透出灰蓝的夜色和白。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c8da69d18f8112f7",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:54+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-003",
+        "sceneId": "S01",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "旅人的脸占满画面，头歪靠在卷起的棉被上，嘴唇干裂起皮，睫毛被汗黏成一撮一撮。他呼吸很重，每吐一口气，唇前就浮起一小团白气，白气浓而快，散得也慢。火光从左侧打过来，映得他半边滚烫半边暗，眉骨上跳着一点橙色的光斑。他嘴边动了动，像在说什么，眼睛却没睁。画面边缘能看见一小片灰白的窗纸。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_c8da69d18f8112f7",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:15:54+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S01-004",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "stand",
+        "durationSec": 6.5,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "少女侧身对着炕，一手撑着炕沿弯腰，另一手把一根柴插进泥炉，火星爆起来，照亮她半张脸和下颏的汗。火光随即低下去，屋里一下暗了两分。她直起腰，从怀里摸出一枚黄铜扣，看了两秒，轻轻放在炕边的木凳上，然后退开半步，仍旧站着，两只手不知往哪放，最后攥住了自己的衣角。她的呼吸也看得见，一小口一小口，很轻。窗外那根弯下来的树枝在窗纸上投着细细的黑影。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2239bd11b5b3d18d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:02+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-001",
+        "sceneId": "S02",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "深夜的土屋，屋内只靠灶膛里一小堆暗红的余烬照明，暖光只够照亮少女的半个身子，其余角落沉在青黑的冷色里。少女跪坐在灶前，膝上搭着一条湿毛巾，肩背微微佝偻。她呼出的白气在冷空气里散得很慢。她身后的木格窗糊着窗纸，窗外积雪压得树枝低垂，纸面透进一层幽蓝的雪光。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2239bd11b5b3d18d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:02+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-002",
+        "sceneId": "S02",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女的一双手把湿毛巾拧成麻花，指节泛白，水珠一颗颗从布缝里挤出来，落进下方的铜盆，盆底已有浅浅一层水。手背上沾着水光，被灶膛的余火映成忽明忽暗的橘色。她拧得很慢，手腕有一瞬间停住，像在数还要拧几次。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2239bd11b5b3d18d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:02+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-003",
+        "sceneId": "S02",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女第三次把毛巾从盆里提起，动作明显比先前迟缓，肩膀一点点塌下去。灶膛里的火已经缩成几点将熄的红星，光弱得照不清她的脸，只有眼窝和下颌一点点轮廓。她的呼吸变浅，白气比刚才稀薄。画面右侧，窗纸外的雪又压弯了一根细枝，枝条抖了一下，落下一小片雪雾。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_2239bd11b5b3d18d",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:02+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S02-004",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 9.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "少女半侧着身，一只手悬在最后一根柴上方，停住了，指尖离木柴只有一寸，久久没有落下——她的目光落在将熄的火星上，喉头轻轻动了一下。随后她才把柴送进灶膛，火星腾起，橘红的光一下扑上她的脸颊和睫毛，把她的白气照得清清楚楚。窗外，压弯的树枝弹回，一蓬雪簌簌落下。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e8d1e12ab189c811",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-001",
+        "sceneId": "S03",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "action": "sit",
+        "durationSec": 7.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "description": "黎明前的内景全貌。低矮的土屋里，一盏将熄的灶火只剩暗红的炭，光线只够照亮桌面一圈。靠墙的草铺上，旅人盖着旧毯侧卧，肩背随呼吸极轻地起伏；桌边，少女伏在臂弯里睡着，肩头还搭着没来得及披好的外衣。窗纸糊的木窗占了半面墙，天光透进来是冷的青灰色，窗外一截树枝被积雪压得弯下来，雪粉贴住纸面。室内空气冷得能看见淡淡的一层雾气。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e8d1e12ab189c811",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-002",
+        "sceneId": "S03",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中近景。旅人撑起上身半坐起来，毯子滑到腰际。他的眼睛慢慢睁开，先是一片失焦，然后焦点落向桌边。炭火的余温在他脸上明明灭灭，一侧脸颊被映出温暖的橘红，另一侧仍是窗纸透来的冷青。他呼出的白气比之前淡了，几乎看不出形状，散在唇边就没了。他额上还留着退烧后的潮意，头发贴在鬓角。他不出声。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e8d1e12ab189c811",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-003",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "sit",
+        "durationSec": 6.0,
+        "characters": [
+          "少女"
+        ],
+        "description": "特写。少女侧脸贴在桌面的臂弯上睡着了，睫毛垂着，嘴唇微微发干。她的一只手还虚握着那条湿毛巾，指节因冷而泛白，毛巾一角垂在桌沿，最后一滴水正悬在布角边缘将落未落。桌面上摊着小小的水痕。火光从下方舔上来，忽强忽弱，她的呼吸很浅，鼻尖前几乎没有白气。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_e8d1e12ab189c811",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:12+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S03-004",
+        "sceneId": "S03",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "action": "sit",
+        "durationSec": 9.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "中景。旅人坐在草铺上，视线越过自己的膝盖，停在桌角那只铜盆上——盆里的水已经凉了，水面浮着一层薄薄的雾气，边缘沉着拧过的布纹。他的双手放在毯子上，一动不动，没有伸出去，也没有开口。晨光一点点爬高，把窗纸的枝影投在他手背上。他的喉咙动了一下，最终还是沉默，屋子只剩下炭火偶尔的一声轻响。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d32ce5093984c01c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-001",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "action": "stand",
+        "durationSec": 5.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "清晨的雪停了，天光泛着冷青。木屋门前的石阶上覆着一层新雪，窗纸后的屋里有极淡的暖光透出。旅人背着旧布包站在石阶前，微微俯身，一手扶着门框，另一手把一枚暗黄的铜扣按进台阶边缘的雪里。他的呼吸在冷空气里留下一小团白气，随后慢慢变薄。远处山脊上的树枝被雪压得弯下去。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d32ce5093984c01c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-002",
+        "sceneId": "S04",
+        "shotSize": "close",
+        "cameraMovement": "dolly_in",
+        "action": "stand",
+        "durationSec": 4.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "特写。粗糙的冻红手指松开，一枚磨得发亮的铜扣落在石阶的青灰石面上，扣眼朝上，边缘嵌进薄雪。指尖没有停顿，也没有再碰它一下，手随即抽离画面。铜扣旁边是踩实的雪印和一线未化的霜，晨光斜斜照过来，铜面反出一点钝钝的暖黄。"
+      },
+      {
+        "kind": "deliverable",
+        "msgId": "msg_d32ce5093984c01c",
+        "from": "storyboard_artist",
+        "to": "cinematographer",
+        "replyTo": "",
+        "traceId": "",
+        "stage": "storyboard",
+        "createdAt": "2026-11-03T16:16:19+00:00",
+        "refs": [],
+        "note": "",
+        "shotId": "SH-A3-S04-003",
+        "sceneId": "S04",
+        "shotSize": "full",
+        "cameraMovement": "dolly_out",
+        "action": "walk",
+        "durationSec": 8.0,
+        "characters": [
+          "旅人"
+        ],
+        "description": "全景。雪后的山坡一片素白，晨光很淡。旅人沿着下山的小路走远，背影在雪地里留下第一串脚印，肩上的布包随步子轻轻晃动。他没有回头。木屋的窗纸和石阶在画面一侧渐渐缩小，门前的雪面上留着一枚小小的铜点，枝头的积雪无声塌落一小片。"
+      }
+    ],
+    "script": "中·守夜",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S03：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S04：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 30.6,
+    "script": "中·守夜",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·守夜",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] IncompleteRead: IncompleteRead(0 bytes read)；S03：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S04：分镜师调用失败：[network] URLError: <urlope",
+    "seconds": 79.1,
+    "script": "中·信",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·信",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·信",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·信",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·信",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·信",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·薰衣草",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 58.9,
+    "script": "长·空屋",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.3,
+    "script": "中·渔火",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.2,
+    "script": "中·渔火",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.2,
+    "script": "中·渔火",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.2,
+    "script": "中·渔火",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.2,
+    "script": "中·渔火",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 25.2,
+    "script": "中·渔火",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·回声",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·回声",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·回声",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.7,
+    "script": "中·回声",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.6,
+    "script": "中·回声",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 33.6,
+    "script": "中·回声",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 1,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 2,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S03：分镜师调用失败：[network] U",
+    "seconds": 50.5,
+    "script": "长·摆渡",
+    "repeat": 3,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 1,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 2,
+    "order": [
+      "B",
+      "A"
+    ]
+  },
+  {
+    "condition": "A-单智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "condition": "B-多智能体",
+    "ok": false,
+    "reason": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>；S02：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+    "seconds": 16.8,
+    "script": "短·钥匙",
+    "repeat": 3,
+    "order": [
+      "A",
+      "B"
+    ]
+  }
+]
