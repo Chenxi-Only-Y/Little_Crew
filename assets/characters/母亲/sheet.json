@@ -1,0 +1,30 @@
+{
+  "kind": "character.sheet",
+  "name": "母亲",
+  "characterId": "CHAR-568F",
+  "appearance": {
+    "hair_style": "高马尾",
+    "hair_color": "深栗棕",
+    "eye_color": "酒红",
+    "build": "结实挺拔",
+    "outfit": "白色衬衫配马甲",
+    "outfit_accent": "腰间系麻绳",
+    "signature": "颈间挂着细绳坠子",
+    "age_band": "中年"
+  },
+  "promptFragment": "中年，结实挺拔身形，深栗棕高马尾，酒红眼睛，身穿白色衬衫配马甲，腰间系麻绳，颈间挂着细绳坠子",
+  "scenes": [
+    "SC-E100-002",
+    "SC-E100-003"
+  ],
+  "aliases": [],
+  "overridden": [],
+  "notes": "",
+  "pending": [
+    "anchorSet"
+  ],
+  "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
+  "sourceEpisodeId": "E100",
+  "sourceSeed": "f9df1eadebfbd450",
+  "writtenAt": "2026-10-22T14:44:33"
+}

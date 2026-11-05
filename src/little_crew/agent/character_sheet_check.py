@@ -382,16 +382,25 @@ def _semantic_hints() -> None:
     check("I12 父亲 → 中年", fu.age_band == "中年")
 
     shao = design_appearance("少女", story_seed="s")
-    check("I13 ★ 少女 → 少年（不会得到低盘发）",
-          shao.age_band == "少年" and shao.hair_style != "低盘发",
+    # ⚠️ 断言在 2026-11-05 改过：原来期望 `少女 -> 少年`，
+    # 但「少年」在中文里偏男性，提示词写它就等于把女孩画成男孩
+    # （真实发生过）。现在明确女性写「少女」，中性才写「青少年」。
+    check("I13 ★★ 少女 → 少女（不是少年，否则会画成男孩）",
+          shao.age_band == "少女" and shao.hair_style != "低盘发",
           f"{shao.age_band}/{shao.hair_style}")
 
     wrong = [(nm, want, design_appearance(nm, story_seed="s").age_band)
              for nm, want in (("老奶奶", "老年"), ("爷爷", "老年"),
                               ("妈妈", "中年"), ("哥哥", "青年"),
-                              ("妹妹", "少年"))
+                              ("妹妹", "少女"))
              if design_appearance(nm, story_seed="s").age_band != want]
     check("I14 各类称呼的年龄都正确落位", not wrong, str(wrong))
+
+    # 名字里没有年龄线索时**不做保证** —— 只能保证落在合法选项里。
+    # （`阿杏` 这类名字没有语义线索，年龄是抽样出来的。）
+    _x = design_appearance("阿杏", story_seed="s").age_band
+    check("I14b 无年龄线索的名字 -> 仍落在合法选项内",
+          _x in APPEARANCE_OPTIONS["age_band"], _x)
 
     illegal: list[str] = []
     for nm in ("老奶奶", "父亲", "少女", "少年", "母亲", "爷爷"):

@@ -397,6 +397,11 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 这样它能核验「证据链说的和盘上的一致」，而不依赖被核验方。
     # 放进 src/ 会变成「被测系统自己给自己出证明」。
     "tools",
+    # 资产库（2026-11-05）：跨集复用的角色定妆图 ——
+    # `assets/characters/<名字>/anchor.png`。
+    # 它**不属于任何一集**，所以不能放 outputs/（那里会定期清理）；
+    # `runtime/anchors.discover()` 会先找工作目录、再退到这里。
+    "assets",
     # 前代实现（v0.3.0，LangGraph 版）。
     #
     # ⚠️ 它**不是本项目的一部分**，是**同仓库的历史归档**。

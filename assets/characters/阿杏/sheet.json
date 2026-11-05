@@ -1,0 +1,29 @@
+{
+  "kind": "character.sheet",
+  "name": "阿杏",
+  "characterId": "CHAR-5BF9",
+  "appearance": {
+    "hair_style": "利落齐耳短发",
+    "hair_color": "暗红棕",
+    "eye_color": "浅灰",
+    "build": "娇小匀称",
+    "outfit": "亚麻长裙",
+    "outfit_accent": "胸前别一支干花",
+    "signature": "颈间挂着细绳坠子",
+    "age_band": "青少年"
+  },
+  "promptFragment": "青少年，娇小匀称身形，暗红棕利落齐耳短发，浅灰眼睛，身穿亚麻长裙，胸前别一支干花，颈间挂着细绳坠子",
+  "scenes": [
+    "SC-E100-002"
+  ],
+  "aliases": [],
+  "overridden": [],
+  "notes": "",
+  "pending": [
+    "anchorSet"
+  ],
+  "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
+  "sourceEpisodeId": "E100",
+  "sourceSeed": "f9df1eadebfbd450",
+  "writtenAt": "2026-10-22T14:44:33"
+}

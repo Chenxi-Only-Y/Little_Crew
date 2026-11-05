@@ -1,0 +1,33 @@
+{
+  "kind": "character.sheet",
+  "name": "旅人",
+  "characterId": "CHAR-12E5",
+  "appearance": {
+    "hair_style": "编发双辫",
+    "hair_color": "深栗棕",
+    "eye_color": "琥珀",
+    "build": "纤细高挑",
+    "outfit": "深灰呢料外套",
+    "outfit_accent": "腰间系麻绳",
+    "signature": "眉间有一颗小痣",
+    "age_band": "青年"
+  },
+  "promptFragment": "青年，纤细高挑身形，深栗棕编发双辫，琥珀眼睛，身穿深灰呢料外套，腰间系麻绳，眉间有一颗小痣",
+  "scenes": [
+    "SC-E100-001",
+    "SC-E100-002",
+    "SC-E100-003",
+    "SC-E100-004",
+    "SC-E100-005"
+  ],
+  "aliases": [],
+  "overridden": [],
+  "notes": "",
+  "pending": [
+    "anchorSet"
+  ],
+  "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
+  "sourceEpisodeId": "E100",
+  "sourceSeed": "f9df1eadebfbd450",
+  "writtenAt": "2026-10-22T14:44:33"
+}
