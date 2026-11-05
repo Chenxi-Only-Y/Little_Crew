@@ -1,0 +1,164 @@
+{
+  "episodeId": "ER5",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：离开的决定没有任何阻力。S02里父亲明确下了禁令（\"明天集会你不许去……让村里人看见你在伺候一个野男人\"），这条冲突线到S03完全消失——少女\"身上只有一个小包袱\"就走出了门，父亲、母亲、村里人的目光一个都没有出现；旅人的\"我要回去了\"也只是通知，不是对抗。整场是顺势而为，没有对手。', suggestion='让S02的禁令在S03兑现为阻力：父亲堵在门口或当众拦她，村民围观、有人指责她跟外乡人走；让旅人也真正推拒一次（\"那条路不该有你\"）。她必须跨过一道具体的障碍才能离开，走的这一步才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折的起点没有铺垫。少女突然问\"你到底是谁？\"——但从S03决定同行到此刻，剧本没有给她任何怀疑的种子：他一路上没有异样、她此前毫无迟疑（S03还笑着说\"我跟你走\"）。情绪从信任到发抖的翻转缺少触发点，像作者需要她怀疑了，她才怀疑。', suggestion='在S03末尾或S04前半程埋两到三处反常细节供她（和观众）累积：他不进食、踩不出脚印、对\"家\"和过去一律岔开、花穗靠近他会轻微发蔫。让\"你到底是谁\"是压垮的最后一步，而不是凭空一问。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：收尾的决定没有反向拉力。\"然后她站起来，沿着那条路继续往前走\"——此刻她手里什么都没有了，村里、父亲、回去的路一概不在场，没有任何东西拽她回头，\"继续走\"因此不是选择而是旁白；相应地，这一走究竟付出了什么（与S02建立的家和集会的决裂）在结局处也没有被掂量过，代价在S04丢掉旅人后就不再增加了。', suggestion='在她跪着捡花瓣的片刻加入一次真实的回撤冲动：山下传来集会的铃声/家的方向的炊烟，她站起来时先朝回走了半步，才转身往北。让她亲手放弃\"回去\"的可能，最后的前行才既是转折也是代价。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 7.077
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 115.239
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人明确拒绝少女：\"那条路不该有你\"，这是一次强对抗；但下一场（S04）开场两人已并肩上路，少女如何说服他、他为何改口，全部被跳过。冲突被提出后没有任何交锋就消失了。', suggestion='在 S03 末尾或 S04 开头补一个短交锋：少女以\"我已没有家可回\"顶回去，旅人被迫妥协（或默许），让她的跟随成为一次挣来的结果，而不是剪辑上的既成事实。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：\"你到底是谁？\"是全剧的正面对峙，但旅人\"没有回答\"，既不辩解也不抵抗，被花束一掷就直接化烟散去——高潮的阻力几乎为零，对抗在最该激烈的时刻自动解除。', suggestion='让旅人有最后一层抵抗：比如他试图阻拦她掷花、或用\"留下来我就一直在\"来诱惑她，逼少女在仍有退路时主动选择拆穿，胜利才由她付出动作换来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：最后一转\"她把捡起的花瓣慢慢撒回风里，转身往北\"缺少推动力：旅人已散，她离家的唯一理由在 S04 刚被抽走，此刻\"往北\"没有任何新的拉力支撑，只是作者替她决定。', suggestion='在散花瓣时给一个具体的触发——比如花瓣的香气仍指向北方、或她摸到包袱里旅人留下的某件东西——让\"转身往北\"是她看完代价后仍主动下的决定，而非无因的落幕。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 17.882
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 67.796
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：这场的代价全部由旁白一句带过——“后来村里人提起那年的春集，都说没看见她……从那以后，再没有去过”。她为留人付出的名声、春集、与村里人的关系，观众没有在现场看到任何一次被索取，只有事后转述。', suggestion='把代价搬进场内：让一个村民在门口探头、母亲把她的篮子收起来、或父亲第二天一言不发地把她的春集衣裳压到箱底——让“失去”当场发生一次，再用旁白补第二次，代价才咬得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：关键的局势转折发生在场外：S02 里她与父亲的对峙没有结果，到了 S03 她却说出“我已经没有家可回了”——家是怎么断的、父亲说了什么、她是什么时候离开的，全部跳过，这句台词的分量因此悬空。', suggestion='在 S03 开场补一个极短的断裂镜头（门在她背后关上、桌上扣着的碗、空了的院子），或回 S02 结尾让父亲说出那句断绝的话；让“没有家可回”是观众刚看见的事，而不是角色的口头交代。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的诱惑（“留下来，我就一直在”“我可以给你一个家”）和少女的回绝之间缺少真正的筹码交换：她只用一句话“下面有我爹的屋檐，有我妈的一只袖口”就击破了他，而这两样恰恰是 S03 刚被她放弃的东西，说服力自相抵消。', suggestion='让诱惑先赢一回合：他提到的“家”应精准戳中她 S02–S03 真正失去的东西，逼她动摇半步（如手伸向他又缩回），再由她用代价换回主动——先输后赢，转折才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：结尾把 S04 的揭示反悔了：S04 旅人已明说“我就是你想远行的心”，他不是实体；S05 却写“她是循着花香，去寻他去了”，把“他”重新坐实为一个可被寻找的对象，两处互相打架，最终的转折被稀释成含糊。', suggestion='二选一：若旅人是心象，结尾应写成她循香走向自己的方向（“去寻那个会走的人”可改为她成为那个会走的人）；若结尾要保留“寻他”，则 S04 的揭示须留出余地（烟散前不把话说死），让“他到底存不存在”成为有意的悬念而非前后矛盾。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.319
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 155.247
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 47.4（REVISE）；最好的是第 2 轮（58.5 分）"
+}

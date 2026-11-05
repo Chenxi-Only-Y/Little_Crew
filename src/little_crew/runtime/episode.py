@@ -1030,6 +1030,49 @@ class EpisodeRunner:
             for s in picked
         }
 
+        # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
+        #
+        # 审片接在**渲染之后**：审的是真产物，不是意图。
+        # 但本机 LLM 客户端没有视觉能力，所以只审**可数项**
+        # （存在/尺寸/体积/串镜），并把"没审什么"写进产物 ——
+        # 缺观测 != 通过。
+        try:
+            from little_crew.review import image_review as _irv
+
+            _base0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _paths: dict[str, list[str]] = {}
+            for _sid, _names in per_shot_artifacts.items():
+                _got = []
+                for _n in _names:
+                    _f0 = Path(str(_base0)) / _n if _base0 else None
+                    if _f0 is not None and not _f0.is_file():
+                        _hits = list(Path(str(_base0)).rglob(_n)) if _base0 else []
+                        _f0 = _hits[0] if _hits else _f0
+                    _got.append(str(_f0) if _f0 is not None else "")
+                _paths[_sid] = [x for x in _got if x]
+            _review = _irv.review(
+                picked,
+                artifacts_by_shot=_paths,
+                expect_size=(tuple(self.engine_resolution)
+                             if isinstance(self.engine_resolution, (tuple, list))
+                             else None),
+                hashes_by_shot=dict(artifact_hashes),
+            )
+            _wd1 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd1:
+                (_out1 := Path(str(_wd1)) / "delivery").mkdir(parents=True, exist_ok=True)
+                import json as _j1
+
+                (_out1 / "image_review.json").write_text(
+                    _j1.dumps(_review, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
+            _err_n = int((_review.get("counts") or {}).get("error", 0))
+            print(f"  审片（可数项）：{_review['total']} 个产物 · 严重 {_err_n} 条")
+            self._image_review = _review
+        except Exception as _e_rv:                            # noqa: BLE001
+            print(f"  ⚠️ 渲染审片未运行：{type(_e_rv).__name__}: {_e_rv}")
+
+
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
             shots=[s.as_dict() for s in picked],

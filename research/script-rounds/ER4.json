@@ -1,0 +1,163 @@
+{
+  "episodeId": "ER4",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：出发这一场的阻力全部在画外：「母亲在门后站着，没有出来。父亲没有来。」没有人真正拦她，老奶奶只是塞花，旅人只是说「我要回去了」。她笑一下说「我跟你走」就完成了决定，冲突没有正面对撞。', suggestion='把阻力搬上舞台：让母亲堵在门口夺下包袱、或父亲出现并撂下一句硬话，让她必须当场顶回去；也可以让老奶奶的赠花变成条件（要求她承诺什么才准带走），使「离开」当场付出代价而不是靠旁白补。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：这一场的关键转折——「忽然抓住她的手，喊了一个名字——不是她的名字，是个她没听过的、很长的地名」——之后只接「她的手停在半空」，紧接着「从那以后，她再没有回过村子里的集会」。因果被压扁了：读者分不清她不再赴集会，是因为父亲的禁令，还是因为那个陌生地名。转折没有落成可辨认的后果。', suggestion='拆成两条线各付各的代价：父亲的禁令在当夜就产生可见结果（她被关在门外/被当众点了名）；陌生地名则留一条钩子，到 S03 或 S04 由她开口追问、或与「北边」的回答对上，让这一夜的转折在后文有回响。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「旅人没有回答。他只是笑。」对手零抵抗：没有辩解、没有反劝、没有阻拦，她一举花束就结束了。整场是她单方面的动作，缺少来回，情绪张力靠花瓣散开的画面硬撑。', suggestion='给他一个反手：让他先提出一条更诱人的路（比如「你回头看一眼村口，就当没捡过我」），或伸手来挡、来夺花束，让「掷出去」成为她拒绝一个真实选项的举动，冲突才有一来一回。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾的全部转折与主题都由转述和台词交付：「后来村里人说……」「也有人说……」以及老奶奶的「我送的不是花，是让她自己看清楚」。观众是被告知意义，而不是看到她身上发生变化；场内活着的动作只有捡花瓣和走进雾里。', suggestion='删掉或只留老奶奶那句话的半截，改用一个动作承载她的选择（例如把母亲放在门口的那碗水端起来倒进溪里，或把花瓣埋在路边再起身）；「两种说法」的分歧留在画面细节的矛盾上，让观众自己得出结论。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 16.673
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 138.424
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒「天亮他要不走，你就跟他一起滚」在本场没有结算。天亮的节点写成了「门还闩着／她从窗户翻出去／院子里空着」，既没有正面回答旅人走没走，也没有让父亲回来兑现威胁；这条最硬的阻力到S03变成了母亲夺包袱、父亲在屋里剁柴刀，父女对抗始终没有正面对撞的回合。', suggestion='把黎明写成结算点：她推开门，父亲就守在门口（或旅人已被赶走、父亲坐在堂屋里等她），让「一起滚」这句话被当面说出并执行，她付出被逐出家门的实际代价再离开；或者删掉通牒，改成更持续、更有回合的施压方式，别立一个到期不兑现的最后期限。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：对抗的触发缺乏动因。S04里他说「你总得问的。什么时候问，你自己挑」，主动权完全交给了她；到了S05他却「忽然伸手来夺花束」，与自己刚立的立场矛盾，夺花想达成什么也没有交代。紧接着「她用拇指生生把花穗捻开」同样目的不明——既不像防守也不像进攻，这场唯一的身体冲突因此只是过场动作。', suggestion='给他夺花一个明确目标：比如他要在她问出口前毁掉花（逃避被命名），或反过来逼她现在就问（结束这场拖磨），两者都会改变局势。同时把捻开花穗写成有代价的动作——要么是他抢夺中她被迫自伤护花，要么是她主动毁花以示「我应了」的决心，让这个动作成为她选择的外化。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：同一场内先确定后推翻。前半段是确证的：她埋花瓣、倒净水、走进晨雾——她上路了；结尾又用「也有人说那天清早还看见她蹲在自家门口洗父亲那只空碗」把上路否掉。两个版本互斥，观众无法判断S05付出的代价（问题用掉、旅人永失、离家）到底有没有兑现，高潮的结算被稀释了。', suggestion='只保留一个收束方向：要么以她走进晨雾的背影结束，传闻只补充「往北」这一笔；要么整场改造成传闻视角——先由村口的闲话讲起，画面再回到她埋花瓣、上路，让「洗空碗」成为村里人对她的误解（她确实洗了碗，但洗完就走了），而不是与上路互斥的另一种结局。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.075
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 124.412
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 66.91,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：影子揭示是本场最强的转折点——「地面上他的影子淡得像一层水渍，风一动，就散」，但少女只说了半句「你的影子……」就被「走吧」打断，随后毫无反应地「跟着他走上北边的路」。发现异常→立刻顺从，转折没有产生任何行动或情绪后果，局势等于没变。', suggestion='让她的反应成为转折的落点：可以让她握紧花束迟疑半步、故意改走另一侧试探影子，或嘴上应着、手里却把老奶奶的话重新记起。把「发现」变成一个小小的对抗动作，为 S05 的夺花角力预埋动机。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场的阻力只存在于转述中——「后来村里人是这样说的」，村人甲、乙的台词是画外议论，既不在场，也没有对少女形成任何实际阻拦；结尾她只是自己埋花、走进雾里，全程无对抗。', suggestion='让村人真正出现在场景里（比如路口的指点、拦问、要她把「不洁」的东西留下），把谣言变成眼前的阻力；或者删去不在场的议论，只保留她与这片土地的告别，让场次功能单一而干净。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 66.91,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 33.585
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.937
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 66.9）"
+}

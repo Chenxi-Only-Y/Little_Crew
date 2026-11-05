@@ -1,0 +1,162 @@
+{
+  "episodeId": "ER3",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：预期中的正面对抗落空——原文“父亲赶来，站在几步外，没有伸手拦她”，阻力被提前卸掉，只剩一句口头断绝“出了这个村，就别再姓这个姓”；少女的回应只是“弯腰，行了一礼”，没有行动上的撕扯，场景后半段近乎平铺。', suggestion='让父亲真的出手：夺下包袱、或逼她交出旅人（那束薰衣草），逼少女做出一个有形的对抗动作（推开他的手、把包袱抢回来、当众顶回去）。“断姓”的代价放在这次对抗之后才落下来，行礼才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的抵抗“我得走……不能连累你”被一句“先活下来，再威胁我”化解，随即“低低笑了一声，喝下药”——冲突的解决既无阻力也无代价，少女这一夜的强硬没有换来任何可见的损失。', suggestion='让他真挣到门口／打翻药碗，逼少女用更狠的手段（甚至以揭发他身份相威胁）才把人按回去；同时让她为“留下他”当场付出代价：药洒光、伤口重新裂开、或父亲被动静惊动推门进来，把S02的父女冲突延续到这一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转折交给了旁白传闻——“后来村里人说……也有人说……只有她父亲……”，把结局的重量推给画外叙述；场内唯一的动作“站了很久，终于把包袱重新系紧”之前，回村与北方的拉扯只是一句静态陈列，情绪是平的。', suggestion='把传闻改成画面（父亲在村口多站一会儿可直接切空镜或尾声场）；并让少女在原地做出一次可见、有代价的抉择——比如先朝回村的方向走出几步，再转身走进雾里，让“不回去”成为一个动作而不是一句解说。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.261
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 101.989
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场是单向施救，没有阻力也没有可能失败的关口：\"她走过去，蹲下……一层一层缠紧，最后用膝盖顶住，使劲打了个死结\"，一路顺进到底；唯一的悬念点\"她抬头望了望山路两头，都没有人\"被一笔带过，没有变成一次真正的选择或风险。', suggestion='给施救加一道关口：比如旧布一解开血就止不住、旅人半昏迷中挣扎推开她，或山路上远远传来村民说话声，逼她当场决定\"藏还是弃\"；让她在竹篮里的花和他的命之间做一次明确取舍，救人的代价和风险才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价没有兑现。父亲下了最后通牒\"要么他明天走，要么你别再进这个门\"，结果是她一寸一寸把碗抽走、父亲\"最后松开了\"，本场以父亲退让收尾——这句狠话在本场及后续都没有被执行，她照样进了里屋，威胁落空让对抗显得廉价。', suggestion='让通牒产生后果：父亲真把她关在门外（或锁上里屋门、夺走铜铃），她是在门外/冷处把药端进去、守到天亮的；这样S04\"出了这个村，就别再姓这个姓\"和S06父亲守在村口才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：冲突是单向的。旅人全程不还手、不辩解、不提要求——\"他还是不说话，只是向她伸出手\"，对手完全被动；她的质问\"回哪儿？\"没得到任何对抗性回应，于是\"少女举起花束，朝着他掷了过去\"成了她单方面对一个不抵抗对象的行动，输赢都不成立。', suggestion='给他一次反压：让他抓住她的手要把她拉上路，或半真半假地答一句\"回你还没见过的地方\"继续诱导她走；让她在\"跟他走的诱惑\"和\"问清真相\"之间做过选择之后才掷花，转折才是一次挣来的决定。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场的对抗与反转都偏软。全剧最强的对手父亲在本场\"没有走，也没有喊，只是站着\"，不拦不劝，等于提前卸掉了最后的阻力；她\"退回那三步，转过身，把空着的两只手垂下来，朝北边走去\"的反转没有触发物，情绪上是凭空翻过去的。', suggestion='让父亲做最后一次实质阻拦——从石墙上下来横在路中，或哑着嗓子喊她一声，逼她当面拒绝一次；她退回三步、再转身朝北，才是一次有代价的选择，结尾\"父亲的手从石墙上放下来\"也才有落点。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.105
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 191.291
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 78.66,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02 父亲下过最后通牒——「要么他明天走，要么你别再进这个门」「明天的集会，你别去了。我只当没生过你」，但到了 S03，父亲完全缺席，少女「身上只有一个小包袱」径直从屋里出来宣布「我跟你走」，村人只是「低声议论」，母亲只是「没有出来」。离家这场本该是全剧阻力最大的时刻，却没有任何人阻拦、没有任何对抗，出口被上一场景抬高的门槛在这一场凭空消失了。', suggestion='让阻力在场：父亲堵在门口或村口，真正执行 S02 的通牒（比如要求她把包袱交回、或当众宣布断绝）；或至少安排母亲出面拉拽一次被她挣脱。让「跟旅人走」这个决定付一次可见的代价，S04-S05 的拒绝才更有分量——她要先证明自己能为他离开家，才能在山路上证明自己能为真相留下。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 78.66,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.18
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 84.254
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 78.7）"
+}

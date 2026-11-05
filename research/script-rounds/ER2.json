@@ -1,0 +1,166 @@
+{
+  "episodeId": "ER2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场唯一的阻力「郎中不肯出诊」在场外就解决了——「她把母亲给的银坠子塞进郎中手里，才换来这一碗药」是一句叙述，不是场面。真正的对手（郎中）没有出场，冲突在正文开始前已经结束，剩下的是换药、发现伤口愈合的静止段落。', suggestion='把郎中请进门：让他出诊、他查看伤口后变色拒绝、她当面交出银坠子、郎中收下又迟疑——把阻力和代价放在台上发生。伤口自愈的发现仍留在他走后，作为本场的转折点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：离村这一场没有任何人真正阻拦她：父亲母亲只是「没有人出来」，村民只是「绕开他走」，老奶奶只给了一个警告。全部阻力都是静态背景，唯一开口的反对来自旅人（「你不知道我是谁」），而他其实是在邀请她走。', suggestion='给离场加一道活的关卡：父亲追到院门口、或村民堵在巷口、或老奶奶的警告在此处变成具体的动作（伸手拽住她的包袱）。让「回头看一眼屋顶」发生在一个有人拦着的对峙之后，她才付出了真正的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人消散的解决几乎没有代价：她为他离开了村子、放弃集会、交出银坠子，但这一场里失去他只表现为「她伸手去抓，什么也没抓住」——之前几场累积的沉没成本，在这里没有被结算。', suggestion='让代价在消散前后显形：她先交出的是自己的名字或那束花（唯一与村子的联系物），或者在烟散后她才发现包袱里母亲缝的披肩碎片也一起没了。让观众感到她用什么换来了「我就是你想远行的心」这句话。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：整集的最终代价被推到了场外叙述：「后来村里人说，再没有人见过她」「跟着香走，就再没回来」——她选择的后果、她是否也成为传说的一部分，全由旁白交代，舞台上只剩捡花瓣、走进雾里两个动作，最后的转折没有被演出来。', suggestion='把传说的一部分搬进画面：例如雾中出现另一个循香而来的身影，或她走出雾口时背后的村子彻底消失。让最后一步既是转折也是代价，而不是用画外音替她收尾。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.45
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 77.649
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力在本场内自行泄气：前脚还是重搁碗、压低声音的对峙（“今晚集会，你不去了？”），后脚却是“父亲甩开她，却没有再追”，天亮前只用一句“随她”收场。对抗没有升级，也没有任何一方被真正逼到墙角，父女冲突等于自消自解。', suggestion='给父亲的禁令一个不可逆的动作——扣下药碗/药钱、锁上里屋门、把她的披肩扔进火里——让少女必须付出可见代价才能继续守夜；或将这场对峙只推进到“她端药进屋、父亲摔门”，把‘随她’的让步留到 S04 出门时再兑现，使阻力贯穿两场而不是当场消化。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：道具穿帮：“坠子没有了”不能算作本场新付的代价——S03 中少女已把那枚银坠子交给郎中（“伸手把坠子拢进掌心”），此刻包袱里本就不该有它，重复计数让代价清单失真，也削弱了 S03 已经付出的那笔钱的分量。', suggestion='删去“坠子”，把清单改为她此刻真正还握在手里的东西（花束、母亲缝的披肩补片），或改写 S03——她当掉的是别的物件、只把坠子留在身上，使 S05 这一掷能连坠子一起失去。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场没有阻力：两名少女的相遇只完成一次信息交换（“你见过一个旅人吗？”“见过”），她既无隐瞒的挣扎，也无被追问的压力，全段靠氛围推进，‘脚下却有了路’的落点缺少对抗来托住。', suggestion='把‘要不要说出旅人化烟的真相/要不要提醒她别走’写成她当下的两难：让那少女再追问一句（“他没让你带话吗？”），她必须咽下真相、亲手把最后一瓣花放进篮子并目送对方走上同一条路——用一次有代价的隐瞒确立结尾，而不是一次平静的指路。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.761
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 141.846
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：少女救人全程零阻力：她发现伤者、探额、撕披肩、包扎，一气呵成，没有任何反对力量或自我犹豫——\"你不能死在这里\"之后，行动顺利到底。观众从第一分钟就知道她会救，缺少对抗。', suggestion='给一道阻力再放行：或天色将暗、回村的路远且她独行有风险；或她先犹豫（救外乡人会惹父亲生气），让撕披肩成为\"明知要挨骂仍要做\"的主动选择，冲突才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：结尾最该紧张的一关被轻轻放过：\"郎中瞟她一眼，没多问，把干粮压在药包上\"——钱不够、路要走远的对抗，在最后一句直接消解，郎中从压价者变成顺从的帮手。', suggestion='让郎中留一道坎：干粮不单卖、或要她拿花再抵，逼她把\"给自己留的花\"和仅剩的铜板全部交出去——把交易的最后一层对抗用尽，代价才完整。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲从 S02 的\"药我扣下了\"\"钥匙往腰上一挂\"，直接跳到\"随她\"，中间没有任何台阶：一个把披肩塞进灶膛的人，一句\"随她\"就放行，转变来得太便宜。', suggestion='在放行前埋一个过渡动作：他先攥紧钥匙（仍想锁她），看见她手心贴的布/空脖子，手指才松开，钥匙没摘下——他不是原谅，是认输。让\"随她\"带出他付出的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：\"焦布从她掌心脱出去……她伸手，指尖几乎碰到了布角，又收了回来\"——母亲披肩的最后遗物落水，本是全剧最重的失去，\"又收了回来\"让她的动作读起来像主动放弃，动机不明，代价感被削掉。', suggestion='二选一：改成她追进溪边、抓了个空，看着水把它冲走（失去是被动的、够疼）；或删去\"收了回来\"，保留她攥紧花束没去追——用\"来不及\"制造遗憾，别用含糊的\"收回手\"。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾\"后来村里人说，再没有人见过她。也有人说，她是循着花香，去寻他去了\"——她付出的最终代价被推给旁人传说，观众没有亲眼看到她的损失，收束落在别人嘴里，重量旁落。', suggestion='把传说砍掉，落在她自己的身体动作上：她目送新少女走后，低头看自己空着的手/破了的水泡，继续往前走——让代价发生在她身上，而不是发生在村里人的闲话里。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 51.31
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 116.655
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 47.4（REVISE）；最好的是第 2 轮（58.2 分）"
+}
