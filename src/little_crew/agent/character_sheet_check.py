@@ -117,7 +117,7 @@ def _determinism() -> None:
 def _options_closed() -> None:
     # ⚠️ 年龄段天然只有三类（少年/青年/中年），不该与其它槽位同一门槛。
     # 早期版本要求全部 >=5，那是把"选择够多"这件事写成了统一数字。
-    _FLOOR = {"age_band": 3}
+    _FLOOR = {"age_band": 3, "gender": 3}  # 性别同年龄：天然三档
     thin = {k: len(v) for k, v in APPEARANCE_OPTIONS.items()
             if len(v) < _FLOOR.get(k, 5)}
     check("B1 每个槽位都有足够多的选择（年龄段下限 3，其余 5）",

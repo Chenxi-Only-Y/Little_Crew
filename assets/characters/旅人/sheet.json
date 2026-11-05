@@ -3,16 +3,17 @@
   "name": "旅人",
   "characterId": "CHAR-12E5",
   "appearance": {
-    "hair_style": "编发双辫",
-    "hair_color": "深栗棕",
-    "eye_color": "琥珀",
+    "hair_style": "齐肩内扣短发",
+    "hair_color": "银灰",
+    "eye_color": "酒红",
     "build": "纤细高挑",
-    "outfit": "深灰呢料外套",
-    "outfit_accent": "腰间系麻绳",
-    "signature": "眉间有一颗小痣",
+    "outfit": "素色长袍系腰带",
+    "outfit_accent": "袖口卷起两道",
+    "signature": "右耳戴一只小银环",
+    "gender": "男性",
     "age_band": "青年"
   },
-  "promptFragment": "青年，纤细高挑身形，深栗棕编发双辫，琥珀眼睛，身穿深灰呢料外套，腰间系麻绳，眉间有一颗小痣",
+  "promptFragment": "男性，青年，纤细高挑身形，银灰齐肩内扣短发，酒红眼睛，身穿素色长袍系腰带，袖口卷起两道，右耳戴一只小银环",
   "scenes": [
     "SC-E100-001",
     "SC-E100-002",
@@ -29,5 +30,6 @@
   "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
   "sourceEpisodeId": "E100",
   "sourceSeed": "f9df1eadebfbd450",
-  "writtenAt": "2026-10-22T14:44:33"
+  "writtenAt": "2026-10-22T14:44:33",
+  "storySeed": "ep1"
 }

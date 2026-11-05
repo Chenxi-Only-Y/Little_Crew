@@ -3,16 +3,17 @@
   "name": "老奶奶",
   "characterId": "CHAR-BB1A",
   "appearance": {
-    "hair_style": "蓬松微卷中长发",
-    "hair_color": "银灰",
-    "eye_color": "深褐",
-    "build": "娇小匀称",
-    "outfit": "米色长风衣",
-    "outfit_accent": "肩头搭一匹短披肩",
-    "signature": "惯常把袖口捏在手里",
+    "hair_style": "侧分长直发",
+    "hair_color": "乌黑",
+    "eye_color": "墨绿",
+    "build": "清瘦文弱",
+    "outfit": "素色长袍系腰带",
+    "outfit_accent": "领口一枚铜扣",
+    "signature": "右耳戴一只小银环",
+    "gender": "女性",
     "age_band": "老年"
   },
-  "promptFragment": "老年，娇小匀称身形，银灰蓬松微卷中长发，深褐眼睛，身穿米色长风衣，肩头搭一匹短披肩，惯常把袖口捏在手里",
+  "promptFragment": "女性，老年，清瘦文弱身形，乌黑侧分长直发，墨绿眼睛，身穿素色长袍系腰带，领口一枚铜扣，右耳戴一只小银环",
   "scenes": [
     "SC-E100-004"
   ],
@@ -25,5 +26,6 @@
   "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
   "sourceEpisodeId": "E100",
   "sourceSeed": "f9df1eadebfbd450",
-  "writtenAt": "2026-10-22T14:44:33"
+  "writtenAt": "2026-10-22T14:44:33",
+  "storySeed": "ep1"
 }

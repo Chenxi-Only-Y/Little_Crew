@@ -91,6 +91,10 @@ APPEARANCE_OPTIONS: Mapping[str, tuple[str, ...]] = {
     # 名字没表态时用中性的「青少年」。
     # 不这么分，`少女` 的提示词会变成「少年」→ 定妆图直接画成男孩
     # （2026-11-05 真实发生：生成出来的「少女」是个男性）。
+    # ⚠️ 性别必须**写进提示词**，不能只靠服装/发型让模型猜
+    # （2026-11-05：母亲穿白衬衫马甲被画成男，父亲穿亚麻长裙被画成女 ——
+    #   这两张定妆图的性别正好反了，根因就是提示词里从来没有性别）。
+    "gender": ("女性", "男性", "人物"),
     "age_band": (
         "少年", "少女", "青少年", "青年", "中年", "老年",
     ),
@@ -157,7 +161,9 @@ _TITLE_GENDER: Mapping[str, str] = {
 #: 而多样性正是"多个角色各不相同"的来源。
 _GENDER_BANNED: Mapping[str, Mapping[str, tuple[str, ...]]] = {
     "f": {"hair_style": ("编发双辫", "利落齐耳短发")},
-    "m": {"hair_style": ("编发双辫", "低盘发")},
+    # 男性不能穿长裙 —— 2026-11-05 实测：`父亲` 拿到「亚麻长裙」，
+    # 定妆图直接画成女性。这条 ban 之前只覆盖发型，不覆盖服装。
+    "m": {"hair_style": ("编发双辫", "低盘发"), "outfit": ("亚麻长裙",)},
 }
 
 #: 年龄明确时**可以排除**的发型。
@@ -190,7 +196,8 @@ def _gender_hint(name: str) -> str:
     return ""
 
 
-def _options_for(key: str, name: str, *, age: str = "") -> tuple[str, ...]:
+def _options_for(key: str, name: str, *, age: str = "",
+                 gender: str = "") -> tuple[str, ...]:
     """给定槽位、角色名与已知年龄，返回**可用的选项**。
 
     按语义线索收窄：性别排除明显不合的，年龄再排除一层。
@@ -201,7 +208,11 @@ def _options_for(key: str, name: str, *, age: str = "") -> tuple[str, ...]:
     opts = APPEARANCE_OPTIONS[key]
     banned: set[str] = set()
 
-    g = _gender_hint(name)
+    # 优先用**已定下的**性别（可能来自抽样），而不是只看名字线索 ——
+    # 否则会出现「性别=男性，但发型是编发双辫」这种自相矛盾
+    # （2026-11-05 实测：`旅人` 就是这样）。
+    g = gender or _gender_hint(name)
+    g = {"女性": "f", "男性": "m"}.get(g, g)          # 中文词归一成 f/m
     if g:
         banned.update(_GENDER_BANNED.get(g, {}).get(key, ()))
 
@@ -222,6 +233,7 @@ def _options_for(key: str, name: str, *, age: str = "") -> tuple[str, ...]:
 class Appearance:
     """一个角色的外观参数。**全部来自封闭选项集。**"""
 
+    gender: str = ""
     hair_style: str = ""
     hair_color: str = ""
     eye_color: str = ""
@@ -242,6 +254,7 @@ class Appearance:
         否则角色会跨镜变化，而且是不可复现地变。
         """
         parts = [
+            f"{self.gender}",
             f"{self.age_band}",
             f"{self.build}身形",
             f"{self.hair_color}{self.hair_style}",
@@ -255,7 +268,7 @@ class Appearance:
     def describe_lines(self) -> tuple[str, ...]:
         """给人看的逐项描述（用于审查与文档）。"""
         labels = {
-            "age_band": "年龄段", "build": "体态", "hair_style": "发型",
+            "gender": "性别", "age_band": "年龄段", "build": "体态", "hair_style": "发型",
             "hair_color": "发色", "eye_color": "瞳色", "outfit": "服装",
             "outfit_accent": "服装细节", "signature": "标志特征",
         }
@@ -295,10 +308,22 @@ def design_appearance(name: str, *, story_seed: str = "") -> Appearance:
         f"{name}\x00{story_seed}".encode("utf-8")).hexdigest()
 
     age = _age_hint(name)
+    # 称呼里的性别线索直接采用（"母亲"就是女性，没有第二种可能）；
+    # 没有线索时**确定性抽样**，保证同一角色稳定。
+    _g = _gender_hint(name)
+    # 先定下**性别词**，后面的每个槽位都用它来排除不合选项。
+    # 没有线索时确定性抽一个（同一角色稳定），并用中性的「人物」兜底。
+    if _g:
+        _gender_word = "女性" if _g == "f" else "男性"
+    else:
+        _gender_word = _pick(APPEARANCE_OPTIONS["gender"], digest,
+                             OPTION_KEYS.index("gender"))
     vals: dict[str, str] = {}
     for i, k in enumerate(OPTION_KEYS):
-        opts = _options_for(k, name, age=age)
-        if k == "age_band" and age:
+        opts = _options_for(k, name, age=age, gender=_gender_word)
+        if k == "gender" and _g:
+            vals[k] = "女性" if _g == "f" else "男性"
+        elif k == "age_band" and age:
             # 称呼明确了年龄就**直接采用**，不抽样。
             # 只收窄到"同一档"是不够的 —— 奶奶就是老年，没有第二种可能。
             #

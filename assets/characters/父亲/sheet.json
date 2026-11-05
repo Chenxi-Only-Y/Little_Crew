@@ -3,16 +3,17 @@
   "name": "父亲",
   "characterId": "CHAR-069A",
   "appearance": {
-    "hair_style": "高马尾",
-    "hair_color": "暗红棕",
+    "hair_style": "齐肩内扣短发",
+    "hair_color": "乌黑",
     "eye_color": "浅灰",
-    "build": "纤细高挑",
-    "outfit": "亚麻长裙",
-    "outfit_accent": "领口一枚铜扣",
+    "build": "娇小匀称",
+    "outfit": "素色长袍系腰带",
+    "outfit_accent": "腰间系麻绳",
     "signature": "颈间挂着细绳坠子",
+    "gender": "男性",
     "age_band": "中年"
   },
-  "promptFragment": "中年，纤细高挑身形，暗红棕高马尾，浅灰眼睛，身穿亚麻长裙，领口一枚铜扣，颈间挂着细绳坠子",
+  "promptFragment": "男性，中年，娇小匀称身形，乌黑齐肩内扣短发，浅灰眼睛，身穿素色长袍系腰带，腰间系麻绳，颈间挂着细绳坠子",
   "scenes": [
     "SC-E100-002",
     "SC-E100-003"
@@ -26,5 +27,6 @@
   "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）",
   "sourceEpisodeId": "E100",
   "sourceSeed": "f9df1eadebfbd450",
-  "writtenAt": "2026-10-22T14:44:33"
+  "writtenAt": "2026-10-22T14:44:33",
+  "storySeed": "ep1"
 }
