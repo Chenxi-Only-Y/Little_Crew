@@ -63,23 +63,42 @@ def from_scene_conflicts(conflicts) -> list[dict]:
     return out
 
 
-def from_durations(shots, limit_s: float) -> list[dict]:
-    """单镜超时 -> 缺陷。"""
+def from_durations(shots, limit_s: float, *, hard_limit: float | None = None) -> list[dict]:
+    """单镜时长 -> 缺陷（**软阈值 warn，硬阈值 error**）。
+
+    ## 为什么必须有软阈值
+
+    第一版只比「平台上限」（10 s）。但上游 `_to_shots` **已经拒绝** >10 s 的镜头，
+    所以证据里永远不可能出现超限镜头 —— **这条检查是死代码**
+    （2026-11-05 核 `MAX_SHOT_SECONDS=10.0` 才发现）。
+
+    现在：> `limit_s`（默认 8 s）记 `warn`「偏长」；> `hard_limit`（默认 10 s）才记
+    `error`（防御性：别的路径喂进来的镜头仍可能超限）。
+    """
+    soft = float(limit_s)
+    hard = float(hard_limit) if hard_limit is not None else max(soft, 10.0)
     out = []
     for s in shots or ():
         try:
             dur = float(getattr(s, "duration_sec", 0) or 0)
         except (TypeError, ValueError):
             continue
-        if dur > float(limit_s) + 1e-6:
+        sid = str(getattr(s, "shot_id", ""))
+        if dur > hard + 1e-6:
             out.append({
-                "interface": DURATION,
-                "unit": {"shotId": str(getattr(s, "shot_id", ""))},
-                "kind": "duration.over",
-                "severity": "error",
-                "detail": {"seconds": round(dur, 2), "limit": round(float(limit_s), 2)},
-                "reason": f"单镜 {dur:.1f}s 超过平台上限 {float(limit_s):.1f}s",
+                "interface": DURATION, "unit": {"shotId": sid},
+                "kind": "duration.over", "severity": "error",
+                "detail": {"seconds": round(dur, 2), "limit": round(hard, 2)},
+                "reason": f"单镜 {dur:.1f}s 超过平台上限 {hard:.1f}s",
                 "fix": "切开这一镜，或缩短时长",
+            })
+        elif dur > soft + 1e-6:
+            out.append({
+                "interface": DURATION, "unit": {"shotId": sid},
+                "kind": "duration.long", "severity": "warn",
+                "detail": {"seconds": round(dur, 2), "softLimit": round(soft, 2)},
+                "reason": f"单镜 {dur:.1f}s 偏长（软阈值 {soft:.1f}s）",
+                "fix": "（仅记录）偏长镜更吃显存、节奏也拖；看分布再决定要不要收紧",
             })
     return out
 

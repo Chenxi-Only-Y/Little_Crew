@@ -727,7 +727,22 @@ class EpisodeRunner:
 
             _plan = None
             try:
-                _plan = self.orch.blackboard.value("director.plan")
+                # ⚠️ 真实键是 `episode.plan`（2026-11-05 查出来的）。
+                # 原来读 `director.plan` —— 那个键没人写，于是预算偏差**永不触发**，
+                # 而检查器看上去"有这一项"。保留旧键作兼容回退。
+                _plan = None
+                for _k in ("episode.plan", "director.plan"):
+                    try:
+                        _cand = self.orch.blackboard.value(_k)
+                    except Exception:                          # noqa: BLE001
+                        _cand = None
+                    # 黑板里可能是**包装过的**：`{"ok": bool, "plan": {...}}`
+                    # （见本文件里 episode.plan 的说明）。两种都要认。
+                    if isinstance(_cand, dict):
+                        _inner = _cand.get("plan") if isinstance(_cand.get("plan"), dict) else _cand
+                        if isinstance(_inner, dict) and _inner.get("scenes"):
+                            _plan = _inner
+                            break
             except Exception:                                  # noqa: BLE001
                 _plan = None
             if not isinstance(_plan, dict):
@@ -735,7 +750,7 @@ class EpisodeRunner:
             _payload = _idef.collect(
                 scene_conflicts=self.scene_conflicts,
                 shots=picked,
-                limit_s=10.0,
+                limit_s=8.0,
                 plan=_plan,
                 episode_id=self.episode_id,
             )

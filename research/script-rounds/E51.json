@@ -1,0 +1,162 @@
+{
+  "episodeId": "E51",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 父亲给出最后通牒\"你走出这个门，就别再说是我的女儿\"，S04 正是这句话兑现的时刻，原文却写\"父亲站在门里，没有出来\"——对手主动缺席，离村这道最大的阻力没有发生任何正面交锋，只剩下母亲的背影和\"肩膀一抽一抽\"。观众等的那场对手戏没有出现。', suggestion='让父亲出现在门槛上拦一次：递出一句实质的断绝、或摔下那半截披肩，把 S02 的威胁变成当场兑现的动作；若刻意要\"无声的决裂\"，也至少给一个她必须绕开父亲的身体才能走出门的具体动作，让阻力以身体形式存在。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：\"阿蘅是谁？\"被抛出后，旅人\"笑淡了一分，随即又回来\"，一句\"路还长，别问这个\"接走，结尾是\"她攥紧了花束，指节发白，还是跟了上去\"——追问没有改变任何事，局势和情绪都回到开场状态，本场唯一的波纹被当场抹平。', suggestion='让这次追问产生不可逆的一步：她第一次真的转身往回走，被浓雾或花香逼回来，形成\"明知有问题仍自己选择跟上\"的主动代价；或让旅人为堵这个问题交出一样东西（一个名字、竹篮、披肩碎片），使她\"跟上去\"是换来的而不是白给的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：对抗在一秒内结束——\"把花束朝他掷了过去……旅人的身体……化作一阵紫色的轻烟，散了\"：旅人零抵抗、零反扑、不辩解；而解决手段是 S04 老奶奶白送的花束，掷出即生效，解决本身不付当场代价，真正的代价全被推迟到 S07 由旁白追认。', suggestion='给化解加一道必须跨越的阻力：他伸手挡、花穗被风吹散一半、或必须由她亲口说出\"你不是人\"才生效；同时让她为这一掷付出当场可感的东西——花束是一次性的，掷出后她连日后\"循着花香\"的凭据都没有了。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.122
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 204.335
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：对抗在最高点自动解除：父亲喊出\"站住\"\"你走出这个门，就别再说是我的女儿\"，少女\"停了一瞬，只一瞬，帘子落下来\"——父亲没有任何后续动作，母亲拉袖子、父亲甩开，也止于\"碗在桌上又响了一声\"。阻力喊得最响时立刻收回，等于这一场的冲突靠台词撑起、靠沉默收场，没有当场结算。', suggestion='给父亲一个即时的、可见的兑现动作：比如伸手夺过药碗摔在地上，药渣和瓷片撒一地，少女跪下去一片片捡，守夜的药是重新煎的；或那一夜他真把院门上了闩，她只能守在里屋、天亮从窗口翻出去看院外的鼓声。这样S02的代价（守夜三回热药）就有了具体来源；同时把\"别再说是我的女儿\"这句终极通牒留到S04的门槛再出，避免同一句狠话在两场里各消耗一次。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：代价机制没有对账：S03立规\"只能问一次。问完，花就没了\"，但S05里她手持花束连问\"你到底是谁\"\"那就给我一样东西。一个名字\"\"阿蘅是谁\"三句，花毫发无损；到S06才想起弹出\"说。只能问一次\"，而她实际花掉这一问时说的是\"你不是人\"——一个陈述句。观众无法判断这一问到底是什么时候、被哪句话花掉的，于是\"花炸开\"的代价来得像天降规则，而不是她自己按下的开关。', suggestion='把规则收紧并让观众看见它被消耗：明确\"只有当着他的面、把问题说出口才算问\"，并在S05里让她问到关键一句时花束第一次发烫/掉下一片花瓣作为预警（她因此把话咽回去）；到S06她明知花会没仍把问题说出口，花才炸开——代价由她的主动选择支付，而不是由旁白提醒。相应地，S05里那些白问的问题要删掉或改成自语。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：结尾回身推翻了上一场的定论：S06明确写\"她摊开手掌——空的。连日后循着花香去寻他的凭据，也没有了\"，紧接着S07她\"从草里捡起一粒被风吹散的花穗\"，村民还说她\"是循着花香，去寻他去了\"。S06当作收尾的那句断念，在下一场开头就被一粒花穗和一句闲话抵消，S06结尾的重量被泄掉。', suggestion='二选一：要么删掉S06的\"连日后循着花香去寻他的凭据，也没有了\"，让空手掌只承担\"此刻他不在了\"的痛，把\"凭据\"这一悬念完整留给S07的那一粒；要么保留S06的断念，在S07里让村民的传闻变成反讽（\"也有人说她只是疯了，攥着一粒干花穗走的\"），使\"循着花香\"成为无人能证实的传说，而不是对S06的直接打脸。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.705
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 143.199
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.32000000000001,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场的阻力只有她自己的犹豫和两句口头警告——「问完，花就没了」「花没了，你就没有退路了」，全部停留在对白层面。没有任何外部力量在逼近（伤势、时限、追兵、他即将离开的征兆都没有），她没有被逼到墙角，「留着」这个决定是安全状态下做出的，观众感觉不到撕扯。', suggestion='给这一场加一个正在倒计时的外部压力：比如他的伤复发/他说明天就动身/雾里出现别的动静，让「现在问还是不问」变成一个当场必须拍板的选择，而不是可以无限延后的自言自语。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场唯一的一点对抗——「两种说法在村口撞了很多年，谁也拿不出凭据」——完全由旁白概述交代（「后来村里人说起她，各说各的」），台上没有发生任何动作，也没有人物交锋；少女本人已离场，本场既无阻力也无新的局势变化，只是一段结语。', suggestion='把两种说法落到具体的人嘴上并当场撞一次：留一个村民坚持「她疯了，空着手走的」，另一个拿不出反驳却被山下逐年更凶的薰衣草堵回去——让「谁也拿不出凭据」在戏里发生一次，而不是被念出来。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 68.32,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 42.848
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 106.839
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 68.3）"
+}

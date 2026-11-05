@@ -62,7 +62,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 场景主体冲突：下游越权新增场景主体（2026-10-29 实测撞出来的真事）。
     ("场景主体冲突", [sys.executable, "-m", "little_crew.review.scene_subject_check"], 19),
     ("暂存发布", [sys.executable, "-m", "little_crew.runtime.staging_publish_check"], 13),
-    ("接口缺陷清单", [sys.executable, "-m", "little_crew.review.interface_defects_check"], 16),
+    ("接口缺陷清单", [sys.executable, "-m", "little_crew.review.interface_defects_check"], 20),
     ("证据链可校验", [sys.executable, "-m", "little_crew.runtime.evidence_verify_check"], 9),
     ("定向返工", [sys.executable, "-m", "little_crew.runtime.rework_check"], 13),
     ("定向返工执行", [sys.executable, "-m", "little_crew.runtime.rework_pipeline_check"], 13),

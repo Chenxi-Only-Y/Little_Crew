@@ -1,0 +1,164 @@
+{
+  "episodeId": "E50",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救人全程无阻力：少女看到伤者→蹲下→撕披肩→包扎，一气呵成。唯一的『对抗』是伤者『没人应』『头一歪昏了过去』，这是被动而非阻拦。她为什么必须救、此刻本该去做什么、救他会失去什么，场上一个反作用力都没有，冲突维度是空的。', suggestion='给她一个被牺牲的目标压在救人之前：比如这篮花是今晚要送去换药钱的、天黑前必须回、父亲明令不许接触外乡人。让『救人』与『自保/本分』在同一场里正面对撞一次，她选救人时付出可见的犹豫或损失。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 父亲的对抗在这里被无声取消：『父亲站在人群最后面，没有走过来，也没有喊她』。S02 里他掀桌、刮椅子、以集会相威胁，到真正兑现冲突的 S04 却退成旁观，正面冲突没有发生就绕过去了，S02 建立的张力白费。', suggestion='让父亲走上前，把 S02 的威胁真正说出口或付诸动作（拦、夺包袱、把话说死），哪怕被老奶奶或人群挡住。冲突要有一次正面交锋，她的出走才算挣来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：幻灭后的转折被台词宣布而非演出来：『她没有哭』直接跳过挣扎，『那我更得去了，声音很平』——从发现一切是幻到决定继续上路，中间没有一个被逼出来的停顿，情绪转折是平的。', suggestion='让她先有一个拒绝接受的动作（翻找、回头走两步、摸空了的肩膀），在发现真的什么都没有之后，再让『去』这个决定从废墟里长出来——转折要有一次下沉再起身。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.099
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 100.513
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：开场把利害钉死在「竹篮里半篮紫色花穗，是今晚要送去镇上换药钱的——父亲的咳嗽拖了一整个冬天」，她救人时「膝盖撞翻了竹篮……被风卷走小半」「篮子留在原地」——这笔代价在此后再无下文：S02里与父亲相关的只剩「药碗」，全剧再没提过药钱、花和父亲的病。', suggestion='让这笔代价在S02结算一次（父亲问「药钱呢」、里屋传来咳嗽、她端的是最后一碗药），或者干脆删掉「换药钱」这个具体利害，把花只留作她与山野的联系，避免开篇开出空头支票。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲连出三招（「他是外乡人」「送他走！送到山口！」「你要留他，就别进这个村的门」），少女只用「听见了」应对，随后「母亲拉住父亲的袖子，摇了摇头」，对峙就此停住——父亲的通牒既没执行也没撤回，少女也没有正面接招，冲突在第三方一个动作里静止收场，交锋没有升级也没有落点。', suggestion='给这场一个不可逆的落点：让父亲的威胁当场兑现一部分（砸掉药碗、扣下她要拿去换钱的物事、把她挡在门外到天亮），或让少女用一句正面表态（「我不送」）换来当场的处罚，为S04的夺包袱与断绝关系累积台阶。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最强的对抗里少女一句台词都没有：父亲「一把抓住包袱带子」「别再姓这个姓」，她只「蹲下去，一件一件地捡」；破局来自第三方——「一只手把她扶了起来——是老奶奶」，紧接着「父亲松了手」。转折是被别人推出来的，不是她挣出来的。', suggestion='把决定权交还给少女：让她在捡完最后一件衣裳时自己做出动作或说出那句断绝的话（接过花、自己把包袱系上、自己从父亲身边走过），老奶奶只递花、提供武器，不负责化解父女对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场她「扔下包袱」又「捡起包袱」，动作净零，没有新的付出；而全剧最大的代价——「后来村里人说，再没有人见过她」——由场外旁白交付，场内最后一个动作只是「走进雾里」，观众看不到她为这个决定放弃了什么。', suggestion='把代价做进场内的一个具体放弃动作：让她把属于村子的东西留在原地（空篮子、老奶奶那束花的残瓣、父亲的某件物事）再上路；旁白式结局删去或只留一句，把「她没有回头」交给画面。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.375
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 418.169
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场没有主动阻力：「人群在村口慢慢聚起来，没人上前说话」，老奶奶只是送花，旅人「没点头，也没摇头」，她的出走零障碍通过。唯一的对抗对象（旅人的态度）从头到尾没有被逼问或兑现，整场只是上路的过场。', suggestion='把阻力放在旅人身上：让他明确拒绝或劝阻——「你别跟着我」，说完先走、不等她，迫使她的「我跟你走」变成一次追赶和坚持。这样 S03 自带对抗，也和 S04 父亲的物理阻拦形成内外两层，不重复。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折发生在人已经散了之后：「风里剩下一句很低的话……我就是你想远行的心啊」——这是给观众的揭示，不是给她的情绪转折。她从「你站住」到 S06 的「她没有哭」之间，看不到得知真相后的反应，局面变了、人物是平的。', suggestion='让这句话落在她身上：花雨散尽后她听见（或自己低声重复）那句话，给一个明确的停顿与反应——愣住、伸手接花瓣、或笑一下——再接 S06 的收拾。转折必须在人物脸上完成，不能只由画外音完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全集的代价都在前四场付掉（半篮花、家里最后一碗药、「那我就不姓了」），结尾却「她没有哭」直接走进雾里，没有一处回收这些账。她把篮子「端到路口的石头上，摆正」被拍成静物，而不是付账——观众替她记着的债，人物自己不再认领。', suggestion='加一个回账的拍子：摆篮子时让 S01 那句「我爹的药钱，你欠着」以某种形式回响（她低声算一句、或雾里传来一声咳嗽让她停半步），点明这笔债永远收不回来——因为她要找的人就是她自己。代价被承认，结尾的走才不是廉价的洒脱。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 37.075
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 187.419
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}

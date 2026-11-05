@@ -75,6 +75,19 @@ def main() -> int:
               '"interface.defects"' in dst.read_text(encoding="utf-8"), "")
     check("D5 空输入不崩", collect()["total"] == 0, "")
 
+
+    print(); print("E. 时长软/硬阈值（修死代码）")
+    sh = [_Shot("X1", "S01", 6.0), _Shot("X2", "S01", 8.5), _Shot("X3", "S01", 11.0)]
+    d = from_durations(sh, 8.0, hard_limit=10.0)
+    kinds = {(x["unit"]["shotId"], x["kind"]): x["severity"] for x in d}
+    check("E1 6s 不报", ("X1", "duration.long") not in kinds, str(kinds))
+    check("E2 ★ 8.5s 报 warn（偏长）",
+          kinds.get(("X2", "duration.long")) == "warn", str(kinds))
+    check("E3 ★★ 11s 报 error（超上限）",
+          kinds.get(("X3", "duration.over")) == "error", str(kinds))
+    check("E4 ★★ 旧版只比 10s 时 8.5s 不报 —— 现在能报了",
+          any(x["kind"] == "duration.long" for x in d), str(d))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
