@@ -749,7 +749,8 @@ class EpisodeRunner:
                 # 原来读 `director.plan` —— 那个键没人写，于是预算偏差**永不触发**，
                 # 而检查器看上去"有这一项"。保留旧键作兼容回退。
                 _plan = None
-                for _k in ("episode.plan", "director.plan"):
+                _plan_key = ""
+                for _k in ("episode.plan", "director.plan", "episode.direct"):
                     try:
                         _cand = self.orch.blackboard.value(_k)
                     except Exception:                          # noqa: BLE001
@@ -760,6 +761,7 @@ class EpisodeRunner:
                         _inner = _cand.get("plan") if isinstance(_cand.get("plan"), dict) else _cand
                         if isinstance(_inner, dict) and _inner.get("scenes"):
                             _plan = _inner
+                            _plan_key = _k
                             break
             except Exception:                                  # noqa: BLE001
                 _plan = None
@@ -771,7 +773,9 @@ class EpisodeRunner:
                 limit_s=8.0,
                 plan=_plan,
                 episode_id=self.episode_id,
+                budget_shots=shots,
             )
+            _payload.setdefault("inputs", {})["planKeyHit"] = _plan_key
             _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wd:
                 # ---- 定向返工（§3.10.2 第二层执行，2026-11-04）----

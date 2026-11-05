@@ -1,0 +1,165 @@
+{
+  "episodeId": "E72",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.57,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场只有少女单方面的施救：「少女蹲下，伸手探他的额头」「你不能死在这里」，从发现到包扎没有任何阻力。唯一的摩擦是「他的手却抓住了她的手腕」，但下一句就是「随即又松开了，人昏了过去」——冲突当秒归零，救人这个选择没有遇到任何对抗，也没有付出代价。', suggestion='给施救设一道门槛：例如旅人半昏中把她错当敌人反制，或远处传来村民/巡山人的脚步与人声，迫使她必须立刻决定「救还是装作没看见」。把 S02 结尾墙头偷看的伏笔提前变成此刻的压力，让她救人这个行为当场承担风险。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02 刚立下「你走出去这道门，就别再跟着我去集会」的禁令和墙头监视，S03 她却只「身上只有一个小包袱」就走了，父亲与监视者全程缺席、无人阻拦。离村这一全剧最大的代价只被一句「我跟你走」宣布出来，没有兑现成戏；她甚至连 S02 里「在门口停了一瞬」的犹豫都没有再出现。', suggestion='让代价当场落地：父亲堵在门口，或那晚的监视者现身阻拦，她必须跨过一个具体障碍才能上路；同时让她交出一件属于家里的东西（披肩、母亲给的碗、留下的花种）作为交换。至少保留一个「停在门槛」的节拍，与 S02 形成呼应与升级。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：父亲的转变来得太便宜：老奶奶一段话「她走的不是那条路，是她自己的心」说完，他立刻「终于低声说：那天……我不该说那句」——全程没有反驳、没有自我辩护，认错零抵抗、零代价。母亲那句「别等了」也只被「我没等」一句带过，场景的对抗在两行对话内就被抚平。', suggestion='让他先顶回去：坚持「外乡人来路不明」「我都是为她好」，把当年的逻辑原样再讲一遍，甚至对老奶奶动气；让他的自我辩护在某个细节上自己塌方（比如那碗从清早站到日头偏西、已经凉透却一口没动的汤）。他先付出争执的成本，最后那句认错才值钱。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.57,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 9.709
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 281.485
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场的转折（“我就是你想远行的心啊”）直接否定了 S01 建立的物理冲突：旅人腿上真血浸透的布条、腰间短刀、那句“谁派你来的？”都在指向一个有追兵、有来路的真实人物。揭晓来得太突兀，观众会回头质疑前两场的血与刀是不是白写了，转折因此更像改设定而非埋线引爆。', suggestion='二选一：要么在 S01/S02 埋下“他其实不太真实”的伏笔（伤口形状自相矛盾、夜里换药时布条下没有伤、村民的狗对他没有反应），让 S04 的揭晓有迹可循；要么保留他是真实人物，把“不洁的东西”改成另一种代价——她确实带走了他，但付出的代价在本场显现，而不是把前情一笔勾销。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突的代价全部用旁白交代，没有落在戏里：“代价从第二天开始：村里的集会她再没去过。有人叫她，父亲替她回：‘她不去。’”父亲那句“以后就别再跟着我去集会了”在本场内没有任何兑现画面，场景以叙述收尾，情绪是平的。', suggestion='把代价拍出来：删掉旁白，直接给一场她站在集会外围、父亲当众替她回话的短戏；或在本场结尾留一个具体动作（她把平日出门用的头巾叠好收起，父亲看见了，没说话），让代价在场内完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲的阻拦是“你走一个试试”，但少女从头到尾没有对他说一句话——她放碗、母亲拉人、她跨出门。父女正面冲突被第三方（母亲）化解了：“是母亲先动的。她伸手把父亲往旁边拉：‘让她走。’”父亲始终没被说服，也没被女儿正面顶过，核心对抗无声滑过。', suggestion='让少女对父亲说一句——不必是辩解，可以是复述他自己的话（“你说外乡人靠不住。可他在这儿躺了三个月，你一碗药都没端过。”）——迫使父亲必须正面接这一下，再由母亲拉人。这样转折来自她的选择，而不是旁人的让路。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有阻力：她捡花、背篮、走进雾里，一路顺滑。结尾“后来村里人说，再没有人见过她”是转述式收束，既无对抗也无当场的取舍，作为分场它只承担了氛围与尾声的功能，容易让观众走神。', suggestion='给她一个带阻力的收尾动作：雾里出现岔路（一条回村、一条向前），她停住、摸出篮底那把从旅人身上收走的短刀看了看，再做出选择；或让身后传来父亲/村人的喊声，她听见了，仍没有回头——用一次“不回应”完成最后的代价。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.784
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 143.912
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救助过程零阻力：少女“跪下，伸手探他额头”“撕开自己的披肩，一圈一圈缠紧他的伤口”，一路顺畅；狗的狂吠和那句“谁派你来的？”都没形成真正的对抗——旅人“又昏了过去”，把所有潜在冲突直接掐断。整场是“发现—施救”的顺叙流水账。', suggestion='让旅人在半昏迷中产生抗拒动作（推开她、攥住她的手腕、含混地说出某个不该出现在此地的词），或让狗的异常吠叫引来村民围观施压，使施救行为本身要付出被注视、被议论的代价，救与不救成为一次真实的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：少女“伸手从他腰间把那把短刀抽出来……放进自己的篮子底下”——偷窃一个身份不明者、来历可疑的武器，是重大的越界行为，但全场没有任何风险：没有被察觉的瞬间、没有心跳失控的手抖、没有“万一他此刻睁眼”的代价感，动作完成得像收一朵花。', suggestion='在抽刀的瞬间让旅人的呼吸停了一拍，或让油灯爆出灯花、影子动了一下，逼她停在半途；哪怕只是心跳和冷汗，也让她为这个决定先付一笔心理代价，S05 掷刀时才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲“你走一个试试”的对抗，被母亲一句“让她走”当场化解：“父亲没再动，只是脸绷得发青。”最强的外部阻力在一行台词内卸力，少女几乎没付出代价就赢得了通行——她那段反击的胜利来得太便宜。', suggestion='让阻拦的代价真实落地：比如父亲以断绝关系或扣下母亲作要挟，母亲的相劝也得先付出挨骂的代价；或让少女必须交出那把刀/头巾之类的信物才许走，使“离开”这件事有具体的失去。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场是全剧高潮，对抗却单方面：少女两次发问，旅人“没有回答”“还在笑”，既不辩解也不阻拦、不夺刀、不逃走；她“把刀抽出来，刀尖对着他”后，他毫无反应，随即“举起花束，朝他掷了过去”一击命中。抵抗为零，冲突没有升级阶梯。', suggestion='给幻象一次反扑：他伸手去挡花束，或用她自己的话（“你自己也不去了”“我跟你走”）劝她放下刀，让少女必须先与自己的欲望辩驳、再付出某种才能掷出那一束花——比如先折断刀或先哭出来，胜利才有分量。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.732
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 42.621
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 48.4（REVISE）；最好的是第 1 轮（59.6 分）"
+}

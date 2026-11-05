@@ -1,0 +1,110 @@
+{
+  "episodeId": "E71",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲留下明确的对抗预告——「村里人明日要来问。你自己想好怎么答。」少女也接了招——「我想好了。」但下一场直接跳到「外景·村口·春」，村民质问、她如何作答这条已经立起来的冲突线凭空消失，观众等到的对抗从未发生，S03里「手腕上一圈红印」的隐瞒代价也因此没有兑现。', suggestion='二选一：要么在 S04 开头补一场村民/父亲当面对质，让她用 S03 那句「我想好了」的实际内容（一个谎）过关，谎言的代价当场显形；要么删掉母亲的警告和她的应战，只保留「旅人拒答」这一层，把戏力集中在身份之谜上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 里父亲是全剧最强阻力：「他是外乡人」「你别后悔」，把竹篮扫到地上逼她捡。到了 S04 她要跟外乡人远走——这本是父亲阻力的总爆发点——却写成「父亲站在最外圈，背过身去，肩膀绷得很紧，一句话也没说」。对抗被回避，重大决定（离家、可能永不回头）没有撞上任何实质阻拦，来得过于便宜。', suggestion='让父亲出手一次：拦在路口、夺下包袱、或把那句「你别后悔」真的说出口并要求她当场选。她越过他时「脚步慢了半拍」的细节很好，但需要一次正面交锋托底，这半拍才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场的转折靠「她把花束举起来，对着他掷了过去」完成，但从「你到底是谁？」到动手之间缺少可依据的判断：老奶奶说的是花香让不洁之物「现形」，她却直接用它把人「驱散」，效果超出了她（和观众）被告知的设定；她也没有任何确认他是「不洁」的瞬间，动作因此显得突兀，转折的重量落在了一个动机不牢的动作上。', suggestion='在掷花前补一个他露馅的瞬间——他碰不到花、影子与人不符、或说漏 S03 里「北方山口」的某句暗语——让她有据可依；同时把老奶奶的台词改成能覆盖「驱散/显形后消失」的说法，使铺垫与 payoff 对齐。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 14.42
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 121.251
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.19,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场的核心揭示是「他并不存在」——「指尖从花茎里穿了过去」「他脚下一片空白」。但 S01 里他「一把抓住她的手腕」，S02、S03 反复强调「手腕上留着一圈红印——是他刚才攥出来的」「那圈红印被灯照着」，红印是全剧被反复使用的物理证据。幻影无法留下真实的瘀痕，这条线索与结尾的揭示正面冲突，观众回溯时会感到被欺骗，转折的震撼因此打折。', suggestion='二选一：把红印改成她自己在极度紧张、搬抬伤者时留下的勒痕与擦伤（S01 搭肩背人时即可埋入），让「他留下的痕迹」在揭示后依然自洽；或在 S06 增加一个呼应动作——她摸到手腕的红印，意识到那道印子从头到尾只有她自己知道、也只可能是自己弄出来的，把矛盾本身变成揭示的一部分。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：终场没有任何阻力与对抗：「她没有哭。她蹲下去……沿着那条路继续往前走」是一条直线下滑的状态延续。最该有戏剧重量的结局——「再没有人见过她」「在北边的山口……问有没有见过一个不肯说出名字的旅人」——全部交给旁白转述（「后来村里人说」「也有人说」），场面里没有发生任何事，情绪变化由叙述代劳。', suggestion='把转述的一段拆成一个可演的收束动作：让她在山口遇到一个真正的、肯报姓名的过路人（对照她的幻影），或让她把竹篮里的花分给对方——用一次具体的、带阻力的互动替代「据说」。若坚持留白，至少让 S07 有一个可见的抉择瞬间：她停在岔路口，回头望一次家的方向，再走——让「不回头」成为她做的决定，而不是旁白宣布的结果。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.19,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 35.217
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 87.224
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.2）"
+}

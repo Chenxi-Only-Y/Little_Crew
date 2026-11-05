@@ -351,6 +351,19 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  文风编辑：**真实 LLM 批评家**"
                   f"（{args.llm_critic_model} / 第三个族 / 盯文风一致性）")
 
+    # ---- 导演（2026-11-05 补）----
+    #
+    # 🔴 **整集链路里一直没有导演。**
+    # `bind("director", ...)` 只出现在测试里；`episode_demo` 从不绑定它，
+    # 于是 `_run_director()` 一开始就早退，`episode.plan` **从来没被产出过**。
+    # 后果：① 分镜拿不到预算 ② 接口清单的「预算偏差」永远没有输入
+    #      （真跑里 `inputs.planScenes = 0` 才被发现）。
+    if args.llm:
+        from little_crew.agent.director_llm import DirectorLlm
+
+        stubs["director"] = DirectorLlm(client=LlmClient(args.llm_model))
+        print("  导演：**真实 LLM**（产出 episode.plan，喂给分镜师的预算）")
+
     if not args.llm:
         print("  编剧：规则桩（确定性）")
     orch = CrewOrchestrator(

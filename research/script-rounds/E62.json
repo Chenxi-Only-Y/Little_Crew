@@ -1,0 +1,163 @@
+{
+  "episodeId": "E62",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 46.2,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场景的阻力只来自伤势本身（\"血很快渗出来，把紫色的线染黑\"），没有对立面：少女一出手就成功，包扎失败后也没有后果，直接跳到\"你不能死在这里\"的决定，选择过程被省略了。', suggestion='给这个选择加一道真实的阻力：比如血止不住、回村的路太远天快黑，逼她在\"回去叫人\"和\"立刻背他下山\"之间付出代价地选一次；让她先失败一次（包扎散开、他滑落）再成功。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的对抗在最高点被第三方消解——\"母亲一把拉住他的袖子，摇头\"，父亲的手\"落下去，砸在自己腿上\"。禁令没有执行，也没有回合，少女从头到尾没有被真正拦住。', suggestion='让父亲的禁令落地产生动作：夺药碗、堵门、或当夜就把人往外赶，迫使少女用行动而不是沉默来顶回去；母亲的劝阻应失败或延后，而不是当场清场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：\"我要回去了\"→\"我跟你走\"，一问一答没有任何阻力：父亲不在场、村里无人阻拦、旅人也不拒绝。整场是宣告与同意的平铺，老奶奶的叮嘱是伏笔而非对抗。', suggestion='把 S02 的冲突带进这场：父亲或村民堵在村口、或旅人明确拒绝带她走（\"你跟来只会害了我\"），让她必须硬闯一次才拿到\"我跟你走\"。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对抗强度不足以支撑后面的爆发：旅人只用\"你怕了？\"和\"他只是笑——太轻，太远\"回避，少女的投掷缺一级阶梯，从言语对峙直接跳到动作，情绪转折来得突兀。', suggestion='让他的回避更伤人一步（点破她的犹豫、转身就走、或用一句实话刺她），使掷花成为被逼到临界点后的反击；答案也最好由她的行动逼出，而不是他化烟后自行补报。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 46.2,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 9.011
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 158.143
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人给出的阻力“你跟来只会害了我”是本场最有力的一道坎，但少女的应对只是“攥着花，追上了那个已经走出很远的背影”——阻力既没有被回应，也没有被化解，等于被绕过；到了 S04，他也没有解释“害”在哪里，这条阻力线就此悬空。', suggestion='让她正面接住这句话并付出代价（例如承认“我回不去了，所以不怕害你”），或者在 S04 把“害”具体化——让他指出她跟来的实际后果，使这道阻力持续到被真正击破，而不是靠一句行动描写带过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最大的底牌“我就是你想远行的心啊”拿到手的过程几乎没有升级的对抗——他只是“往前又走了两步”“没停”，她喊两声、掷一次花，答案就交出来了（“风里只剩下很低的一句话”）。核心秘密的揭示阻力过轻。', suggestion='给揭示设置门槛：他可以先提条件或索要代价（“你把手里的花留下，我才说”），或让她的追赶本身付出身体代价（呼应 S02 手心的割伤、S01 的膝伤），使最后那句话是用伤换来的，而不是用音量换来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有任何阻力：人物只剩下“蹲下去，又站起来”“把手指合拢，又松开”“继续往前走”，没有对手、没有抉择的反面，局势相对 S04 的重磅揭示没有产生新的压力，情绪是平的。', suggestion='给收尾一个微小但真实的对抗——比如她一度转身朝村口走了两步又停住，或对着空无一人的路说一句话、被风顶回来，让“继续往前走”成为一个被抵抗过的选择，而不是默认动作。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.994
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 178.96
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的核心对抗是『我要回去了』与『我跟你走，只会害了我』的对峙，但旅人始终没有松口——他唯一的反应是『第一次没有立刻回答』『眼里闪了一下——那是怕』，随后场次直接被老奶奶的入场接管：『老奶奶从人群里走出来，把一束刚绽开的薰衣草塞进她手里』。老奶奶的话并没有回应『带不带她走』这个争点，等于用一个新人物把僵局绕过去了。两人如何达成同行，是在场外完成的。', suggestion='让旅人在老奶奶开口前给出一个带条件的、不情愿的接受——例如『跟紧了，别出声，路上我不会等你』——把决定权交回对抗双方；老奶奶的薰衣草则改在他答应之后递上，作为对他条件的补充阻力（花香会让『不洁的东西』现形，即她越靠近他越危险），使赠花也成为对抗的一部分而非替代品。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有任何外在阻力作用于她的选择：她朝村口走了两步、第三步没迈出去，阻碍来自她自己；『我回去了——』被风堵回喉咙，风也不构成立场。于是最终转折（『然后她转回身，往北』）是在一个没有对手、没有反作用力的真空里自行发生的——她试了一下，没回音，就改了主意。', suggestion='给『回村』一方一个具体的拉力，让转身往北成为一次挣脱：例如远处传来村口集合的喊声或父亲的声音，她真的朝村口走完了那几步、几乎走到边界，才被某件旧事（自己留在桌上的药碗、爹不跟她说话的那顿饭）顶回来；这样转折有来有回，代价也从旁白陈述变成可见的行动。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.035
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 135.39
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 68.5）"
+}

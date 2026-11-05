@@ -1,0 +1,112 @@
+{
+  "episodeId": "E80",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 46.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场只有她单方面行动：发现—包扎—拖人，全程无阻力、无犹豫。唯一的对抗来自旅人「……别管我」，被她一句「闭嘴」直接盖过；拖不动也只是体力问题，走两步歇一步就解决了。', suggestion='给一个真实的两难或抗拒：比如她正要施救时听见村里人声逼近（救人会被看见、招来议论），或旅人伤势要求她放弃整篮花去撕披肩、砸掉药碗——让救人这个决定第一次付出可见代价，而不是零成本的善举。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：结尾「从那以后，她再没有回过村子里的集会」把代价写成了旁白式宣告，而S03开场她就主动提灯走向篝火人群——上一场刚立下的代价立刻被下一场抵消，牺牲的分量被架空。', suggestion='删掉这句总结性交代，让S02只停在她应下「好」、守夜到天亮；把「不再去集会」的代价改由S03来兑现——她出现在村口本身必须是违誓的、有代价的（比如父亲就在门里看着她提灯出门）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02父亲威胁「你要留他，就别再去集会。出去别说是我女儿」，是全剧最强的家庭对抗；到S04离别这个最高点，他却「背对着他们，手扶着门框，一句话也没说」——冲突在最该爆发的地方无声消解，她的出走没有遇到任何最后阻力。', suggestion='让父亲的沉默变成一次主动阻拦或一句反向威胁（例如他挡在门口要求她把披肩留下、或说出那句「出去别说是我女儿」的回声），让告别付出一次正面冲撞的代价；若坚持沉默处理，就让沉默本身构成对抗——比如他始终不开门，她从门缝里磕一个头。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折靠一句「你到底是谁？」+一个笑容完成，旅人不辩解、不反抗、不挽留，随即被一束花砸散——揭露来得太轻，没有形成双方的立场拉扯，高潮戏的对抗只有单方出招。', suggestion='让旅人对暴露有反应：他可以拦她、可以反过来质问「你确定要我说出来吗」、可以说出只有她知道的旧事来证明自己——把「她识破他」变成一场争夺（留下他=放弃远行），掷花才是挣出来的选择，而不是顺手动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：从「失去旅人」到「释然前行」的情绪变化全部由陈述句完成：「她没有哭」「她还是笑了」——变化被说出来，而不是演出来；末段「后来村里人说……」更把最后一场收成旁白总结，没有场面。', suggestion='用一个可见的动作承载转折：比如她蹲下摸石头后起身又坐下、或把空包袱解开再重新系紧（对应S04系紧的动作），用身体的反复代替「没有哭」；删去结尾的传闻式旁白，停在她走进雾里的画面，让收束发生在场景内部。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 46.41,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 7,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 17.225
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 141.786
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S01 埋下的真实代价——「半篮花穗，是拿去镇上换盐、换母亲的药钱的」，她把花全倒进了土里——到结尾这场始终没有回收。花穗只作为道具反复出现（「把散落的花穗一枝一枝捡起来，捡到一半，又全撒回地上」），既没有一拍联系到盐和母亲的药钱，「捡了又撒」本身也看不出动机，观众读不出她这个动作在放弃什么、付出什么，场次因此是平的。', suggestion=\"补一个与 S01 对应的代价拍：她把花穗一枝枝理好塞进包袱最底层（哪怕回不去村子也带着，对应'药钱'），或者捡起时朝村子方向停一下再撒手——让 S01 倒掉的花在结尾被'捡起来又放下'，两次选择形成对照，代价才算落地。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：母亲这条线在 S02 是在场的对抗力量（「母亲拉住父亲的袖子，摇了摇头」），S01 又点明她病重、靠女儿采花换药钱；但这场离别戏只有父亲（「父亲站在门槛里，没有出来，也没有让开」）和老奶奶，母亲完全缺席且无任何交代。女儿出走的代价因此只剩'父女决裂'一项，最该痛的一刀——抛下病母——没有被演出来，离别的重量打了折。\", suggestion='给母亲一个落点：门槛内侧放着她连夜包好的药，或那半块披肩被母亲拾起留在屋里；也可以让少女出门前把包袱里的一样东西（花穗/药）留在门内。一个动作就够，代价就齐了。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.257
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 306.803
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.9）"
+}

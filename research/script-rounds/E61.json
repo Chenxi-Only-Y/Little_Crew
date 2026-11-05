@@ -1,0 +1,164 @@
+{
+  "episodeId": "E61",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 56.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的反对是本场唯一阻力，但交锋刚起就被绕开：他说“我跟你说话！”，少女只是“转身走向里屋”，母亲“拉住父亲的袖子，摇了摇头”，冲突既没有升级（父亲没有进一步行动，比如拦门、摔药、威胁把旅人送走），也没有兑现，对峙以沉默和旁人的一拉收场。', suggestion='让父亲的阻拦落成一个具体动作（挡住里屋门、伸手夺碗、逼她“明天就把他送走”），迫使少女在场内做出可见的抵抗并当场付出代价，而不是靠回避结束。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全剧最大的决定（“我跟你走”）发生在没有任何阻力的场次里：S01–S02 一路累积的反对者父亲完全缺席，旅人只给出“你不知道我要去哪儿”的温和推挡，老奶奶给的是一束花和一句预言，都不构成对抗。', suggestion='把父亲（或村里人）放进这场离别：哪怕只是堵在门口、摔碎那只药碗，或由旅人本人强烈拒绝带她走并给出代价，让“出发”这个转折必须打出去才能成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：冲突以她亲手掷出花束解决——但这份代价是“一次性动作”换来的，掷出后旅人立刻化烟消失，她既没有被反噬、也没有被留难，损失在同一瞬间完成，痛苦尚未展开就进入了 S05 的静默。', suggestion='让掷花这个动作先被拦下或被他接住（她要付出第二次、更难的抉择才能真正送走他），把“失去”拉长成一段可见的拉扯，再进入消散。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 56.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 8.083
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 134.765
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：两个阻力都在没有实质对抗的情况下自行消解：旅人说「我不能带你」，少女只以「背着小包袱走出来」回应，旅人态度如何转变全无交代；父亲「你要走，就从我身上踩过去」是强阻拦，却被「磕了三个头」直接化解——「他没有再拦」是自动让步，不是被击败。整场的对抗峰值全靠台词喊出来，行动上没有真正的交锋。', suggestion='让父亲的阻拦至少被推进一步再松动：例如他伸手抓包袱、或把碎瓷往她脚前踢，少女以实际动作（不躲、踩过去、把包袱从他手里拽出）突破，父亲的放手才显得是被她的决绝击垮，而不是剧本需要他让路。旅人方面也应给一个明确的让步瞬间（看到她的包袱后沉默、接过她递的东西），否则他的「不能带你」等于没说过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折的因果没有闭合：少女被迫说出「我不跟你走了」，代价是放弃旅人（=放弃远行的心），可S05她立刻「把包袱重新系紧，沿着那条路继续往前走」。放弃远行的心却继续远行，观众无法判断「我不跟你走了」到底放弃了什么，S04的痛就白付了。另外真相由旅人单方面宣告「我就是你想远行的心啊」后直接切到S05「她没有哭」，少女对这一揭示毫无反应过程。', suggestion='在S04末尾或S05开头补一个明确的情绪转折点：她握着空掌心愣住、或对着晨雾说一句回应，让「失去他」与「自己走下去」之间的因果立住——她放弃的是依赖，不是远行。哪怕一个动作（把空手揣进怀里、抬头看北方的路）都够。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场景无阻力：「她没有哭……继续往前走，走进晨雾里」是纯静态陈述，没有任何对抗或迟疑。唯一的悬念（她到底去哪）被旁白「后来村里人说……」直接抹平，冲突、代价、转折三项在这一场均为空。', suggestion='给收场加一个最小阻力：她走到路口停住（回头/摸空掌心/攥紧老奶奶那束花的残梗），再做出继续走的选择——让「往前走」成为一个有内部对抗的决定，而非顺流而下的陈述。旁白的传闻可以保留作余韵，但不要替代她本人的抉择。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.889
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.312
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.6,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒「明天天亮，让他走。他要是死在村里，你担得起？」被抛出后没有任何回应或兑现——下一句直接跳到「那一夜少女守在床边」。父女对抗在「我担」之后就悬空了，父亲是被说服、被无视还是暂时退让，剧本没给任何一拍，冲突的最高点在场外被消解。', suggestion='在「我担」之后补一拍可见的对抗落点：例如天亮时父亲真的站在门口等她兑现（她用一夜未眠的结果堵住他），或父亲甩手而去、摔下一句让她日后付出代价的话——让通牒有下文，夜戏才接得住前面的火气。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲把话说到底了——「你要走，就从我身上踩过去」，这是全剧对他阻力的最高标价；但解决只用了一拍：「肩膀撞开他的手臂……粗布从他指间滑脱」。最强的阻力以最小的动作结清，她没有付任何额外代价，也没有留下任何东西（一个回头、一件留下的物、一句再也收不回的话都没有）。', suggestion='让这一夺付出看得见的价：例如挣脱时父亲摔倒或旧伤发作、包袱里掉出母亲偷偷塞的东西她没捡、或父亲最后那句落在她背上的狠话被她带走——把「踩过去」的分量真正压在她身上，出门这一下才沉。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：关键动作的动机含混：她先说「我不跟你走了」，紧接着「话音还没落，她仍旧把花束掷了出去」——「仍旧」接不上前文（此前并无掷花的动作），观众无法判断她是试探、是攻击还是失手；而掷花导致旅人消散后她立刻「扑进那阵烟里」痛哭，与刚宣告的决裂互相打架，转折的因果链断了。', suggestion='把掷花写成一次明确的测试：她想起老奶奶「香气能让不洁的东西现形」，把花掷向他以验真假——烟起的瞬间她才明白自己做了什么。同时把「我不跟他走了」改成犹豫的半句或砍掉，让「验证→失去→崩溃」成为一条不自相矛盾的线。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：岔口的对抗只存在于陈述里：「脚已经朝村子那边转过去半步」之后，她蹲下系了两遍带子，就直接踏上向北的路——回村的拉力从未真正用力，一次回头加一次系带就化解了，冲突没有来回。最后的领悟「原来不是跟着谁走」和结局也由旁白「后来村里人说……」代述，而不是靠她在场上的动作演出来。', suggestion='给回村那一侧一次实打实的牵引再让她折回：比如她已朝村子走出几步，听见/看见炊烟或犬吠，脚步真正停下、手松开包袱带——然后再用那片花瓣把她拽回北方。结局删去旁白式转述，让「走进雾里」本身收束，或让最后一句由她自己说出。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 48.6,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.692
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 145.946
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 48.6（REVISE）；最好的是第 2 轮（58.5 分）"
+}

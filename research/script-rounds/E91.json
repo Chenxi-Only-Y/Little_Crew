@@ -1,0 +1,165 @@
+{
+  "episodeId": "E91",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：身份攻防这场谁都没让步：她说\"明天你能走就走吧\"，他说\"你跟我走\"，她答\"我连你是谁都不知道\"——双方都收回了原话，却没有一个人付出可见的代价。全场唯一的消耗是\"坐在黑暗里坐到他说出下一句梦话\"，而整夜守候这一手段 S02 已经用过（\"一整夜没合眼\"），等于用同一个成本付了两次账。', suggestion='给这次对峙标一个价：比如她为套出那句梦话，把母亲攒着过冬的最后一点药/灯油用在他身上；或她的拒绝当场造成某个物件损失（灯芯、她自己刚结痂的手腕）。让\"不肯说身份\"这件事有价格，S05 的真相才换得动。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S01 立起的村规（\"外乡人不能进村，更不能留\"）到这里只由父亲一个人执行：\"围观的人往后退了半步，没人替她说话\"，全场无一人发声；父亲的拦截在她一句\"药钱我记账上了\"之后就\"手垂了下去\"，最强的外部阻力一拍即收，离村这一动作没有真正撞上墙。', suggestion='让村规实体化一次：有人堵在坡口索要旅人、要求搜她的包袱，或父亲再拦一道（攥住包袱带/要她当场改口），让她\"迈这道坡\"多付一个动作上的代价，而不只是磕头与改姓。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：她临行对父亲说\"药钱我记账上了……等我挣回来\"，结尾却是\"他一枚也没少收回——只是收回来的铜钱上，总沾着一点洗不掉的紫色\"，而她走时\"手里什么也没有了\"。这笔账在台上没有任何偿还动作，紫色铜钱的来路也无交代，标题《预算对账》的核心代价变成一句画外传闻，观众感受不到她到底付了什么。', suggestion='把偿还拍在画面里：她离村时留下可辨认的抵账物（变卖竹篮、留下披肩残片或一束花穗压在门槛上），或改写结尾让铜钱的紫色有明确来处（她最后一枚钱是从花穗染过的地方拿出来的），使\"对账\"在可见处合上。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 19.33
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 134.415
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.11,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场没有任何阻力：她发现旅人、判断伤情、撕披肩、包扎，一路顺畅，唯一的“障碍”是地形和他自己昏着（“没有人回答”）。而真正与她对立的“外乡人不能进村”这条规矩，要到 S02 才由父亲说出口——救人的代价在救人这一刻是隐形的。', suggestion='把压力提前埋进 S01：远处传来村口的梆子声/收工的村人脚步，或让她必须把他从会被看见的路线上拖走；让她在包扎前有一个明确的“被发现就完了”的停顿。这样 S02 父亲翻脸时，观众才知道她这一刀下去早有代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突以她单方面走掉收场：父亲放话“你走出这个门，集会就没有你这个人了。祠堂名册上，我划掉”，但她“在门槛上停了一下……走进里屋”，父亲既没拦也没真的划名册——威胁说了，代价一分没付，冲突在本场是空转的。', suggestion='让父亲当场执行一部分：堵门、夺下药碗、或当着她的面在名册上落笔（母亲拦下那一笔也算交锋）。她必须付出一个看得见的东西才能端着药进里屋，S05 的“我姓过”才有前账可还。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：离村这场戏没有对手：旅人只给一句“走到一半你会恨我”，老奶奶塞花是暗示不是阻拦，她一句“那也是我自己的事”就决定了“我跟你走”，全程无人反对。真正的堵截被推到 S05，导致 S04 只是宣告、S05 才开打，中间空了一拍。', suggestion='把 S05 的阻力前移一部分进 S04：她收拾包袱时被村人看见、母亲默默把包袱按住又松手、或老奶奶那句“记住”当场点破危险要她别走。让“我跟你走”这个决定本身撞上第一堵墙。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：追问是单向的：“我问你，你是谁”“他还是不答”，对手不还价、不提高条件、不反抗，她一掷花束对方就化烟，答案还由画外音白送（“我就是你想远行的心啊”）。她既没有逼出这句话，也没有为得到它付出任何东西——花是老奶奶白给的，掷出去零成本。', suggestion='让他抵抗：他可以夺花、可以先要一个交换（要她交出刚挣来的自由/包袱里唯一剩下的东西）、可以让花束必须由她亲手毁掉才现形。答案应当是她付出代价换来的，而不是对手消失时的附赠旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：收尾的庄重感没有落点：她对着村子立誓“第一笔”，可 S06 刚揭示旅人是“你想远行的心”，不存在可以对账的对方；全剧唯一真实的对手父亲，最后只剩“把那枚铜钱捡起来，放进袖子”的温柔动作——她要清算的人，从头到尾没被清算过。', suggestion='要么在本集让这笔账真落一次地（她下山时与父亲正面交锋，铜钱是那一场的遗留物，而不是她单方面的誓言），要么把“第一笔”改成有具体对象的指向，使结尾的转折仍有一堵可撞的墙，而非悬空的豪言。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.11,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 39.041
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 210.725
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：送别场面的阻力全部自行撤除：母亲「一只手按在包袱上，按了一会儿，又松开了」，村人「没说话」「人群让开一条缝」——唯一真正的对抗只存在于老奶奶一句谜语式警告和后排的低声嘀咕里，没有一个人实际拦住她。母亲的松手、村民的让缝都在一句话内完成，冲突尚未形成就被让步化解。', suggestion='给这场加一个真正绊住她的对抗节拍：让母亲或某个村民作出实质阻拦（如扣下包袱、堵住村口、当众质问她是不是把不洁的东西带走了），逼她用一句硬话或一个动作挣脱，而不是所有人自动让路。老奶奶的警告也应在这一场被她当场拒绝或违背，才能形成阻力而非仅作悬念钩子。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的核心威胁是「这花一碎，你身后就再没有村子了」，但村子与名字在 S02 已经被父亲划掉——她回答「我早就没有村子了」，等于用已支付过的筹码抵消了这场对峙唯一的赌注。威胁对她不成立，她掷花时毫发无损，冲突的解决因此没有付出任何新代价。', suggestion='把威胁指向她尚未支付的东西：例如花一碎她就再也想不起回村的路、她的名字连同记忆一起消失、或者她必须用自己的一段过往作交换。让「碎花」的代价在场内当场兑现在她身上（花瓣割出血、她愣住想不起村子的位置），而不是靠台词宣告她已经一无所有。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：「剩下的，拿我名字抵。名册上划了，就清了」——名字是 S02 已经付过的代价，划掉之后她已经不拥有它，用它抵账等于拿出一件早已失去的东西。而她实际交出的只有半块干粮和一枚她按回去的铜钱，「对账」的分量被这次重复抵押稀释了。', suggestion='让这笔账用她此刻仍在拥有、且交出后不可复得的东西来结：例如她把包袱里唯一值钱的物件留下、把那束花的最后几瓣交给父亲、或替父亲做完某件她本可以不做的事再上路。同一个筹码只抵押一次，第二次对账就要换新的支付物。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 58.293
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 126.384
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.1 分）"
+}

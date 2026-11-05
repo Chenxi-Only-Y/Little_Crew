@@ -1,0 +1,164 @@
+{
+  "episodeId": "E90",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：父亲的阻力被挑明后没有当场收束：他说'他是外乡人。你留他，村里人怎么看你'，少女只回一句'他今晚会死'就背身进屋，父亲'站起来，椅子刮出长响'——然后场景直接切到里屋守夜。父亲是否松口、是否阻拦，全无交代，对抗悬在半空就消失了。\", suggestion=\"让父亲的阻力在场内落地：他可以堵在门口、扣下药碗、或说出更狠的条件（'要留他，就别认这个家'），逼少女当场付出一个可见的选择；否则就把椅子刮响之后的对峙写完，再切守夜。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：旅人连续设了三道阻力——'你不知道我是谁''路很难走''你可能会回不来'，少女的化解全是同一句'我知道'，第三道阻力甚至被她照单全收：'你可能会回不来''我知道'。冲突被两三个字平推过去，没有升级也没有代价。\", suggestion=\"把她的应对改成有代价的招：比如她承认'我不知道，所以我才要跟着你弄清楚'，或逼他给出一个具体承诺（'那你就别回头'），让他在某一点上被迫退让——退让本身要留下痕迹。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：老奶奶的警告分量很重（'有些东西，你不看，它就一直是好的'），但少女只是'手指收紧''抽出手，转身走向旅人'，没有为此放弃或抵押任何东西。花是白拿的，警告是白给的。\", suggestion=\"让收下这束花有交换：比如老奶奶要她答应一件事（'别在天亮前回头''别问他从哪来'），她答应了却没当真——这样 S06 掷花时，她是在毁掉自己许过的诺，代价才立得住。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：上一场她刚发现同行者是幻象、说出'我就是你想远行的心'，本场她的反应是'她没有哭'，然后平静捡花、拢好、上路。从幻灭到启程之间没有任何挣扎、愤怒或犹豫，情绪是平的。\", suggestion=\"给她一段真实的反扑：把花摔在地上又捡、往回走两步又停下、对着空路质问一句——哪怕最后仍是上路，走过这个弯，'走进晨雾'才有重量。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 7,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.293
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 96.488
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.002
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.98,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：整场是照护流程的顺叙：熬药、劈木梳、换三次布，没有明确阻力。旅人的警觉（「谁在门口？」）一瞬即消解，母亲送鞋是温情而非对抗，场面缺少可对抗的力量，后半段基本靠细节堆情绪。', suggestion='给这一夜加一条真正的阻力线：比如旅人伤中呓语暴露某个名字/物件，少女必须当场决定要不要追问或掩饰；或让母亲撞见她藏人、形成一次短促的对峙与交易，把「守夜」变成「守住一个秘密」的攻防。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 用「要留他，就别认这个门」建立的父女决裂代价，到这一场被跳过——「少女从屋里出来，肩上只有一个小包袱」，没有告别、没有父亲出现、没有门的对抗，离家的成本只用一个动作带过。', suggestion='把门搬到这场来：她出门时父亲就站在门框里（呼应 S02 的堵门），或者她经过堂屋看见柜子最上层那只碗，选择不拿、空手出门——让「离家」在画面里付一次价，而不是靠 S07 的台词回补。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：少女在本场情绪全程是平的：「急着赶路，随口道」「笑着晃了晃花束」，禁令没有在她身上留下任何压力或迟疑；唯一的局势变化只落在旅人身上（「脚步比刚才快了些」），是给观众的旁证，场内没有发生可感的转折。', suggestion='让禁令在她身上产生一个可见的裂痕——比如她应完之后下意识回头看了旅人一眼，或握花束的手紧了一下再松开；也给旅人一个更主动的动作（伸手替她把花束按紧、催她快走），把「心虚」从一句侧写变成场内的对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：最终交锋在最高点泄气：旅人只「笑僵了一下」就没有任何抵抗、辩解或反制，被花束一掷便直接消失——对手零还手，冲突靠道具单方面解决（「手已经先动了——把整束花朝他掷了过去」）。', suggestion='给旅人一次还击或纠缠：他抢花束、用身体挡、或在紫气冒起时说出更狠的话逼她收回手（例如拿 S04 的「第一个岔口」反问她），让她的「掷」是挣脱而非处决；他的消失应当是她付出代价换来的，而不是自动发生的。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.98,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 43.477
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 166.332
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.19,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有真正的对抗：老奶奶是赠花与叮嘱（\"把一束刚绽开的薰衣草塞进少女手里\"），旅人是替她按紧花束（\"几乎是把她的手指一根根合拢\"），少女这边只有\"手指一紧\"的内心波动。没有人阻拦她离开，也没有任何一方要求她付出让步，这一场实际只是把道具和设定递到角色手里的功能过场。更成问题的是，老奶奶刚说完这花\"能让不洁的东西现形\"，旅人反而用力把花按进她手里——他本该是最怕这束花的人，这个动作既没有对抗性，也削弱了S06他扑上来抢花的爆发力。', suggestion='给这一场加一道具体的阻力：让旅人找借口贬低或劝她丢掉这束花（\"山里野草，带着碍事\"），甚至伸手要替她拿，被她握紧拒绝；或让老奶奶的第二问逼少女做出一个可见的让步（交出某物／应一句誓）。这样既制造了摩擦，也提前埋好S06他抢花失态的动机。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：S06旅人抛出的那笔最重的代价——\"你扔了它，就再也记不起你娘的脸\"——在本场没有任何结算。结尾只写了\"还是闻不到花香\"和\"掌心那道血口凝成一道细线\"，关于母亲的脸的威胁既未兑现也未被否认，观众无从判断她究竟付没付。同时S04她带出家门的小包袱和那包盐在此处凭空消失，只剩\"空篮子\"，离家的代价在画面上也落不了地。', suggestion='让S07真的去试这笔账：她朝村的方向走那两步时，脑中浮现母亲的脸（或努力回想却已模糊），停步后再转身北上——把\"记不起娘的脸\"变成她做出选择时已经支付、看得见的价钱。同时交代包袱与盐的下落（如散落物已遗失在路上，只剩空篮），让出走的代价一直带到最后一镜。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 69.19,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 51.665
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 208.344
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 69.2）"
+}

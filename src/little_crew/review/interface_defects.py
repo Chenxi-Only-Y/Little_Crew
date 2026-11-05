@@ -134,12 +134,26 @@ def from_budget(plan, shots) -> list[dict]:
 
 
 def collect(*, scene_conflicts=(), shots=(), limit_s=None, plan=None,
-            episode_id="") -> dict:
+            episode_id="", budget_shots=None) -> dict:
     """汇总三类接口缺陷 -> 一个可落盘、可导出的清单。"""
+    # **把"输入到底有没有"记下来**（2026-11-05）：
+    # 空清单有两种可能 —— 「真的没问题」和「根本没喂进来」。
+    # 不区分这两者，接口就会像"三个都活着"，而实际只有一个是活的。
+    _scenes = (plan or {}).get("scenes") or ()
+    inputs = {
+        "planScenes": len(_scenes),
+        "planTotalBudget": sum(int(s.get("shotBudget") or 0) for s in _scenes
+                               if isinstance(s, dict)),
+        "shots": len(tuple(shots or ())),
+        "softLimit": limit_s,
+    }
     defects = from_scene_conflicts(scene_conflicts)
     if limit_s is not None:
         defects += from_durations(shots, limit_s)
-    defects += from_budget(plan, shots)
+    # ⚠️ 预算要用**全量镜头表**比（2026-11-05）。
+    # 用被 `--limit` 截断的那份比，未取到的场次会被当成「0 镜」，
+    # 于是报出一串假偏差（真跑里一口气报了 6 条）。
+    defects += from_budget(plan, budget_shots if budget_shots is not None else shots)
     counts: dict[str, int] = {}
     for d in defects:
         counts[d["interface"]] = counts.get(d["interface"], 0) + 1
@@ -148,6 +162,7 @@ def collect(*, scene_conflicts=(), shots=(), limit_s=None, plan=None,
         "episodeId": episode_id,
         "total": len(defects),
         "byInterface": counts,
+        "inputs": inputs,
         "defects": defects,
     }
 

@@ -1,0 +1,163 @@
+{
+  "episodeId": "E63",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.57,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲的劝告没有形成任何阻力：\"你要想清楚。留一夜是善心，留到明天，就变成你的事了。\"少女一句\"已经是我事了\"就顶了回去，母亲随即\"什么也没说，出去了\"——警告既未坚持，也未带来后果，这场对手戏一回合就结束，是平的。', suggestion='让母亲的立场真正压到少女身上：要么母亲动手撤药/熄灯逼她表态，要么把这句警告改成一个具体条件（\"留到明天，你就跟他一起走，别再认我\"），使少女的回答成为一次有代价的承诺，并为S04的离家埋下钩子。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02中父亲的阻力是明确的（\"他是外乡人。你留他，村里人怎么看你\"\"明天的集会你别去了\"），但到了真正摊牌的S04，\"他张了张嘴，最后只说了两个字：\"去吧。\"说完转身，没有再回头看她。父女冲突在最该正面碰撞的一场里被两字消解，没有交锋、没有最后一道阻拦，S02的对抗等于白铺。', suggestion='给父亲一次最后的、具体的阻拦——比如他挡在路口提出条件（要她发誓、要她先把种子分完、或干脆不认这个女儿），让\"去吧\"成为交锋之后的让步而非开场白；代价与情绪重量会同时落到S07的寻人上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：核心对峙是单向的：旅人只回了\"你在怕\"\"我是。只不过不是你以为的那种\"三句轻描淡写的话，既不辩解、不挽留、也不阻止她抬手；少女\"把花束朝他掷了过去\"，一次投掷冲突就结束。整条\"他是不是人\"的主线在引爆点上没有你来我往的对抗。', suggestion='在投掷前加一轮拉锯：旅人试图夺花或挡住她（物理阻力），或说出足以动摇她的真相/诱惑（让她犹豫、代价升高），使\"掷出\"成为她挣脱对方阻拦后的艰难选择，而不是对方拱手送上的一击。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.57,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.649
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 114.329
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价是靠叙述直接宣告的——“从那天起，村里的集会再没出现过她的名字……代价就是这样付的，很安静”。观众听到的是结论，不是代价被付出的过程；场景在母亲盖上米缸盖时就结束了，被驱逐的后果被推给了旁白。', suggestion='删掉“代价就是这样付的”这句点题旁白，把“名字从名单上消失”放进后续某个具体场景里让她亲眼撞见（比如 S04 人群对她视而不见），让代价在戏里发生而不是在话外发生。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲下了最重的威胁——“你就跟他一起走，别再认我这个娘”，但这个威胁在后面没有任何兑现场景：S04 送别时父亲在场，母亲自始至终没有出现，“不送”成了空话，母女这条线的对抗悬空收尾。', suggestion='让母亲在 S04 送别中出现一次：哪怕她站在门内不露面、只把包袱递出来，或者背过身去，都能把 S03 的最后通牒兑现成画面，代价才落地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父女对抗只有一个回合：父亲“撒”，少女只说了半句“爹——”，随即跪下照做，父亲也立刻软化成“去吧”。冲突没有拉锯、没有升级，全场唯一的阻力在一句台词内自行消解。', suggestion='在她下跪之前加一次反向抵抗（她不肯解袋口、父亲逼她动手、或她把种子攥在手里不撒），让对抗至少走两回合再落到底；阻力越硬，“撒完就不是这家的女儿”这条代价才越贵。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全篇的主对抗在这里一击结束：“她猛地侧身……把整束花按在他胸口”，旅人“化作一阵紫色的轻烟，散了”。没有第二回合、没有反扑、没有僵持，最强的对手在两三行内退场。', suggestion='把对抗拉成两到三个回合：他先躲过或打落花束，她失去唯一武器后被迫用别的代价（比如用自己手上的血、或撕下衣料）重新制造香气，最后一次才按上去。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾没有任何情绪或局势变化：她“没有哭”，擦了擦手，“沿着那条路继续往前走”，之后全交给村民的传言（“再没有人见过她”“循着花香去寻他去了”）。主角在得知真相后没有做出新的选择，场次是平的，结局由旁人代述。', suggestion='给她一个属于自己的转折动作：比如她看掌心血痕后做出一个决定（把空手攥紧、转身朝北、或把那点血抹在衣襟上），让“走”成为她的选择而非默认；村民传言可以保留，但只作余音，不承担结局。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.165
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 165.646
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 78.66,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：场末她', suggestion='')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 78.66,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.233
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 214.714
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 78.7）"
+}
