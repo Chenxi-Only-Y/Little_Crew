@@ -661,7 +661,25 @@ class EpisodeRunner:
                 wall_seconds=time.perf_counter() - t0)
 
         shot_list = self.orch.blackboard.value("shot.list")
-        shots = tuple(shot_list.shots)
+        shots = tuple(getattr(shot_list, "shots", ()) or ())
+        # ⚠️ **0 镜必须当场算失败**（2026-11-05 真跑 E51 发现）。
+        #
+        # 原来这里往下走：`picked = shots[:0]` 是空元组，
+        # 后面渲染 0 镜、覆盖率 0%，而**过程一句错都不报** ——
+        # 一整集就这样悄悄变成空的。
+        # 这跟「缺观测 ≠ 通过」是同一条：**没有镜头不是「跑完了」，是「没跑出东西」。**
+        if not shots:
+            _last_verdict = (cycle.rounds[-1].verdict.value
+                             if cycle.rounds else "")
+            return EpisodeResult(
+                episode_id=self.episode_id, ok=False,
+                script_rounds=cycle.round_count,
+                script_verdict=_last_verdict,
+                failure_kind="storyboard-empty",
+                reason=("分镜阶段返回 0 个镜头（不是跑完，是没跑出东西）；"
+                        f"剧本 {cycle.round_count} 轮，最后一轮裁定 "
+                        f"{_last_verdict or chr(31354)}"),
+                wall_seconds=time.perf_counter() - t0)
         planned = len(shots) if limit is None else min(len(shots), int(limit))
         picked = shots[:planned]
 

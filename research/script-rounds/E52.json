@@ -1,0 +1,137 @@
+{
+  "episodeId": "E52",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场只有照顾动作和问答（\"你为什么救我\"\"你叫什么名字\"），旅人不答只是沉默，没有任何真正阻挡少女的力量；与S02父女对峙相比，这场几乎没有阻力，容易沦为过场。', suggestion='给这场加一道具体的阻力：例如少女换药时旅人突然发作（呓语中的威胁、挣脱、打翻灯油），或她发现伤口异状后想出门找人却因父亲的禁令不敢开门——让她的照护变成一个有风险的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：阻力全部是氛围性的：\"村里人在远处低声说话\"、父亲\"一句话也没有\"、母亲\"嘴唇动了动，终究没有喊\"——没有人真正出手阻拦，冲突停留在旁观，对抗没有落地。', suggestion='让阻拦发生为动作：父亲上前一步又被老奶奶拦住、村民堵在路口、或有人伸手拽住她的包袱。哪怕一次实际的拉扯，也比全程沉默的目送更有对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人化烟是本集最强转折，但紧接着用台词把谜底直接说破：\"我就是你想远行的心啊\"——解释性对白把刚建立的冲击和余味泄掉了，转折从\\'揭示\\'降格为\\'说明\\'。', suggestion='删掉或改写这句台词，让意义由意象承担：烟散后只留下那道浅白的疤状花梗、或她自己迈出的那一步。把答案留给观众拼。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：收尾场没有任何阻力——\"她迈出一步，又一步\"，雾只是环境意象而非对抗，人物一路无阻地走进晨雾，全场是纯抒情，缺少最后的拉扯。', suggestion=\"加一个微小但具体的反向力量：她走出几步又回头看村口那扇关上的门、或雾中隐约传来父亲的声音——让'离开'本身再付出一次犹豫的代价，落幕才有重量。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 19.486
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 84.071
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲下了明确的最后通牒——“三天。三天他能下地，就给我走。”但结尾是“三天过去了，她没有提。父亲也没有提。”威胁到点自动失效，她的抗命在场上没有付出任何代价；而本场真正的代价（错过春集、从此不再回村）被推到场外，用旁白交代：“后来村里人说起那年的春集，说少了个人。”', suggestion='让后果落地在场内：第三天父亲撞见旅人仍在，或让一个村人在她面前问起“春集少了个人”，使她为留人付出可看见的代价。至少让“三天”这条线在本场被收一次——父亲执行、或她正面顶回去，而不是双双沉默地过期。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全集最强的一场家庭对抗在三个节拍内被化解：她“把包袱解下来，放在父亲脚边”，老奶奶“伸手按住他的胳膊。……父亲竟没有甩开”，然后她磕头就走。父亲的“你敢……就别再姓这个姓”既没有被回应，也没有被执行，而是被第三方轻轻拨开。', suggestion='给父亲一次真正的阻挡动作（堵住门、或逼母亲当场表态选边），让“不带包袱”这一步也过不了关；老奶奶出手应当有代价（父亲转而对老奶奶发作、或她自己被全村孤立），否则出口是别人替她打开的，离家这一转折就没有对抗感。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：“你到底是谁？”这句质问只换来“旅人笑了”，随后她掷出花束，“他整个人也散了”。整场没有一次来自对方的抵抗、辩解或反制，解决是她单方面一个动作完成的；同时观众最关心的问题也没有得到任何回答。', suggestion='给他一个抵抗或回应的节拍：他伸手拦花、或在散开前说出一句话（既确认身份，又反咬一口她不该问），让这场失去变成一次交手而不是一个开关。身份之谜可以留白，但不能是零信息的空白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场的核心选择——不回应那个声音、继续往前走——所面对的阻力只有“隐隐有个声音在喊她的名字——很轻”，她“咬住嘴唇，把那个字咽了回去”就完成了。这一场的代价她在 S05 已经付清（花、人、痕迹都没了），拒绝一声轻唤等于没有任何新的牺牲，转折因此是平的。', suggestion='把诱惑加重：让声音变成某个具体的人（母亲、父亲）并给出真实的回头理由（门真的开了、有人追出来），使她咽回去的是一个她真正想要的东西；或让“继续走”本身付出可见代价——雾把来路抹掉、脚下的路开始消失，让她必须在回去和往前之间选一次。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 32.672
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 185.789
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 3,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：编剧调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "编剧调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
+            "seconds": 8.482
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 3 轮编剧阶段失败：编剧调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+}
