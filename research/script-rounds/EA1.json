@@ -1,0 +1,163 @@
+{
+  "episodeId": "EA1",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.14,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：离乡是全剧最大的抉择，但这场没有任何主动阻挡：父亲只是「站在院门里，没有说话」，老奶奶只留下一句哑谜，旅人「已经走出十步，没有回头等她」——没有一样东西真正拦住她。阻力全靠旁白式的形容（「那沉默比任何一句话都重」）补出来，而不是由动作制造。', suggestion='给父亲一个实际动作：他跨出门槛挡住路、伸手夺包袱、或把她的碗摔在门槛上；把老奶奶的「记住」改成一次明确的阻止（攥腕不放、要她回头）。让她跨出门槛时付出可见的代价，而不是靠沉默渲染。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：高潮场的对抗是单方面的：「阿蘅举起花束，朝他掷了过去」——旅人不躲、不挡、不还口，「笑意没有变」地直接消散。她一掷即胜，反派零反制，紧张感在投掷动作之前就已结束。', suggestion='让旅人在她掷出时做出反应：伸手去接、雾化避开、或反过来劝阻她（用「远行的代价」做交易），迫使阿蘅在「得到真相」和「留住他」之间二选一。胜负要经过一个来回，而不是一次投掷。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场完全没有阻力：「她没有哭。她把那穗花别在衣襟上，拍了拍膝盖上的土」——一切顺利，父亲、母亲只以「后来村里人说」「父亲在村口站过几个黄昏」的追述出现，人物表写着「父亲、母亲」，场上却没有他们的动作。S02 的祠堂禁令、S03 的沉默对峙这条线从未正面兑现。', suggestion='让父亲或母亲在场一次：追到村口、把碗塞给她、或在她出门时喊一声——用一个具体的告别动作收掉前两场埋下的父子/母女冲突；至少让人物表与场面内容一致。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.14,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.23
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 104.617
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：父亲的对抗在本场完全消解：S02 他给出的是二选一的最后通牒（「要么送他走，要么就别认我这个爹」「祠堂的份，我给你划掉」），到了 S06 却只是「抬起手，像是要拦……手停在半空，然后落下来」，阻拦在零接触、零代价的情况下自行收回，那句狠话从头到尾没有被追认、也没有被撕毁。', suggestion='让父亲的门槛真正成为一道需要她付出代价才能跨过的关口——比如他真的把她的名字从族谱/集会名册上划掉，或说出一句与 S02 呼应的决裂之语，她跨过去之后再让他喊她的名字，和解才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人开出的代价是明确的：「我散了，你也就没有远行的念头了——你走不出这座山，一辈子」。但 S06 她安然走回村口、跨出门槛、走进晨雾，这个代价从未被兑现或被承认，威胁成了空话；同时「我就是你想远行的心啊」这句底牌亮出后，她的动机反而失去检验。', suggestion='在 S06 埋一个代价留下的痕迹——她跨出门槛时确实顿住/脚下迟疑，必须靠银顶针或花刺的疼才能继续，让「远行的念头」以被削弱却仍在的形式兑现；否则删掉或改写 S05 的威胁，使其与结局一致。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场只提出选择（「选一个」）却不支付任何代价，结尾停在「风停了。她低头看着被扣住的那只手，很久」——情绪悬着但局势没有变化，S04 与 S05 同为「山路·黎明」，两场实际被摊成了一场的前半段。', suggestion='让 S04 内部就付一笔小代价：她为拖延或保护秘密交出某样东西（如把花束递出半寸、说出一句真话），使 S05 的投掷是代价升级而非突然动作；或合并两场。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.213
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 88.973
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场没有真正的对抗性阻力。少女说“我跟你走”，回应她的只有“人群里起了一阵低低的议论”和老奶奶的赠花嘱托——村民、旅人都没有出面阻拦她，老奶奶反而在推进她的决定。全场是信息铺陈（预言、伏笔），不是冲突。', suggestion='给一个具体的拦阻者：比如村民当场拦住包袱不让她出村，或父亲/族人追到村口要留下她，让老奶奶的花是在对抗压力下才塞到她手里的；这样“花”与“别回头”的嘱托才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：反派几乎不设防。旅人主动坦白“我就是你想远行的心啊”，少女“举起花束，朝他掷了过去”，“花瓣散开的一瞬，旅人化作一阵紫色轻烟”——没有挣扎、反扑或拉锯，一击即溃。对抗只存在于两句对话之间，动作层面是平的。', suggestion='让旅人在被掷中前后反制一次：他可以说出更狠的话夺走她的意志（比如直接让她忘掉北方），或花掷出后烟散复聚、逼她交出最后半束花才真正消散——把“击败他”拆成需要二次付出的往复。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转折是上一场的重复而非升级。S05结尾已经演过“胸口像被抽走一根线……她竟想不起自己为什么要走”，S06开场“她抬脚，却忽然忘了为什么要走”用的是同一个障碍、同一种写法，第二次出现时观众已无意外感，本场真正的转折被稀释了。', suggestion='把S05的失忆写成预兆（如仅“北方”二字模糊），把S06的失忆升级为更彻底的状态——她心平气和地打算回屋、觉得本来就没打算走，直到针扎才惊醒；让障碍加重而非复读，针的“逼回来”才有转折力。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 40.194
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 73.195
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.2（REVISE）；最好的是第 2 轮（58.2 分）"
+}

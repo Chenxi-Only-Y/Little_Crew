@@ -1,0 +1,111 @@
+{
+  "episodeId": "EA2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 45.0,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的反对是本场唯一的对抗，却在交锋前就被消解：少女「没有低头，也没有辩解」直接端碗走开，父亲「甩开袖子，一碗汤凉在原处」——阻力既没有升级，也没有产生任何后果，双方没有一句真正的交锋。', suggestion='让父亲的阻拦付诸行动（如拦门、摔药碗、逼她表态），迫使少女必须付出某种代价才能继续守夜，冲突才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场没有阻力：旅人说「我要回去了」，少女说「我跟你走」，旅人「想说什么，被她的笑堵了回去」——异议被主动消解；老奶奶的警告（「不洁的东西」）也只是赠言，未对少女形成任何阻拦或质疑。', suggestion='给旅人一个真实的拒绝理由或迟疑（他知道自己是幻象，越靠近北方越要消散），让「跟你走」这件事必须跨过一道阻力。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折揭示「我就是你想远行的心啊」，与前文直接矛盾：S02 父亲亲口议论「他是外乡人」，S03 老奶奶当面塞花给他说话——旅人显然是他人可见的实体。揭示一出，前面两场建立的现实冲突全部塌方，转折的分量被逻辑漏洞吃掉。', suggestion='要么在前文埋入他人看不见旅人的细节（对话错位、无人回应），要么改写揭示，让「心」的含义与他作为真实旅人的身份并存。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：承接S04「抓到一把空气」的高点，本场情绪是平的：「看了很久」「她没有哭」，从失去到继续上路之间没有可感知的局势或情绪变化，最后用村民传闻的旁白收尾，进一步压平落点。', suggestion='设计一个微小但明确的转变动作——如她最终把那句「我就是你想远行的心」对着晨雾重复一遍，再转身走；让观众看到她接住了这个揭示。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 45.0,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 7,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 17.188
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 111.669
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人抛出两条实质阻力——「走到山口就走不动了，像有什么东西把我钉在这座山里」和「你娘还在窗后看着」——少女只用一句口号「那就困在这儿」就让冲突熄火，旅人没有任何后续抵抗或动作（既没走开也没拦她），紧接着直接切到「她把家门钥匙放在门槛上」。更明显的是，「窗后没有人，帘子在动」让母亲这道刚立起来的阻力凭空消失，等于替她把难题解掉了。整场的对抗从提出到化解只用了两句台词。', suggestion='让旅人的拒绝多顶一拍：他真的转身往回走，或伸手挡在包袱前，逼她做出一个具体的动作（追上去、把他拽住、当着他的面把钥匙扔下）。母亲那条线改成她在窗口露一次脸——不拦，只是转过身去，把「放行」变成少女必须亲眼看清的代价；「那就困在这儿」挪到被逼到退无可退之后再说，作为破局而非接招。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有任何阻力：人物只剩她一个，「雾没有回应」是唯一的对抗，而沉默构不成阻拦。少女从站着到跨过界石、走进雾里，一路上没有东西挡她、没有人留她，也没有任何一次被迫的停顿。', suggestion='给她设置最后一道具体的关卡：例如篮沿那枝野薰衣草在界石前枯萎、山下传来母亲或老奶奶的一声唤、或者她脚下的路出现只有她一人才看得见的第二个脚印。让她必须付出一个动作（扔掉某样带不走的东西、回答一句她不想回答的话）才能过界石。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 67.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 30.938
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 81.33
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 67.9）"
+}

@@ -514,6 +514,13 @@ class EpisodeRunner:
         self.previs_first: dict[str, Path] = {}
         #: 场景主体冲突（分镜越权引入了剧本没有的场景主体）
         self.scene_conflicts: list[dict] = []
+        #: 每镜用到了哪些角色锚点图（`shotId -> [角色名]`）。
+        #: ⚠️ **必须在 `__init__` 里初始化**：2026-11-05 第一次接线时忘了，
+        #: 于是 `_bridge` 里赋值抛 AttributeError，被外层 except 吞掉，
+        #: 结果是"接了但一个锚点都没用上"—— 又是一次静默失败。
+        self._anchors_used: dict[str, list[str]] = {}
+        #: 锚点图发现结果缓存（名字 -> 路径）
+        self._anchor_table: dict[str, str] | None = None
         #: 场景越权是否构成**否决**（severity=error 时置 True）。
         #: 与 scene_conflicts 分开：后者是记录，这个是「能不能交付」的结论。
         self.scene_veto: bool = False
@@ -1037,6 +1044,22 @@ class EpisodeRunner:
 
         if artifact_hashes:
             evidence.artifact_hashes = dict(artifact_hashes)
+
+        # 每镜用到哪些角色锚点图 —— 落成附加产物，便于核对"一致性有没有接线"
+        try:
+            _wd0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd0 and getattr(self, "_anchors_used", None):
+                import json as _j0
+
+                _o0 = Path(str(_wd0)) / "delivery"
+                _o0.mkdir(parents=True, exist_ok=True)
+                (_o0 / "anchors_used.json").write_text(_j0.dumps(
+                    {"kind": "anchors.used",
+                     "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
+                     "perShot": dict(sorted(self._anchors_used.items()))},
+                    ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
 
         failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
                         "reason": o.reason[:200]} for o in batch.failed)
@@ -1636,8 +1659,42 @@ class EpisodeRunner:
                 getattr(text, "description", "") or "")
         except Exception:                                # noqa: BLE001
             pass
+        # ---- 角色锚点图（2026-11-05 接入）----
+        #
+        # `shot_to_ir(anchor_sets=...)` 从 alpha.130 就支持，编译器的
+        # `identity.ipadapter -> lora -> lora_model_only` 降级链也写好了，
+        # **但从来没有任何调用方传过它** —— 于是"角色一致性"一直只在提示词文字层。
+        # 这里补上调用方：能找到定妆图就传，找不到就**不传**（不编路径）。
+        _anchors = getattr(self, "_anchor_table", None)
+        if _anchors is None:
+            try:
+                from little_crew.runtime import anchors as _anc
+
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _anchors = {}
+                if _wd:
+                    _anchors = _anc.discover(Path(str(_wd)) / "assets")
+                if not _anchors:
+                    # 退到仓库级资产库（跨集复用）
+                    _anchors = _anc.discover(
+                        Path(__file__).resolve().parents[3] / "assets")
+                self._anchor_table = _anchors
+            except Exception:                              # noqa: BLE001
+                _anchors = {}
+                self._anchor_table = {}
+        _sets = {}
+        try:
+            from little_crew.runtime import anchors as _anc2
+
+            _sets = _anc2.sets_for(getattr(shot, "characters", ()), _anchors)
+            if _sets:
+                self._anchors_used[str(getattr(shot, "shot_id", ""))] = sorted(_sets)
+        except Exception as _e_anc:                        # noqa: BLE001
+            _sets = {}
+            print(f"  ⚠️ 角色锚点未生效：{type(_e_anc).__name__}: {_e_anc}")
         ir = shot_to_ir(
             text, episode_id=self.episode_id,
+            anchor_sets=dict(_sets) if _sets else None,
             checkpoint=self.engine_checkpoint, steps=self.engine_steps,
             cfg=self.engine_cfg, sampler=self.engine_sampler,
             scheduler=self.engine_scheduler,

@@ -57,6 +57,53 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.164] — 2026-11-05（**角色锚点图接进 IR** —— 一致性终于不只靠文字）
+
+### 背景
+
+`shot_to_ir(anchor_sets=...)` 从 `alpha.130` 就支持，编译器的
+`identity.ipadapter -> identity.lora -> identity.lora_model_only` 降级链也写好了，
+**但从来没有任何调用方传过 `anchor_sets`**（2026-11-05 审计确认）。
+于是「角色一致性」一直只停在**提示词文字层**。
+
+### 改了什么
+
+| 件 | 内容 |
+|---|---|
+| `runtime/anchors.py` | `discover()` 扫 `assets/characters/*/anchor.png`；`sets_for()` 按出场角色取图；**找不到就不传，不编路径** |
+| `episode._bridge` | 把锚点表传进 `shot_to_ir(anchor_sets=...)` |
+| `delivery/anchors_used.json` | 每镜用了哪些锚点图（附加产物，便于核对"有没有接线"） |
+| 自检 | `anchors_check` 9/9（同名不同 ID 归前缀 · 缺图不返回 · 空表不抛） |
+
+### 真跑验证
+
+```
+EA2（dry-run）：anchors_used = {"table":["少女"],
+                               "perShot":{"SH-EA2-S01-001":["少女"]}}
+EA3（真渲染）：产物 1 个 · 覆盖率 100% · 结果 ✅
+              -> 没有 IPAdapter 时降级链生效，出图不受影响
+```
+
+### 一个踩到的坑（写进代码注释）
+
+第一次接线时**忘了在 `__init__` 初始化 `_anchors_used`**，
+赋值抛 `AttributeError` 被外层 `except` 吞掉 → **"接了但一个锚点都没用上"**。
+已改成：初始化 + 吞异常改打印。
+
+### 诚实标注
+
+- 验证时用的是**借来的占位图**，不是真定妆图；**已删除**，不留假资产
+- 真正的定妆图还要用 Z-Image 生成（下一步）
+
+### 验证 Verification
+
+```
+ [v] 自检 9/9；全量 1898 项 + 架构守卫 PASS
+ [v] 真跑 dry-run 与真渲染各一次
+```
+
+---
+
 ## [0.4.0-alpha.161] — 2026-11-05（**三个接口里有两个是哑的** —— 自查修正）
 
 ### 自查发现

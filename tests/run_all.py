@@ -66,6 +66,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("证据链可校验", [sys.executable, "-m", "little_crew.runtime.evidence_verify_check"], 9),
     ("定向返工", [sys.executable, "-m", "little_crew.runtime.rework_check"], 13),
     ("定向返工执行", [sys.executable, "-m", "little_crew.runtime.rework_pipeline_check"], 13),
+    ("角色锚点发现", [sys.executable, "-m", "little_crew.runtime.anchors_check"], 9),
     ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 60),
