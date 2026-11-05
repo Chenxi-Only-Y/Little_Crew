@@ -1,0 +1,164 @@
+{
+  "episodeId": "E40",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场以困境收尾——\"她一个人背不动他上山——可要是等到明天早上，这个人就凉了\"——但这个两难没有在场内做出任何选择，下一场开场时人已经躺在自家屋里，搬运与决定的过程被完全跳过。观众看到的是问题提出，不是局势变化。', suggestion='在场末加一个最小的决断动作：她尝试拖动他失败、抬头看向村子的方向，然后做出\"背回去\"的选择（哪怕只是咬牙把人架上肩的半个动作），把转折留在场内完成；或让 S02 开场直接接她拖着人进门的狼狈瞬间。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场没有任何在场的对抗。父亲的禁令是通过母亲转述的（\"你爹把集会的名帖烧了……他说他没你这个女儿\"），施压者不在场；母亲立场是同情的（\"眼睛红着\"端来热水）；旅人只是昏睡中一句呓语。阿薰说\"他烧退了我就走\"，没有人反驳她，冲突是缺席的。', suggestion='把阻力搬进屋里：或父亲直接掀帘进来撞见她守夜、当面斥责；或让母亲从同情转为劝阻——\"你爹烧了名帖，你还守着他，是想把这个家也烧了吗\"——逼阿薰在\"留下救人\"和\"回家认错\"之间当场做一次选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的抵抗只维持了一个回合就自行瓦解：他抛出\"路上会有人说起我的名字，你听了会后悔\"，阿薰用一句\"我连你名字都没问过\"轻轻带过，他再无阻拦，她回屋取包袱时场面已经没有对手。警告被说出口，却没有真正拦住任何人。', suggestion='让他把抵抗落实成行动而非台词：他趁她进屋时独自上路、她追到院门外才拦下；或他提出一个硬条件（\"天黑前跟得上就一起走\"）把她推入即时的考验，使她的出发本身是一场赢来的结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：对抗在她掷出花束的瞬间就结束了——S06 末尾他已被花雾吞掉轮廓，本场她喊\"你骗我，你一路都在骗我！\"时已无对手可回应，只有贴耳一句\"我就是你想远行的心\"。指控没有遇到任何反驳或还价，收尾变成了独白。', suggestion='在花雾散尽前给他一次最后的回应：让他对\"你骗我\"做出反问或反指控（例如\"我骗你？名帖是你自己看着烧的\"），把\"他是不是骗她\"和\"她为什么跟他走\"的争论再拖一个回合，再让他消失，指控才算被正面接住。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.718
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 83.393
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力过软：旅人只留下一句“天黑前跟得上，就一起走”便转身就走，阿薰“愣在原地，随即往回跑”，全段对抗只剩一段跑步。原文“她昨夜就收好的”小包袱说明她早已下定决心，本场真正的成本（抛家、抛下村庄身份）已在 S02 付讫，于是追逐本身变成了无对手的体育运动。', suggestion='给追赶加一道硬阻力：让旅人设下明确且会被突破的条件（如“日落前若我回头，你便跟上”而他故意不回头），或让村口出现实际拦截者（族人、父亲），使她的离开必须当场撕破一层关系，而不是靠速度解决。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：老奶奶是本集唯一的外部阻拦者，却只做了三件事：塞花、赠言、长久一瞥。她既不挽留也不阻止，那句“这花的香气能让不洁的东西现形”是一句说明文，不是对抗；结尾被旅人一句“你奶奶不喜欢我”和阿薰一句“她不是我奶奶”轻轻带过，冲突没有交锋。', suggestion='让老奶奶的阻拦落到行动上：她可以拉住阿薰、把包袱按住，或当着旅人的面把花收回——赠花改成有条件的（“用了这花，就别再回村”），使接受花本身成为一次代价支付。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转折的关键句自相矛盾：花掷出、香气散开，旅人的轮廓随即“先淡了”“然后他散了”——验证明明成功；可阿薰却说“她忽然明白这香气是拿来验什么的，可她已经把它掷出去了”，暗示为时已晚。前后两种因果打架，观众无法判断这一掷到底是验成了还是误掷，大反转的落点因此发飘。', suggestion='二选一理顺：要么删掉“可她已经把它掷出去了”，改成她看清真相后的迟来醒悟（“原来这香气是拿来验的——他早就知道”）；要么让花确实被掷偏、香气未能罩住他，使他到最后一刻仍未被验证，由她主动收手放他走，把“信任”而非“验证”做成结尾的抉择。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 33.458
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 61.966
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.73,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：老奶奶提出条件（“先答应我”“你答不答？”）后，阿薰没有任何抵抗或讨价还价，直接答“我不回来了”，一次成交。全场只有一问一答的交易，没有阻力，实质是把花的规则（只验一次、用完即失效）念给观众听的说明性场面。', suggestion='给谈判加一道坎：让老奶奶的条件更狠（例如要她当众起誓、或先收回一半花穗作抵押），逼阿薰付出可见的东西才能拿到花；也可以让阿薰先拒绝、被旅人在旁看着，再回头妥协——把“交出退路”变成一次有拉扯的选择，而不是顺从的问答。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本集的高潮验证由一次天气巧合决定——“花到半空，风忽然改了方向……被风剪断”。结果还是不可读的：“什么都没有现形”，观众无法区分“他干净”与“测试失败”，而她“一下就懂了”的结论是靠台词硬解释出来的，不是场面给出来的。', suggestion='让花对他产生一个可读但不完整的反应（衣袖上的紫光只亮了一半就灭、或香气近身即散），使失败源于他本身/她自己的动摇，而不是风向；同时给“没验成”一个明确的视觉判据，让观众和她同步得出结论。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场无冲突、无转折，全部信息以旁白式概述交付（“后来村里人说……”“父亲老了许多”“也有人说……”），情绪落点（“她没有哭”“这一点她自己也清楚”）也是被说出来而非演出来的，观众在此处只能听结论。', suggestion='压缩成片尾字幕级的收束，或改成一个有动作的收尾场面：让她在雾里遇到一个具体障碍（岔路、卖花人、一句问话），用她的一个选择来体现“继续往前走”，把父亲与老奶奶的后续压成一个可拍的空镜或一句台词。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.73,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 36.455
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 100.522
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.7（REVISE）；最好的是第 2 轮（58.7 分）"
+}

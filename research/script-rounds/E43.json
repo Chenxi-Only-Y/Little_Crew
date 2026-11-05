@@ -1,0 +1,111 @@
+{
+  "episodeId": "E43",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：全场是无对手的守夜：'少女守在床边，一整夜没合眼，隔一会儿就换一次冷水布'——她没有任何外部阻力，唯一的对手是一个昏迷者的呓语。场内本可制造对抗的两个元素都被放过了：门外的母亲（'看见母亲在门外站了很久的脚印。她没开门'）只以脚印出现、不开门后即被搁置；父亲在S02立下的'别再去集会'的禁令在这一夜也没有发作。\", suggestion=\"给守夜加压：让门外的母亲真的叩门或出声（劝她天亮前把人送走/送来父亲的最后通牒），少女必须亲手把门顶住或低声回绝——把'不开门'从一个静态动作变成一次要花力气的对抗；同时让旅人高热中的呓语撞上她此刻的处境（例如他喊的名字恰是她不知道该怎么回答的）。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：她决定跟一个身份不明的人走，'我跟你走'说得轻松，'少女把花抱在怀里，追着旅人的背影跑了两步'甚至带笑——离家（从此'再没有人见过她'）这个决定在场面上没有付出任何可见的东西：没有与父母的告别、没有犹豫、没有被扣下的东西。\", suggestion=\"在出发瞬间收一笔账：让她走过自家门槛时停一下，或让包袱里露出她不能带走的某样东西（S03那盏灯、母亲没送进来的物件），把'跟陌生人走'的成本拍在观众眼前，S06的孤身行走才有重量。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：对峙的另一半不反抗：'旅人没有回答。他只是笑''他只是笑，还是笑着'，花一掷出去他便'淡下去，成了一缕轻烟'。S04老奶奶立的规则是'能让不洁的东西现形'——'现形'本该是最强的一次对抗（他现出真身、挣扎、反扑或挽留），结果他既不阻拦也不辩解，连最终的身份也由他自己用一句台词交代：'我就是你想远行的心啊'。\", suggestion=\"把掷花后的三拍改成交锋：先是'现形'（他的形态变化要付出她的恐惧/代价），再是他试图阻止或说服她（伸手挡、劝她留着花），最后才是烟散。让他为存在多挣扎一次，少女的抉择才真正与阻力相撞；'我就是你想远行的心'这句底牌尽量由她自己看出来，而不是由他奉上。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：本场唯一的转折发生在画外音里：'后来村里人说，再没有人见过她……像是有人循着花香，去寻他去了''老奶奶听了，只把手里那束花，轻轻放下了'——少女内心的落点全被旁白说完了，画面上只剩'蹲下去捡花瓣又放下''拍了拍膝盖，站起来'这类幅度极小的动作，情绪是平的。\", suggestion=\"把最后一转还给动作和人物：删掉或压缩尾声旁白，让少女用一个不可逆的现场决定收尾（例如把捡起的花瓣撒回花田、把空篮留在路口、或对着雾里的北方说一句只给自己听的话），让观众从她的行为里读出'她接受了什么'，而不是听解说。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 14.198
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 103.335
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 66.91,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场没有对抗。旅人只是平静陈述\"我要回去了\"，少女立刻平静答应\"我跟你走\"，阻力位完全空着——母亲躲在窗纸后只\"动了一下\"，老奶奶是赠花祝福而非阻拦，两句之间没有任何一方说\"不\"。', suggestion='给这一场安一个说\"不\"的人：要么旅人拒绝带她走（\"你还有门槛上的鞋\"），逼她自己跨出门槛；要么母亲/村里人真的现身拦路。让她那句\"我跟你走\"是顶着压力说出来的，而不是顺水推舟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这一场的顿悟是S05已经完成的：S05她已说出\"你不是谁，你是我想走的那条路\"，S06的\"这回是我自己要走\"只是把同一句话再说一遍。捡花瓣—撒花瓣—摆正篮子，全程处于同一个平静状态，没有新的情绪起伏。', suggestion='删掉第二次宣言，让S06出现一个S05没有的新变化：比如撒花瓣时雾里真的出现回村的路/响起村里的钟声，她停一下再转身；或让最后一穗花被风吹落，她不捡了。用一个新处境收尾，而不是复述上一场的结论。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 66.91,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 37.296
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 77.304
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 66.9）"
+}

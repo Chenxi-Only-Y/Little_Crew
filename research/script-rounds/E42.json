@@ -1,0 +1,111 @@
+{
+  "episodeId": "E42",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.6,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：旅人的拒绝「别碰我……你不该救我」下一句就是「话没说完又昏过去」——阻力靠昏迷自动解除，双方没有形成真正对峙；少女的动摇也只有「犹豫了一瞬」，对抗太轻，救与不救之间没有被逼到必须选择的地步。', suggestion='让旅人清醒状态下坚持拒绝、甚至挣扎着要起身离开，把「救」变成一场拉扯；或加入外部硬阻力（血止不住、天黑前走不到家、他高烧说胡话暴露身份），迫使少女在「走开保全自己」与「冒险救人」之间真正做一次有分量的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：本场真正的局势转折——被集体排斥——只以一句叙述交代：「从这天起，集会再没有她的位置」。场内可见的动作是她端药、转身、守夜，情绪从头到尾是平的，变化发生在画外，观众感受不到局势翻转的那一下。', suggestion='把代价搬进场内：让门外的议论当场升级成敲门或母亲被迫表态；或让少女在守夜换布时听见远处集会的鼓声/欢笑，手停在半空——用一个具体动作完成转折，而不是用一句话宣布结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：冲突是单向的：少女连番质问「你到底是谁」「是因为这花吗」，旅人始终「没有回答，只是笑」「仍不开口」，对手不反击、不阻拦、不否认，阻力全是被动的，最后由少女掷花单方面终结，缺少交锋的来回。', suggestion='给旅人一个反作用力——开口反问「你确定要知道？」、伸手挡花、或在她举起花束时第一次露出惧色并后退，让「掷出花」必须先突破他的抵抗才能完成，转折才会是挣来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：结局的两难没有真实阻力：「往回走，父亲或许还会开门」是少女单方面的假设，与 S03「走出这个村口，就别叫我父亲」直接相抵，回程选项没有拉力；往前走也没有任何新阻碍，「终于迈出一步」几乎是自动完成的。', suggestion='让两个选项各自具体化并互相拉扯——回程给一个可见的诱惑（村口的灯火、母亲的呼喊、父亲开门的影子），前方给一道实打实的阻碍（浓雾封路、岔路无标记、脚印到此为止），使最后那一步是挣出来的。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.6,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 13.344
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 143.893
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.3,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的威胁「你会后悔」「知道了，路就只剩一条」被反复强调，但他全程只是后退、抬手遮挡，未兑现任何反噬；少女只做了一个动作——「把花束朝他扬了出去」，他就「散了」。顶点冲突的解决零成本，两场戏铺垫的狠话全部落空。', suggestion='让威胁落地：扬花的瞬间让少女付出可感代价（例如她同时失去某样属于村里的东西、被花灼伤手掌留下印记、或先看见代价才敢扬手），并把「路就只剩一条」在 S05 直接兑现为具体后果，使解决与警告形成因果闭环。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「她的脚往后转了半步」之后，少女立刻「把气吸进去，转身，朝没有脚印的那一边走了」，从被母亲呼唤动摇到决断之间没有任何挣扎、迟疑或独白式的抵抗，转折只用了两行，情绪弧线是平的。', suggestion='在半步与转身之间插入一次实质的拉扯：让母亲的声音更近一步、或让她先朝灯火迈出一步才停住，把「诱惑」推到最强点再反转，转折才会有重量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 67.3,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.022
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.215
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 67.3）"
+}
