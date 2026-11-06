@@ -87,7 +87,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # review_board）。假客户端，不吃 API。
     ("通用批评家", [sys.executable, "-m", "little_crew.agent.critic_llm_check"], 37),
     # B 类第一个：导演产出 episode.plan（每场镜头预算 + 基调 + 动机）
-    ("导演职位", [sys.executable, "-m", "little_crew.agent.director_llm_check"], 32),
+    ("导演职位", [sys.executable, "-m", "little_crew.agent.director_llm_check"], 41),
     # 导演**接线**（不是职位本身）：plan 有没有真的注入到分镜师，
     # 以及**调用顺序**对不对（晚于分镜则预算毫无意义）。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签。

@@ -216,6 +216,48 @@ def _integration() -> None:
           str(o.owner_of("episode.plan")))
 
 
+
+def _rhythm_fields() -> None:
+    """场级节奏字段（2026-11-06）：合法值保留、非法值不猜、缺省按 role 推。"""
+    print(); print("F. 场级节奏字段")
+    p = normalize_plan({"scenes": [
+        {"sceneId": "S01", "shotBudget": 5, "role": "高潮", "priority": 5,
+         "avgTarget": "偏短", "allowLong": True, "sceneSeconds": 30},
+    ]})
+    a = p["scenes"][0]
+    check("F1 ★ 合法值原样保留",
+          (a["role"], a["priority"], a["avgTarget"], a["sceneSeconds"])
+          == ("高潮", 5, "偏短", 30.0), str(a))
+
+    b = normalize_plan({"scenes": [
+        {"sceneId": "S02", "shotBudget": 2, "role": "过场"}]})["scenes"][0]
+    check("F2 ★★ role=过场 -> 优先级最低(1)、时长系数 0.8",
+          b["priority"] == 1 and b["sceneSeconds"] < 12.0, str(b))
+    check("F3 ★ 过场默认 avgTarget=偏短", b["avgTarget"] == "偏短", b["avgTarget"])
+
+    c = normalize_plan({"scenes": [
+        {"sceneId": "S03", "shotBudget": 3, "role": "抒情"}]})["scenes"][0]
+    check("F4 ★★ role=抒情 -> 允许长镜头、偏长",
+          c["allowLong"] is True and c["avgTarget"] == "偏长", str(c))
+
+    d = normalize_plan({"scenes": [
+        {"sceneId": "S04", "shotBudget": 3, "role": "瞎写", "priority": 9,
+         "avgTarget": "瞎填", "sceneSeconds": -5}]})["scenes"][0]
+    check("F5 ★★★ 非法枚举不猜：role/avgTarget 清空、按兜底走",
+          d["role"] == "" and d["avgTarget"] == "中性", str(d))
+    check("F6 ★★ priority 越界 -> 回落默认 3", d["priority"] == 3, str(d["priority"]))
+    check("F7 ★★ sceneSeconds 负数 -> 按预算推，且在 [8,45]",
+          8.0 <= d["sceneSeconds"] <= 45.0, str(d["sceneSeconds"]))
+
+    e = normalize_plan({"scenes": [
+        {"sceneId": "S05", "shotBudget": 4, "sceneSeconds": 999}]})["scenes"][0]
+    check("F8 ★ 过大 sceneSeconds 被夹到 45s", e["sceneSeconds"] == 45.0,
+          str(e["sceneSeconds"]))
+    check("F9 ★★ 场与场可以有差异（不是每场都一样）",
+          a["sceneSeconds"] != b["sceneSeconds"] and a["priority"] != b["priority"],
+          f"{a['sceneSeconds']} vs {b['sceneSeconds']}")
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")            # type: ignore[attr-defined]
@@ -230,6 +272,7 @@ def main() -> int:
     _normalize()
     _call_path()
     _integration()
+    _rhythm_fields()
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

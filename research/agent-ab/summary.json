@@ -17,24 +17,24 @@
     "单智能体": {
       "violations": 0,
       "budgetDev": null,
-      "sizeEntropy": 1.589,
-      "shotsPerSceneVariance": 0.667,
-      "shots": 19,
-      "shotCountRatio": 0.95
+      "sizeEntropy": 1.56,
+      "shotsPerSceneVariance": 0.531,
+      "shots": 18,
+      "shotCountRatio": 0.9
     },
     "多智能体": {
-      "violations": 0,
+      "violations": 0.0,
       "budgetDev": 0.0,
-      "sizeEntropy": 1.507,
-      "shotsPerSceneVariance": 0.204,
-      "shots": 14,
+      "sizeEntropy": 1.511,
+      "shotsPerSceneVariance": 0.245,
+      "shots": 15.0,
       "shotCountRatio": 1.0
     },
     "pairedDiff": {
-      "violations": 0.0,
+      "violations": 0,
       "budgetDev": null,
-      "sizeEntropy": -0.073,
-      "shotCountRatio": 0.05
+      "sizeEntropy": -0.038,
+      "shotCountRatio": 0.15
     }
   }
 }

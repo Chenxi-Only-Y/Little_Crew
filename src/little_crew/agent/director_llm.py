@@ -84,6 +84,11 @@ class DirectorLlm:
             '{"tone": "基调，一句话",\n'
             ' "pacing": "节奏策略，一句话",\n'
             ' "scenes": [{"sceneId": "S01", "shotBudget": 4,\n'
+            '             "role": "高潮|铺垫|抒情|过场",\n'
+            '             "priority": 5,\n'
+            '             "avgTarget": "偏短|中性|偏长",\n'
+            '             "allowLong": false,\n'
+            '             "sceneSeconds": 24,\n'
             '             "focus": "这场必须保住什么"}],\n'
             ' "motifs": ["反复出现的视觉动机"]}\n\n'
             "规则：\n"
@@ -92,6 +97,13 @@ class DirectorLlm:
             f" {self.total_shots}** —— 但**单场不少于 2**\n"
             "    （一场只给一个镜头，等于没拍这场）\n"
             "  · `focus` 要有内容：写「少女的犹豫」而不是「情绪」\n"
+            "  · **场级节奏必须逐场不同** —— 这不是装饰：\n"
+            "      `role` 决定这场是什么作用（高潮/铺垫/抒情/过场）\n"
+            "      `priority` 1~5，**5 最重要**（1 是最低，别写反）\n"
+            "      `avgTarget` 该场镜头偏短（碎切/紧张）还是偏长（长镜头/留白）\n"
+            "      `allowLong` 是否允许超过 8 秒的长镜头\n"
+            "      `sceneSeconds` 这场总时长上限（秒），**高潮/重场给大，过场给小**\n"
+            "  · ⚠️ **不许每场都一样** —— 全片场场 2 镜 12 秒等于没有节奏\n"
             "  · **不要写分镜、不要写景别、不要改剧情**"
         )
         return prompt, _SYSTEM
@@ -130,6 +142,32 @@ class DirectorLlm:
 
 # ---- 规整 --------------------------------------------------------------
 
+#: 场级节奏的**枚举**与**按角色的默认值**。
+#:
+#: 2026-11-06：加了这些字段之后，导演才真正参与"节奏设计" ——
+#: 在此之前每场只有一个 `shotBudget`，于是配额算出来场场相同，
+#: 盲判里 B 组的"每场镜数方差"只有 A 的一半（0.35 vs 0.70），判者读作"平"。
+ROLE_CHOICES = ("高潮", "铺垫", "抒情", "过场")
+AVG_CHOICES = ("偏短", "中性", "偏长")
+#: role -> (avgTarget, allowLong, priority, sceneSeconds 系数)
+_ROLE_DEFAULTS: dict[str, tuple[str, bool, int, float]] = {
+    "高潮": ("偏短", False, 5, 1.2),
+    "铺垫": ("中性", False, 3, 1.0),
+    "抒情": ("偏长", True, 3, 1.0),
+    "过场": ("偏短", False, 1, 0.8),
+}
+
+
+def _clean_role(v: Any) -> str:
+    s = str(v or "").strip()
+    return s if s in ROLE_CHOICES else ""
+
+
+def _clean_avg(v: Any) -> str:
+    s = str(v or "").strip()
+    return s if s in AVG_CHOICES else ""
+
+
 def normalize_plan(data: Mapping[str, Any], *,
                    total_shots: int = DEFAULT_TOTAL_SHOTS) -> dict[str, Any]:
     """把模型输出规整成**可下游消费**的 plan。
@@ -153,8 +191,41 @@ def normalize_plan(data: Mapping[str, Any], *,
             budget = int(s.get("shotBudget") or s.get("shots") or 0)
         except (TypeError, ValueError):
             budget = 0
+        # ---- 场级节奏字段（2026-11-06）----
+        # 缺省时按 role 推；role 也没有就用"铺垫"的中性默认。
+        # **非法值不猜**：清成空串，交给下游 fallback 并如实记录。
+        role = _clean_role(s.get("role"))
+        avg = _clean_avg(s.get("avgTarget"))
+        allow = s.get("allowLong")
+        allow_long = None if allow is None else bool(allow)
+        try:
+            prio = int(s.get("priority") or 0)
+        except (TypeError, ValueError):
+            prio = 0
+        try:
+            secs = float(s.get("sceneSeconds") or 0)
+        except (TypeError, ValueError):
+            secs = 0.0
+
+        _d_avg, _d_long, _d_prio, _d_k = _ROLE_DEFAULTS.get(role or "铺垫")
+        if not role:
+            role = ""
+        if allow_long is None:
+            allow_long = _d_long
+        if not (1 <= prio <= 5):
+            prio = _d_prio
+        if secs <= 0:
+            secs = round(max(8.0, min(45.0, max(2, budget) * 6.0 * _d_k)), 1)
+        else:
+            secs = round(max(8.0, min(45.0, secs)), 1)
+
         scenes.append({"sceneId": sid,
                        "shotBudget": max(2, budget),
+                       "role": role,
+                       "priority": prio,
+                       "avgTarget": avg or _d_avg,
+                       "allowLong": bool(allow_long),
+                       "sceneSeconds": secs,
                        "focus": str(s.get("focus") or "")[:160]})
 
     # 总和超预算 -> 按比例收回（不低于 2）
