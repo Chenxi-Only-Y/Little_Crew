@@ -418,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
     runner.voice_enabled = bool(args.voice)
-    runner.voice_debug = bool(args.voice)   # §3.11 配音轨（默认关闭）
+    runner.voice_debug = bool(args.voice)
+    runner.ffmpeg = r"D:\AI\FFmpeg\bin\ffmpeg.exe"   # §3.11 配音轨（默认关闭）
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.workdir = work

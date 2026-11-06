@@ -1,0 +1,164 @@
+{
+  "episodeId": "EV6",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场唯一的人际阻力——旅人\"别碰我\"\"你救不了我\"——被她一句\"我没打算救你\"当场化解，原文写\"他愣了一下，眼神松了半分\"，抵抗在一轮对话内归零。此后剩下的只是\"他比她想的沉\"\"膝盖抖\"，属于体力消耗，不构成戏剧冲突；他攥腕这一动作也没有留下任何后果。', suggestion='让抵抗产生代价：挣扎中把刚止住的伤口重新扯开，血浸透她新撕的披肩，逼她在\"继续救\"与\"丢下他\"之间真正犹豫一拍；或让他昏厥前说出一句刺到她痛处的话（认出她家、提到村子），使她的坚持不是靠机灵话赢得，而是付了东西才拿下这一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的威胁是这一场的发动机——\"声音压得很低，低得危险\"\"你知道村里人嘴里能说出什么话来\"——却只换来少女一句\"他要是死在村口，明天全村都来看\"，原文写\"父亲噎住\"，随后他只在门帘外\"摔了一只碗\"。怒气设到最高，落地时没有任何一个动作，冲突以单方面的俏皮话收场，他既没夺碗也没堵门，等于默认了。', suggestion='让父亲把话说完并动一次手：夺下药碗、拦在里屋门口、或让母亲明确站在他一边，逼少女在\"交出旅人\"和\"顶撞父母\"之间二选一；她的\"集我不去了\"应是被迫让步的结果，而不是主动宣布的，这样 S04 的\"那我就不姓了\"才有递进的台阶。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲赶来抛出最高刑罚\"她要是踏出这个村口，就别再姓这个姓！\"，她用一行话加三个头接住之后，原文写\"父亲没有追。他只是站在村口\"、\"围观的人群里没有一点声音\"——对手在决胜时刻完全停止动作，村口对峙由她单方面完成，没有任何一方阻拦她。', suggestion='让阻拦真实发生：父亲抓住她的包袱带、堵住路口，或母亲追出来哭着往回拽，她必须挣脱、或被迫留下一件实物（包袱、鞋、母亲给的东西）才能通过村口；这样三个响头才是\"挣来的\"代价，而不是自我完成的仪式。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人开出最后的价码\"说了，你就得走回去\"，少女一句\"我不走回去\"就把这个价码取消了，原文随即\"他没有说\"→\"她掷了出去\"，他唯一的反制是一个被掐断的\"别——\"。终极对决没有阻力，也没有任何可能让她回头的实体障碍，掷花因此不构成艰难决定。', suggestion='让价码生效：她回头时发现来路已被雾封、村子已看不见，\"走回去\"成为真实存在且难以承受的可能，她仍在了解真相与折返之间选了掷花；或让旅人主动夺花、攥碎花束、以\"要我还是要它\"逼出一个必须失去什么的两难。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.379
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 105.726
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力没有完成它的转折就退场了。前文他堵着门『一句多余的话也不说，只是不让』，可『父亲把镯子收进掌心，没有推回来』之后，他既没有反制动作也没有态度变化，她就『绕过他的肩膀，进了里屋』——门是她付了代价之后被自动让开的，不是她撞开的，对抗在最后一步泄掉了。', suggestion='给父亲一个收尾的对抗节拍：他攥着镯子转身、或把新煎的药再次泼掉、或甩下一句更狠的话再让开，让少女『进里屋』这一步成为硬闯过去的胜利，而不是对方凭空放行。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场的阻力全是氛围，没有落到人身上。老奶奶的警告是隐喻（『现形的，未必是他』），村民的敌意只有『有人往地上啐了一口，声音不大』，旅人也只是回避——『他把脸侧过去』。少女说『我跟你走』时，面前没有任何一个具体的人或事在拦她，真正的对抗被推到了 S04 的父亲身上。', suggestion='在 S03 就安插一个当场生效的阻拦：有人直接拦在她和旅人之间、或当众点破旅人的来历逼她表态，让『我跟你走』是在被堵住的那一刻说出来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：冲突解决得没有代价。『要我，还是要它？』这一问刚出口，她『没有答话』就直接掷花，一个来回都没走完；而且花已被他攥碎（『紫色碎了一片』），她失去的只是一束已经残破的花，换来的是他化烟消失——观众说不出她为这一掷付出了什么、放弃了什么仍在乎的东西。', suggestion='让这束花在她手里还有未兑现的分量（比如它是回村唯一的凭证、老奶奶的护身符、或她一直打算留着的念想），并让僵持多撑一个回合——她先护花、被夺、才被迫掷出，使这个动作成为割舍而非顺手一甩。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：揭底落在没有压力的地方。『我就是你想远行的心啊』出现在他已化烟、雾已合拢之后，而『回不去』的处境 S05 已经交代过（『来路已经白了一片』『那么远，那么冷』），此时她面前没有一个真能回头的选项，『那我也不回头』等于对着空无应答，最后一场只剩走路。', suggestion='在结尾重新制造一次回头的真诱惑：雾裂开一瞬露出回村的路或结果的杏树、或那句话变成父亲母亲的呼喊来拽她，让她的『不回头』是在被拉住的情况下做出的，并再付一次可见的代价。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 44.842
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 163.108
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场的阻力是母亲的呼唤与“扯住衣角往回拽”的风，但少女在 S05 已说完“那我就不回了”，进入本场时早已做完决定。原文“她停住了，脚钉在石头上”“她没有回头”——障碍施压，她却几乎没有被真正撼动，风一扯她就“一根一根”抽了出来。冲突只走了一个过场，没有形成对抗。', suggestion='让她在雾缝出现时产生一次真实的动摇：先迈出下坡的一只脚，或伸手去够那缕炊烟，把“回去”变成一个差一步就成立的动作；再让母亲的声音／风升级到几乎成功，她的抽离才是一个战胜了阻力的决定，而不是默认立场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：S05 的代价写得很实——“这是我回家的路”，她放弃花束等于放弃归途。但 S06 开场“雾忽然裂开一道缝——底下是她走过的那条路……通到村口”，归途被原样退还给她；于是她在 S06 再次拒绝回家，等于把 S05 已经付过的价钱又花了一次，同一笔代价买了两次转折，第二次拒绝不再增加新的损失。', suggestion='二选一：其一，S06 不出现那条可视的路，只有母亲的声音和开不了口的雾，让 S05 的代价保持不可逆；其二，保留路，但把 S06 的价格改高——例如母亲亲自站在雾缝尽头、或银镯／门还开着的条件是她必须交出某个不可再得的东西，让第二次拒绝付出 S05 没付过的代价。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.449
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 131.765
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 68.9）"
+}

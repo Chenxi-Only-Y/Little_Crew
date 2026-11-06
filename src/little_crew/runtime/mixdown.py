@@ -1,0 +1,154 @@
+"""混流：对白 + 字幕 + 环境音（+ BGM 若有）—— §3.11.1 的最后一步。
+
+## 素材从哪来（**不许编**）
+
+| 元素 | 来源 | 没有时怎么办 |
+|---|---|---|
+| 对白 | `delivery/voice/voice_*.wav` | 报错 —— 没台词就没什么可混 |
+| 字幕 | 由对白时间轴生成 SRT | 总是能生成 |
+| 环境音 | FFmpeg `anoisesrc` 合成房间底噪 | 可关；**生成的要标注来源** |
+| BGM | **必须外部提供文件** | **明确跳过并记录** —— 不拿噪声冒充音乐 |
+
+## 两条纪律
+
+1 **不静默降级**：BGM 没给就写 `bgm: "skipped: no asset"`，不是"混了个空的"
+2 **削波要报**：混完测峰值，超过 -1 dBFS 就警告（那会爆音）
+
+## 为什么用 FFmpeg 而不是 librosa/pydub
+
+核心层 `dependencies = []`。FFmpeg 是本机既有工具（已在用），
+子进程调用不影响依赖表，且**同样一条命令可复现**。
+"""
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+
+def plan(utterances, *, gap: float = 0.25) -> list[dict]:
+    """把对白排成时间轴：**按顺序紧接**，每句之间留 `gap` 秒。
+
+    ⚠️ 这里刻意**不按镜头时长拉伸**：
+    镜头时长是导演的决定，混流不该偷偷改它。
+    对不齐的差额由 `voice_cast.align` 在合成阶段就报出来了。
+    """
+    rows, t = [], 0.0
+    for i, u in enumerate(utterances or (), 1):
+        if not u.get("ok"):
+            continue
+        d = float(u.get("audioSeconds") or 0)
+        if d <= 0:
+            continue
+        rows.append({"index": i, "start": round(t, 3), "end": round(t + d, 3),
+                     "character": str(u.get("character") or ""),
+                     "text": str(u.get("text") or ""),
+                     "wav": str(u.get("wav") or "")})
+        t = round(t + d + gap, 3)
+    return rows
+
+
+def srt(rows) -> str:
+    """生成 SRT。时间格式必须 `HH:MM:SS,mmm` —— 写错一个字幕就不显示。"""
+    out = []
+    for n, r in enumerate(rows or (), 1):
+        out.append(str(n))
+        out.append(f"{_ts(r['start'])} --> {_ts(r['end'])}")
+        who = r.get("character") or ""
+        out.append(f"{who}：{r.get('text') or ''}" if who else str(r.get("text") or ""))
+        out.append("")
+    return "\n".join(out)
+
+
+def _ts(sec: float) -> str:
+    ms = int(round(float(sec) * 1000))
+    h, ms = divmod(ms, 3600000)
+    m, ms = divmod(ms, 60000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+
+
+def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
+          bgm: str = "", total_seconds: float = 0.0,
+          voice_gain: float = 1.0, ambient_gain: float = 0.02,
+          bgm_gain: float = 0.15) -> dict:
+    """混成一条 wav。返回 `{ok, seconds, peakDb, skipped[], command}`。"""
+    rows = [r for r in (rows or []) if r.get("wav") and Path(r["wav"]).is_file()]
+    if not rows:
+        return {"ok": False, "seconds": 0.0, "error": "no-voice-files",
+                "peakDb": 0.0, "skipped": [],
+                "note": "没有可用的对白文件，混流无从谈起"}
+
+    dur = float(total_seconds or 0) or (rows[-1]["end"] + 0.5)
+    skipped: list[str] = []
+    inputs, filters = [], []
+    for i, r in enumerate(rows):
+        inputs += ["-i", str(r["wav"])]
+        delay = int(round(float(r["start"]) * 1000))
+        filters.append(
+            f"[{i}:a]atrim=0:{float(r['end']) - float(r['start']):.3f},"
+            f"asetpts=PTS-STARTPTS,volume={voice_gain},"
+            f"adelay={delay}|{delay}[v{i}]")
+    mix_ins = "".join(f"[v{i}]" for i in range(len(rows)))
+
+    n = len(rows)
+    if ambient:
+        # 房间底噪：不占素材，音量压得很低（-34dB 左右）
+        inputs += ["-f", "lavfi", "-t", f"{dur:.3f}",
+                   "-i", "anoisesrc=color=pink:amplitude=0.3"]
+        filters.append(f"[{n}:a]volume={ambient_gain},"
+                       f"afade=t=in:st=0:d=0.5,afade=t=out:st={max(0.0, dur-0.8):.3f}:d=0.8[amb]")
+        mix_ins += "[amb]"
+    if bgm and Path(bgm).is_file():
+        inputs += ["-i", str(bgm)]
+        idx = n + (1 if ambient else 0)
+        filters.append(f"[{idx}:a]volume={bgm_gain},aloop=loop=-1:size=2e9,"
+                       f"atrim=0:{dur:.3f},afade=t=out:st={max(0.0, dur-1.5):.3f}:d=1.5[bg]")
+        mix_ins += "[bg]"
+    else:
+        skipped.append("bgm: 没有素材文件（未用噪声冒充）")
+
+    filters.append(f"{mix_ins}amix=inputs={len(mix_ins.split(']'))-1}:"
+                   f"duration=longest:dropout_transition=0[mixed]")
+    # 峰值保护：超过 -1 dBFS 就压，避免爆音
+    filters.append("[mixed]alimiter=limit=0.891:level=false[out]")
+    cmd = ([ffmpeg, "-y", "-hide_banner", "-loglevel", "error", *inputs,
+            "-filter_complex", ";".join(filters), "-map", "[out]",
+            "-ac", "1", "-ar", "48000", "-t", f"{dur:.3f}", str(out_wav)])
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=300)
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "seconds": 0.0, "error": f"{type(e).__name__}: {e}",
+                "peakDb": 0.0, "skipped": skipped, "command": " ".join(cmd)}
+    if p.returncode != 0 or not Path(str(out_wav)).is_file():
+        tail = [x for x in (p.stderr or "").splitlines() if x.strip()]
+        return {"ok": False, "seconds": 0.0,
+                "error": (tail[-1] if tail else f"exit {p.returncode}")[:200],
+                "peakDb": 0.0, "skipped": skipped, "command": " ".join(cmd)}
+    from little_crew.runtime.tts_breeze import wav_seconds
+
+    peak = peak_db(str(out_wav), ffmpeg=ffmpeg)
+    return {"ok": True, "seconds": wav_seconds(out_wav), "error": "",
+            "peakDb": peak, "skipped": skipped, "rows": len(rows),
+            "ambient": bool(ambient), "bgm": bool(bgm and Path(bgm).is_file()),
+            "clipped": bool(peak > -1.0),
+            "command": " ".join(cmd)[:400]}
+
+
+def peak_db(wav, *, ffmpeg: str = "ffmpeg") -> float:
+    """用 ffmpeg 的 volumedetect 测峰值（dBFS）。测不到返回 0。"""
+    try:
+        p = subprocess.run([ffmpeg, "-hide_banner", "-i", str(wav),
+                            "-af", "volumedetect", "-f", "null", "-"],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=120)
+    except Exception:                                         # noqa: BLE001
+        return 0.0
+    for line in reversed((p.stderr or "").splitlines()):
+        if "max_volume" in line:
+            try:
+                return float(line.split("max_volume:")[1].split("dB")[0].strip())
+            except (IndexError, ValueError):
+                return 0.0
+    return 0.0

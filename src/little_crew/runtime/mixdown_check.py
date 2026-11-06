@@ -1,0 +1,66 @@
+"""混流自检：时间轴 · SRT 格式 · 缺素材的处置（不跑真 ffmpeg 也能验大半）。"""
+from __future__ import annotations
+
+import sys
+
+from little_crew.runtime.mixdown import _ts, build, plan, srt
+
+_r = []
+
+
+def check(name, cond, detail=""):
+    _r.append((name, bool(cond), detail))
+
+
+U = [{"ok": True, "audioSeconds": 1.2, "character": "少女", "text": "你别走。"},
+     {"ok": True, "audioSeconds": 6.4, "character": "父亲", "text": "他是外乡人。"},
+     {"ok": False, "audioSeconds": 0.0, "character": "旅人", "text": "合成的失败句"}]
+
+
+def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")
+    print("=" * 66)
+    print("混流（时间轴 / SRT / 缺素材处置）—— 自检")
+    print("=" * 66)
+
+    print(); print("A. 时间轴")
+    rows = plan(U)
+    check("A1 ★★ 失败句不进时间轴", len(rows) == 2, str(len(rows)))
+    check("A2 ★ 首句从 0 开始", rows[0]["start"] == 0.0, str(rows[0]))
+    check("A3 ★★ 第二句 = 首句时长 + 间隙",
+          abs(rows[1]["start"] - (1.2 + 0.25)) < 1e-6, str(rows[1]["start"]))
+    check("A4 ★ 每句 end - start = 音频时长",
+          all(abs((r["end"] - r["start"]) - d) < 1e-6
+              for r, d in zip(rows, (1.2, 6.4))), str(rows))
+    check("A5 空输入不崩", plan([]) == [], "")
+
+    print(); print("B. SRT 格式")
+    text = srt(rows)
+    check("B1 ★★★ 时间格式 HH:MM:SS,mmm",
+          "00:00:00,000 --> 00:00:01,200" in text, text.splitlines()[1] if len(text.splitlines()) > 1 else "")
+    check("B2 ★★ 带说话人", "少女：你别走。" in text, "")
+    check("B3 ★ 条目编号从 1 开始", text.startswith("1\n"), text[:8])
+    check("B4 ★★ 毫秒补零（不是 1200 这种）",
+          _ts(1.2) == "00:00:01,200" and _ts(61.05) == "00:01:01,050",
+          f"{_ts(1.2)} / {_ts(61.05)}")
+    check("B5 空列表返回空串", srt([]) == "", "")
+
+    print(); print("C. 缺素材的处置（不许编）")
+    r = build(rows, "/tmp/_never.wav")            # rows 里的 wav 都是空 -> 直接拒绝
+    check("C1 ★★★ 没有对白文件 -> 明确失败（不是混个静音糊过去）",
+          r["ok"] is False and r["error"] == "no-voice-files", str(r)[:80])
+    check("C2 失败时给出原因说明", "无从谈起" in r.get("note", ""), r.get("note", ""))
+
+    n = sum(1 for _, ok, _ in _r if ok)
+    print()
+    for name, ok, detail in _r:
+        print(f" [{'v' if ok else 'X'}] {name}")
+        if detail and not ok:
+            print(f"       {detail}")
+    print("=" * 66)
+    print(f"结果：{n}/{len(_r)} 通过")
+    return 0 if n == len(_r) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

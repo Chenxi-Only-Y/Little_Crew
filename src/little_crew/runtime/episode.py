@@ -1161,6 +1161,33 @@ class EpisodeRunner:
                     for _sc in (script_draft.scenes or ())[:2]:
                         print(f"    {_sc.get('scene_id')} chars={_sc.get('characters')}"
                               f" text={str(_sc.get('text') or '')[:80]!r}")
+                # ---- 混流：字幕 + 环境音（BGM 无素材就明确跳过）----
+                try:
+                    from little_crew.runtime import mixdown as _mx
+
+                    _rows = _mx.plan(_trk["utterances"])
+                    if _wd and _rows:
+                        _sub = Path(str(_wd)) / "delivery"
+                        (_sub / "subtitles.srt").write_text(
+                            _mx.srt(_rows), encoding="utf-8")
+                        _mix = _mx.build(
+                            _rows, str(_sub / "mix.wav"),
+                            ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
+                            ambient=True)
+                        (_sub / "mix.json").write_text(
+                            _jv.dumps({k: v for k, v in _mix.items()
+                                       if k != "command"},
+                                      ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                        if _mix["ok"]:
+                            print(f"  混流：{_mix['seconds']:.1f}s · "
+                                  f"峰值 {_mix['peakDb']:.1f} dBFS · "
+                                  f"字幕 {len(_rows)} 条"
+                                  + ("· ⚠️ 削波" if _mix.get("clipped") else ""))
+                        else:
+                            print(f"  ⚠️ 混流失败：{_mix['error']}")
+                except Exception as _e_mx:                # noqa: BLE001
+                    print(f"  ⚠️ 混流未运行：{type(_e_mx).__name__}: {_e_mx}")
                 _rep = _trk["report"]
                 print(f"  配音：{len(_trk['utterances'])} 句"
                       f"（台词抽出 {len(_lines)} · 丢弃 {len(_trk['dropped'])}）"
