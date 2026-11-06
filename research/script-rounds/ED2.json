@@ -1,0 +1,165 @@
+{
+  "episodeId": "ED2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：决定性的一刻没有阻力：\"父亲站在最远的门槛后面，没有出来，也没有叫她回去\"，旅人也\"没有说\\'跟我走\\'\"。于是\"我跟你走\"是对着空气出拳——既没有人拦她，也没有人要她，出走的选择落不到任何对手身上，冲突被 S02 的争吵提前耗尽后在此泄掉。', suggestion='把阻力实体化：让父亲追到村口拦在路中（或村人/老奶奶以\"不洁\"为由挡路），或者让旅人明确拒绝带她走、要她回去——她必须跨过一道看得见的门才叫选择。父亲的\"没出来\"可以保留为结果，但不能是过程。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突的代价全靠旁白记账：父亲的威胁\"你走出这个门，以后别想去集会\"，兑现时只有一句\"从此村里逢集的鼓声再响，她家的门都是关着的……父亲只说：\\'她没有空\\'\"。罚没落地的过程被跳过，观众只听到账单，没看到付钱。', suggestion='补一个可见的\"付账\"场面：鼓声响起时她被父亲的手挡在门内（或她自己握着门闩松开），母亲再次劝说被甩开后退到灶间；让那句\"她没有空\"从旁白变成父亲当着来人的面说出口。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：盘问没有赌注：\"你从哪里来\"\"北边哪里\"——答与不答，双方都不失不得，她的怀疑没有换来任何局势变化，他一句\"他很轻地叹了一口气，像是替她惋惜\"也不改变任何人的处境。整场唯一的消耗是\"一夜没睡\"，且天亮后一切照旧，冲突是静止的。', suggestion='给这场问答加上筹码：她把干粮和水作为交换条件递过去，他不接就等于当场撕破脸；或让她在此处做出\"天亮就掉头回去\"的决定，被他一句话钉在原地——让怀疑必须兑换成行动或代价，否则直接删去问答，只留花变苦的转折。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：收尾场没有阻力，且关键信息全由转述交付：\"后来村里人说，再没有人见过她\"\"也有人说……\"。S02 建立的父女主冲突也在这里以\"他从不承认自己在等\"一笔带过——两人始终没有正面交锋，父亲的禁令与她的出走都以旁白收束，全剧最强的一组对抗没换来一个对峙的场面。', suggestion='把收束从转述改成一个可见的对抗选择：让她在走进晨雾前，视线里出现村口父亲的身影（或听见逢集的鼓声），她停下、回头、再转身——用一次实拍的选择完成收尾；转述的\"花香\"传说可以留作最后一句余音，但不能替代场面。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.382
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 55.295
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：少女当场表态「集可以不去，人不能死」，已把「失去赶集」作为代价付掉；可 S03 逢集日她又换上干净衣服去拉门闩，同一笔代价在相邻两场里一取一舍，S02 的牺牲没有落点，反而让 S03 的冲突失去前提。', suggestion='二选一：S02 改成她不接受父亲的条件（「你闩你的门，我走我的路」），把「不能赶集」的代价完整留到 S03 由她自己放弃；或在 S03 开头点明她明知被禁、仍要试最后一次，使拉门闩成为对 S02 承诺的主动违背，并在她松手时付出更大的羞辱（如门外村人正看着）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的阻力写得最重——「不行。你父亲说得对，路是我的，不是你的」——少女只回一句「我跟你走」，阻力没有任何被克服的过程，下一场两人已并肩上路；父亲那边「反手抓住包袱，带子『嘶』地扯断」之后也就此放手，无人再拦。', suggestion='给旅人一个具体的、有代价的让步契机（例如她把老奶奶的薰衣草塞进他手里，或点破「你一个人也走不到北方」）；父亲一侧则让带子扯断后仍抓住她手腕，直到鼓声或村人逼近才被迫松手，让「跨出村口」这一转折真正撞开阻力，而不是靠对手自行退场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：少女立下最后通牒「你不答，我天亮就回村」，旅人始终不答，她却没有回村，而是把花掷了出去——威胁既没兑现也没被撤销，这场对峙标出的赌注是空的，观众不会相信她说得出做得到。', suggestion='让她真的执行威胁：转身往回走，走出几步由旅人最后那句「你爹的门，昨夜就闩死了」把她钉在原地——代价先被触发，再被反转；或把通牒改成她当场能做到的动作（「我把花留在这儿，自己回村」），使拒绝回答立刻付出可见代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：最终的阻力——父亲的门——由对手自己解除：「回来——门还开着」，且「父亲的喊声停了，没有追」。S04 里「你今日跨出这道口，就不再是我女儿」的决绝在画外翻转，全场只剩她与雾的内心取舍，没有对抗，「迈了一步，只一步」也就没有撞上任何东西。', suggestion='把「开门」拍成一个带摩擦的画面：她走到崖边时村口的门确实开了，但父亲背对着她坐在门槛上不看她，或母亲与村人正往山上走来拉她——她的「转身向前」必须甩开一个具体、正在逼近的拉力，最后的转折才有分量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 56.893
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 182.44
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S03 把冲突推到最高：门闩拉不动，父亲撂下「你要出去，从我身上跨」，她最终「把手松开了……没有再去碰那根门闩」——认输付出了代价（集市鼓声、磨破的指节）。但 S04 开场直接是「少女从屋里出来，身上只有一个小包袱」，那道闩死的门和那句「从我身上跨」凭空消失，她没有任何挣脱的过程就站在了村口。观众会发现：她在 S03 交出去的东西，一分钱没花就拿回来了。', suggestion='让门的代价真正结算：要么 S03 结尾不让她认输，改成翻窗/走后门，被抓回来并当场付出更重的代价（干净衣服被撕破、当众受辱），S04 的出走才踩着这个代价往上走；要么保留她的认输，S04 就必须出现开门的一场——父亲亲手把闩摘下，或母亲趁夜放她出去，且这个动作要让父亲或她付出点什么。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全集最关键的转折句「你爹的门，昨夜就闩死了」自相矛盾：门闩死，她就不可能在 S04 从屋里走到村口、被父亲抓住手腕、被村人围观；而 S06 又写「村口那道门确实开了」，说明门一直是能开的。这句本该是炸开的一句话，现在观众的第一反应是「那她是怎么出来的」，情绪不但没被推上去，反而被逻辑漏洞拽走了。而且这句话说完，她只是「钉在原地」，局势、选择、立场都没有因此改变。', suggestion='改写这句台词，让它既不与 S04/S06 冲突，又能真正改变局面。例如把信息改成有代价的行动：「昨夜你爹闩的门，是我从里面给你开的」（旅人为她付出了暴露/现身的代价）；或改成压力：「你回去，那门这辈子不会再开第二次」，逼她在「回村」与「往前」之间当场做出不可逆的选择——这样她的转身才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：高潮场没有对抗：「少女举起花束，朝着他掷了过去——花瓣在半空散开的一瞬，旅人化作一阵紫色的轻烟」。唯一的对手在她出手的一瞬就自行消失，不躲、不拦、不还一句嘴；「我就是你想远行的心啊」是单方面宣布，而不是交锋中逼出来的。她赢了，但赢得太容易，前面五场攒下的张力在这里没有对手承接。', suggestion='给旅人一个反制动作，让这一掷必须穿过阻力：他可以伸手去接、可以侧身躲开第一下、可以先说出那句话再散——或者反过来，逼她把花递出去而不是掷出去（递=交出自己，掷=击碎对方），两种动作的代价完全不同。散之前让他再留一句有分量的反问，她的最后一句才算是被逼出来的，而不是独白。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.043
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 56.276
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}

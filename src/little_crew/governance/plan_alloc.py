@@ -74,7 +74,7 @@ def scene_quota(*, scene_seconds: float = DEFAULT_SCENE_SECONDS,
                 single_max: float = DEFAULT_SINGLE_MAX,
                 longest_cap: float = DEFAULT_LONGEST,
                 avg_target: str = "", allow_long: bool = False,
-                priority: int = 3) -> dict:
+                priority: int = 3, role: str = "") -> dict:
     """**单场**联合配额：由总时长反推可行的镜数区间与单镜范围。
 
     关键规则（与旧实现的差别）：
@@ -88,9 +88,20 @@ def scene_quota(*, scene_seconds: float = DEFAULT_SCENE_SECONDS,
     smin = max(0.5, float(single_min))
     eff = _eff_max(single_max, longest_cap)
 
+    # ⚠️ **一场至少 3 镜**（2026-11-06，第三次被数据说服）
+    #
+    # 盲判反复指向同一件事：**"一场只有 2 镜"是最强的低分信号**
+    #   48 条样本：低分 67% 的场是 2 镜，高分只有 37%
+    #   58 条样本：A 的 2 镜场占比 2%、节奏 4.62；B 是 14%、节奏 3.79
+    # 而之前 `nMin = ceil(T_s / (上限×1.5))` 在短场正好算出 2 ——
+    # 等于把每场都允许压到 2 镜，B 就压到了 2。
+    #
+    # 例外：场太短（<15s）或 role=过场/空镜，允许 2 镜。
+    _floor = 2 if (ts < 15.0 or str(role) == "过场") else 3
     n_max = max(1, min(MAX_SHOTS_PER_SCENE, int(math.floor(ts / smin))))
     # 至少几镜才填得满：用"有效上限"估，再留 1.5 倍余量，避免强迫长镜头
-    n_min = max(1, min(MAX_SHOTS_PER_SCENE, int(math.ceil(ts / (eff * 1.5)))))
+    n_min = max(_floor, min(MAX_SHOTS_PER_SCENE,
+                            int(math.ceil(ts / (eff * 1.5)))))
     tight = False
     if n_min > n_max:
         n_min = n_max
@@ -145,6 +156,7 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
             avg_target=s.get("avgTarget", ""),
             allow_long=bool(s.get("allowLong", False)),
             priority=int(s.get("priority", 3)),
+            role=str(s.get("role") or ""),
         )
         q["sceneId"] = str(s.get("sceneId") or "")
         q["role"] = str(s.get("role") or "")

@@ -1,199 +1,199 @@
 {
   "b1.png": {
-    "label": "中·信·r3·A-单智能体",
-    "shots": 16
+    "label": "中·回声·r1·A-单智能体",
+    "shots": 20
   },
   "b2.png": {
     "label": "长·空屋·r2·A-单智能体",
-    "shots": 29
+    "shots": 27
   },
   "b3.png": {
-    "label": "短·钥匙·r2·B-多智能体",
-    "shots": 9
+    "label": "短·钥匙·r3·B-多智能体",
+    "shots": 10
   },
   "b4.png": {
-    "label": "中·回声·r3·B-多智能体",
-    "shots": 15
+    "label": "中·守夜·r1·B-多智能体",
+    "shots": 18
   },
   "b5.png": {
     "label": "长·空屋·r3·B-多智能体",
-    "shots": 17
+    "shots": 18
   },
   "b6.png": {
     "label": "短·雨夜·r2·A-单智能体",
     "shots": 8
   },
   "b7.png": {
-    "label": "中·守夜·r3·A-单智能体",
-    "shots": 21
+    "label": "中·渔火·r1·A-单智能体",
+    "shots": 14
   },
   "b8.png": {
-    "label": "中·守夜·r1·A-单智能体",
-    "shots": 20
+    "label": "中·守夜·r2·A-单智能体",
+    "shots": 21
   },
   "b9.png": {
-    "label": "中·守夜·r2·B-多智能体",
-    "shots": 15
+    "label": "中·守夜·r3·B-多智能体",
+    "shots": 17
   },
   "b10.png": {
-    "label": "中·渔火·r1·B-多智能体",
-    "shots": 13
+    "label": "中·渔火·r2·B-多智能体",
+    "shots": 14
   },
   "b11.png": {
     "label": "短·雨夜·r3·B-多智能体",
     "shots": 11
   },
   "b12.png": {
-    "label": "短·集市·r2·B-多智能体",
+    "label": "短·集市·r3·B-多智能体",
     "shots": 9
   },
   "b13.png": {
     "label": "长·薰衣草·r3·B-多智能体",
-    "shots": 15
+    "shots": 17
   },
   "b14.png": {
-    "label": "短·钥匙·r2·A-单智能体",
-    "shots": 11
+    "label": "短·钥匙·r3·A-单智能体",
+    "shots": 9
   },
   "b15.png": {
-    "label": "中·渔火·r1·A-单智能体",
-    "shots": 13
+    "label": "中·渔火·r2·A-单智能体",
+    "shots": 14
   },
   "b16.png": {
     "label": "长·摆渡·r2·B-多智能体",
-    "shots": 14
+    "shots": 19
   },
   "b17.png": {
-    "label": "中·守夜·r1·B-多智能体",
-    "shots": 15
+    "label": "中·守夜·r2·B-多智能体",
+    "shots": 16
   },
   "b18.png": {
-    "label": "中·渔火·r3·B-多智能体",
-    "shots": 13
+    "label": "短·钥匙·r1·B-多智能体",
+    "shots": 10
   },
   "b19.png": {
     "label": "短·雨夜·r2·B-多智能体",
     "shots": 10
   },
   "b20.png": {
-    "label": "短·集市·r2·A-单智能体",
-    "shots": 10
-  },
-  "b21.png": {
     "label": "短·集市·r3·A-单智能体",
     "shots": 11
+  },
+  "b21.png": {
+    "label": "短·雨夜·r1·A-单智能体",
+    "shots": 8
   },
   "b22.png": {
     "label": "长·薰衣草·r1·A-单智能体",
     "shots": 35
   },
   "b23.png": {
-    "label": "短·集市·r1·A-单智能体",
-    "shots": 8
+    "label": "短·集市·r2·A-单智能体",
+    "shots": 9
   },
   "b24.png": {
     "label": "长·薰衣草·r2·B-多智能体",
-    "shots": 16
+    "shots": 19
   },
   "b25.png": {
-    "label": "中·回声·r3·A-单智能体",
+    "label": "中·守夜·r1·A-单智能体",
     "shots": 20
   },
   "b26.png": {
-    "label": "中·渔火·r2·A-单智能体",
-    "shots": 9
-  },
-  "b27.png": {
-    "label": "长·空屋·r3·A-单智能体",
-    "shots": 33
-  },
-  "b28.png": {
-    "label": "长·薰衣草·r2·A-单智能体",
-    "shots": 35
-  },
-  "b29.png": {
-    "label": "长·空屋·r1·A-单智能体",
-    "shots": 32
-  },
-  "b30.png": {
-    "label": "长·摆渡·r1·A-单智能体",
-    "shots": 29
-  },
-  "b31.png": {
-    "label": "短·钥匙·r3·B-多智能体",
-    "shots": 9
-  },
-  "b32.png": {
-    "label": "短·雨夜·r3·A-单智能体",
-    "shots": 9
-  },
-  "b33.png": {
-    "label": "长·摆渡·r2·A-单智能体",
-    "shots": 24
-  },
-  "b34.png": {
-    "label": "中·回声·r1·A-单智能体",
-    "shots": 17
-  },
-  "b35.png": {
-    "label": "短·钥匙·r1·A-单智能体",
-    "shots": 8
-  },
-  "b36.png": {
-    "label": "长·空屋·r2·B-多智能体",
-    "shots": 17
-  },
-  "b37.png": {
-    "label": "中·信·r1·B-多智能体",
-    "shots": 16
-  },
-  "b38.png": {
     "label": "中·渔火·r3·A-单智能体",
     "shots": 12
   },
+  "b27.png": {
+    "label": "长·空屋·r3·A-单智能体",
+    "shots": 28
+  },
+  "b28.png": {
+    "label": "长·薰衣草·r2·A-单智能体",
+    "shots": 36
+  },
+  "b29.png": {
+    "label": "长·空屋·r1·A-单智能体",
+    "shots": 27
+  },
+  "b30.png": {
+    "label": "长·摆渡·r1·A-单智能体",
+    "shots": 25
+  },
+  "b31.png": {
+    "label": "短·集市·r1·B-多智能体",
+    "shots": 10
+  },
+  "b32.png": {
+    "label": "短·雨夜·r3·A-单智能体",
+    "shots": 8
+  },
+  "b33.png": {
+    "label": "长·摆渡·r2·A-单智能体",
+    "shots": 23
+  },
+  "b34.png": {
+    "label": "中·回声·r2·A-单智能体",
+    "shots": 19
+  },
+  "b35.png": {
+    "label": "短·钥匙·r2·A-单智能体",
+    "shots": 7
+  },
+  "b36.png": {
+    "label": "长·空屋·r2·B-多智能体",
+    "shots": 21
+  },
+  "b37.png": {
+    "label": "中·信·r1·B-多智能体",
+    "shots": 18
+  },
+  "b38.png": {
+    "label": "短·钥匙·r1·A-单智能体",
+    "shots": 8
+  },
   "b39.png": {
     "label": "中·信·r1·A-单智能体",
-    "shots": 21
+    "shots": 18
   },
   "b40.png": {
     "label": "长·摆渡·r3·B-多智能体",
-    "shots": 16
+    "shots": 20
   },
   "b41.png": {
     "label": "长·薰衣草·r3·A-单智能体",
-    "shots": 37
+    "shots": 35
   },
   "b42.png": {
-    "label": "短·集市·r1·B-多智能体",
-    "shots": 9
+    "label": "短·集市·r2·B-多智能体",
+    "shots": 11
   },
   "b43.png": {
-    "label": "短·集市·r3·B-多智能体",
-    "shots": 9
+    "label": "短·雨夜·r1·B-多智能体",
+    "shots": 10
   },
   "b44.png": {
-    "label": "短·钥匙·r3·A-单智能体",
-    "shots": 9
+    "label": "短·集市·r1·A-单智能体",
+    "shots": 12
   },
   "b45.png": {
-    "label": "中·回声·r2·B-多智能体",
-    "shots": 16
+    "label": "中·回声·r3·B-多智能体",
+    "shots": 19
   },
   "b46.png": {
-    "label": "中·回声·r2·A-单智能体",
-    "shots": 18
+    "label": "中·回声·r3·A-单智能体",
+    "shots": 20
   },
   "b47.png": {
-    "label": "中·渔火·r2·B-多智能体",
-    "shots": 13
+    "label": "中·渔火·r3·B-多智能体",
+    "shots": 15
   },
   "b48.png": {
-    "label": "中·守夜·r3·B-多智能体",
-    "shots": 16
+    "label": "中·渔火·r1·B-多智能体",
+    "shots": 14
   },
   "b49.png": {
-    "label": "中·守夜·r2·A-单智能体",
-    "shots": 21
+    "label": "中·守夜·r3·A-单智能体",
+    "shots": 23
   },
   "b50.png": {
     "label": "长·摆渡·r1·B-多智能体",
@@ -201,34 +201,34 @@
   },
   "b51.png": {
     "label": "长·薰衣草·r1·B-多智能体",
-    "shots": 14
+    "shots": 18
   },
   "b52.png": {
-    "label": "中·信·r2·A-单智能体",
-    "shots": 18
+    "label": "中·信·r3·A-单智能体",
+    "shots": 20
   },
   "b53.png": {
     "label": "长·摆渡·r3·A-单智能体",
-    "shots": 25
+    "shots": 27
   },
   "b54.png": {
-    "label": "中·信·r2·B-多智能体",
+    "label": "中·信·r3·B-多智能体",
     "shots": 16
   },
   "b55.png": {
-    "label": "短·钥匙·r1·B-多智能体",
-    "shots": 9
+    "label": "短·钥匙·r2·B-多智能体",
+    "shots": 10
   },
   "b56.png": {
-    "label": "中·回声·r1·B-多智能体",
-    "shots": 15
+    "label": "中·回声·r2·B-多智能体",
+    "shots": 18
   },
   "b57.png": {
-    "label": "中·信·r3·B-多智能体",
-    "shots": 15
+    "label": "中·回声·r1·B-多智能体",
+    "shots": 19
   },
   "b58.png": {
     "label": "长·空屋·r1·B-多智能体",
-    "shots": 19
+    "shots": 20
   }
 }
