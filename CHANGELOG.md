@@ -57,6 +57,65 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.173] — 2026-11-06（**证据链打包**：一集导出成可独立复核的包）
+
+### 为什么这是差异化
+
+竞品能生成，**但不能证明"这一集是怎么被判定合格的"**。
+`tools/export_evidence.py` 把一个 episode 的判定记录、产物哈希、配额审计、
+复验脚本打成一个**自包含目录** —— 拿到包的人**不需要我们的代码**就能复核。
+
+### 包结构
+
+```
+<bundle>/
+  README.md        说明每个文件是什么、怎么复核、边界在哪
+  manifest.json    包内每个文件的 sha256（**README 与 verify.py 也在里面**）
+  verify.py        独立校验脚本（只用标准库，不 import 本项目）
+  delivery/*.json  判定 / 缺陷 / 配额 / 逐轮剧本 / 审片
+  artifacts/       产物图（--with-images）
+```
+
+### 两条纪律
+
+1 **导出时就复核一次** —— 跑不通的包不导出（`--force` 才跳过）
+2 **manifest 覆盖 README 与 verify.py** —— 否则"说明"本身可以被替换
+
+### 真机验证（ER5 那一集）
+
+```
+导出 12 个文件 -> outputs/_bundle_ER5
+导出即复核：结论 PASS
+
+外部人视角（cd 进包，只跑包内 verify.py）：
+  manifest：11 个文件 · 不一致/缺失 0
+  产物：1 个 · 一致 1
+  结论：PASS
+
+篡改 delivery/image_review.json 一个空格：
+  [manifest MISMATCH] delivery/image_review.json
+  结论：FAIL（exit 1）
+
+篡改产物图一个字节：
+  [MISMATCH] SH-ER5-S01-001
+  结论：FAIL（exit 1）
+```
+
+### 踩到的两个坑
+
+- README 写了"按 manifest 校验"，但 verify.py **根本没实现** —— 文档与行为不一致
+- manifest 里存纯 hex、verify 里带 `sha256:` 前缀 → **所有文件都报 MISMATCH**；
+  统一去掉前缀再比才对
+
+### 验证 Verification
+
+```
+ [v] evidence_bundle 自检 10/10（含：子进程跑包内 verify、篡改 json、篡改产物）
+ [v] 全量 1953 项 + 架构守卫 PASS
+```
+
+---
+
 ## [0.4.0-alpha.172] — 2026-11-06（**一场至少 3 镜** —— 第三次被数据说服）
 
 ### 反复出现的同一个信号

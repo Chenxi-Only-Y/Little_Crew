@@ -88,6 +88,29 @@ def main(argv=None) -> int:
     # 只有它才能回答"交付的东西有没有被改过"；
     # irHashes 是施工单哈希，与文件字节无关，**不能拿来比文件**。
     file_hashes = ev.get("artifactHashes") or {}
+    # ---- ① 先按 manifest 校验包内每个文件（防夹带/防改说明）----
+    # manifest 在**包根**（不是 delivery/ 下）—— 与证据文件不同位置
+    _manp = workdir / "manifest.json"
+    man = (json.loads(_manp.read_text(encoding="utf-8"))
+           if _manp.is_file() else None)
+    man_rows, man_bad = [], 0
+    if man and isinstance(man.get("files"), dict):
+        for rel, want in man["files"].items():
+            f = workdir / rel
+            if not f.is_file():
+                man_rows.append({"file": rel, "status": "missing"})
+                man_bad += 1
+                continue
+            # manifest 存纯 hex，`sha256_of` 带 `sha256:` 前缀 —— 统一去掉再比
+            got_h = sha256_of(f).split(":", 1)[-1]
+            want_h = str(want).split(":", 1)[-1]
+            if got_h != want_h:
+                man_rows.append({"file": rel, "status": "MISMATCH",
+                                 "expected": want_h, "actual": got_h})
+                man_bad += 1
+            else:
+                man_rows.append({"file": rel, "status": "ok"})
+
     hashes = find_hashes(ev) or {}
     rows, ok, bad, miss = [], 0, 0, 0
     for sh in (master.get("shots") or ()):
@@ -119,20 +142,30 @@ def main(argv=None) -> int:
                 "这一集是在补该字段之前生成的，只能核验\"有没有文件\"，"
                 "不能核验\"文件有没有被改\"")
     total = len(rows)
-    verdict = "PASS" if (bad == 0 and miss == 0 and total > 0) else "FAIL"
+    verdict = ("PASS" if (bad == 0 and miss == 0 and total > 0 and man_bad == 0)
+               else "FAIL")
     result = {"kind": "evidence.verification", "workdir": str(workdir),
               "verdict": verdict, "total": total, "ok": ok,
               "mismatch": bad, "missing": miss,
               "shotsWithHash": len(hashes),
-              "fileHashes": len(file_hashes), "note": note, "rows": rows}
+              "fileHashes": len(file_hashes), "note": note, "rows": rows,
+              "manifestFiles": len(man_rows), "manifestBad": man_bad,
+              "manifestRows": man_rows}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         print(f"  目录: {workdir}")
         print(f"  产物: {total} 个 · 一致 {ok} · 不一致 {bad} · 缺失 {miss}")
+        if man_rows:
+            print(f"  manifest：{len(man_rows)} 个文件 · 不一致/缺失 {man_bad}")
+        else:
+            print("  manifest：无（不是证据包，只按产物哈希校验）")
         print(f"  证据里 IR 哈希: {len(hashes)} 镜 · 产物文件哈希: {len(file_hashes)} 个")
         if note:
             print(f"  ⚠️ {note}")
+        for r in man_rows:
+            if r["status"] != "ok":
+                print(f"    [manifest {r['status']}] {r['file']}")
         for r in rows:
             if r["status"] != "ok":
                 print(f"    [{r['status']}] {r['shotId']}  {r['file']}")
