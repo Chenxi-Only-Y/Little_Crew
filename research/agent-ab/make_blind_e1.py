@@ -37,6 +37,11 @@ items = []
 for key, ab in sorted(pairs.items()):
     if "A" not in ab or "B" not in ab:
         continue
+    # ⚠️ **失败的记录不放进盲判包**（2026-11-06）：
+    # 它们没有镜头表，判者只能打 1/1，白白消耗注意カ ——
+    # 而失败本身已经计入达成率，两件事不要混在一张表里。
+    if not (ab["A"].get("ok") and ab["B"].get("ok")):
+        continue
     items.append((key, ab["A"]))
     items.append((key, ab["B"]))
 
