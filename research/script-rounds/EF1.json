@@ -1,0 +1,164 @@
+{
+  "episodeId": "EF1",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲抛出明确的对抗性筹码——“明天的集会，你不许缺席”，这是本场最强的阻力与代价预告；但到了 S03，集会只以“窗外鼓声和笑闹声”的背景音出现，她缺席了却从头到尾没有被追责，父亲的威胁落空，代价没有兑现。', suggestion='让缺席集会的后果在 S03 或 S04 具象化：比如次日她走出房门时邻居的指点、父亲摔门而去的冷战、或 S04 围观议论直接点破“就是她，集会都没来”。让 S02 的威胁产生可感的回响，代价才算真正支付。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 用摔碗、压低声音的火气、甩开母亲的手建立了父亲这条高压对抗线，到了 S04 却只写“父亲站在人群后头，脸色铁青，却没有上前”——阻力自动消失，没有发生任何正面交锋，她带走包袱的过程零对抗。', suggestion='让父亲上前一步：夺包袱、拦在村口、或说出更狠的话逼她当众抉择；哪怕他最终让开，也要让她付出具体的代价（被打落的包袱、一句断绝关系的话）。冲突不爆发，出走就显得廉价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人消散的转折点上，直接用台词“我就是你想远行的心啊”把谜底说破——转折本该由“抓到满手香气”这个动作承载，却被解释性对白提前泄底，情绪冲击被换成了一句哲理总结。', suggestion='删掉或推迟这句台词：让他消失在雾里只留香气，把“他是她内心投射”的判断完全交给 S06 的独白和观众。若必须留台词，改成更含糊、更疼的一句，别把答案喂到嘴边。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场只有一个角色，内容是回忆罗列（“她想起父亲摔碗的声音，想起母亲摇头……”）加一段内心独白，没有任何阻力或对抗；结尾直接用旁白“后来村里人说……”收束，情绪从头到尾是平的。', suggestion='给独行加一个具体的阻力瞬间：比如走到岔路口真正回头望了一次村里的灯火、雾中出现幻象般的鼓声引她往回走、或她攥紧花瓣时手被石子划破。让“往前走”是一次挣出来的选择，而不是一段抒情陈述。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 22.8
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 71.666
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场唯一的阻力是旅人一句虚弱的“别……别让我欠你”，少女用“已经欠了”一句话就化解了；没有任何东西真正拦住她——她撕布、勒紧、拖人，一路没有对抗，救与不救之间的拉扯没有被演出来。', suggestion='给她一个具体的、看得见的阻力：天光将尽她必须回、他失血过重拖不动、或他激烈抗拒（扯掉布条、推开她）。让她在“回去挨话”与“救人”之间先付出可见的代价，再作出拖他回去的决定。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：“你到底是谁？”的对质没有对手回应——旅人既不否认也不辩解，只“笑了一下”便化雾消失；阻力完全由设定（雾、失踪）提供，而不是由人物提供，质问成了自言自语。', suggestion='让旅人主动反制：夺下或挡开花束、吐出半句真相并要她拿什么来换、或明说“别跟来”并试图把她劝回。使这场变成有来有回的对抗，他随后的消失才是她对抗失败的结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：“我不回去”这个最终决定没有付出新的代价——名册、家门、母亲在 S03、S04 已经失去，回村这条路实际已被父亲关死（“门在身后合上，落闩”），拒绝一个早已关闭的选项近乎免费，高潮因此立不住。', suggestion='让返程的诱惑真实成立：雾里出现母亲或一片可及的灯火、或旅人已死的确证，使她必须主动放弃一样看得见的东西（信物、回去的最后机会）才能继续往前走。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.17
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 179.719
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场的代价是实打实的——\"一篮花换一包盐，母亲还等着盐下锅\"，她把花穗倒进沟里。但这笔代价此后再无人提起：S02 母亲照常做饭、无人缺盐；被花穗盖住的\"带血的布条\"也是个埋下的线索，却始终没有人发现、没有引发任何后果。代价当场付清，之后既不追缴、也不兑现。', suggestion='让代价在下游回收：S02 可以用\"家里没盐\"坐实父亲的火气与她的愧疚；或让带血布条在 S03 被村民发现，成为父亲发难、村里侧目的具体导火索——这样 S01 的牺牲才会持续生利息。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：离村这场是全剧的行动起点，却没有真正的阻力：旅人只说了\"北边的路，走过的人不回头\"和\"你爹的门呢\"两句提醒，她各用一句就顶回去了（\"那我不回头\"\"关上的门不算路\"）；老奶奶是赠花而非阻拦。旅人自始至终没有说\"不\"，没有设条件，没有拒绝她上路——她想要什么，三行台词就拿到了。', suggestion='给旅人一个明确的拒绝或门槛：比如他坚持独自走、留下一个她必须先付出什么才能跟上的条件，或把离开安排在压力之下（父亲或村民赶到村口），让她靠行动而非宣言完成出走。另外\"关上了\"的门是父亲把她关在外面，这是代价，但现在只存在于一句对白里，值得拍出来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：交易是空的。旅人开价\"你有回去的路……换不换？\"，她答\"那不算我的了\"——这条路她在 S03 已经主动放弃过（\"关上的门不算路\"），等于拿已经扔掉的东西付款。更糟的是 S06 还把价退还了：母亲说\"路我给你留着，门也没落闩\"，回去的路完好无损。她既没真付价，交易就没建立风险，掷花这一动作的分量随之被抽空。', suggestion='把价格换成她此刻仍握在手里的东西——那把铜钥匙、母亲的后门、甚至她自己的名字/记忆；或反过来，让 S06 显示这条路真的回不去了（门已落闩、灯已熄），她是在无退路的情况下凭自己做出选择，代价才落得住。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 37.926
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 233.865
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}
