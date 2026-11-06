@@ -105,7 +105,8 @@ def assign_to_shots(lines, shots) -> list[dict]:
         shot = pool[min(i, len(pool) - 1)]
         used[sid] = i + 1
         out.append({**ln, "shotId": str(getattr(shot, "shot_id", "")),
-                    "shotSeconds": float(getattr(shot, "duration_sec", 0) or 0)})
+                    "shotSeconds": float(getattr(shot, "duration_sec", 0) or 0),
+                    "source": str(ln.get("source") or "")})
     return out, dropped
 
 
@@ -139,6 +140,7 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 6,
                   float(ln.get("shotSeconds") or 0))
         rows.append({
             "shotId": ln["shotId"], "character": who, "text": ln["text"],
+            "source": str(ln.get("source") or ""),
             "ok": bool(r.get("ok", True)), "audioSeconds": float(r.get("seconds") or 0),
             "shotSeconds": float(ln.get("shotSeconds") or 0),
             "voice": str(spec.get("voice") or ""),

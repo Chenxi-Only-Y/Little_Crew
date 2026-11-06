@@ -1127,13 +1127,22 @@ class EpisodeRunner:
                         except Exception:                  # noqa: BLE001
                             _sheets[_c] = {}
                 _cast_map = _cast(_chars, _sheets, _tts.list_voices())
+                # 台词来源**优先结构化字段** `dialogue`（2026-11-06 加），
+                # 没有才退回正则抽正文 —— 并在每条上记 `source`，便于统计。
                 _lines = []
                 for _sc in (script_draft.scenes or ()):
                     _sid = str(_sc.get("scene_id") or _sc.get("id") or "")
                     _known = {str(c) for c in (_sc.get("characters") or ()) if str(c)}
-                    for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
-                                                 known=_known or None):
-                        _lines.append({**_d, "sceneId": _sid})
+                    _dia = _sc.get("dialogue") or []
+                    if _dia:
+                        for _d in _dia:
+                            _lines.append({"character": str(_d.get("character") or ""),
+                                           "text": str(_d.get("line") or ""),
+                                           "sceneId": _sid, "source": "dialogue"})
+                    else:
+                        for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
+                                                     known=_known or None):
+                            _lines.append({**_d, "sceneId": _sid, "source": "regex"})
                 _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
                 _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
                 _trk = _vt.build(_lines, shots, synth=_tts.synth,

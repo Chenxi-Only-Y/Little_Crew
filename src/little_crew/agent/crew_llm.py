@@ -69,6 +69,9 @@ _SCREENWRITER_SYSTEM = """你是《小剧组》平台的**编剧**，负责把�
 · 冲突的解决必须**付出代价** —— 轻易化解不算代价；
 · 每场要有**转折** —— 情绪走向不能是平的；
 · 场景与人物要**前后一致**，不能出现前面没有的人或物。
+· **`dialogue` 必须是结构化的**：每句台词一条 `{character, line}`，
+  `character` 只能取本场 `characters` 里的名字。**不要只把对白写进 text** ——
+  下游配音要按"谁说的"分配音色，混在正文里只能靠猜。
 
 输出**严格 JSON**，结构如下（不要输出任何其它内容）：
 
@@ -79,6 +82,10 @@ _SCREENWRITER_SYSTEM = """你是《小剧组》平台的**编剧**，负责把�
       "scene_id": "S01",
       "heading": "内景·旧书店·夜",
       "characters": ["林晚", "店主"],
+      "dialogue": [
+        {"character": "林晚", "line": "这一句是她说的。"},
+        {"character": "店主", "line": "这一句是他说的。"}
+      ],
       "text": "这一场的正文。要有对白与动作，200-400 字。",
       "summary": "一句话概括本场发生了什么"
     }
@@ -88,7 +95,9 @@ _SCREENWRITER_SYSTEM = """你是《小剧组》平台的**编剧**，负责把�
 
 def _scene_schema_hint() -> str:
     return ('"scenes": [ {"scene_id": "S01", "heading": "内景·…·夜", '
-            '"characters": ["人名"], "text": "正文", "summary": "一句话"} ]')
+            '"characters": ["人名"], '
+            '"dialogue": [{"character": "人名", "line": "台词"}], '
+            '"text": "正文", "summary": "一句话"} ]')
 
 
 #: 各职位的提示词。键与 `roster` 里的 agent_id 对应。
@@ -314,10 +323,30 @@ class ScreenwriterLlm:
             if isinstance(chars, str):
                 chars = [c.strip() for c in chars.replace("，", ",").split(",")
                          if c.strip()]
+            # ---- 结构化对白（2026-11-06）----
+            #
+            # 以前只有 `text`（对白 + 动作混写），配音要**猜**"谁说的"：
+            # 实测 18 句里 18 个"说话人"都是动作短语。
+            # 现在要求剧作家直接给 `dialogue`，且**名字必须在本场 characters 里**
+            # （不在就丢掉 —— 不许凭空多出一个说话人）。
+            names = [str(c) for c in chars]
+            dialogue = []
+            for d in (s.get("dialogue") or ()):
+                if not isinstance(d, Mapping):
+                    continue
+                who = str(d.get("character") or d.get("who") or "").strip()
+                line = str(d.get("line") or d.get("text") or "").strip()
+                if not line:
+                    continue
+                if names and who not in names:
+                    continue
+                dialogue.append({"character": who, "line": line[:200]})
+
             out.append({
                 "scene_id": str(s.get("scene_id") or s.get("id") or f"S{i:02d}"),
                 "heading": str(s.get("heading") or s.get("location") or ""),
-                "characters": [str(c) for c in chars],
+                "characters": names,
+                "dialogue": dialogue,
                 "text": text,
                 "summary": str(s.get("summary") or ""),
                 "episodeId": episode_id,

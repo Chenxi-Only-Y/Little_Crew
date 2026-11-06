@@ -1,0 +1,164 @@
+{
+  "episodeId": "EV51",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒——\"你走出这个门，明天的集会就别去了。往后也别去\"——其兑现完全落在场外旁白里：\"那一年，村里人再没在集会上见过她。\"代价没有在本场的行动中被观众看见，只被叙述告知。', suggestion='把代价做成场上可见的动作：让少女端碗出门的瞬间父亲砸掉某件家什、母亲无声地往她手里塞一样东西，或让\"集会\"在本场内就发生一次（她真的缺席、邻里的议论当面落下），使抗争与惩罚同场完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的抗拒——\"别跟着我。路是往北的……别跟着\"——被少女一句\"你烧糊涂了\"和默默重煎一碗药就化解了；他清醒后也只\"望着窗外\"，两人之间没有任何正面对撞，冲突刚露头就归零。割破的手指属于代价，但不足以撑起一场对抗。', suggestion='让他清醒后有一次明确的驱赶或对质（拒喝药、要走、质问她为何管他），逼少女必须以更大的代价（回父亲那边求药、被村里人撞见、再次失去集会）才能留人，冲突升级后再缓和。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场的核心对抗在旅人那句\"你不知道我是什么人\"之后就中断了——他既没拒绝也没接受，少女单方面宣布\"我跟你走\"，随后场面被老奶奶的赠花与箴言接管，旅人全程再未表态，冲突被主题性台词替换。', suggestion='让旅人给出实际阻力（转身就走、明言不许跟、以伤未愈为由折返），并让少女的决定是在顶住这层阻力之后才落地；老奶奶的介入应打断的是两人的争执，而非顶替它。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场无任何阻力：少女独自捡茎、放包袱、走进晨雾，唯一的行动\"那就走远一点\"没有面对任何对抗；情绪落点与后日谈（村里人的传说、母亲收披肩）都靠叙述交代，场面本身是平的。', suggestion='给她设置一处具体对抗：走到岔路口听见村里唤她/想回头、把光秃的花茎扔掉又迟疑着捡回、雾中脚步真正停下来的那一刻——让\"继续走\"成为挣来的选择，而不是旁白的结论。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 22.354
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 63.119
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场的对抗到结尾仍未收束：旅人连续三次拒绝（\"不行\"\"你不知道我是什么人\"\"别跟着我。往北的路，不是你走的\"），少女以放下家门钥匙回应，但旅人没有被说服、也没有被迫接受——然而 S05 开篇两人已\"并肩走在山路上\"。抵抗消失在幕外，观众看不到她跨越阻力的那一下。', suggestion='在 S04 尾部补一个硬转折：或让旅人发现甩不掉（她已把包袱带攥死/已走在前面），用动作而非言语收场；或让村人逼近（如老奶奶的质询、父亲上前），外部压力替旅人\"不得不\"带上她。把关系跨越的瞬间留在场内。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折的信息链断裂两处：其一，S04 老奶奶的铺垫是\"香气能让不洁的东西现形\"，但本场真正触发消失的是少女\"掷花\"这一动作，香气功能从未上场，伏笔落空；其二，\"风里只剩下很低的一句话\"未写明内容，旅人是谁、他付出了什么，观众到此仍一无所知，转折只剩视觉奇观而没有信息量。', suggestion='让\"现形\"发生在掷之前——花靠近他时先灼出烟/他先在香气中显出异状，她才被迫掷出；并写出那句低语的内容（一句能同时交代身份与代价的台词），把视觉转折坐实为信息转折。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有对抗：母亲主动递披肩、让路（\"你走你的\"），村里的唤声只是背景音，少女的犹豫全部发生在心里。没有阻力要克服，最后\"转身走进晨雾\"的决定不费任何力气，代价（S05 已失去旅人）之外再无新的消耗。', suggestion='给母亲一个真实的反向动作——哪怕只是拉住披肩的一角不松手、或说出\"你回头，我当没这回事\"这样的条件，让少女必须\"挣开\"才能上路；也可让唤声逼近成具体的人（有人追出来喊她名字），把内心摇摆外化成可见的对抗。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.954
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 53.111
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：全场只有体力消耗，没有对抗方。'她撕下披肩，一分为二……半拖半背地往山下走'是纯粹的任务执行，旅人昏迷、山路无阻碍，观众看不到任何阻力在和她较劲。\", suggestion=\"给这一场加一个具体的对抗源：比如山路被风雨冲断必须绕远、旅人在半途因疼痛挣扎推开她、或天色/体温下降形成时间压力，让'救'变成一场'抢'。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：场内情绪是平的——'少女没有低头，也没有辩解''她一次也没有抬头'，全程忍耐，没有任何起伏；真正的转变'从那以后，村里的集会她再没有去过'发生在戏外，用补叙交代，不是演出来的转折。\", suggestion=\"把转变拉进场内：例如她喂完药后走到门口，火把光正好照进来，她伸手把门关上——用一个动作完成'退出村落'的转折，而不是用旁白追认。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：阻力在同一拍里被消解：'人群里有人低声说话，声音压得很低，她没听，脚步也没停'——村庄的反对还没形成实际阻拦，就被她一句'没听'带过，旅人'没有回头'也不构成拒绝。\", suggestion=\"把阻力实体化：让人拦住她（拿走包袱、老奶奶改口劝她留下），她必须做出一个撕破脸的动作才能离开，'追上去'才是一次选择而不是顺路。\")"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.25
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.282
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.2（REVISE）；最好的是第 2 轮（59.1 分）"
+}
