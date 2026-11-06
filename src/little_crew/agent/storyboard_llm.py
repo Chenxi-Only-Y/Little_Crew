@@ -254,16 +254,28 @@ class StoryboardArtistLlm:
             if sid:
                 budgets[sid] = s
         if budgets:
-            budget_lines.append("【导演给的镜头预算 —— 必须遵守】")
-            for sc in draft.scenes:
-                sid = str(sc.get("scene_id") or sc.get("id") or "?")
-                b = budgets.get(sid)
-                if b:
-                    budget_lines.append(
-                        f"  {sid}: **{b.get('shotBudget')} 镜**"
-                        + (f"　保住：{b.get('focus')}" if b.get("focus") else ""))
-                else:
-                    budget_lines.append(f"  {sid}: （导演未给预算，按 ≥2 镜）")
+            # ---- 场级联合配额（2026-11-06，P2）----
+            #
+            # 以前每场只给"几镜"，于是时长无人管：出现过"一场 10 镜 82 秒"。
+            # 现在用 `runtime.plan_alloc` 由**总时长**反推镜数区间与单镜范围，
+            # 每场写成一行联合约束。
+            from little_crew.governance.plan_alloc import (  # noqa: PLC0415
+                prompt_lines, quotas_for)
+
+            _alloc = quotas_for(self.plan, draft.scenes)
+            budget_lines.append("【场级联合配额 —— 必须遵守（时长、镜数、单镜都要满足）】")
+            for q in _alloc["scenes"]:
+                line = prompt_lines(q)[0]
+                if q.get("role"):
+                    line += f" · 本场定位：{q['role']}"
+                _foc = str((budgets.get(q["sceneId"]) or {}).get("focus") or "")
+                if _foc:
+                    line += f" · 保住：{_foc}"
+                budget_lines.append(line)
+            if _alloc.get("softCapExceeded"):
+                budget_lines.append(
+                    f"  ⚠️ 总镜数超出上限 {_alloc['overBy']} 镜也不许牺牲单场最低镜数；"
+                    f"优先保住每场的故事推进")
             if self.plan.get("tone"):
                 budget_lines.append(f"  基调：{self.plan['tone']}")
             if self.plan.get("pacing"):
@@ -324,7 +336,9 @@ class StoryboardArtistLlm:
         lines += [
             f"请为以上 {len(draft.scenes)} 场切分镜。总镜头数不超过 "
             f"{self.max_shots}。",
-            f"⚠️ 每镜 ≤ {MAX_SHOT_SECONDS:.0f} 秒，每场 ≥ 2 镜。",
+            f"⚠️ 每镜 ≤ {MAX_SHOT_SECONDS:.0f} 秒（硬顶），但**以各场配额的单镜上限为准**；"
+            f"每场 ≥ 2 镜。",
+            "⚠️ 每场还要满足**总时长上限**：把该场所有镜头时长加起来，不得超过配额。",
             f"⚠️ shotSize 只能取 {list(v['shotSize'])}；",
             f"   cameraMovement 只能取 {list(v['cameraMovement'])}；",
             f"   action 只能取 {list(v['action'])}。",

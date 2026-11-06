@@ -1,0 +1,164 @@
+{
+  "episodeId": "EP2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 43.8,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力在“父亲的手僵在半空，最后重重落回桌面”处自行消散——他没有被说服，也没有升级对抗，只是被母亲拉了一下就停了。冲突没有交锋点，双方各说一句就归零，场面重新变平。', suggestion='给父亲一个具体的施压动作或最后通牒（如明早要她去向族里交代、或直接扣下药碗），让少女用一个有代价的选择回应，而不是“没有辩解”地绕开。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：“人群在村口聚起来，没人上前，也没人后退”——阻力被明确写成了零。S02里父亲“你留他，村里人怎么看你”的强对抗到这里凭空消失，父亲甚至不在场，没有任何人出来阻拦或质问。', suggestion='让S02的反对在村口以实体形式出现：父亲或某个村民站出来拦路、要求旅人先说清身份，把S02未完成的对抗挪到这里打完。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对手毫无反扑：“旅人还是笑，抬手，像要替她拂开额前的碎发”，随后“化作一阵轻烟，散了”。整场对抗是单方面的，幻象既不辩解也不挣扎，少女一掷即胜，冲突没有被真正考问过。', suggestion='让幻象在被揭穿时反咬一口——用她最想听的话挽留、或逼她自己承认“你根本不想走”，把胜负变成一次她必须付出自我否定才能赢的拉扯。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场无冲突、情绪基本静止：“她没有哭”“她站了很久”。最后用“后来村里人说……也有人说……”的传说式旁白收尾，把唯一剩下的选择（回头还是走进雾里）提前替观众答完，局势没有再发生变化。', suggestion='删掉传说旁白，把结尾压回她的一个具体动作上——例如她朝雾里走了两步又停住、回头望了一眼来路再转身，用一次真实的犹豫与决断完成最后一转。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 43.8,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 8,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 8.192
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 133.04
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.6,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的通牒在最高点自己松掉了：「你要留他，就别再进这个家门」之后，少女只是「蹲下去捧药渣，转身走进里屋」，父亲再无动作，她当晚就守在床边。对抗的最强音没有被执行，本场以和解式的静默收尾；而真正的代价（被逐出家门）被推迟到 S03 由她自己主动完成，导致 S02 的冲突闭环缺失。', suggestion='让通牒落地：父亲可以拦在里屋门口、把她的铺盖扔出去，或直接闩门，使她当夜必须在灶间/门外守夜——这样本场既有当场付出的代价，也为 S03 她掏钥匙离家埋下同一个门槛的意象。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲提出的阻力被原地搁置：「让他先说清楚——你是谁，从哪儿来，为什么伤在我们村的地界上」，旅人「张了张嘴，没有出声」，父亲随即改口质问少女，这条最硬的要求无人应答也无人坚持，障碍自动消失；结尾「父亲没有拦。他只是转过身」让阻拦方主动撤防，少女得以零阻力走出村口。', suggestion='把要求变成必须执行的动作：父亲或村民真的去扣旅人的手腕、堵住路口、逼少女当场表态（而非只说一句「别再叫我爹」），让她用一次实际的对抗换来自由——代价才不会只停留在留钥匙的象征动作上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：反转靠否定前文既成事实来成立，而不是兑现已埋的线索：S01 里旅人有渗进石缝的血、烫手的额头、需要灌下的药，S03 里父亲能直接指着他审问——他显然是在场的实体；本场却让「他化作一阵紫色的轻烟散了」，并交代他只是「你想远行的心」。观众会感到证据被撤回，而非真相被揭开。', suggestion='在 S02、S03 埋可回收的破绽：他的伤口始终不结痂、药他根本没喝、村民只经少女的转述才「看见」他、老奶奶「香气让不洁的东西现形」作为第一记预警；或保留他是真人，把「散了」改写成她主动转身、松手、不再需要他，让散去由她的选择触发而不是设定反转。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场没有阻力也没有新代价，转折停在静止状态：唯一的变化是「忽然发现自己在等——等有人追出来」，随后「没有人」，落空之后她转身进雾；最后那句被风吹散的话是对观众保留信息，不是局势或情绪的再变化，整场是 S04 高潮后的纯余韵，观众容易在此走神。', suggestion='给她一个带代价的收束动作：比如她真的往回走了几十步去够门槛上的钥匙，走到一半停住、把手收回——用一次可看见的反向行动完成「等」与「放」的取舍；或把本场压缩成 S04 的尾拍，让最后一个镜头落在她自己选定的方向上。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.6,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.345
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 121.947
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.3,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对峙是单向的。旅人面对质问只做了一件事——“旅人没有回答，只是笑”，随后她“把花束朝他掷了过去”，他就“化作一阵紫色的轻烟，散了”。阻力在最高潮的一场里瞬间消失：没有争辩、没有挽留、没有反制，冲突由女主角一个动作就解决了。', suggestion='给旅人一次真正的抵抗：让他在被花香照出轮廓后仍试图辩解或挽留（哪怕只是抓住她的手腕、替她挡那束花），或者让轻烟在散开时又聚回去一次，迫使她第二次出手——让“杀死自己的远行之心”这个决定付出她主动用力、而非被动触发的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全集最关键的一次停步没有可见的原因：“抬脚又要往回走。/然后停住。”她为什么停？场内没有任何东西促成这个转折，情绪的支点是空的，观众只能靠猜。', suggestion='给“停住”一个具体的触发物：手里那把钥匙忽然变凉（呼应 S01“凉得像石头”与 S03 老奶奶“那只手很凉”）、雾里传来一声村里的鸡鸣或母亲的声音、或是掌心被钥匙齿硌出的印子——让转折落在一个可拍的动作上，而不是画外的决定。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 67.3,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.536
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 99.443
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 67.3）"
+}

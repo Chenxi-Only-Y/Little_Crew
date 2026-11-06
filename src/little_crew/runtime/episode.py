@@ -690,6 +690,42 @@ class EpisodeRunner:
         planned = len(shots) if limit is None else min(len(shots), int(limit))
         picked = shots[:planned]
 
+        # ---- 场级配额与遵守情况（2026-11-06，P2）----
+        #
+        # 配额是**事前**的约束，这里是**事后**的对账：
+        # 分镜到底有没有落在 [min,max]、有没有超场时长。
+        # 落 delivery/scene_quota.json —— 既不参与门禁，也不假装通过。
+        try:
+            from little_crew.governance.plan_alloc import audit as _qa
+            from little_crew.governance.plan_alloc import quotas_for as _qf
+
+            _plan0 = None
+            for _k0 in ("episode.plan", "director.plan"):
+                try:
+                    _c0 = self.orch.blackboard.value(_k0)
+                except Exception:                          # noqa: BLE001
+                    _c0 = None
+                if isinstance(_c0, dict):
+                    _in0 = _c0.get("plan") if isinstance(_c0.get("plan"), dict) else _c0
+                    if isinstance(_in0, dict) and _in0.get("scenes"):
+                        _plan0 = _in0
+                        break
+            _q = _qf(_plan0, getattr(script_draft, "scenes", ()) or ())
+            _q["audit"] = _qa(_q, shots)
+            _wdq = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wdq:
+                import json as _jq
+
+                (_outq := Path(str(_wdq)) / "delivery").mkdir(
+                    parents=True, exist_ok=True)
+                (_outq / "scene_quota.json").write_text(
+                    _jq.dumps(_q, ensure_ascii=False, indent=2), encoding="utf-8")
+            _au = _q["audit"]
+            print(f"  配额遵守：{_au['compliantScenes']}/{_au['sceneCount']} 场"
+                  f"（{_au['complianceRate']*100:.0f}%）· 越界 {len(_au['findings'])} 条")
+        except Exception as _e_q:                          # noqa: BLE001
+            print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
+
         # ---- 场景主体冲突（2026-10-29 接入）----
         #
         # **先记录，不拦截。** 理由：这条判据刚上线，还不知道会命中多少镜头；

@@ -1,0 +1,111 @@
+{
+  "episodeId": "EP42",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的惩罚是「出了这门，就别去集会」，而少女付出的代价仅以一句陈述带过——「她从此再没有回过村子里的集会」。代价没有被写出痛感：她失去的究竟是集会、是村民的认可，还是与这个村子最后的联结？文中无从判断。同时母亲的拉劝被「甩开」后彻底消失，阻力方自废了一半。', suggestion='把代价落到具体可感的损失上：让天亮后她想出门却在门口停住，听见伙伴唤她名字；或让母亲隔墙塞来一碗粥、她不敢接。让「失去」在场内发生，而不是在场外被旁白告知。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的阻力全部是「说」出来的——旅人皱眉、村民低声议论、有人退了一步——但没有任何一方采取行动。少女只说了一句「我跟你走」，把包袱一紧，就直接迈出了村口，「身后没有人叫住她」等于宣告阻力自动失效。冲突被一句台词化解。', suggestion='给阻力一个动作：旅人可以说完就转身独走，逼她追上去；村民或父亲可以堵在村口（父亲在 S02 已立威，此处缺席是断裂）；老奶奶塞花时可以附加条件（如「走出十里再回头，就当没生过你」）。她必须硬闯或付出可见的撕破，这一步才值钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：「你到底是谁？」——旅人「没有回答，他只是笑」，随即被一束花掷中即散，零躲避、零反问、零纠缠。核心质问没有得到任何交锋，对抗在动作发生前就已经结束，转折是靠道具一次性完成的。', suggestion='让旅人接话并反击（「你不是早就知道答案，才不敢问？」），或让她掷花前有一个反悔/犹豫的拉锯——他伸手去接那束花。这样「散」才是她选择的结果，代价（亲手终结自己的远行之心）才真正归她所有。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「留下，还是继续走？」是伪冲突：S02 已交代她被逐出集会，S03 已交代「身后没有人叫住她」，村子对她本就不剩可回之处；她也没有做出任何往回走的动作，脚「像钉住了一样」之后直接向前。选项在文本里不成立，挣扎只存在于自问里。', suggestion='给她一个真实的回头诱因：雾里传来集会的钟声、母亲喊她的小名，让她真的转身走出几步再停住——然后用一个新信息（比如想起那束已经化掉的花）把她推回来。有动作的回头，才有代价的前行。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 22.835
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 92.624
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.3,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人说“你不是早就知道答案，才不敢问？”（以及“你为什么不敢问‘你是什么’”）——这场对峙建立在“少女早已起疑”的前提上，但 S01–S03 从没给过任何她怀疑他非人的线索：S01 她只觉得他“力气大得不像个伤成这样的人”，S03 她甚至追的是一个“连头都没回”的背影。前提缺失，这场最关键的交锋就变成了旅人单方面抛谜、少女被动接招，阻力不成立。', suggestion='在前文埋一处可回收的疑点：S01 可写她手背贴额头时“烫得立刻缩手”之后又疑惑——伤口发黑、人却烫得反常；或他说的那句“没听清的话”里有一个词她后来在 S04 突然听懂。让 S04 的质问落在她自己已经攒下的疑问上，对抗才是双向的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：唯一的阻力是画外母亲的呼喊和钟声，而少女从头到尾没有回应、没有回头、没有说一句话；她“往回走了三步，四步……第五步停住”之后直接“转回身，重新往北走”，对抗在一两行内自行消解，没有形成拉锯，这场收尾是平的。', suggestion='把阻力实体化并让她真正交手一次：例如母亲的声音近到能看见雾中的身影（或那碗粥被递到眼前），她已经伸出手/已走回七步，才因掌心的紫汁或老奶奶的话猛然停住——让她为回头付出一个可见的动作，再折返，转折才落得下来。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 67.3,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 22.96
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 126.083
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 67.3）"
+}

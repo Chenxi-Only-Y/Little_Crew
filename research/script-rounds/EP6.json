@@ -1,0 +1,163 @@
+{
+  "episodeId": "EP6",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场是纯护理场景，缺乏阻力。旅人的呓语（「北边……往北」）和少女的追问（「你是谁？」）互不构成对抗——他昏迷、无力反抗，她单方面付出，冲突维度几乎为零，整场平铺直叙（「她把布巾又浸了一次凉水，敷回他额头上」）。', suggestion='给这场加入对抗：或外部——父亲/村里人在门外发现她彻夜守着外乡人，逼她中断照护；或内部——她听见「北边」后动了送走他的念头，与自己救人的决心交战。让护理本身变成一个需要挣来的选择，而非顺流而下的动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「我就是你想远行的心啊」这一揭示把旅人替换为心象，与前四场建立的现实冲突（村子对外乡人的禁忌、父亲的禁令、老奶奶的警告）断裂：S01–S02 中真正施压的阻力（父亲砸碗、「村里人怎么看你」）在转折点上没有任何回应或收束，观众回看会发现前半程的冲突只是铺垫，其代价（被禁集会、家庭决裂）失去了落点。', suggestion='让转折同时兑现现实冲突线：例如在少女举花之前，先让父亲或村民追到山路（把 S02 的禁令变成实际拦截），她的「掷花」既是驱散旅人、也是当众撕破与村子的关系——两种冲突在同一个动作里合流，代价才不会落空。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾的收束偏廉价：她失去花、包袱和旅人（「手里什么也没有了」），但紧接着一句「骗子」加「沿着那条路继续往前走」，几乎立刻把失落转成了前行的笃定，代价没有在情绪上停留——S05 刚付出的失去被一行字抵消了。', suggestion='让代价在场内多滞留一步：给她一个具体的、不可逆的损失动作或细节（比如回头望村子的方向、发现包袱里母亲偷偷塞的东西已被她弄丢），再由这个细节触发她继续走的决定，使「前行」是从代价里长出来的，而不是直接跳过去的。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 32.21
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 74.582
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：阻力全靠台词宣布却无人执行：父亲说「你今天走出这个村口，就别再叫我」，人群也只是「吸了口气」，结尾写「她握紧花束，跟着旅人迈出了村口。身后没有人叫她」——本该是全集最硬的关卡，却一次阻挡、一次拉扯都没有发生，威胁没有被验证过。', suggestion='让威胁落地：人群中有人横身堵住村口、父亲上前一步攥住她的包袱带又缓缓松手，或老奶奶挡开人群为她让路——无论哪种，都要让「能不能走出这个村口」在场面上被真正争夺一次，而不是说完就通过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：追兵的对峙是被魔法消解的，不是被她的选择化解的：父亲喊「回家」、火把追上来，她没有跟父亲说一句话、没有做出拒绝的动作，而是「举起花束掷过去」，旅人自己散了，父亲「没有再往前一步」——S04 里「别再叫我」的父女决裂、S02 里失去赶集资格的代价，到这里全部自动失效，她什么都没付。', suggestion='在掷花之前插入一个她必须亲自付出的拍子：比如父亲扑上来抓住她的手腕，她必须当面说出一句断绝的话（或甩开他的手），然后才掷花；这样「失去父亲」和「失去旅人」双重代价同时兑现，火把落地才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：「可她要是把他送到山脚，就没人知道了——她心里冒出这个念头，然后被自己吓了一跳」写得很准，但这个内部冲突是一次性的：此后 S04、S05 她再没有动摇过，「抛弃他」的诱惑既没被再次考验，也没在结局处回响，等于种下一条线不收。', suggestion='让这个念头在后面复现一次：S05 火把追上来、无路可退时，让她先闪过「放下他自己跑」的半步犹豫，再举起花——念头被推翻一次才算完成；或干脆删掉这句，避免悬空。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.865
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 109.913
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救人的阻力只停留在说明层面——\"这三样在村里哪一样都够惹一场闲话\"、\"山坡上一个人影也没有\"，随后她探额、包扎、半扶半拖下山全程畅通无阻，没有任何外在对抗真正发生。风险被念出来，却没有被演出来。', suggestion='把\"闲话\"的威胁具象化为场内阻力：她包扎到一半，远处传来村里人的说笑声或狗吠逼近，她被迫拖着旅人躲进岩石后、等人群走远再出来；躲藏的过程让她付出可见的代价（花撒了、披肩彻底毁了、天色更晚），也让\"你不能死在这里\"这句台词扛上真正的风险。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：\"你今天要是进这间屋，就——\"这句威胁被母亲\"拉住父亲的袖子，摇了摇头\"直接撤除，父亲\"让开了半尺\"。对抗在零代价下解除；而真正的代价（守夜、此后不再参加集会）被推到\"那一夜\"和\"从那以后\"的画外时间里，场内没有结算。', suggestion='让父亲的让步在场内付出代价：要么母亲的劝阻无效、冲突升级后少女用一句承诺或一个动作换到这半尺门（说出她将付出什么），要么父亲让开时把话说完——把代价落到他身上（当众失语、摔碎某样东西），使这半尺门的让开成为一次交换而非一次消气。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧高潮的转折动力缺失一环：S04 结尾父亲已\"手指一根一根松开\"、\"转过身，不再看她\"，S05 开头两人已并肩上路，随后\"山下亮起一片火把\"、\"父亲的声音穿过雾\"——父亲从放行到带火把追来，中间没有任何交代，追与被抓的对抗因此悬空。', suggestion='在 S05 开头补一个翻转的触发：她走出村口后有人回村报信/父亲在巷口目送时看见她回头的那一眼让他改了主意，或用一个短镜头交代父亲重新召集火把的原因；让\"跟我回家\"这句话承接 S04 未说完的那半句威胁，使父女对抗在同一条线上升级而不是另起炉灶。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.702
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.985
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.1 分）"
+}

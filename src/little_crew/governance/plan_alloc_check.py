@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import sys
 
-from little_crew.runtime.plan_alloc import (
+from little_crew.governance.plan_alloc import (
     DEFAULT_SCENE_SECONDS, MAX_SHOTS_PER_SCENE, allocate, preferred_avg,
     prompt_lines, scene_quota,
 )

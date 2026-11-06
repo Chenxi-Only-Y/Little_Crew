@@ -199,3 +199,87 @@ def prompt_lines(quota: dict) -> list[str]:
         f"单镜 {quota['singleMin']:.0f}~{quota['singleMax']:.0f}s · "
         f"平均约 {quota['avgShotTarget']:.0f}s",
     ]
+
+
+def quotas_for(plan, scenes) -> dict:
+    """由导演方案 + 剧本场次算出**每场配额**（分镜提示词与事后审计共用）。
+
+    `plan`: `{"scenes": [{"sceneId","shotBudget","sceneSeconds",...}]}`
+    `scenes`: 剧本的场次列表（要有 `scene_id`/`id`）
+    """
+    budgets = {}
+    for s in (plan or {}).get("scenes") or ():
+        sid = str(s.get("sceneId") or "")
+        if sid:
+            budgets[sid] = s
+    rows = []
+    for sc in scenes or ():
+        sid = str(sc.get("scene_id") or sc.get("id") or "")
+        if not sid:
+            continue
+        b = budgets.get(sid) or {}
+        bud = int(b.get("shotBudget") or 0)
+        ts = float(b.get("sceneSeconds") or 0)
+        if ts <= 0:
+            ts = max(12.0, min(40.0, (bud or 3) * 6.0))
+        rows.append({"sceneId": sid, "sceneSeconds": ts,
+                     "singleMin": float(b.get("singleMin") or 2.0),
+                     "singleMax": float(b.get("singleMax") or 8.0),
+                     "longestCap": float(b.get("longestCap") or 8.0),
+                     "avgTarget": str(b.get("avgTarget") or ""),
+                     "allowLong": bool(b.get("allowLong") or False),
+                     "priority": int(b.get("priority") or 3),
+                     "role": str(b.get("role") or "")})
+    cap = sum(int((budgets.get(r["sceneId"]) or {}).get("shotBudget") or 0)
+              for r in rows) or None
+    return allocate(rows, global_shot_cap=cap)
+
+
+def audit(quotas, shots) -> dict:
+    """把实际镜头表对照配额审计 —— **只看可数的**（2026-11-06，P2 验收用）。
+
+    每场检查三项：镜数是否在 [min,max]、总时长是否超 T_s、单镜是否超上限。
+    """
+    per: dict[str, dict] = {}
+    for q in (quotas or {}).get("scenes") or ():
+        per[q["sceneId"]] = {"sceneId": q["sceneId"], "shots": 0, "seconds": 0.0,
+                             "maxShot": 0.0, "quota": q}
+    for s in shots or ():
+        sid = str(getattr(s, "scene_id", "") or "")
+        d = float(getattr(s, "duration_sec", 0) or 0)
+        row = per.get(sid)
+        if row is None:
+            continue
+        row["shots"] += 1
+        row["seconds"] = round(row["seconds"] + d, 2)
+        row["maxShot"] = round(max(row["maxShot"], d), 2)
+
+    findings = []
+    for sid, row in per.items():
+        q = row["quota"]
+        if row["shots"] < q["shotMin"]:
+            findings.append({"sceneId": sid, "kind": "under-min-shots",
+                             "severity": "warn",
+                             "reason": f"{row['shots']} 镜 < 下限 {q['shotMin']}"})
+        if row["shots"] > q["shotMax"]:
+            findings.append({"sceneId": sid, "kind": "over-max-shots",
+                             "severity": "warn",
+                             "reason": f"{row['shots']} 镜 > 上限 {q['shotMax']}"})
+        if row["seconds"] > q["sceneSeconds"] + 1e-6:
+            findings.append({"sceneId": sid, "kind": "over-scene-seconds",
+                             "severity": "warn",
+                             "reason": f"该场 {row['seconds']:.1f}s > 上限 "
+                                       f"{q['sceneSeconds']:.0f}s"})
+        if row["maxShot"] > q["singleMax"] + 1e-6:
+            findings.append({"sceneId": sid, "kind": "over-single-max",
+                             "severity": "warn",
+                             "reason": f"单镜 {row['maxShot']:.1f}s > 上限 "
+                                       f"{q['singleMax']:.0f}s"})
+    total = len(per)
+    ok = sum(1 for r in per.values()
+             if r["quota"]["shotMin"] <= r["shots"] <= r["quota"]["shotMax"]
+             and r["seconds"] <= r["quota"]["sceneSeconds"] + 1e-6)
+    return {"kind": "scene.audit", "scenes": list(per.values()),
+            "findings": findings, "sceneCount": total,
+            "compliantScenes": ok,
+            "complianceRate": round(ok / total, 3) if total else 0.0}

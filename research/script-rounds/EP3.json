@@ -1,0 +1,110 @@
+{
+  "episodeId": "EP3",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救人全程没有阻力：发现伤者→撕披肩→扎紧→\"血才慢慢止住\"，一气呵成。既无人追赶、伤势也不恶化，连\"撕披肩卡住、掌心磨出红痕\"也只是小麻烦，不构成对抗。', suggestion='给救助加一道真障碍：或伤者身上带有可疑痕迹（官府缉拿、仇家标记），救他本身有风险；或血止不住，必须冒险回屋取药、而家里正有禁令；让\"救\"这个动作从第一秒就要付代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全集最强的对抗在这一场被卸掉了。S02 父亲放话\"你留他，村里人怎么看你\"，到 S03 只剩\"人群里一阵低低的声音\"——她离家出走，没有任何人出面阻拦，威胁没有兑现。', suggestion='让 S02 的狠话在村口落地：父亲或老奶奶实际拦她一次（一个动作、一句断绝关系的话），哪怕被她绕开。冲突要被回应，S02 的铺垫才不白费。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：终局对抗没有升级：旅人从头到尾只\"笑\"，不辩解、不反制；\"她咬着牙，把花束朝他掷了过去\"一击即中，\"散得很干净，连衣角也没剩\"。谜底还由他自己说出口（\"我就是你想远行的心啊\"），冲突一次完成、零抵抗。', suggestion='让他抵抗：花束被挡开、香气逼近时他现出真容反逼她后退；把选择压到她头上——\"留下幻象继续同行\"还是\"毁掉他独自上路\"，逼她亲手做出取舍，高潮才配得上前面五场的铺垫。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 8.906
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 153.064
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的通牒“你要留他，就别再进这个堂屋”是本场最重的阻力，但这场戏里它没有兑现：少女说完“我说没有”，父亲的手“抬起来，又放下”，场面停在原地；真正的代价（“后来村里的集会，她再没有去过。母亲替她去过一次，回来一句话也没说”）全部由旁白时间跳转交代，观众没有在舞台上亲眼看见她为撒谎付出什么——代价被叙述掉了，等于没付。', suggestion='把代价搬进场面：让父亲在通牒之后立刻执行，比如把她的碗撤走、让她在灶间吃饭；或让母亲那句“一句话也没说”改成一个可见动作（进屋后把集会用的衣裳收进箱底、上锁）。这样 S03 她出走时的决绝才有前一场的重量垫底。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：终场没有可演的转折：开场“手里什么也没有了”到结尾“走进了晨雾”，少女的状态是平的——她没有犹豫、没有回头的抉择、没有付诸行动的那一刻（“回头看了一眼来路”只是视线，不是决定）。全剧唯一真正的结局性反转（“再没有人见过她”“从村口那一束开始谢的”）是用“后来村里人说”的旁白说出来的，局势变化发生在戏外。', suggestion='给她一个可拍的选择瞬间：让她走到岔路口（回村的路/进山的路）停住，听见山下的鸡叫或母亲的声音，然后——不回头，把篮子换一只手，走进雾里；消失用动作完成，旁白只留老奶奶扫地那一下。这样 S05 才有终场该有的“改变”。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.256
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 130.735
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.5）"
+}
