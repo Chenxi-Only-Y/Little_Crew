@@ -157,6 +157,45 @@ def main() -> int:
     check("G6 ★★ 借入不超过「缺口」且不超过 MAX_BORROW",
           moved <= min(6.0, 20 * MAX_BORROW) + 1e-6, f"moved={moved}")
 
+
+    print(); print("H. 台词下界（EDLG 那集发现：镜头 8s / 台词 2.2s）")
+    # ⚠️ 必须用别名：函数内 import 同名会**遮蔽**模块级 import，
+    # 导致前面第 84 行的 `prompt_lines` 变成未赋值的局部变量（真踩过）。
+    from little_crew.governance.plan_alloc import prompt_lines as _pl
+    from little_crew.governance.plan_alloc import quotas_for as _qf
+    from little_crew.governance.plan_alloc import speech_floor as _sf
+
+    check("H1 没有台词 -> 下界 0", _sf([]) == 0.0, str(_sf([])))
+    f1 = _sf([{"line": "他是外乡人。"}])
+    check("H2 ★★ 一句台词 -> 按标定模型给下界（>1s）", f1 > 1.0, str(f1))
+    f3 = _sf([{"line": "他是外乡人。"}, {"line": "我不去。"},
+                 {"line": "那我走。"}])
+    check("H3 ★★ 三句 > 一句（含句间停顿）", f3 > f1, f"{f3} vs {f1}")
+    check("H4 ★★ 句间停顿被算进去", f3 - (1.6 + 1.36 + 1.27) > 0.3, str(round(f3, 2)))
+
+    _plan = {"scenes": [{"sceneId": "S01", "shotBudget": 4},
+                        {"sceneId": "S02", "shotBudget": 3}]}
+    _scenes = [{"scene_id": "S01", "dialogue": [{"character": "甲", "line": "走。"}]},
+               {"scene_id": "S02", "dialogue": [
+                   {"character": "甲", "line": "你留他，村里人怎么看你。"},
+                   {"character": "乙", "line": "我不去。"}]}]
+    q = _qf(_plan, _scenes)
+    s2 = next(x for x in q["scenes"] if x["sceneId"] == "S02")
+    check("H5 ★★ 配额里带 minSceneSeconds", s2["minSceneSeconds"] > 3.0,
+          str(s2["minSceneSeconds"]))
+    line = _pl(s2)[0]
+    check("H6 ★★★ 提示词写明「总时长不低于」", "不低于" in line, line[-60:])
+    check("H7 ★ 字幕/台词数字出现在提示词里", "台词" in line, line[-40:])
+    # 上限装不下台词 -> 要提示（这是"防台词被硬切"的唯一信号）
+    _tight = _qf({"scenes": [{"sceneId": "S01", "shotBudget": 3,
+                                     "sceneSeconds": 3.0}]},
+                        [{"scene_id": "S01", "dialogue": [
+                            {"character": "甲", "line": "他是外乡人。"},
+                            {"character": "乙", "line": "你留他，村里人怎么看你。"}]}])
+    check("H8 ★★★ 台词超出上限 -> speechOverflows 置位",
+          _tight["scenes"][0]["speechOverflows"] is True,
+          str(_tight["scenes"][0]["minSceneSeconds"]))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

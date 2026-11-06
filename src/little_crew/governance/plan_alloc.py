@@ -69,12 +69,37 @@ def preferred_avg(single_min: float, single_max: float, *,
     return round((lo + hi) / 2.0, 2)
 
 
+def speech_floor(lines, *, inter_gap: float = 0.25) -> float:
+    """**台词决定的下界**：这场戏至少要多长才装得下这些台词。
+
+    2026-11-06 实测驱动的改动：EDLG 那一集里
+    **镜头中位 8.00s / 台词中位 2.24s** —— 26 句全是 `trim`（音频远短于镜头），
+    对齐均差 4.73s 降不下来。**分句再多也填不满 8 秒**。
+
+    所以配额不能只给上限 `T_s`，还得给出**下界**：
+    `Σ(每句标定时长) + 句间停顿`（用 `dialogue_editor` 标定过的模型）。
+    """
+    from little_crew.governance.dialogue_editor import estimate_segment
+
+    segs = []
+    for line in lines or ():
+        text = line.get("line") or line.get("text") or ""
+        if str(text).strip():
+            segs.append(str(text))
+    if not segs:
+        return 0.0
+    total = sum(estimate_segment(s) for s in segs)
+    total += inter_gap * max(0, len(segs) - 1)
+    return round(total, 2)
+
+
 def scene_quota(*, scene_seconds: float = DEFAULT_SCENE_SECONDS,
                 single_min: float = DEFAULT_SINGLE_MIN,
                 single_max: float = DEFAULT_SINGLE_MAX,
                 longest_cap: float = DEFAULT_LONGEST,
                 avg_target: str = "", allow_long: bool = False,
-                priority: int = 3, role: str = "") -> dict:
+                priority: int = 3, role: str = "",
+                speech_floor_seconds: float = 0.0) -> dict:
     """**单场**联合配额：由总时长反推可行的镜数区间与单镜范围。
 
     关键规则（与旧实现的差别）：
@@ -114,8 +139,13 @@ def scene_quota(*, scene_seconds: float = DEFAULT_SCENE_SECONDS,
     ideal = max(1, int(round(ts / avg))) if avg > 0 else n_min
     n_ideal = min(max(ideal, n_min), n_max)
 
+    floor = round(float(speech_floor_seconds or 0.0), 2)
     return {
         "sceneSeconds": round(ts, 2),
+        #: 台词决定的下界（0 表示这场没台词）
+        "minSceneSeconds": floor,
+        #: 上限装不下台词 -> 提示"该加时长或删台词"
+        "speechOverflows": bool(floor > ts + 0.5),
         "shotMin": n_min,
         "shotMax": n_max,
         "shotIdeal": n_ideal,
@@ -157,6 +187,7 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
             allow_long=bool(s.get("allowLong", False)),
             priority=int(s.get("priority", 3)),
             role=str(s.get("role") or ""),
+            speech_floor_seconds=float(s.get("speechFloorSeconds") or 0.0),
         )
         q["sceneId"] = str(s.get("sceneId") or "")
         q["role"] = str(s.get("role") or "")
@@ -205,12 +236,18 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
 
 def prompt_lines(quota: dict) -> list[str]:
     """把单场配额写成**分镜师看得懂的两行**。"""
-    return [
+    line = (
         f"  {quota.get('sceneId')}：总时长 ≤{quota['sceneSeconds']:.0f}s · "
         f"镜数 {quota['shotMin']}~{quota['shotMax']}（目标 {quota['shotIdeal']}）· "
         f"单镜 {quota['singleMin']:.0f}~{quota['singleMax']:.0f}s · "
-        f"平均约 {quota['avgShotTarget']:.0f}s",
-    ]
+        f"平均约 {quota['avgShotTarget']:.0f}s")
+    # 台词下界：**镜头时长不许短于台词**，否则配音只能被裁或留长静音
+    floor = float(quota.get("minSceneSeconds") or 0.0)
+    if floor > 0.5:
+        line += f" · 本场台词约 {floor:.1f}s（**总时长不低于 {floor:.1f}s**）"
+        if quota.get("speechOverflows"):
+            line += " ⚠️ 上限装不下台词，请加时长或压台词"
+    return [line]
 
 
 #: 压力开关：把每场 T_s 乘一个系数，**故意制造越界**，用来验证处置链路。
@@ -254,7 +291,9 @@ def quotas_for(plan, scenes) -> dict:
         if ts <= 0:
             ts = max(12.0, min(40.0, (bud or 3) * 6.0))
         ts = round(ts * _quota_scale(), 1)
+        _speech = speech_floor(b.get("dialogue") or sc.get("dialogue") or ())
         rows.append({"sceneId": sid, "sceneSeconds": ts,
+                     "speechFloorSeconds": _speech,
                      "singleMin": float(b.get("singleMin") or 2.0),
                      "singleMax": float(b.get("singleMax") or 8.0),
                      "longestCap": float(b.get("longestCap") or 8.0),

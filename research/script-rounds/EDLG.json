@@ -1,0 +1,110 @@
+{
+  "episodeId": "EDLG",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：场内少女只回了一个“好”，冲突就过去了；真正的代价（“她的名字第二天被村里人在集会上提了一遍，从此再没有人替她留过位置”）全靠场末一段叙述补写，不是在场面里付出的。观众看到的是她几乎零成本地守住了自己的决定。', suggestion='把代价搬进场内：让她在守夜的当夜就遭到具体反噬——母亲被迫当众与她划清界限、药碗被父亲摔碎需她一片片拾起、或她眼睁睁听着窗外村里人路过时的议论。让她在冲突中当场损失掉一样在乎的东西，而不是靠旁白记账。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人对质问的全部回应是“没有回答，只是笑”“他还是笑”——零抵抗、零辩解。少女问一次、掷一次就结束了，双方没有交锋回合，对抗全压在少女单方面，旅人这块阻力是空的。', suggestion='给旅人一次真正的反阻：他可以出手格挡她的花束、反过来劝她回头、或用半真半假的话击她的痛处（“你回得去，你父亲回不去”），逼少女必须再做一次选择才动手。让“现形”成为拉扯两三个回合之后的结果，而不是单方面处决。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：回与不回的转折只用“脚就往回挪了半步/然后她停住了”带过，紧接着一句独白“原来我要找的，从来不是一个人”就把念头翻了篇。心理转折被一句台词直接宣告，没有挣扎的过程，观众来不及感到紧张。', suggestion='把内心的拉扯外化成动作：让她真的往回走出十几步，让雾中隐约出现村口的灯火或父亲的影子，让她伸手去够——再让花粉的气味或某个细节拦住她。转折要经过“几乎回去了”才成立，而不是原地挪半步。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 19.212
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 35.618
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力几乎为零：旅人只说了句“路很长，别后悔”，老奶奶的“香气能让不洁的东西现形”是说给观众听的伏笔，对少女不构成对抗；“身后的村口安静得没有人喊她”也是被动的空场。前一场她刚付出断绝父女关系的代价，这里却“忽然笑了：‘我跟你走’”，零挣扎地完成决定，转折来得过于廉价，与 S02 的重代价断裂。', suggestion='给这一场加一道实打实的对抗：比如旅人明确拒绝带她（“我这种人不带累赘”），或她追上去被拦、必须丢下木勺并硬闯一次才被默许；让她为“跟走”这个决定当场再付一次小代价（被门槛绊倒、包袱散开、被路人指点），转折才会立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对抗没有推进：少女问“你到底是谁？”，旅人用“一个你救过的人”“那你就当我是药”两句俏皮话全部挡回，她没有得到任何信息、也没有被逼到新的处境；到了 S05，她又原样重复同一句“你到底是谁？”，等于承认 S04 这次质问是空转。整场实质只是走路+抖包袱（“我回不去了”），冲突维度是平的。', suggestion='让 S04 的质问逼出一个具体的破绽——例如他下意识躲开她递来的水、或对某个地名/旧物反应异常，使她掌握半条线索；相应地把 S05 的开场改成对这条新线索的追击（“那你为什么会知道……”），两场才不会重复同一句话，S04 也才有独立功能。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.173
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 72.482
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.9）"
+}
