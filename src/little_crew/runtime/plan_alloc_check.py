@@ -88,6 +88,43 @@ def main() -> int:
     check("E3 空场次列表不崩", r["totalIdeal"] == 0 and r["scenes"] == [], "")
     check("E4 默认总时长是 30s", DEFAULT_SCENE_SECONDS == 30.0, "")
 
+
+    print(); print("F. 同优先级与软超帽（2026-11-06 补）")
+    # 两场同为 priority=1，但可削量不同：S02 可削更多
+    tie = [
+        {"sceneId": "S01", "sceneSeconds": 10, "priority": 1},
+        {"sceneId": "S02", "sceneSeconds": 60, "priority": 1},
+    ]
+    r0 = allocate(tie)
+    slack = {q["sceneId"]: q["shotIdeal"] - q["shotMin"] for q in r0["scenes"]}
+    cap = r0["totalIdeal"] - 1
+    r1 = allocate(tie, global_shot_cap=cap)
+    check("F1 ★★ 同优先级时先削「可削量」大的",
+          r1["trimOrder"][:1] == [max(slack, key=slack.get)],
+          f"slack={slack} order={r1['trimOrder']}")
+
+    # 语义反转守卫：当前约定 priority=1 是**最低**优先级。
+    # 若有人把 1 改成"最高"，这条断言会失败 —— 这正是它存在的意义。
+    guard = [
+        {"sceneId": "S09", "sceneSeconds": 30, "priority": 1},
+        {"sceneId": "S08", "sceneSeconds": 30, "priority": 5},
+    ]
+    rg = allocate(guard, global_shot_cap=allocate(guard)["totalIdeal"] - 1)
+    check("F2 ★★★ priority=1 是「最低」-> 第一个被削的是 S09",
+          rg["trimOrder"][:1] == ["S09"], str(rg["trimOrder"]))
+
+    # 全部压到 N_min 仍超帽 -> 软超帽，不再削
+    hard = [{"sceneId": "S01", "sceneSeconds": 30, "priority": 3},
+            {"sceneId": "S02", "sceneSeconds": 30, "priority": 3}]
+    rmin = allocate(hard)
+    r2 = allocate(hard, global_shot_cap=rmin["totalMin"] - 1)
+    check("F3 ★★★ 削到 N_min 仍超帽 -> softCapExceeded",
+          r2["softCapExceeded"] is True, str(r2.get("overBy")))
+    check("F4 ★★ 软超帽时 overBy 记下超了多少", r2["overBy"] > 0, str(r2["overBy"]))
+    check("F5 ★★★ 软超帽时任何场都不低于 N_min（不产生空场）",
+          all(q["shotIdeal"] >= q["shotMin"] for q in r2["scenes"]),
+          str([(q["sceneId"], q["shotIdeal"], q["shotMin"]) for q in r2["scenes"]]))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

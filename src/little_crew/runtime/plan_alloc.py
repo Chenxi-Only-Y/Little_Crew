@@ -127,8 +127,13 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
     规则：
     1 每场先按 `scene_quota` 拿自己的 `[min,max]`（时长不可让 —— 那是物理约束）
     2 若 Σ`shotIdeal` > `global_shot_cap`：**从优先级最低**的场开始，
-       把它的 `shotIdeal` 往 `shotMin` 压，压到底再动次低的
-    3 永远不把任何一场压到 `shotMin` 以下（宁可超总帽，也不产生空场）
+       把它的 `shotIdeal` 往 `shotMin` 压，压到底再动次低的。
+       **同优先级时按「可削量」从大到小**（一次削够，少动几场），
+       并用 `sceneId` 兜底保证确定性
+    3 永远不把任何一场压到 `shotMin` 以下
+    4 若**全部压到 `shotMin` 仍超帽** -> **接受软超帽**，
+       标 `softCapExceeded=True` 与 `overBy`，**不再继续削**
+       （宁可超帽，也不产生空场 —— 空场是更严重的错）
     """
     quotas = []
     for s in scenes or ():
@@ -147,8 +152,17 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
 
     total_ideal = sum(q["shotIdeal"] for q in quotas)
     trimmed = False
+    trim_order: list[str] = []
+    soft_cap_exceeded = False
+    over_by = 0
     if global_shot_cap is not None and total_ideal > int(global_shot_cap):
-        order = sorted(quotas, key=lambda q: (q["priority"], q["sceneId"]))
+        # 同优先级：可削量大的先削（少动几场），sceneId 兜底保确定性
+        order = sorted(
+            quotas,
+            key=lambda q: (q["priority"],
+                           -(q["shotIdeal"] - q["shotMin"]),
+                           q["sceneId"]),
+        )
         need = total_ideal - int(global_shot_cap)
         for q in order:
             if need <= 0:
@@ -158,6 +172,11 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
                 q["shotIdeal"] -= take
                 need -= take
                 trimmed = True
+                trim_order.append(q["sceneId"])
+        if need > 0:
+            # 全压到 N_min 仍超帽 -> 接受软超帽，不再削
+            soft_cap_exceeded = True
+            over_by = need
 
     return {
         "kind": "scene.quota",
@@ -166,6 +185,9 @@ def allocate(scenes, *, global_shot_cap: int | None = None) -> dict:
         "totalMin": sum(q["shotMin"] for q in quotas),
         "globalShotCap": global_shot_cap,
         "trimmed": trimmed,
+        "trimOrder": trim_order,
+        "softCapExceeded": soft_cap_exceeded,
+        "overBy": over_by,
     }
 
 
