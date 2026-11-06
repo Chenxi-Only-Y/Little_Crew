@@ -1,0 +1,57 @@
+{
+  "episodeId": "EV3",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 78.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：本场唯一的外部阻力是“身后父亲的喊声越来越远，最后被风吞掉”——阻力自行消散，没有人或事阻挡她；核心两难“回去，就还是那个采花女；不回去，就什么也没有了”只是一句内心独白，说完即可执行，全场没有对抗。', suggestion='把阻力留到她迈出最后一步的瞬间：让父亲真正追到路口拦住她、或让“什么也没有”的困境具象为必须当场跨越的障碍，使两难变成一次有人阻拦的选择，而非独白。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 78.15,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 48.252
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 155.322
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 78.2）"
+}

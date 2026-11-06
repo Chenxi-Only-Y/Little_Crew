@@ -1,0 +1,164 @@
+{
+  "episodeId": "EV1",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S02 里父亲立下明确的最后通牒——“你要走出这个门，以后集会不必去了。别指望我替你说话。”但到了出走的这一场，阻力全部变成了旁观者的沉默：“村口有人停下脚步……没有人上前拉她，也没有人送她。”父亲这个最强的对抗方干脆缺席，当初的威胁没有在最该兑现的场面里兑现，离村变成了一场无人阻挡的通行。', suggestion='把对抗搬回现场：让父亲（或由他授意的族人）堵在村口，用集会、名分或收回包袱当面施压，逼少女在众目睽睽下做出选择；她跨出那一步的动作本身，就是代价的支付。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：对峙只有单方面的输出：“旅人没有回答。他只是笑。”她掷出花束，他立刻“化作一阵紫色的轻烟，散了”。障碍在她出手的瞬间自行瓦解，没有反制、没有拉扯、没有僵持，一场本该是全剧最激烈的正面对抗，成了自问自答加一次投掷。', suggestion='让旅人做出抵抗：他可以夺花、可以反用“别回头”劝退她、可以在她举花时逼近一步逼她真的犹豫；把“现形”的过程拉成两三个回合，让少女是在被逼到墙角后才掷出花束。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这一场承接 S05 的剧变，但情绪几乎是平的：“她坐着，直到天亮透。她没有哭……她沿着那条路继续往前走。”失去与启程之间没有挣扎的过渡，最后由旁白式的“后来村里人说……”直接收束，人物内在的转折被旁白替她完成了。', suggestion='给她一个具体的小动作承载转折：比如先本能地朝来路走两步再停住、或把包袱解开又重新系上——用一次可见的动摇与收回，替代“她没有哭”的静态陈述，让“继续往前”成为她自己挣来的决定。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 22.401
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 62.87
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：少女当众宣布“我跟你走”，场面里唯一的反应是“人群里有人低声吸气”，没有出现任何具体的阻拦者或反对声音；真正的对抗被推迟到 S04 才发生，本场的离村决定因此没有遇到阻力，也没有当场付出代价。', suggestion='把阻力前移：让某个族人当场出声阻拦（或父亲的缺席本身被指认出来），让她在 S03 就付出第一次小代价（如被夺回包袱、被当众斥责），再进入 S04 的总对抗；或干脆把 S03 的宣布并入 S04，避免一场无冲突的过渡戏。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折的因果链自相矛盾：旅人说“你扔了我，就再也走不出去”，可她掷出的是花（“把花掷了出去”），旅人却随之“化作一阵紫烟”；而他自称“我就是你想远行的心”，按此逻辑毁掉他应当等于毁掉远行的念头，S06 却让她毫不犹豫地“沿着通往北方的路继续往前走”。观众无法判断她这一掷到底失去了什么、换来了什么。', suggestion='先明确花与旅人的关系（花是封住/牵制“远行之心”的信物，还是她的护身符），再让代价落到她身上——例如掷花即斩断与旅人的联结，从此无人引路、只剩独行；S06 里她的继续前行要建立在这个代价之上，而不是绕过它。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有外部阻力：“她先朝来路走了两步……第三步没迈出去”——回头的诱惑只是抽象的“村口的方向”，没有具体的声音、人或物拉扯她；随后她就平静地“系了两次”包袱转身进雾，抉择来得过于轻易。', suggestion='给结尾一个具体的对抗物：让村里传来集会的鼓声/母亲的喊声/追来的人影，逼她在看得见的归处和北方之间做最后一次选择；她的“系两次才系紧”应发生在被打断、被拉扯之后，而不是独自完成。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.512
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.318
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：对抗一触即收：父亲「一掌拍在门框上」是全场最高点，少女只回了一句「我不去」，母亲「拉住父亲的袖子，摇了摇头」，冲突当场熄火，没有第二轮交锋。而真正的代价——「从这天起，村里再有人集会，她都不会在场」——是用叙述者口吻一句带过，场内没有任何具体的排挤/被孤立画面。', suggestion='让父亲的威胁升级一轮再落下（撵她出去、摔药碗、母亲拦不住），并把「不被村里接纳」的代价做成场内可见的细节：守夜时门外村民的指点声、天亮后邻家关门声，代替旁白交代。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场的转折落在最后一句内心判断——「她第一次觉得，身边这个人比山路更深」，是旁白式认知，没有对应任何行动、台词或立场变化。旅人全程只用「没有回答，只是笑」和「别用它照我」消极回避，双方没有真正的交锋回合，场次在静止中结束。', suggestion='给转折一个动作落点：她后退半步把花收回怀里、或抓住他追问到底、或旅人对「别用它照我」做一次反制（花束险些脱手）。S04 收尾时应已有一个明确的立场变化，把完整摊牌留给 S05。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：核心冲突由旅人自己化解：他主动交出解决办法和后果（「你扔过来，我就散」），又给出替代选项（「你留下我，我就替你走」）。少女从「分不清是怕还是怒」到「后退一步，把花束朝他掷了过去」之间，没有任何试探、犹豫或失败的中间拍，最关键的抉择一拍完成。', suggestion='在掷花前至少加一个来回：她先转身想继续走、把花放下又捡起、或旅人伸手欲夺花而在半寸外停住——让「借来的心」被真正撕扯一次再放手，转折才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S05 旅人开出的代价「没有我，谁带你走？你连北在哪都不知道」在本场和结尾都没有兑现：母亲虽喊出「你一个人，连口吃的都没有」，但只是台词，少女没有遭遇任何迷路、无粮、失向的检验就直接走进雾里；最终结局（「再没人见过她」）也交给画外叙述收尾。', suggestion='让代价在行动中显形：她走出雾前有一次真实的迷失或断粮瞬间（包袱里只有一根麻绳），或把结尾的去向从旁白改成一个画面级落点——她朝北方迈出的第一步、身后合拢的雾。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.103
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 198.373
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.4（REVISE）；最好的是第 1 轮（58.2 分）"
+}

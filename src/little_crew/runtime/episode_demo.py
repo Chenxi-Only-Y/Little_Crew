@@ -145,6 +145,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="只跑前 N 镜（默认全跑）")
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--steps", type=int, default=8)
+    ap.add_argument("--voice", action="store_true",
+                    help="启用配音轨（本机 breeze-tts-2，每句约 3~4 秒）")
     ap.add_argument("--dry-run", action="store_true",
                     help="不出图，只跑到分镜与桥接")
     ap.add_argument("--backend", default="localgen",
@@ -415,6 +417,8 @@ def main(argv: list[str] | None = None) -> int:
     # ---------- 跑 ----------
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
+    runner.voice_enabled = bool(args.voice)
+    runner.voice_debug = bool(args.voice)   # §3.11 配音轨（默认关闭）
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.workdir = work

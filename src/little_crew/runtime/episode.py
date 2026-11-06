@@ -1104,6 +1104,61 @@ class EpisodeRunner:
             for s in picked
         }
 
+        # ---- 配音轨（§3.11，2026-11-06）----
+        #
+        # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
+        # 默认关闭以免拖慢普通验证。
+        if getattr(self, "voice_enabled", False):
+            try:
+                import json as _jv
+
+                from little_crew.governance.voice_cast import cast as _cast
+                from little_crew.runtime import tts_breeze as _tts
+                from little_crew.runtime import voice_track as _vt
+
+                _chars = sorted({str(c) for sc in (script_draft.scenes or ())
+                                 for c in (sc.get("characters") or ()) if str(c)})
+                _sheets = {}
+                for _c in _chars:
+                    _sp = Path("assets") / "characters" / _c / "sheet.json"
+                    if _sp.is_file():
+                        try:
+                            _sheets[_c] = _jv.loads(_sp.read_text(encoding="utf-8"))
+                        except Exception:                  # noqa: BLE001
+                            _sheets[_c] = {}
+                _cast_map = _cast(_chars, _sheets, _tts.list_voices())
+                _lines = []
+                for _sc in (script_draft.scenes or ()):
+                    _sid = str(_sc.get("scene_id") or _sc.get("id") or "")
+                    _known = {str(c) for c in (_sc.get("characters") or ()) if str(c)}
+                    for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
+                                                 known=_known or None):
+                        _lines.append({**_d, "sceneId": _sid})
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
+                _trk = _vt.build(_lines, shots, synth=_tts.synth,
+                                 cast_map=_cast_map, out_dir=_vdir)
+                if _wd:
+                    _vo = Path(str(_wd)) / "delivery"
+                    _vo.mkdir(parents=True, exist_ok=True)
+                    (_vo / "voice_used.json").write_text(
+                        _jv.dumps(_trk, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                # 诊断：抽不到台词时，把"角色名单 + 正文样例"打出来 ——
+                # 否则只能看到"0 句"，不知道为什么（2026-11-06 踩过）。
+                if not _lines and getattr(self, "voice_debug", False):
+                    print(f"  [配音诊断] 场数 {len(script_draft.scenes or ())}"
+                          f" · 角色名单 {_chars}")
+                    for _sc in (script_draft.scenes or ())[:2]:
+                        print(f"    {_sc.get('scene_id')} chars={_sc.get('characters')}"
+                              f" text={str(_sc.get('text') or '')[:80]!r}")
+                _rep = _trk["report"]
+                print(f"  配音：{len(_trk['utterances'])} 句"
+                      f"（台词抽出 {len(_lines)} · 丢弃 {len(_trk['dropped'])}）"
+                      f" · 失败 {_rep['failed']} · 对齐均差 {_rep['align']['meanAbs']}s")
+            except Exception as _e_v:                          # noqa: BLE001
+                print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
+
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
         #
         # 审片接在**渲染之后**：审的是真产物，不是意图。
