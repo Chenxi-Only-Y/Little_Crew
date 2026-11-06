@@ -144,6 +144,21 @@ class DeliveryEvidence:
         counts = self.gate.get("counts") or {}
         return int(counts.get("retry", 0)) == 0 and int(counts.get("escalate", 0)) == 0
 
+    def providers_summary(self) -> dict[str, Any]:
+        """这次交付用了哪些模型（含**服务端实际模型名**）。
+
+        契约：**永不抛异常** —— 证据里缺这一节比整份证据写不出来好。
+        """
+        try:
+            from little_crew.governance.provider_fingerprint import summary
+
+            s = summary()
+            return {"total": s["total"], "providers": s["providers"],
+                    "missingServedModel": s["missingServedModel"]}
+        except Exception:                                   # noqa: BLE001
+            return {"total": 0, "providers": [], "missingServedModel": 0,
+                    "error": "unavailable"}
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "kind": "delivery.evidence",
@@ -161,6 +176,8 @@ class DeliveryEvidence:
             "allChecksPassed": self.all_checks_passed,
             "gate": dict(self.gate),
             "gatePassed": self.gate_passed,
+            # provider 指纹：接云 API 之后，"这一版到底用了哪些模型"必须可查
+            "providers": self.providers_summary(),
             "createdAt": self.created_at,
         }
 
@@ -354,6 +371,13 @@ def write_delivery(
         _dump("episode.master.json", manifest)
     if evidence is not None:
         _dump("delivery.evidence.json", evidence)
+    # 指纹单独一份：包外的人想核"用了哪些模型"不用翻整个证据
+    try:
+        from little_crew.governance.provider_fingerprint import summary as _pf
+
+        _dump("provider_fingerprint.json", _pf())
+    except Exception:                                       # noqa: BLE001
+        pass
     if result is not None:
         _dump("run.report.json", result)
     return out
@@ -606,6 +630,19 @@ class EpisodeRunner:
                                  "reason": str(getattr(cycle, "reason", ""))[:400]},
                                 ensure_ascii=False, indent=2, default=str),
                     encoding="utf-8")
+                # provider 指纹（2026-11-06）：**这个点每集都会经过** ——
+                # 剧本阶段的模型调用已经发生，先记下来。
+                # （scene_quota 那个点只在分镜成功后才到，会被 0 镜挡掉。）
+                try:
+                    from little_crew.governance.provider_fingerprint import (
+                        summary as _pfs0)
+
+                    (_out / "provider_fingerprint.json").write_text(
+                        _json.dumps(_pfs0(), ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                except Exception:                       # noqa: BLE001
+                    pass
+
                 # ⚠️ **必须双写**（2026-11-03）：`outputs/` 是会定期清理的目录，
                 # 而实验记录不能跟着被删 —— 上一次清理就把 E3 的 7 对样本删掉了，
                 # 导致汇总结果从 +2.81 翻成 -2.08，差点当成「结论翻转」。
@@ -757,6 +794,18 @@ class EpisodeRunner:
                         (_outq / "scene_quota.json").write_text(
                             _jq.dumps(_q, ensure_ascii=False, indent=2),
                             encoding="utf-8")
+
+                    # provider 指纹（2026-11-06）：此刻剧本/导演/分镜的模型调用
+                    # 都已发生 —— 先把已发生的记下来，避免"只在完整跑才有"。
+                    try:
+                        from little_crew.governance.provider_fingerprint import (
+                            summary as _pfs)
+
+                        (_outq / "provider_fingerprint.json").write_text(
+                            _jq.dumps(_pfs(), ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                       # noqa: BLE001
+                        pass
                 except Exception as _e_rd:                 # noqa: BLE001
                     print(f"  ⚠️ 再分配未运行：{type(_e_rd).__name__}: {_e_rd}")
             except Exception as _e_dp:                      # noqa: BLE001

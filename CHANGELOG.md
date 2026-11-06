@@ -57,6 +57,59 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.183] — 2026-11-06（**provider 指纹**：接云 API 之前必须先有这个）
+
+### 为什么
+
+本机模型可复现（同种子字节相同）。接云以后：
+
+```
+模型会静默升级 · 厂商会用别名路由（请求 deepseek-chat，实际服务 deepseek-flash）
+-> 同样输入，明天出不同东西 -> **能力越强，可证明性越弱**
+```
+
+**所以先建指纹，再接 API。**
+
+### 记什么
+
+| 字段 | 为什么 |
+|---|---|
+| `provider` / `model` | 我请求的是谁（provider 从 endpoint 域名推，实测 => `api.deepseek.com`） |
+| **`servedModel`** | 服务端**实际**服务的模型 |
+| `params` | seed / temperature / max_tokens / top_p |
+| **`requestHash`** | 证明"发的就是这个 prompt" —— **只记 hash，不落明文** |
+| `responseId` / `created` | 事后对账 |
+
+### 落盘位置
+
+| 文件 | 内容 |
+|---|---|
+| `delivery/provider_fingerprint.json` | 全部调用明细 + 按 provider/model 聚合 |
+| `delivery.evidence.json` → `providers` | 摘要（总数 / 缺 servedModel 数 / 按模型计数） |
+
+**落盘点刻意选在 `script.rounds.json` 之后** —— 因为那是**每集必经**的位置；
+原先放在 `scene_quota` 旁边，而分镜 0 镜时会提前返回，**指纹就永远不落**（踩到）。
+
+### 真跑（EFP4）
+
+```
+调用 8 次 · 缺 servedModel 0
+  api.deepseek.com    deepseek-flash   calls=5
+  api.xiaomimimo.com  mimo-v2.6-flash  calls=3
+```
+
+**一眼能看出：这一集用了两家模型、各几次、服务端报的是哪个名字。**
+
+### 验证 Verification
+
+```
+ [v] 指纹自检 14/14（含：只记 hash 不落明文 / servedModel 分开记 / 缺 servedModel 要计数 / taken() 返回副本）
+ [v] 全量 2046 项 + 架构守卫 PASS
+ [v] 真跑：8 次调用全部记录，provider 正确推导
+```
+
+---
+
 ## [0.4.0-alpha.182] — 2026-11-06（**整集成片**：27 镜 / 163 秒 —— 附一次必须记下的失败）
 
 ### 第一次跑完整集（不限镜头）

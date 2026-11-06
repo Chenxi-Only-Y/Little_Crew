@@ -1,0 +1,167 @@
+{
+  "episodeId": "EFP",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场没有任何真正的阻力。少女发现伤者后直接施救，唯一的对抗是「第一次没站稳，两个人一起跌回碎石里」，而这个困难在下一句「又试了第二次」就消失了，既没有外部阻碍（无人阻拦、无利害权衡），失败也没有留下任何代价。', suggestion='给她的决定加一道前置阻力：让她先犹豫——比如她清楚把陌生人带回家会招来 S02 里那场羞辱，或伤者的身份让她生疑（呼应他那句含糊的「北……」）；把「没站稳」改成有代价的失败（摔破膝盖、血染花穗、竹篮打翻半篮花），让第一次尝试真正损失了什么，第二次站起来时观众才知道她付出了什么。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：两处对抗都是空转：其一，「窗外忽然'啪'一声，是石子打在窗棂上。紧接着有人快步走远」——引入了一个带威胁意味的行动者，但全剧 6 场再未出现，悬念线断掉；其二，父亲的关键通牒「天亮就让他走」是从「门缝外」传进来的，父女正面对峙没有发生，而少女的回应是「她只是假装没听见」——拒绝在场内不产生任何可见后果，转折完全停留在内心。\", suggestion='要么让石子线落地（扔石子的人被少女追出去撞见，或石子上绑着字条/留下痕迹，威胁具体化并延续到 S04）；要么把父亲请进屋，逼她把「不」说出口，让这次抗命当场付一笔代价（比如父亲砸了药碗、当夜就断了他的药），使 S04 的决裂是这场冲突的升级而非突降。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧的核心摊牌一击即解：少女「举起花束，朝他掷了过去」，旅人「化作一阵紫色的轻烟」，全程他没有还手、没有挽留、没有反劝，只留下一句「你怕了？」。真相的取得没有经过任何拉扯，她为说出「你到底是谁」这件事本身没有付出可感的代价——代价被推到 S06 才显影，这一场的解决显得廉价。', suggestion='让旅人在被掷中前做一次真正的反扑或交易：他可以顺势提出「你不问，我就一直陪着你走」，用她真正想要的东西（陪伴、远行）作筹码，逼她在「留下一个不真实的同行者」和「独自上路」之间当场抉择；花束出手的瞬间应伴随她失去某个具体物件或记忆作为对价，让代价在场内结清。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.196
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 121.485
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价以旁白句号式宣告出现——\"代价是她从此再没有回过村子里的集会。\"全篇其余都是场面内动作，唯独这一句跳出戏外直接向观众报价；而且这个代价在下一场立刻被\"逐出家门、留下名字\"的重价覆盖，等于还没兑现就被作废。', suggestion='删掉这句旁白，把代价写成可拍的画面：窗外传来集会的鼓声与笑语，她坐在床边替他换布，没有抬头；或把这句挪进 S03 的冲突现场，让父亲在门口说出\"集会你也不必来了\"，让代价在对抗中当场兑现。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：\"话音未落，一颗石子打在窗棂上\"——前文没有任何\"话\"：上一句还是旅人\"望着通往北方的路，很久没有说话\"。石子的触发点悬空，村民的敌意来得没有来由，冲突升级这一环是断的。', suggestion='给石子一个明确落点：先让少女当众说一句招忌的话（\"我跟他走\"），话音刚落石子就到；或写明石子是冲窗里那个养伤的外乡人去的，把敌意锚定在具体对象上，再由卢卡喊出\"全村都这么写\"。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S03 刚付完\"名字、家、母亲的银顶针\"的重价，一转场她已轻松地问\"北边什么样\"，被逐的重量一点没带过来——上一场的代价在两场之间蒸发，观众还没疼完就被要求进入调情式的试探。', suggestion='在 S04 开头加一个承接代价的节拍：她走出山口时回头望了一眼、包袱里摸不出一件属于家里的东西、或她下意识攥紧那只空着的手（银顶针的位置）。让上一场的价码在这一场继续疼。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：交易条款与上一场错位：S04 结尾她已经问出\"你到底是谁？\"，S05 他却说\"你要问，我就得走\"——条件在交易成立之前就已触发，观众会疑惑她到底还能不能反悔；且\"问\"指问一次还是追问到底，语焉不详，整场戏的赌注因此不稳。', suggestion='把\"问\"这个动作留到本场才真正发生：S04 结尾改为她话到嘴边被自己咽下、只把花束攥紧；S05 由他先堵住出口——\"把那句话咽回去，你就还是自由的\"，让选择在同一个场面内完成，赌注才咬得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有任何阻力：她站在原地、闻了闻、提起篮子走进雾里，一路畅通。连\"要不要回头\"这个唯一可能的对抗都没有发生，最后的行动等于无风无浪的散步。', suggestion='给她最后一个具体的抗拒：走到岔路口，一条路通回村子，她停住、抬脚又放下；或身后传来父亲/卢卡的喊声，她没有应答，径直往雾里走。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.397
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 303.714
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场唯一的阻力是物理重量（\"膝盖一沉——你可真沉啊\"）。真正该成为对抗的那件事——半篮花——只被看了一眼就放弃了：\"她回头看了眼半篮花，咬了咬嘴唇，把肩上的披肩扯下来\"。没有任何东西拦她，救人因此变成顺水推舟。', suggestion='给救援加一个具体赌注：这半篮花是给当晚集会交的差（或父亲定的量），救他就意味着交不上。这样撕披肩才是付出，也直接为 S02 父亲砸碗提供了可见的原因——目前 S02 里父亲为何暴怒全靠观众倒推。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：惩罚是被说出来的，不是被感受到的：\"集会，你也不必去了。\"但全场没有任何一处显示这场集会对她意味着什么——她没有为去集会做准备，也没有为此与父亲正面争过。代价只有台词，没有画面。', suggestion='在父亲发作前先给一件她为集会准备的东西（换好的裙子、编好的花环、门口等着的同伴），让\"不许去\"这句话落到一个具体的失去上；她随后把它默默收起来，再端药碗进去。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：场景开头她把话咽回去，结尾还是把话咽回去（\"这句话到了舌尖，被她自己咽了回去\"），局势和情绪停在同一格。中间唯一的变化是她心里的\"咯噔一下\"，属于纯内心戏，没有任何外化的后果。', suggestion='让她的怀疑在这一场先付一次小代价、破一次表：比如她下意识去摸戴顶针的手指／翻包袱数东西，被旅人一句话点破；或他做一件与\"病床前三夜\"对不上的小事，使 S05 的质问有前情可踩，而不是两场重复同一个吞回去的动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：冲突和转折都成立（\"问出口，我就得走\"→她问了→他化烟），但代价落在了意象上而非人物身上：紫色轻烟加一句\"我就是你想远行的心\"，太轻太飘，观众看到的是漂亮，不是失去。她本人没有任何身体反应，\"手还悬在那里\"是唯一的一点余味。', suggestion='把代价重新接地：散掉时留下一件 S01 的实物——那条被她用牙撕开的披肩、或他腿上带血的布条——啪嗒落在空山路上，她只能捡起它。物比烟有重量，也把第一场的付出首尾扣上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：尾声的对抗只有一句喊话就被化解：\"站住——你连你爹的姓都不要了？\"她\"没有应，也没有回头\"，阻力被零成本地绕开。岔路口两条路也只是方向，不是选择——回村那条路没有任何吸引力，所以\"我不回头了\"几乎不需要付代价。', suggestion='让回去这条路真的诱人一次：雾里透出集会的鼓声／母亲的喊吃饭声／家里那盏灯，她脚尖确实转过去、几乎迈出去，再放下篮子拒绝。只有把\"回头\"演成差点发生的事，最后一句\"我不回头了\"才有分量。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.039
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 132.442
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 48.4（REVISE）；最好的是第 1 轮（59.1 分）"
+}

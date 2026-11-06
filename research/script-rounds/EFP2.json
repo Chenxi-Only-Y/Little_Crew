@@ -1,0 +1,167 @@
+{
+  "episodeId": "EFP2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：少女发现旅人后几乎没有阻力地直接行动——“你不能死在这里”，随即撕披肩、扎伤口。全场景她没有任何犹豫、算计或外部阻拦（坡下无人、村子在雾那头只是背景，没有形成真正的对抗），救与不救的两难在第一句话就消失了。', suggestion='给她一个真实的犹豫点：比如她知道收留外乡人会招惹村里是非（为 S02 父亲的话埋雷），或伤口的惨状让她本能后退一步才上前。让“救”成为一个有内心拉扯的决定，而不是本能反应。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价被直接宣告而非呈现：“代价是她从此再没有回过村子里的集会——那件事，村里人说了很多年。”这是旁白式结论，把本场最重要的代价从场景里抽走了；同时“那一夜”“一整夜没合眼”也是概述，父亲的威胁在场内没有得到任何正面回应或发酵。', suggestion='把代价写进场内：结尾让一个具体画面落地——比如集会的鼓声从窗外经过，她抱着药碗没有回头；或删去直接点题的旁白，让 S03 中村民的议论、老奶奶的举动来反证她被排斥的事实。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：场首旅人要走、场尾少女决定跟走，中间的阻力只有人群“低声议论，声音没敢高起来”——没有一个人真的站出来拦，没有一句具体的反对落到她身上。老奶奶塞花是伏笔而非对抗，整场情绪从头到尾基本是平的。', suggestion='让议论变成具体的阻拦：有人拦在她面前说一句狠话，或父亲/村人直接出面，她跨过这道阻拦才走到村口。这样“我跟你走”才是挣来的决定，也让 S05“回不去了”有据可依。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折的因果链断裂：她举花束的唯一依据是老奶奶那句“让不洁的东西现形”，但旅人自始至终没有做出任何“不洁”的行为——他只是不答名字。她从“我问的是你的名字”直接跳到“举起花束掷了过去”，中间缺少一个让她判定他“不洁”的触发事件，扔花像作者安排而非人物必然。', suggestion='补一个触发点：让他在对话中露出破绽（比如他说出只有本村人才知道的事、或他踩碎了花穗/回避花香），使“不洁”有现场证据；或者让老奶奶的警告以更尖锐的方式回响，逼她在“信他”与“信警告”之间当场选一次。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场没有任何阻力：少女捡花穗、自语“原来我送走的，是我自己”、“那就走吧”，一路走到雾里。所有情绪都是独白直给，包括“她已经是被逐出集会的那个人，回不去了，也不必回去了”这句结论，也是叙述替她下的判断。', suggestion='给她一个真实的抉择动作作为收尾：比如她可以沿原路回村（代价是承认一切白费）或继续走——让她在两条路之间停一下、做一个动作，而不是用台词把结论念出来。走与留的分岔本身就是最后的冲突。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 12.205
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 72.224
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场的代价落点是结尾那句“今晚我不回去”，但 S02 直接跳到“内景·少女家·夜”，她已经端着药碗站在自家外屋，父亲在挡里屋门——她在 S01 宣告的自我惩罚（整夜不归家）被无声取消，代价只停留在台词上，没有任何场次去结算它，观众会感觉她的选择被悄悄撤回了。', suggestion='二选一：其一，让 S02 改为她在坡上守了一夜、天亮才把人弄回家的后续，代价在下一场以“一夜未归”的后果（母亲的追问、村里人的目光）显形；其二，删掉“今晚我不回去”，把 S01 的代价改为更具体的失血与母亲披肩的毁坏，并让这件披肩在后面（如 S03 父亲抓破包袱、S05 留下遗物）再次出现，形成可追踪的代价链。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父女正面对峙的僵局，是被窗外“集会开始的鼓声”这一纯外部事件化解的——“鼓声走远了。父亲的胳膊慢慢垂下来”。少女全程没有一句争辩、一个动作去改变局面（“她把药碗端起来”“站在门口，没有回头”），冲突的解决既不来自她，也不来自父亲被说服，只来自巧合，阻力等于自动消失。', suggestion='让鼓声只承担“打断”而非“解决”：鼓声过后父亲的手仍撑在门框上，逼她必须说出一句真正顶回去的话或做出一个实际动作（比如把药碗放在门槛上、自己侧身先挡住门）才通过；父亲的让步要落在某个具体损失上（比如他最终自己侧开身，同时把她的名字记在集会名单之外），冲突才由角色自己收尾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：结尾揭示旅人只是“我就是你想远行的心”——一个幻象。但这与前两场建立的物理代价直接冲突：S01 真实的血“把布条勒得立刻红了”、她亲手包扎；S02 父亲“挡在里屋门口”守住的是一个被藏在里屋的活人。若他自始至终是幻象，父亲阻拦的对象、她冒死藏人的对象都不成立，S01、S02 的冲突支点被这场反噬掉，且剧本未给出任何“他人看不见他”的规则说明。', suggestion='补一条可辨认的幻象规则并前置埋点：让 S01、S02 中旅人只与少女发生接触（父亲进里屋时镜头回避、母亲递药时说“屋里没人你跟谁说话”），S03 村口人群的目光始终落在她一人身上；同时把代价重新挂靠到她本人身上——他消失后，真正被消耗的是她为一个幻影付出的名誉、姓氏与家门，让 S04 的转折不但不撤回前面的代价，反而使前面的代价显得更惨。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧收束的对抗只有一句隔坡喊话：“回来——”“你要是走了，就别回来！”父亲自始至终没有上坡、没有拦她，她抛出的条件“你再叫一声，我就回头了”立刻被父亲的沉默满足——局势在两行台词内起落，且这阵沉默究竟意味着“放手”还是“赌气决裂”剧本没有给任何支点，情绪落点全靠观众自行猜测，容易读平。', suggestion='给这次沉默一个可感的形态：比如坡下传来他转身下山的脚步声越走越远（主动放手），或传来他蹲坐下来的一声咳嗽（无力再拦），让“他没有再叫”成为一个看得见的行动而非空白；也可以让她的条件被真正逼到两难——父亲真的喊了第二声，她握篮的手松了又紧，最后仍朝北走，用她主动违约来完成这个转折。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 38.426
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 223.006
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.98,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲这一场最有力的对抗是那句\"这屋里，只有你一个人的血\"——她拿到了可以戳穿女儿的铁证。但紧接着床单上的血被翻出是少女自己划破的手，对抗靠一场误会自行消解，母亲什么也没付出、少女什么也没承担，就换来了\"母亲没有再问\"的和解。', suggestion='把证据换成一件无法用误会解释的实物（碗沿第二人的唇印、床下多出的一只鞋、披肩上不属于她的布料），让母亲在\"看见了却选择不点破\"中付出代价——比如她伸手替少女掖被角时手在发抖，或她主动把灯吹熄，假装屋里从没亮过。和解要由她的妥协动作来完成，而不是由线索撤回来完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人临散说\"我就是你想远行的心\"，等于少女亲手驱散的是自己的远行之心；可她失去的只有\"篮底连一片花瓣也没留下\"这个空镜，下一场她立刻又能朝北走。驱散的代价在 S06 被一笔勾销，情感上等于没付。', suggestion='让代价落在她能带走的东西上：掷出的花束里裹着那半块披肩的一角，随烟散掉，她此后只剩半块更残的布；或让她在烟散后第一次真正停下脚步、往回走了两步，把\"重新出发\"的动作交给 S06 父亲的喊声来启动。这样失去与重拾才有来回。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：\"你再叫一声，我就回头\"这句立约台词语义两可：她既已承诺回头，父亲第二声真的叫了（\"那一声破了\"），她却\"违约了\"。观众看到的是她推翻了自己刚立的规则，转折的触发点和心理依据在文本里是空的。', suggestion='把赌约改成方向明确、且违约有代价的句子，例如\"你不喊第三声，我就当这个家没生过我\"；或在她决定不回头之前加一个可见的触发动作——把披肩系上木桩的那一下就是她自毁退路的仪式，先系布条、再听第三声落空，转折就有了着力点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：尾声没有任何阻力：村妇的两句话（\"再没人见过她\"\"循着花香去寻他去了\"）把结局直接口述出来，父亲只是\"把纸压回石头底下\"。全集的和解与悬置都由旁人闲话交代，场面是平的，观众没有被顶住的时刻。', suggestion='给父亲一个带阻力的动作：他要上坡把那缕布条挂回木桩，村妇伸手拦他（\"风口，别去了\"）；或他揭纸时发现名字已被雨水泡得认不出，他试图用指甲重描却描不成——让最后的执念撞上一个具体的、他拗不过的东西，再以\"没有回头\"收束。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.98,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 47.898
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 54.574
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 50.0（REVISE）；最好的是第 3 轮（50.0 分）"
+}

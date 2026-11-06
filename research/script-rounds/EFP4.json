@@ -1,0 +1,165 @@
+{
+  "episodeId": "EFP4",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻拦只走了一个回合就被母亲调停收掉：『少说两句，孩子心里有数。』随后父亲仅以『甩开手，椅子在地上蹭出一声长响』退场，观众没有看到他真正拦住少女、也没有看到少女正面顶回去——对抗在最高点被一句话抹平，属于廉价和解。', suggestion='让父亲的阻力在场内再走一个硬回合：比如他直接挡在里屋门口、夺碗或压低声音放出更重的狠话（与村里的生计/名声挂钩），迫使少女必须用一个具体动作（撞开他、把碗塞进他手里）闯过去。调停可以留，但要放在冲突真正撞过之后。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人在本场几乎零抵抗：被追问两次只以『走了这么远，还怕我是谁吗』和『仍然在笑』回避，随后少女一掷花他就散了。真相由他自己在消散时说出口——『我就是你想远行的心啊』——等于让角色自曝谜底，对抗和解密都由外部动作一次性完成。', suggestion='给旅人一次实质反扑或反问（逼她承认『想走的是你自己』），让少女必须付出代价才换到真相——例如逼他闻老奶奶给的花、花香让他『现形』，把 S03 那句『香气能让不洁的东西现形』的伏笔变成破局的钥匙，而不是靠一句自白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场零阻力：少女从站立到走进雾里，没有遇到任何内或外的阻拦，连『是否回头』这一唯一可构成对抗的念头也没有被演出来，直接以台词点题——『原来要走的人，一直是我自己。』属于平铺直叙的收尾。', suggestion='给她一个反向动作做抵抗：她一度转身朝村子走回几步（或把包袱放下、捡起断掉的花梗），再由某个细节（雾、脚印、香气）推她转回北边。让『继续走』成为一次选择而非陈述，点题的那句话删掉或改成动作。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 16.323
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 37.827
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.6,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲抛出全剧最高的赌注——「镇上收花的人明天就到……这一村人一春的收成，找谁去？」，但这个威胁在后面五场里再没出现过，观众等的后果被一句旁白（「从此她再没去过村里的集会」）带过。代价是「说」出来的，不是「付」出来的。', suggestion='二选一：要么删掉收花人这条威胁，把冲突收窄为父女观念之争（赌注小但兑现得了）；要么让威胁落地——在 S03 里补一个具体后果：花价被压、村民当面把花摔在她家门口、或收花人的马车直接绕开她家。让 S02 的狠话在下一场结账。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：整场几乎没有阻力：旅人只说了一句「你不知道我是什么，就敢跟我走？」，少女一句「等我知道了，也许就走不成了」就解决了；村民、父亲、母亲全部缺席。她为 S02 付出了与全村决裂的代价，可她离开村子这件事本身却畅通无阻，等于上一场的代价没有对手来收。', suggestion='给「出走」设置一次真实阻拦：让父亲或村民堵在村口（呼应 S02 里「横在里屋门口」的动作，形成重复与升级）；或让旅人拒绝得更硬——他独自上路、把她丢在原地，逼她主动追上去。老奶奶赠花保留，但放在阻力之后，作为通过的条件。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：决胜处的抵抗过早熄火：旅人前一秒还「向前一步，逼得她背抵上山壁」，被质问「你敢闻一闻吗」之后却只是「后退了。他被逼到无路可退」，既不夺花也不还击，花是她「抬手就掷」出去的。胜利没有经过最后的争夺，赢得太便宜。', suggestion='让他做最后一次反扑——伸手去抓花束、或用「放下它我陪你走到北边」做交换，让少女在「信他」和「掷花」之间停半拍。她掰开他的手再掷出去，这个动作本身就是代价，透明化的瞬间也才更疼。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有对手：她「转身朝村子走了几步」到「停下」之间的内心拉扯，只用两句回忆（父亲的碗、村人挪开的肩膀）就解决了，「回去做什么？」这个真正的胜负手没有被任何人、任何事挡住。整场是独白加意象，转折靠的是旁白式回忆，而不是场面。', suggestion='把「回村」这一侧做实：让她真的走回村口，撞见一件具体的东西——父亲的灯还亮着、集会上有人先转过身——再由这个画面完成否定；或者让老奶奶/某个村民出现，给出一个真实的挽留。这样最后那句「循着花香去寻他」的代价（永别村子）才是她自己一步步买下来的，而不是传说替她付的。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.6,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 18.084
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 148.785
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.6,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：旅人在“……别碰我。会染上。”之后很快昏过去，前半场的人际对抗随之消失，后半场只剩“拖不动”的体力困难；而“山那边传来狼叫”设立的环境威胁在本场及后续各场均未兑现，沦为纯氛围音。', suggestion='让旅人在半昏迷中持续抗拒（挣扎、推开药、说胡话暴露危险），把狼叫升级为实际逼近的阻力——例如狼群逼近迫使她必须在原地包扎而非立即转移，使冲突贯穿全场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的威胁“这一村人一春的收成，找谁去？”在本场没有造成任何即时损失，少女以一句“收花的人来了，我自己跟他说”和“门帘落下来”就把冲突物理隔断了；代价被推迟到 S03 才兑付，本场的对抗是靠关门结束的，不是靠解决结束的。', suggestion='在本场就让代价先落地一角——比如父亲当场扣下她的花篮/药钱，或母亲被迫替她向门外的邻居遮掩；门帘落下前给她一个必须付出的具体牺牲，冲突才算在场内完成。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：她刚在 S03 不惜与全村决裂、放弃花篮才换来的同行，本场的放弃只用了“她停了半拍——北边那么远，她只是想有个人陪她走”一句心理旁白就完成了，从“一根，一根”掰手指到“朝他的脸掷了过去”，情绪转折的重量撑不起这个决定。', suggestion='把“半拍”扩成一个可见的行动级转折：让她先几乎松手把花递出去，再因他攥腕的力道（或他说漏的一句）看清他要的是占有而非陪伴，才反手掷出——用动作而非旁白完成这一转。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场的阻力最弱：村民只是“先转过身去”，声音“不高，也没有人上前”，母亲说完“回来吧”紧接着就“……去吧”主动放行——她想回又决定离开的整个过程里，没有任何一方真正拦她，离别缺少对抗。', suggestion='给她的回头设一道真实门槛：比如有人堵住村口要她先交出什么（交代旅人的下落、赔上剩下的花），或母亲的“回来吧”其实意味着“留下就得如何如何”，让她的转身成为对抗后的选择，而不是无人挽留的顺流。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 48.6,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.372
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.93
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 48.6（REVISE）；最好的是第 1 轮（57.4 分）"
+}

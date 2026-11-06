@@ -1,0 +1,163 @@
+{
+  "episodeId": "EFP3",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场唯一的正面阻力是旅人那句\"别碰我\"，但他\"随即头一歪昏了过去\"——阻力出现一秒就自行消失，双方没有交锋。真正对抗的来源（\"村里说过，外乡人不干净\"）只存在于少女的内心犹豫里，外部没有任何人或事阻拦她，救人过程是一条直线。', suggestion='让阻力落到动作上：比如她刚俯身，旅人猛地攥住她的手腕把人掀开；或安排远处传来村民的吆喝声/脚步声，逼她在\"被看见\"与\"救人\"之间做选择，把村规从旁白变成压在场内的时限压力。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：上一场结尾她还坚定地说\"我跟你走\"，这一场开口就是\"你到底是谁？\"，怀疑的触发只靠\"低头看看手里的花束\"和旁白\"她想起老奶奶那双凉手\"回填。情绪是从旁白里补出来的，不是从戏里长出来的，转折点缺一个看得见的导火索。', suggestion='在 S03 末或 S04 开头埋一个可拍的疑点：比如她递花束给他，他不接/花在他手里颜色发暗；或他包扎处的伤口根本不存在、袖口没有血。让她的质问由一个画面直接引出，而不是靠回忆句解释。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：承接 S04 结尾\"旅人化作一阵紫色的轻烟，散了\"这一超自然事件，S05 开场是\"她跪下去捡花瓣……盯着空空的掌心看了很久\"——从目睹活人当众消散直接跳到平静的哲思独白（\"现了形的，到底是它，还是我\"），中间没有对\"他根本不是人\"这一事实的震惊、否认或追问，情绪是平的。', suggestion='在捡花瓣之前加一段真实的应激反应：她喊他的名字、翻找烟散去的地方、摸自己的手确认刚才握过他——先给出\"崩塌\"的瞬间，再让\"埋痂—继续走\"作为重新站起来的转折，落差才成立。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 18.346
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 95.518
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的真实诉求是\"你留他\"（\"他是外乡人。你留他，村里人怎么看你\"），最后通牒却落在\"你今晚要是还去集会，就别认我这个爹\"——两件事错位。少女答\"好\"之后直接端碗进屋，父亲\"张了张嘴，最终什么也没说出来\"，通牒从未被执行、也从未被正面顶回去：她既没交人也没失去家，冲突以回避软着陆，双方都没付出代价；她的损失（\"那排人里从此没有她\"）只在结尾由旁白宣布，没有在场面里发生。', suggestion='把通牒直接绑在留人这件事上（如\"明早之前把他送出村，否则我亲自押他去祠堂\"），逼她当场在\"交出他\"与\"被除名\"之间选一个；或让父亲真的动手——掀了药碗、锁了里屋门——让代价在这一场里以动作兑现，而不是靠收尾旁白追认。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场全无阻力：旅人说\"我要回去了\"，她一句\"我跟你走\"就通过，对方只回\"想清楚了\"便不再挡；老奶奶非但不拦，还主动赠花指路（\"孩子，这花的香气能让不洁的东西现形。记住\"）——抛弃村子这一本该最重的决定，没有任何人、任何事阻拦。结尾\"一点疤也没有\"的转折是单向读取信息，不是从对抗中翻出来的。', suggestion='给离开设一道实际阻力：让老奶奶收下花束、冷冷说\"走了就别再回来\"；或让旅人明确推开她、拒绝她同行，使\"我看看\"这个动作必须先冲破他的阻挡才能按到那条腿——发现才同时是转折和对抗的结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：解决零阻力：\"旅人没有回答，只是笑\"，随后\"他化作一阵紫色的轻烟，散了\"——对手不还手、不逃、不谈判，她一次投掷就赢；而花束是上一场老奶奶白送的，她全程没有为这场对决付出任何东西，代价只在S05才被动承受。', suggestion='让消散带阻力：烟散了又聚、他朝她逼近、或非要她亲口说出那句心愿才肯走；同时让她付出点什么——烧掉最珍视的物件、或必须当面承认自己在骗自己——解决才不廉价。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 24.375
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 249.86
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人明确拒绝“我不带人”，少女用“走三步给我看看”让他第三步腿软作为回击，但旅人自始至终没有松口同意；场景的收尾交给了老奶奶的送花仪式（“拿了这花，就别再进这个村”）。主线阻力“他不带人”在场上没有被解决，两人如何成行是空缺的，观众看到的是靠一场仪式完成离村，而不是靠对抗的解决。', suggestion='给旅人一个落实同意的落点：听完“我死在春天里”后沉默两秒，先迈出那条好腿，或把包袱从肩上卸下一半；也可以把“我不带人”的拒绝整体后移到 S04 开头，让他一路上持续甩开她，使阻力贯穿两场而非中途消失。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：通关判定缺少场上依据——她说“我要跟着你”被判“撒谎”，观众只能靠最后的台词反推判定标准；而真正的答案“我就是你想远行的心啊”由烟自己念出，转折靠告知完成。她说完真话后烟立刻停手，之后她没有任何新的行动代价，只剩一道静态的红印（“掌心空空，只剩一道被花茎勒出的红印”）。', suggestion='把判定做成可见的代价递进：每答一次，紫痕往上爬一段、身后的路退一截；她说出真话后烟仍不松手，直到她自己转身朝前迈一步，烟才散成枯草——让“我就是你想远行的心啊”从她自己嘴里说出来，揭示落在她的选择动作上，而不是落在烟的解说词上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：终场没有任何阻力或对手：前半段“把落在脚边的枯草一根一根捡起来……又一根一根放开。然后她站起来，沿着那条路继续往前走”是纯状态描写；唯一的对抗只是“回头看了一眼……她没有招手”，情绪从头到尾是平的。竹篮被留在垭口（“竹篮她没有带，放在垭口的石头上”）也只是被叙述出来的事实，不是被逼出来的取舍。', suggestion='给上路加一道具体阻力：垭口的雾里传来村里的喊声或鼓声逼她停下，或让竹篮与最后三根花茎必须留一件在石头上，让她做一次明确取舍；把“那就一个人走”安排在她看见影子靠近一步、或无人应答的山路之后才说出口，使终句是挣来的而不是顺势说的。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.787
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 226.494
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.5（REVISE）；最好的是第 1 轮（58.5 分）"
+}

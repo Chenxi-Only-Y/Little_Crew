@@ -133,6 +133,22 @@ class LLMReply:
 # 模型与密钥
 # ==========================================================================
 
+def _provider_of(backend: Any) -> str:
+    """从 backend 推 provider 名：优先显式字段，否则从 endpoint 取域名。"""
+    for attr in ("provider", "provider_id", "name", "vendor"):
+        v = getattr(backend, attr, "")
+        if v:
+            return str(v)
+    url = str(getattr(backend, "endpoint", "") or "")
+    try:
+        from urllib.parse import urlparse
+
+        host = urlparse(url).netloc
+        return host.split(":")[0] if host else ""
+    except Exception:                                       # noqa: BLE001
+        return ""
+
+
 def model_spec_for(model_id: str = DEFAULT_MODEL_ID) -> Any:
     """从注册表取模型条目。取不到时抛 `LLMError`（**不静默退回默认**）。"""
     from little_crew.models.registry import build_default_registry
@@ -369,6 +385,32 @@ class LlmClient:
         url = backend.endpoint.rstrip("/") + backend.path
         reply = self._post_with_retry(url, body, timeout_s or self.timeout_s)
         self.calls += 1
+
+        # ---- provider 指纹（2026-11-06，§4.6.6 第 22 条）----
+        #
+        # 接云 API 之前必须有的东西：模型会静默升级、厂商会用别名路由。
+        # 不记下来就"能生成、但没法证明这一版是怎么来的"。
+        # **只记请求 hash，不落明文 prompt。**
+        try:
+            from little_crew.governance.provider_fingerprint import note_reply
+
+            _b = body if isinstance(body, dict) else {}
+            note_reply(
+                kind="llm" if not json_mode else "llm.json",
+                # 后端没有 `provider` 字段 —— 从 endpoint 取域名当 provider
+                # （"?" 不是错误，但能取到就该取到；见 provider_fingerprint 汇总）
+                provider=_provider_of(backend),
+                model=self.model_id,
+                served_model=str(getattr(reply, "served_model", "") or ""),
+                params={k: _b.get(k) for k in
+                        ("temperature", "max_tokens", "top_p", "seed")
+                        if k in _b},
+                request=f"{system}\n\n{prompt}",
+                response_id=str((getattr(reply, "raw", {}) or {}).get("id", "")),
+            )
+        except Exception:                                   # noqa: BLE001
+            pass
+
         return reply
 
     def _post_with_retry(self, url: str, body: Mapping[str, Any],
