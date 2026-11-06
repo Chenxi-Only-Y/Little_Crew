@@ -1141,7 +1141,17 @@ class EpisodeRunner:
                     _j1.dumps(_review, ensure_ascii=False, indent=2),
                     encoding="utf-8")
             _err_n = int((_review.get("counts") or {}).get("error", 0))
-            print(f"  审片（可数项）：{_review['total']} 个产物 · 严重 {_err_n} 条")
+            # ⚠️ **dry-run 不许谎报**（2026-11-06 体检发现）：
+            # 没渲染时每个镜头都会被记成 `missing-artifact` 严重缺陷，
+            # 一次 27 镜就是 27 条 error —— 看起来像灾难，实际是"没跑渲染"。
+            # 判据：**一镜都没尝试渲染且没有失败**（真有失败时仍然要报）。
+            _attempted = int(getattr(self, "rendered", 0) or 0) + int(
+                getattr(self, "failed", 0) or 0)
+            if _attempted == 0:
+                _review["skipped"] = "dry-run（未尝试渲染），审片不适用"
+                print("  审片（可数项）：未渲染 —— 跳过（不是通过）")
+            else:
+                print(f"  审片（可数项）：{_review['total']} 个产物 · 严重 {_err_n} 条")
             self._image_review = _review
         except Exception as _e_rv:                            # noqa: BLE001
             print(f"  ⚠️ 渲染审片未运行：{type(_e_rv).__name__}: {_e_rv}")

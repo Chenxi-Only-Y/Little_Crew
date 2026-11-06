@@ -84,6 +84,23 @@ def main() -> int:
     check("D3 ★★★ 处置里不许出现 None（真跑踩过）", "None" not in txt, txt[:80])
     check("D4 ★★ 处置里带真实数字 45", "45" in txt, txt[:80])
 
+
+    print(); print("E. 防御：配额缺字段不许崩")
+    from little_crew.governance.plan_alloc import scene_quota
+
+    _bare = scene_quota(scene_seconds=30)          # 单场配额，**没有 sceneId**
+    try:
+        d2 = plan([{"sceneId": "S09", "kind": "over-scene-seconds",
+                    "seconds": 99}], {"scenes": [_bare]})
+        ok = True
+    except Exception as e:                          # noqa: BLE001
+        ok = False
+        print("      ", type(e).__name__, e)
+    check("E1 ★★★ 配额里没有 sceneId 也不许崩（真踩过 KeyError）", ok, "")
+    if ok:
+        check("E2 ★★ 没有配额数字时，处置仍给出动作（只是没数字）",
+              d2["sceneCount"] == 1, str(d2))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

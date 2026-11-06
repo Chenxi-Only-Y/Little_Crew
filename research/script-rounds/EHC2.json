@@ -1,0 +1,163 @@
+{
+  "episodeId": "EHC2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价由叙述直接宣告，而非由场面兑现——“她把最后一点干柴塞进灶膛，知道自己从此再没有回过村子里的集会”，这是人物内心独白式的补写，观众没有看到她为守夜付出任何可见的东西。', suggestion='把代价放进动作里：让窗外传来村中集会的鼓乐/人声，她握着药碗停在门口，最终转身回床边换布——选择在场内完成，最后的“再没回过集会”只作为结果出现，不作为解释。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02 里父亲已发出明确禁令“出了这门，集会你别再去”，但到了真正离村的一场，阻力消失了——“父亲在人群里沉着脸”“父亲没应”，全程无人阻拦，威胁没有兑现，冲突被稀释成表情描写。', suggestion='让父亲把禁令落到行动上：堵在门口、夺下包袱、或当众说出决裂的话，少女必须跨过他才能离开；把“母亲别过头去”改成母亲偷偷塞东西又被父亲挡下，使离村这一下真正是一次对抗的胜利。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有局势或情绪的转折：“她没有哭，只蹲下身……继续往前走，走进雾里”，从头到尾是同一个姿态，结尾的“也有人说……”靠旁白补叙，画面本身是平的。', suggestion='在终点前加一个弯：让她在岔路口停住——一条通向村子的鸡鸣声，一条通向雾里的紫——她弯腰把最后一瓣花放对位置后才选后者；或让包袱里的花瓣在雾中发芽/散尽，给她一个主动的、改变处境的动作再收尾。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 14.739
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 87.229
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲给出了全剧最重的威胁——“你敢跨出这个门，就别再姓这个姓”，母亲的干粮也被拍落；但紧接着的解决是“从父亲身侧挤过去——父亲伸手抓她，抓了个空”，随后老奶奶送上薰衣草、母亲的干粮被“一粒一粒捡回包袱”。阻力落空、祝福到手、干粮收回，这场决裂实际上没有让她流一滴血，代价只存在于台词里。', suggestion='让威胁兑现一次：例如她跨出门时父亲真把包袱夺下、或把母亲的干粮踢散她只能空手走；或者在她跨出门槛后门在身后重重关上，父亲隔着门喊一句，她停半步、终究没回头——把“失去家”落在一个具体动作上，而不是靠父亲的一句话宣布。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧的揭秘场，双方却完全不对等：“你到底是谁？”——“旅人没有回答，他只是笑”；“伤口从来没有结过痂”——“旅人仍在笑”。旅人没有任何反驳、挽留或反扑，少女的质问一路顺风，掷花因此成了必然动作，缺少真正的对抗拉扯。', suggestion='给旅人一次主动反扑：在她一步步后退时伸手拉住她，或笑着抛出一句戳她痛处的话（“你回得去吗？”“回去了还有人等你吗”），让花束在她手里停顿一拍、几乎被说服——使掷花是在险些失败的边缘做出的选择，而不是单方面的处决。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本集的最终抉择场没有任何阻力：“她在路口站了很久”把挣扎压缩成一个时间跳切；村路那侧只有“鸡鸣、狗吠、隐约的鼓声”作为背景音，没有一样东西真正拉她回去，她随即就“跨过花瓣线，走进了紫雾里”。最重的决定用静态镜头和方向指示完成。', suggestion='给归途一侧具体而有力的拉力：那鼓声正是S02中她被禁止参加的集会、或母亲唤她乳名的一声喊；让她在路口真的迈向村路一步、又被什么拦下/自己退回，来回一次之后才走向紫雾——把“选择”演成一个有来有回的动作，而不是一个站姿。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 12.016
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 216.488
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：本场的核心代价全部靠旁白一句交代——「从那天起，她再没有回过村子里的集会」；而父亲的最后通牒「你敢跨出这个门，就别再姓这个姓」在场内并未被真正触发：少女只是「转身走向里屋」，从未跨门，冲突悬置、代价缺席，观众只听到威胁没看到失去。', suggestion='让威胁当场兑现一次：少女端药碗确实走到门口，被父亲挡回或药碗被摔碎（把「集会」的缺席具象为某个物件/位置的空缺，比如她常坐的集会位置）；把旁白的「再没回过集会」改成一个可拍的镜头——隔年集会，同一个位置空着。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：指控的核心证据「一路上我换了七次布条，血一直在渗，可伤口从来没有结过痂」全部以台词陈述抛出，前几场（S02 换药三次、S03 腿已不跛）都没有把这个「不愈合」拍出来，交锋的弹药是临时补的说明文。', suggestion='在 S02 换药或 S03 检视伤口时给一个明确镜头：布条揭开，伤口翻开、不见新肉、没有结痂的迹象，少女的手停一下。S04 的「你不是人」就有了观众早已看见的依据，冲突成立得更硬。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧最后一转缺乏可见的动因与落点：她朝村路迈出「第一步，第二步，第三步」，母亲喊声「又近了一点」，然后「她站起来，往回走了三步」——从走向村子到转身离开之间，剧本没有给出任何让她停下的动作/细节；结尾「走进了晨雾里」也没交代她踏上哪条路，抉择在画面上是悬空的。', suggestion='给反转一个具体的触发：比如她攥着干粮走到第三步，张口想应一声母亲、却发不出声（或她松开手看见掌心里被捏碎的干粮——正是 S03 母亲塞的那块），由此转身。落点上让她有一个明确的朝向动作（背对村路、面朝北边的雾），把「岔路抉择」拍实；传闻式的双结尾可以保留，但主体动作必须先在画面上定死。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.669
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 220.806
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 57.4（REVISE）；最好的是第 1 轮（57.4 分）"
+}

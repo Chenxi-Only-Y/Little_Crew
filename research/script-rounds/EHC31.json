@@ -1,0 +1,161 @@
+{
+  "episodeId": "EHC31",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力全部是旁观而非对抗：\"人群里起了嗡嗡声，有人低声说\\'她疯了\\'。父亲站在最外面，没有开口，只是把脸别了过去。\"少女一句\"我跟你走\"当场通过，无人阻拦、无人讨价还价，S02 父亲\"祠堂的门，你也别想再迈进去\"的最后通牒在此被无声豁免。', suggestion='把通牒兑现为实际阻拦：父亲挡在村口、母亲被强行拉住，或村人以某项仪式资格当面收回（如取走她的篮籍/名册）。让\"走\"必须当众撕破一次脸才能成立，冲突才有对手。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折的触发因果倒置：\"少女猛地举起花束，朝着他掷了过去——花瓣散开的一瞬，她看见花穗上沾了灰\"，证据出现在动作之后，她先动手才\"看见\"理由；且 S03 老奶奶\"这花的香气能让不洁的东西现形\"的装置在本场没有兑现。', suggestion='把顺序摆正并让伏笔应验：花束靠近旅人时先变灰、香气散尽（老奶奶的话生效），少女据此起疑→逼问\"你到底是谁\"→他仍只笑→她才掷出。转折由可见的证据推出来，而不是靠事后补一个细节。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有对手：唯一的回撤诱惑只用一个从句带过——\"身后是来路，只要转回去，村口还能看见炊烟——她看了一会儿\"，随即\"把包袱带子重新系紧\"，没有形成任何拉扯就被消化。', suggestion='把\"回去\"实体化为一次真实考验：远处祠堂钟声响起、母亲的呼唤或一条清楚可见的回村岔路，让她实际停住、伸手又收回，挣扎一整拍后再往前走。这样 S01 她救人的选择才在结尾被完整地再次支付。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 8.634
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 107.576
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 56.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场没有任何对抗性阻力：少女看到伤者后立刻决定「你不能死在这里」，随后只是克服物理困难（「她背不动他，只能……一寸一寸往坡下拖」、「天快黑了」）。重量和天色是障碍，不是对抗——没有人、也没有任何力量反对她的决定，她的救人从头到尾是一条直线。', suggestion='给救援加一个压迫源：比如坡上出现找寻外来人的村人脚步/火把，或伤者的身份此刻就带来风险（追兵、通缉），让她「救人」这个动作从第一分钟起就要付代价、冒被发现的风险，S02父亲的怒火也才有前因。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力最强的一场却被最轻的方式化解：父亲「横到路口，把扁担往地上一戳」是全剧唯一的正面对峙，而少女的破解是「她绕过父亲，从扁担左边过去」，父亲随即「没有追」。对抗在最高点自动熄火，没有升级也没有相持。', suggestion='让跨越父亲这一下真正费力：他抬起扁担、被族老或老奶奶拦住才放下，或少女必须交出/留下什么（竹篮、披肩、包袱里的一件旧物）才被允许走过那道扁担——把「绕过去」改成「换过来」。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对手全程不还手：少女两次逼问「你到底是谁？」「你说啊」，旅人只会「笑」，随后被一束花掷中就「化作一阵紫色的轻烟，散了」。阻力是静止的，局势从提问到对方消失没有拉锯，紧张感全靠花穗变灰这一道具自动完成。', suggestion='给旅人一个反制动作抬高 stakes：他阻止她举花、试图夺下花束、或用她的真实欲望反劝她留下（「回去了又能怎样」），让「现形」必须在对抗中挣来，而不是按一下道具开关。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 56.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.338
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 153.207
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 78.66,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：全场没有任何阻力。少女的动作序列（蹲下捡花瓣→停手→撒回风里→系包袱→走进雾里）没有遇到任何对抗，'捡到一半停住'的转变也找不到触发点——没有东西推她，也没有东西挡她。同时全剧最重的两处收束都写在旁白里：'后来村里人说，再没有人见过她''只有父亲，每年春上都把扁担横在路口'，代价是在舞台上空掉的，观众听到的是转述而不是画面。\", suggestion=\"给结尾一个可拍的最后一次抵抗：比如让父亲（或那根扁担）真的出现在路口/山坡下，与她做一个无言的对峙后才让开，把旁白里'扁担横在路口'的意象搬进场内；或者让岔路口本身成为阻力——一条回村、一条向北，她在路口停留，撒花瓣的选择由这个具体处境触发。这样'放手'才是被逼出来的行动，而不是设计出来的动作。\")"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 78.66,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 32.076
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 208.977
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 78.7）"
+}

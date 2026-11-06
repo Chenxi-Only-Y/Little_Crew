@@ -96,7 +96,12 @@ def plan(findings, quotas=None) -> dict:
         acts = actions_for(str(f.get("kind") or ""))
         if not acts or acts == (NOOP,):
             continue
-        qmap = {x["sceneId"]: x for x in (quotas or {}).get("scenes") or ()}
+        # ⚠️ 用 .get：配额里**可能没有 sceneId**（例如单场配额直接传进来）。
+        # 之前用 x["sceneId"] 会 KeyError，而调用方是 try/except ——
+        # 结果就是"处置静默缺席"，最难发现的那种失败。
+        qmap = {x["sceneId"]: x
+                for x in (quotas or {}).get("scenes") or ()
+                if isinstance(x, dict) and x.get("sceneId")}
         text = instruction_for(f, qmap.get(sid))
         row = by_scene.setdefault(sid, {"sceneId": sid, "actions": [],
                                         "instructions": []})

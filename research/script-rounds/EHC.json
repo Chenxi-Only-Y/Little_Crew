@@ -1,0 +1,58 @@
+{
+  "episodeId": "EHC",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场没有对抗。老奶奶是来给予的——\"把一束刚绽开的薰衣草塞进她手里\"\"只把她的手合紧\"；少女唯一的反问\"奶奶，您早知道？\"还被\"没答\"挡回。全场唯一的阻力是背景里的\"父亲在身后喊了一声她的名字，声音已经哑了\"，那是氛围不是阻拦。少女没有跟任何人交锋、没有付出任何东西，就白拿到了通往下一场的关键道具（花束），同时把 S03 已经抬起、没落下来的那只手又一次悬空处理掉了。', suggestion='给这次馈赠设置条件或代价：让老奶奶索要一样随身之物作\"回程的抵押\"（与后文\"花在，你就还能回来\"形成对价），或让父亲/村民在村口实打实上前拦一次，把 S03 那只悬着的手真正落到她面前，逼她再付一次对抗才走得出去。谜语可以留，但必须是\"争来的信息\"，不能是\"送来的信息\"。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：收尾场没有任何对手，人物栏只有少女一人。她全部动作是\"蹲下去捡—捡到一半停住—挎回空竹篮—继续往前走\"，没有任何外部阻力逼她当场做选择；到这一场她能失去的都已经失去（花散了、旅人没了、家也断了），于是冲突归零，最终落点\"后来村里人说……也有人说……只有父亲知道\"是交给旁白完成的，不是演出来的。', suggestion='在结尾放最后一次当场阻力：例如父亲追到界石前把她叫住，把 S03 那句\"你走了，就别认这个家\"的代价真正收一次；或让她走到岔路口必须丢下篮子/回头才能继续。转折要落在\"她在阻力下选了什么\"，而不是\"她走掉了\"，事后旁白改为场面内的动作与反应。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 16.247
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 180.295
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.9）"
+}
