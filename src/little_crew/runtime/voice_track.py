@@ -110,6 +110,160 @@ def assign_to_shots(lines, shots) -> list[dict]:
     return out, dropped
 
 
+def trim_silence(path, out_path, *, threshold: int = 300,
+                 keep: float = 0.06) -> dict:
+    """裁掉 wav 头尾的静音（16-bit PCM）。**只用标准库**。
+
+    为什么需要：breeze 每段合成都自带头尾静音；分句合成后如果不裁，
+    我的"设计停顿"会和它的"自带静音"叠在一起 ——
+    实测整句 3.76s 变 4.43s，越拆越长，对齐反而更差。
+    """
+    import wave
+
+    try:
+        with wave.open(str(path), "rb") as w:
+            params = w.getparams()
+            frames = w.readframes(w.getnframes())
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "error": f"{type(e).__name__}: {e}", "trimmed": 0.0}
+    sw, ch = params.sampwidth, params.nchannels
+    if sw != 2 or ch != 1:
+        # 只处理 16-bit 单声道（breeze 的输出就是这个），其它原样返回
+        return {"ok": True, "trimmed": 0.0, "note": "unsupported-format"}
+
+    import array
+
+    a = array.array("h")
+    a.frombytes(frames[: len(frames) - (len(frames) % 2)])
+    n = len(a)
+    lo = 0
+    while lo < n and abs(a[lo]) < threshold:
+        lo += 1
+    hi = n
+    while hi > lo and abs(a[hi - 1]) < threshold:
+        hi -= 1
+    if lo >= hi:
+        return {"ok": True, "trimmed": 0.0, "note": "all-silent"}
+    pad = int(round(keep * params.framerate))
+    lo = max(0, lo - pad)
+    hi = min(n, hi + pad)
+    with wave.open(str(out_path), "wb") as out:
+        out.setparams(params)
+        out.writeframes(a[lo:hi].tobytes())
+    return {"ok": True, "trimmed": round((n - (hi - lo)) / params.framerate, 3),
+            "kept": round((hi - lo) / params.framerate, 3)}
+
+
+def join_wavs(paths, out_path, gaps) -> dict:
+    """把多段 wav 按**指定停顿**拼成一条。只用标准库 `wave`。
+
+    为什么不用 FFmpeg：这是**逐句合成后的拼接**，发生在 TTS 内部，
+    不该让核心层依赖外部命令（而且比调进程快得多）。
+    """
+    import wave
+
+    paths = [str(x) for x in (paths or ()) if x]
+    if not paths:
+        return {"ok": False, "seconds": 0.0, "error": "no-segments"}
+    try:
+        with wave.open(paths[0], "rb") as w0:
+            params = w0.getparams()
+        out = wave.open(str(out_path), "wb")
+        out.setparams(params)
+        silent_frame = b"\x00" * (params.sampwidth * params.nchannels)
+        total = 0
+        for i, path in enumerate(paths):
+            with wave.open(path, "rb") as w:
+                if (w.getframerate(), w.getnchannels(), w.getsampwidth()) != (
+                        params.framerate, params.nchannels, params.sampwidth):
+                    out.close()
+                    return {"ok": False, "seconds": 0.0,
+                            "error": "segment-params-mismatch"}
+                frames = w.readframes(w.getnframes())
+                out.writeframes(frames)
+                total += w.getnframes()
+            gap = float((gaps or [])[i] if i < len(gaps or []) else 0.0)
+            if gap > 0:
+                n = int(round(gap * params.framerate))
+                out.writeframes(silent_frame * n)
+                total += n
+        out.close()
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "seconds": 0.0, "error": f"{type(e).__name__}: {e}"}
+    return {"ok": True, "seconds": round(total / float(params.framerate), 3),
+            "error": "", "segments": len(paths)}
+
+
+def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
+                      plan=None, max_seconds: float = 0.0,
+                      min_pause: float = 0.08) -> dict:
+    """**按语段分别合成，再按停顿拼接** —— 对白编辑的落地。
+
+    与"整句念"的区别：句子之间有**真实静音**（0.18~0.35 秒），
+    听感是"人在说话"而不是"播报"；而且每段时长可分别对齐。
+    """
+    import tempfile
+    from pathlib import Path
+
+    from little_crew.governance.dialogue_editor import speech_plan
+
+    pl = plan or speech_plan(text)
+    segs = pl.get("segments") or []
+    # 若给了镜头时长：**先估一遍，超了就按比例压缩停顿**（不压到 min_pause 以下）。
+    # 这是"分句合成"真正的收益 —— 停顿是参数，可以拿来对齐。
+    if max_seconds > 0 and len(segs) > 1:
+        from little_crew.governance.dialogue_editor import estimate_segment as _es
+
+        _speech = sum(_es(s["text"]) for s in segs)
+        _est = _speech + sum(s["pause"] for s in segs)
+        if _est > max_seconds:
+            _scale = max(0.0, (max_seconds - _speech)
+                         / max(1e-6, sum(s["pause"] for s in segs)))
+            for s in segs:
+                s["pause"] = round(max(min_pause, s["pause"] * _scale), 2)
+            pl["segments"] = segs
+            pl["pauseScaledTo"] = round(max_seconds, 2)
+    if len(segs) <= 1:
+        r = synth(text, out_path, voice=voice, instruction=instruction)
+        r.setdefault("segments", 1)
+        return r
+
+    tmpdir = Path(tempfile.mkdtemp(prefix="dlg_"))
+    parts, gaps, total = [], [], 0.0
+    _trimmed_total = 0.0
+    try:
+        for i, seg in enumerate(segs):
+            sp = tmpdir / f"seg{i:02d}.wav"
+            r = synth(seg["text"], sp, voice=voice, instruction=instruction)
+            if not r.get("ok"):
+                return {"ok": False, "seconds": 0.0, "error": r.get("error", ""),
+                        "segments": i, "sha256": ""}
+            trimmed = sp
+            tr = trim_silence(sp, tmpdir / f"trim{i:02d}.wav")
+            if tr.get("ok"):
+                trimmed = tmpdir / f"trim{i:02d}.wav"
+                _trimmed_total += float(tr.get("trimmed") or 0)
+            parts.append(str(trimmed))
+            gaps.append(float(seg.get("pause") or 0.0))
+            total += float(r.get("seconds") or 0)
+        j = join_wavs(parts, out_path, gaps)
+        if not j.get("ok"):
+            return {"ok": False, "seconds": 0.0, "error": j.get("error", ""),
+                    "segments": len(parts), "sha256": ""}
+        return {"ok": True, "seconds": j["seconds"],
+                "voiceseconds": round(total, 3),
+                "pauseSeconds": round(sum(gaps), 3),
+                "trimmedSeconds": round(_trimmed_total, 3),
+                "segments": len(parts), "error": "", "sha256": ""}
+    finally:
+        for p in tmpdir.glob("*.wav"):
+            p.unlink(missing_ok=True)
+        try:
+            tmpdir.rmdir()
+        except OSError:
+            pass
+
+
 def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
           out_dir=None) -> dict:
     """逐句合成 + 对齐，返回可直接落盘的证据结构。
@@ -137,9 +291,12 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
              "sha256": ""}
         if out_dir:
             wav = str(Path(str(out_dir)) / f"voice_{n:02d}_{who}.wav")
-            r = synth(ln["text"], wav,
-                      voice=str(spec.get("voice") or ""),
-                      instruction=str(spec.get("instruction") or ""))
+            # 走对白编辑：分句合成 + 停顿拼接（单句时自动退化为整句合成）
+            r = synth_with_pauses(
+                ln["text"], wav, synth=synth,
+                voice=str(spec.get("voice") or ""),
+                instruction=str(spec.get("instruction") or ""),
+                max_seconds=float(ln.get("shotSeconds") or 0))
         a = align(float(r.get("seconds") or 0),
                   float(ln.get("shotSeconds") or 0))
         rows.append({
@@ -150,6 +307,8 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             "voice": str(spec.get("voice") or ""),
             "instruction": str(spec.get("instruction") or ""),
             "wav": wav, "sha256": r.get("sha256", ""),
+            "speechSegments": int(r.get("segments") or 1),
+            "pauseSeconds": float(r.get("pauseSeconds") or 0.0),
             "error": r.get("error", ""),
             "align": a,
         })
