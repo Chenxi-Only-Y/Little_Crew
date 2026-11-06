@@ -1,0 +1,164 @@
+{
+  "episodeId": "EDP",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02 里父亲的核心阻力——\"你是外乡人，你留他，村里人怎么看你\"\"你敢顶嘴\"——到离家这场戏直接蒸发：\"父亲站在门里，没有追出来，也没有说一句话\"。离家是全剧最大的动作，却没有任何人阻拦，少女只用门槛上的钥匙和一个磕头就解决了，离开的冲突是零对抗的。', suggestion='让父亲最后出面拦一次，给出明确的对抗性条件（如\"走出这个门就别认我\"、要旅人先报出姓名身世、或扣下包袱要求留下什么作抵押），逼少女在\"留下\"和\"决裂\"之间做一次可见的选择。她跪地磕头之前得先说一句断绝的话、或交出一件具体的东西，出走才付了代价，而不是顺水推舟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全集的谜底在这里解决，但解决得几乎不要钱：\"她的手先动了。花束掷出去——花瓣在半空散开……散了\"。旅人（真相）从头到尾没有反制、没有挽留、没有反扑，第一掷就蒸发；连\"我就是你想远行的心啊\"这句解释也是对方主动递上来的。她付出的只是一束花。', suggestion='给幻影一个回合的抵抗：让他在花掷出前先给出诱饵（北方的村子、集日、安稳的日子——正是她在 S02/S04 亲口提过的两样东西），让她必须\"扔掉花=亲手砸掉自己一直想要的那部分\"才能破局；或者让花束只让他变淡、需要她再说出\"你不是谁/我不是谁\"的断言才散。让解法从对方嘴里换成她手上、心上，代价才落地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：收尾场既无对手也无对抗，情绪线基本是平的：\"她没有哭……走得更快了\"。场内唯一的转折（回头看一眼来路）之后，剧本又用两条互相矛盾的传闻把结局摊薄——\"再没有人见过她\"对上\"她走到半路就折回来了，嫁了人\"——观众最后拿到的是悬空的两可，而不是一个落地的、不可逆的选择。', suggestion='传闻可以留作尾声的画外音，但场内要给一个看得见的决定动作：例如在岔路口停下，把那半枝花穗插进石缝（或相反，握紧它不放），然后选定一条路；或让她真的往回走几步、又停住、转身走得更快。这样\"回头看\"才从姿态变成转折，两可的传闻也变成了对一个已做出的决定的注脚，而非替代品。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 17.603
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 60.557
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场唯一的物理对抗是“她挣了一下，没挣开”——主角的主动努力失败后，阻力自行消失：“眼睛里有什么东西飞快地退去，手一松，又昏了过去”。她什么也没做，手就松了，冲突不需要她付出任何行动就解决，代价只有“五个红印”。', suggestion='让她的挣脱变成一次有代价的动作：例如她把勒伤口的布条再收紧一寸，用疼痛逼他松手（代价是伤口重新出血，直接染到她的手上，接住S02父亲“汤溅出来”的视觉）；或保留他自行松手，但让他这一攥把刚勒好的伤口撕开，血重新涌出，把风险滚进下一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价是被旁白宣告的——“代价是——从那天起，她再没有回过村里的集会”。这句话由作者说出，而不是由戏演出来；且从S02到S03直接跳到“春”，这几个月里惩罚从未被检验过一次，观众没有真正“付”到这笔钱，S03的决裂因此像是凭空升级。', suggestion='删掉“代价是——”这句说明，改用一个短镜头兑现：比如切到集会那夜，母亲把饭菜放在里屋门口不敢进来，她隔着窗看村口的火光与人流，篮子空着放在原处；或把惩罚的可见后果前移到S03（父亲堵路时，先指她再没挎过的那只篮子），让同一笔代价在两场里连本带利地压上来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：幻影说“跟我走。你什么都还没失去”，而少女的回击是“你不是那个村子，你也不是那个院子。你不是我等的人”——她始终没有回答“我失去了什么”。上一场她刚付掉全家：交还披肩、跪地磕头、“爹，女儿不孝”，并宣告“我跟你走”；这一场她拒绝幻影时对那笔牺牲只字未提，等于暗示这次拒绝毫无损失，S03的代价没有滚进S04。', suggestion='把S03的账在这一场结清：让她先看一眼自己空着的双手（披肩已还、包袱已空），再掷出花束——这一掷就是第二次付款，她毁掉的是身上仅剩的东西；台词上让她正面回“你什么都还没失去”：“我失去了。我爹的手，我娘缝的披肩，我再进不去的那道门。”这样拒绝才带着价码，S05“手里什么也没有了”也才有来处。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 21.954
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 242.455
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.410000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲下了狠话：「你去了，就当没这个家；你不去，就当没这个人。」这是全场最重的对抗，但少女只说了一句「他烧还没退」就走进里屋，父亲没有任何阻拦、发作或后续动作，母亲也只是拉袖子摇头。威胁当场悬空，既没被执行，也没被收回——少女在这一场里没有付出任何可见代价，选择的成本被推给了后面的场次。', suggestion='让父亲的通牒在场内兑现一部分：比如他掀翻药碗、摔门而出，或母亲被迫在他与女儿之间做出一个明确取舍（收回披肩、掐断油灯）。少女必须为「转身进里屋」这个动作当场挨一下——哪怕只是一记耳光、一碗泼掉的药——代价才落地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场的对抗全部在画外（「村口的方向亮着火光，鼓声一阵一阵传进来」），屋内所有力量都与少女站在一起：母亲送饭、床上的人梦呓呼应。没有任何人、任何事在场内阻拦她，她唯一的动作是「把门关上了」——关门是对空气做的决定，阻力为零。', suggestion='把集会的火与鼓声推进门来：让门外出现具体的敲门/喊话（族人来押人、要她去认领「窝藏外乡人」的罪），或让母亲的送饭变成最后一次警告而非抚慰。她关的这扇门必须挡住一个正在推门的人，关门这个动作才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：「父亲堵在路中间」是明写的对抗，但接下来他只指了指墙角的空竹篮，之后全场再无一句台词、一个动作——少女磕头、起身、说「我跟你走」，父亲既没让开、也没拦住，母亲「没有出来」。阻力被宣布了，却从未真正交锋；他的让路没有代价，她的夺路也没有阻力。', suggestion='给父亲一个收束的动作或台词：他伸手去够那只篮子却没抓住，或哑着嗓子问一句「篮子里的花呢」，然后侧身让开——让他的让步是一个可以被看见的、他付出的损失（比如伸手打落她的包袱又停在半空）。冲突要有人接招，场面才不空转。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：作为终场，情绪与局势基本是平的：她站着、捡花、往前走，「没有回头」。而本场的关键意象几乎全是 S05 的重复——「掌心的血痕还在」（S05 已有「掌心那道血痕还在」）、空竹篮（S04 已有「竹篮留在墙上，空着」）。观众在 S05 已经被那记掷花完成过一次转折，S06 没有给出新的情绪位移，只有重述。', suggestion='把 S06 从「重复」改成「承担」：给一个 S05 里没有的微小对立或抉择——例如她走到雾前停住、可以回头却把那枝花穗插紧了一分；或让远处传来村里追来的喊声，她听见却不应。终场需要一个属于她自己的、代价可见的动作，而不是对前一场的复述。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.41,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 24.832
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 33.566
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.4（REVISE）；最好的是第 1 轮（58.5 分）"
+}

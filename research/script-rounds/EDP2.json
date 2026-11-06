@@ -1,0 +1,111 @@
+{
+  "episodeId": "EDP2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人面对花束几乎没有实质抵抗：「他伸手想按住她的手腕，动作很轻」，且他前文已知道「这香气能让不洁的东西现形」，却只以微笑应对、不夺花、不逃、不辩解，阻力近乎为零——少女一掷即胜，对抗是平的。', suggestion='给旅人一个真正的反制动作：他可以挡在她面前、打落花束、或以更剧烈的代价（如以真相交换她放下花）来阻止她，让「掷花」这个动作必须突破一层阻力才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力被一句话化解且前后不连贯：他说「你不知道我是什么人」（拒绝），少女只答「那你告诉他」，他便不再反驳，反而「转身迈出第一步」默认她跟随——既然他自认是危险的外乡人，就该坚持赶她回去，否则这场对抗等于没有发生。', suggestion='让旅人的拒绝落地：他可以真的甩开她、走掉、或给出一个她无法反驳的理由逼她留下，把「跟不跟」的决定权和风险真正压回少女身上，让她的「我跟你走」成为突破阻力后的选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：本场的核心代价是以旁白叙述而非场景呈现：「她从此再没回过村子里的集会，代价是母亲在村口遇见她时，也只能装作没看见」——这句话交代了代价，但没有在戏里发生，观众看到的只是母亲掀门帘的温柔，冲突的惩罚被推迟并被转述掉。', suggestion='把代价拍进本场：例如母亲掀门帘时手上多了一个动作（把她的包袱收走、或在门槛上停一下最终放手），或在 S02 末尾加一个极短的「村口擦肩而不识」的尾声镜头，让代价当场兑现。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：唯一的阻力只是声音与意象：「风从村子的方向吹来，带着集会散去的说笑声」，没有任何实际阻拦者出现（父亲、村民都没有追来），整场是独白加动作的内心戏，冲突停留在自言自语层面。', suggestion='给一个具体的外部拉力：如远远传来母亲喊她名字的声音、或一个回村的同龄人路过劝她，让「回去还是往前」变成一个必须当场回应的选择，而不是内部权衡。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.913
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 81.374
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力只有开场一句（“今年集会，你别想去”），紧接着“少女没低头，也没辩解，端起药碗往屋里走”——对抗是单向宣告，没有回合一来一往；之后整场戏交给母亲的沉默动作，父亲的威胁在场内不再施压，冲突在宣告后即中断。', suggestion='在场内加一个回合，让禁令当场产生动作：父亲追到里屋拦下药碗、或伸手夺走那条头巾说“戴什么戴”，逼少女顶一句话，再由母亲“拉袖子”把她拽走——这样母亲随后把头巾揣进怀里才是冲突中的当场选边，代价也是即时可见的，而不是靠鼓声和彻夜的抒情来补。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人立下硬条件“到那儿，我把你打回去”，但追到岔口时“他站住了，没有回头，肩膀在抖”，阻拦根本没有发生；随后老奶奶登场递花，他回过头“笑了一下”。承诺的对抗在兑现点被第三方登场绕开，阻力是自行消解的，不是被闯过去的。', suggestion='让岔口的阻拦真的发生：他转过身，动手把她往外推、把包袱扔回她脚边，或说出更狠的话逼她退；再让老奶奶的薰衣草在此刻第一次生效（香气逼他退开一步/让他掌心现形），使她那句“我跟你走”成为闯过考验后的宣告——代价（掉鞋、割脚、见血）也就从单纯的肉体受苦变成过关的凭证。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.599
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 184.014
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.5）"
+}

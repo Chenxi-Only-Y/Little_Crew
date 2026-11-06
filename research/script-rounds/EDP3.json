@@ -1,0 +1,58 @@
+{
+  "episodeId": "EDP3",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场没有在场的对抗方。父亲的威胁只以“父亲在院里咳嗽”一句声音存在，少女的全部动作都是回避型的——“抢先把染血的布条塞进灶膛”，躲开而非面对。旅人昏迷，无法与她交锋；她与旅人的对话（“你在等谁？”）是温和的信息交换，不构成阻力。整场实质是“守夜+藏匿”，冲突被规避掉了。', suggestion='让对抗落地：例如父亲深夜推门进来查问，少女被迫当面撒谎或用身体挡住灶膛/血布条，把“藏”升级为“对峙”；或者让旅人的胡话中泄露一个会直接威胁她的信息（如“村里会……”），迫使她做出隐瞒父亲的具体选择，付出可感的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：收尾场的抉择没有任何阻力：她“低头看掌心”“把花穗捡起来”“最终没有转向村子”，一路顺畅。回村的牵绊（父亲、母亲、集会）只以“走半天就能到家”的一句陈述存在，没有在场拉扯她；她也“没有哭”，情绪毫无对抗。岔口抉择因此像既定行程，而非挣来的决定。', suggestion='在岔口设置最后一次具体阻力：让回村方向出现可感的诱惑或压力——如远处传来集会的歌声（呼应 S02 她记不全的歌）、母亲的呼喊、或她脚已经朝村子迈了半步又被花香拉回。让“不转向”成为一个她险些放弃的动作，而不是顺流而下的默认。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 67.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.319
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 79.996
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 67.9）"
+}

@@ -723,6 +723,25 @@ class EpisodeRunner:
             _au = _q["audit"]
             print(f"  配额遵守：{_au['compliantScenes']}/{_au['sceneCount']} 场"
                   f"（{_au['complianceRate']*100:.0f}%）· 越界 {len(_au['findings'])} 条")
+
+            # ---- 处置闭环（P3，2026-11-06）----
+            #
+            # 审计只说"哪场超了"；**处置说"怎么改"**。
+            # 有了它，定向返工才不是"再抽一次"，而是"带着改法重切"。
+            try:
+                from little_crew.governance import disposition as _dp
+
+                _disp = _dp.plan(_au["findings"], _q)
+                _q["disposition"] = _disp
+                if _wdq:
+                    (_outq / "scene_disposition.json").write_text(
+                        _jq.dumps(_disp, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                if _disp["sceneCount"]:
+                    print(f"  处置：{_disp['sceneCount']} 场需要改"
+                          f"（{', '.join(x['sceneId'] for x in _disp['scenes'])}）")
+            except Exception as _e_dp:                      # noqa: BLE001
+                print(f"  ⚠️ 处置未生成：{type(_e_dp).__name__}: {_e_dp}")
         except Exception as _e_q:                          # noqa: BLE001
             print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
 

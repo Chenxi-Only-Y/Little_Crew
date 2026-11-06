@@ -213,6 +213,25 @@ def prompt_lines(quota: dict) -> list[str]:
     ]
 
 
+#: 压力开关：把每场 T_s 乘一个系数，**故意制造越界**，用来验证处置链路。
+#:
+#: 为什么需要它：P2 之后配额真的被遵守了，正常跑根本不会越界，
+#: 于是"处置"这条链路**在真跑里永远看不到**。
+#: 用它把上限压到 0.6 倍，就能看到"审计报越界 → 生成处置"。
+#: 用法：`set LITTLE_CREW_QUOTA_SCALE=0.6`
+QUOTA_SCALE_ENV = "LITTLE_CREW_QUOTA_SCALE"
+
+
+def _quota_scale() -> float:
+    import os
+
+    try:
+        v = float(os.environ.get(QUOTA_SCALE_ENV) or 1.0)
+    except (TypeError, ValueError):
+        return 1.0
+    return v if 0.1 <= v <= 2.0 else 1.0
+
+
 def quotas_for(plan, scenes) -> dict:
     """由导演方案 + 剧本场次算出**每场配额**（分镜提示词与事后审计共用）。
 
@@ -234,6 +253,7 @@ def quotas_for(plan, scenes) -> dict:
         ts = float(b.get("sceneSeconds") or 0)
         if ts <= 0:
             ts = max(12.0, min(40.0, (bud or 3) * 6.0))
+        ts = round(ts * _quota_scale(), 1)
         rows.append({"sceneId": sid, "sceneSeconds": ts,
                      "singleMin": float(b.get("singleMin") or 2.0),
                      "singleMax": float(b.get("singleMax") or 8.0),
@@ -271,20 +291,34 @@ def audit(quotas, shots) -> dict:
         q = row["quota"]
         if row["shots"] < q["shotMin"]:
             findings.append({"sceneId": sid, "kind": "under-min-shots",
-                             "severity": "warn",
+                             "severity": "warn", "shots": row["shots"],
+                             "detail": {"shots": row["shots"],
+                                        "floor": q["shotMin"]},
                              "reason": f"{row['shots']} 镜 < 下限 {q['shotMin']}"})
         if row["shots"] > q["shotMax"]:
             findings.append({"sceneId": sid, "kind": "over-max-shots",
-                             "severity": "warn",
+                             "severity": "warn", "shots": row["shots"],
+                             "detail": {"shots": row["shots"],
+                                        "cap": q["shotMax"]},
                              "reason": f"{row['shots']} 镜 > 上限 {q['shotMax']}"})
+        # ⚠️ findings 必须带**数字**（2026-11-06）：
+        # 处置要写"超了多少、上限多少"，只给 reason 字符串的话
+        # 下游只能从文本里抠，抠不到就变成 "None"（真跑里出现过）。
         if row["seconds"] > q["sceneSeconds"] + 1e-6:
             findings.append({"sceneId": sid, "kind": "over-scene-seconds",
                              "severity": "warn",
+                             "seconds": round(row["seconds"], 2),
+                             "shots": row["shots"],
+                             "detail": {"seconds": round(row["seconds"], 2),
+                                        "cap": q["sceneSeconds"]},
                              "reason": f"该场 {row['seconds']:.1f}s > 上限 "
                                        f"{q['sceneSeconds']:.0f}s"})
         if row["maxShot"] > q["singleMax"] + 1e-6:
             findings.append({"sceneId": sid, "kind": "over-single-max",
                              "severity": "warn",
+                             "maxShot": round(row["maxShot"], 2),
+                             "detail": {"seconds": round(row["maxShot"], 2),
+                                        "cap": q["singleMax"]},
                              "reason": f"单镜 {row['maxShot']:.1f}s > 上限 "
                                        f"{q['singleMax']:.0f}s"})
     total = len(per)

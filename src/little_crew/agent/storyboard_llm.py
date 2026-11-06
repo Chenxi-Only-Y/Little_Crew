@@ -155,6 +155,9 @@ class StoryboardArtistLlm:
 
         self.calls += 1
         p = dict(envelope.payload or {})
+        # 处置指令（可选）：定向返工注入的"必须这样改"
+        self.rework_hint = tuple(
+            str(x) for x in (p.get("rework.hint") or ()) if str(x).strip())
         draft = _as_draft(p.get("script.final") or p.get("script.draft"))
         if draft is None:
             return CallResult.fail("F-INPUT", "分镜师未收到定稿剧本")
@@ -286,6 +289,12 @@ class StoryboardArtistLlm:
             budget_lines.append("")
 
         lines += budget_lines
+
+        # ---- 处置指令（只在重切时出现）----
+        if getattr(self, "rework_hint", ()):
+            lines.append("【本场必须这样改 —— 上一版被判不合格的具体原因】")
+            lines.extend(f"  · {h}" for h in self.rework_hint)
+            lines.append("")
 
         # ---- 美术设定（若给了）----
         arts = {}

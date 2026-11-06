@@ -40,7 +40,7 @@ def _sub_draft(draft, scene):
 
 
 def rework_targets(*, run_stage, draft, defects, shots, max_scenes: int = 3,
-                   max_new_per_scene: int = 6,
+                   max_new_per_scene: int = 6, hints=None,
                    get_shots=None, put_back=None) -> dict:
     """按缺陷重跑受影响场次，返回合并后的镜头表。
 
@@ -77,7 +77,11 @@ def rework_targets(*, run_stage, draft, defects, shots, max_scenes: int = 3,
             continue
         sub = _sub_draft(draft, scene)
         try:
-            out = run_stage("storyboard_artist", "shot.list", {"script.final": sub})
+            _pay = {"script.final": sub}
+            _h = (hints or {}).get(sid) or ()
+            if _h:
+                _pay["rework.hint"] = list(_h)
+            out = run_stage("storyboard_artist", "shot.list", _pay)
         except Exception as exc:                             # noqa: BLE001
             failed.append(f"{sid}：{type(exc).__name__}: {exc}")
             continue
