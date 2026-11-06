@@ -110,12 +110,15 @@ def assign_to_shots(lines, shots) -> list[dict]:
     return out, dropped
 
 
-def build(lines, shots, *, synth, cast_map, max_lines: int = 6,
+def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
           out_dir=None) -> dict:
     """逐句合成 + 对齐，返回可直接落盘的证据结构。
 
     `synth(text, path, voice=..., instruction=...)` —— 后端由调用方注入
     （breeze / sapi 都可以，这里不绑定具体引擎）。
+
+    `max_lines`：**0 表示全部合成**。默认改成 0 是因为吃过亏：
+    之前默认 6，一集 32 句只合了 6 句 —— 成片 163 秒里 **145 秒是静音**。
     """
     from pathlib import Path
 
@@ -125,7 +128,8 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 6,
     rows: list[dict] = []
     dropped: list[dict] = []
     ordered, dropped = assign_to_shots(lines, shots)
-    for n, ln in enumerate(ordered[:max_lines], 1):
+    _rows_in = ordered if not max_lines else ordered[:max_lines]
+    for n, ln in enumerate(_rows_in, 1):
         who = ln["character"]
         spec = (cast_map or {}).get(who) or {}
         wav = ""

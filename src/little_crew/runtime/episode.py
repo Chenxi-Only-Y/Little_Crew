@@ -1060,43 +1060,6 @@ class EpisodeRunner:
             # 产物名以缓存层为准（它保证唯一）
             artifacts[o.graph_id] = sorted(o.artifacts)
 
-        # ---- 成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-06）----
-        if getattr(self, "final_enabled", False):
-            try:
-                import json as _jf
-
-                from little_crew.runtime import finalize as _fz
-
-                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                _imgs, _durs = [], []
-                for _s in picked:
-                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
-                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
-                    if _hit:
-                        _imgs.append(str(_hit[0]))
-                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
-                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
-                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
-                _fr = _fz.build(
-                    _imgs, picked,
-                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
-                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
-                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
-                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
-                    workdir=str(Path(str(_wd2)) / "build"))
-                if _wd2:
-                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
-                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
-                if _fr["ok"]:
-                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
-                          f" · {_fr['size']/1024/1024:.1f} MB"
-                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
-                             if _fr.get("audioPadded", 0) > 0.05 else ""))
-                else:
-                    print(f"  ⚠️ 成片失败：{_fr['error']}")
-            except Exception as _e_f:                      # noqa: BLE001
-                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
-
         # ---- 5) 合成 ----
         self._mark("assemble")
         ir_hashes: dict[str, str] = {}
@@ -1182,8 +1145,11 @@ class EpisodeRunner:
                             _lines.append({**_d, "sceneId": _sid, "source": "regex"})
                 _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
                 _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
+                # 全部合成（0 = 不截断）：一集 30+ 句也就多花 ~2 分钟，
+                # 但成片不会出现"大半是静音"（163s 里 145s 静音那次）。
                 _trk = _vt.build(_lines, shots, synth=_tts.synth,
-                                 cast_map=_cast_map, out_dir=_vdir)
+                                 cast_map=_cast_map, out_dir=_vdir,
+                                 max_lines=0)
                 if _wd:
                     _vo = Path(str(_wd)) / "delivery"
                     _vo.mkdir(parents=True, exist_ok=True)
@@ -1231,6 +1197,43 @@ class EpisodeRunner:
                       f" · 失败 {_rep['failed']} · 对齐均差 {_rep['align']['meanAbs']}s")
             except Exception as _e_v:                          # noqa: BLE001
                 print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
+
+        # ---- 成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-06）----
+        if getattr(self, "final_enabled", False):
+            try:
+                import json as _jf
+
+                from little_crew.runtime import finalize as _fz
+
+                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _imgs, _durs = [], []
+                for _s in picked:
+                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
+                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
+                    if _hit:
+                        _imgs.append(str(_hit[0]))
+                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
+                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
+                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
+                _fr = _fz.build(
+                    _imgs, picked,
+                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
+                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
+                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
+                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
+                    workdir=str(Path(str(_wd2)) / "build"))
+                if _wd2:
+                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
+                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
+                if _fr["ok"]:
+                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
+                          f" · {_fr['size']/1024/1024:.1f} MB"
+                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
+                             if _fr.get("audioPadded", 0) > 0.05 else ""))
+                else:
+                    print(f"  ⚠️ 成片失败：{_fr['error']}")
+            except Exception as _e_f:                      # noqa: BLE001
+                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
 
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
         #

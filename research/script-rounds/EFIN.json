@@ -1,0 +1,110 @@
+{
+  "episodeId": "EFIN",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：整场只有单向的问与答，没有真正的对抗：少女问「你叫什么名字」，旅人以「名字不重要」「路」含糊挡回，之后便转入安静的照顾（「用湿布擦他的额头」「把布翻了个面」）。阻力全靠回避制造，力量太软，观众感觉不到双方在争夺什么。', suggestion='给这场加一个具体的对抗点——比如少女要为他换药/解开衣带时他激烈抗拒（呼应 S01 的「别管我」），或她逼问出一个他不能回答的细节并被他反呛；让「问出名字」变成一场有来有回的角力，代价（她整夜攥湿布、最终没问出口）才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的要挟是「你走出这个村口，就别再姓这个姓」，这是本场最重的代价；但此后 S05、S06 再未让「被除名」产生任何后果或回响，S06 只写「后来村里人说，再没有人见过她」——姓氏的代价提出后即被丢弃，等于没付。', suggestion='让姓氏代价在后续兑现：比如 S06 中她路过村界石/想到集会里再没有她的位置，或结尾传说里她被以「某家的女儿」而非姓名提及、被族谱除名的痕迹；哪怕一个动作（她把自己的姓从包袱里某样东西上抹掉）也行。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场无任何阻力：她蹲下、没哭、站起来、往前走、对空山说「那我自己走」——都是单人动作与独白，旅人已消失，没有外部对抗，也没有内心两股力量的撕扯（「等自己哭出来。没有。」只是一句状态陈述，未展开为挣扎）。', suggestion='给结尾安一个微小但真实的阻力：她本能地朝他消散的方向追两步又被晨雾挡住；或她摸到空空的手（原本攥花束的位置）产生「折返村里」的动摇再否决。让「继续往北」是一个挣出来的选择，而不是顺流而下的动作。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.58
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 66.19
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.89,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价以叙述句直接宣告——「代价是——从那一夜起，村里集会再没有她的名字」，这是旁白告知而非场景呈现；本场结束在「一整夜没合眼」的守夜画面上，观众看不到被逐出集会这一后果的实际发生。', suggestion='把代价落成一个具体事件收尾：场末切到次日集会，钟声响起、人群入列，她的名字被跳过或座位空着，父亲与她错身而过；用可见的画面替代「代价是——」的说明文字。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：终场的核心抉择阻力过轻：「朝村子方向望了一眼……脚已经朝那边挪了半步。然后她停住」——折回的诱惑只被一眼带过，随后她自己立刻否决，缺乏与她的对抗力量（无人、无声、无具体诱惑物把往回拉），「……不」来得太容易，决裂的分量撑不起全集收束。', suggestion='给「回去」一方加实打实的拉力：让她听见村里集会的钟声或母亲喊她的声音、看见界石后有熟悉的灯火，甚至旅人/心像的言语再激她一次；让她在诱惑中真实挣扎数拍后再拒绝，冲突才立得住。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.89,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 15.157
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.82
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.9）"
+}

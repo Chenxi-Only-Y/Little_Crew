@@ -1,0 +1,166 @@
+{
+  "episodeId": "EFULL",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.98,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：退烧的解决几乎是零成本的：'她把花穗掐碎，丢进冷水碗里。水慢慢地变了颜色'，紧接着'天亮时，烧退了'。母亲的警告——'人要是死在这屋里，你爹这辈子抬不起头'——抛出后没有任何落地的后果，旅人痊愈得毫无凶险；花穗还是她随手捡回来的剩余物，不是稀缺资源。治愈没有消耗任何东西，于是这一场的紧张全部悬空。\", suggestion=\"给退烧加上一个明确的代价：要么花穗是她从火里抢救出的最后一把、用完即尽（可与S07'连一点香气都没留'呼应）；要么退烧伴随反噬——她自己病倒、被父亲撞见、或母亲当场要求把人送走并真的动手。让母亲的警告在本场内产生一次实际冲突，再由她付代价压下去。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：本场的阻力全部是环境音，没有一个当场与她对立的面孔：'人群里有人低声说了句什么，声音像针'——无人指名，'她只回头看了一眼自己家的门。门关着。窗也关着'——父母缺席。她的'豁出去'是在开场第一句就说完了的（'我跟你走'），随后整场只是执行这个决定。离开家是全剧最大的代价，却在无人阻拦中完成，出走显得毫不费力。\", suggestion=\"让父亲或母亲追到村口当面拦一次，或让老奶奶的赠花变成一次交换条件（要她答应什么、留下什么）而非白送。把'我跟你走'从开场挪到被阻拦之后，让她在对抗中说出这句话，冲突与决定才咬合。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：她连抛两个硬证据——'你走路没有影子''昨天你连它叫什么都不知道'——旅人两次都用最省力的话接住：'火光晃的''睡吧'，场次随即从对峙退回静默观察。阻力没有真正对抗，一句日常化的敷衍就把交锋打发了，读者感受不到谎言被戳穿时的紧张。\", suggestion=\"让他的化解付出一点代价或露出一丝破绽：比如他伸手碰花束时花立刻褪色（被她看在眼里却不动声色），或他反问一个她答不上来的问题，逼她先退；也可以让'睡吧'带上不容拒绝的压迫感，使她的闭眼是被迫的屈服，而非主动选择隐忍。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：冲突在本场解决了（她掷出花束，他化烟），但她付出的全部对价只换回'风里落下一句很低的话'——内容留白，观众在场内拿不到任何信息回报。她丢掉家、丢掉花束、丢掉他，收益为零；关键台词的位置被省略，转折只剩形式（人消失）而没有内容（她究竟知道了什么），代价与回报完全不对等。\", suggestion=\"那句低语至少要让观众听见一个可辨的词或音节（哪怕不解释），使'代价换来的信息'成立；或把留白推迟——让他先说出半句可验证的真相（比如她的名字、她村子的事），她再动手，这样'说出来的你就留不住了'的威胁才兑现为场内的实际损失。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.98,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.509
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 137.525
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.27,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突以一句“好。”收束后，画面内没有任何变化——她照样守了一整夜。真正的代价全部由旁白补写：“后来村里再集会……说到后来，就没人再提起”，当场没有可感的失去。', suggestion='让禁令当场兑现为动作：她端药出门被父亲拦下、药碗被摔，或她隔着门听见集会的鼓声却出不去；删掉后置旁白，把“被排除在外”写成一个具体场面。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：“火舌舔过她的手背……掌心已经起了泡”是本场最重的代价，但后文再未出现：S06 她用这只手掷花束，S07 跪碎石、扶石头都毫无影响，代价付完即作废。', suggestion='让烧伤贯穿到结局——手心包着布、握花束握不牢、掷花时疼得偏了方向，代价才有延续性。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的阻拦只有一夺一摔：“站住。”……她蹲下去一样一样往回捡，然后“我跟你走”，冲突即结束；父亲此后只在后面喊了一声名字就断了，对抗没有升级。', suggestion='给父亲第二层阻拦（拦在门口、夺她手里的花束、母亲被迫表态站队），让阿薰必须付出更具体的动作代价才走出这道门；“就不姓这个姓”也应当场兑现成一个动作，而非台词。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：她抛出两条证据（无影、叫得出花名），对方只用“火光晃的”和“睡吧”就关掉了对峙；她手里正握着老奶奶“只能问一次”的花，却“什么也没说”——这个关键的“选择不问”没有被演成一个决定。', suggestion='把她的克制写成可见的抉择动作（花束抬起又放下、话到嘴边咽回去），并明确这是她自己按下的沉默；这样 S06“问出口就留不住”才有可比的对照面。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：“说出来，你就留不住了”是全集最大的代价，却没有对照面——不问她到底还能留住什么，剧本没给；同时冲突只有一回合（她问—他报出她的名字—她掷花），没有挣扎或讨价的节拍。', suggestion='在掷花前加一个“几乎不问”的诱惑节拍（他伸手、她把花束往回收），让两种选择都可见；冲突至少再走一个回合（他反问她敢不敢、她先试探一次），代价才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：转折（“转过身，朝着北方走”）在开场两次尝试后即完成，之后只剩走路与状态描写；最后两行“后来村里人说，再没有人见过她……”把结局交给旁白，全集最后一个转折没有被演出来。', suggestion='压缩或删掉旁白，用一个场面动作收束：例如她把掌心那片灰花瓣埋进土里再转身，或花香把她引到某个具体位置停住，让结尾仍是一个可见的转折。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.27,
+        "issueCount": 6,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 39.621
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 280.075
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.32000000000001,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场是单方面的救援，没有任何对抗力量：阿薰撕披肩、勒紧伤口、拖人、捡花，每一步都顺利完成；旅人全程昏迷、被动配合，唯一的时间压力（太阳落下去）也只造成「只捡回三枝」这种附带损耗，而不是她被迫做出的取舍。损耗虽真实，却不是她为冲突付出的代价，而是意外掉的渣。', suggestion='给救援加一道真正的阻力，并让代价与选择绑定：例如血始终止不住，她必须在「赶在日落前把药送回家（接上 S02 的药碗）」和「脱下更多衣物留下来压住伤口」之间二选一；或让旅人半昏迷中抗拒、推开她、念叨着要起身赶路，使「救人」本身需要她使出全力。这样失掉的花和披肩才是选择的结果，而非顺手写出来的损耗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：掌心的伤被写成了「掷偏了，可花瓣散开的一瞬还是扫到了他」——代价刚一发生作用（使不上力、掷偏），下一句就自动取消了它的后果（还是扫到了）。伤情于是变成装饰：既不影响结果，也不逼她改变做法，S03 烧伤的伏笔在这里没有兑现。', suggestion='让手伤真正改变结局的走向：要么她掷偏、脱手落地，必须改用左手或用牙咬着布再掷一次，付出更大代价才成功；要么她根本掷不出去，只能用别的方式（说出那个名字、主动张开手把花送到他面前）完成最后一击——把「使不上力」变成解决冲突的手段，而不是被一句「还是扫到了」抹平。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 68.32,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 57.333
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 244.126
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 68.3）"
+}
