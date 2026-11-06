@@ -740,6 +740,25 @@ class EpisodeRunner:
                 if _disp["sceneCount"]:
                     print(f"  处置：{_disp['sceneCount']} 场需要改"
                           f"（{', '.join(x['sceneId'] for x in _disp['scenes'])}）")
+
+                # ---- 一轮时长再分配（P4，2026-11-06）----
+                # 把有余量的场借给超时的场。**只允许一轮** —— 反复借会震荡。
+                try:
+                    from little_crew.governance.plan_alloc import (
+                        redistribute as _rd)
+
+                    _rr = _rd(_q, _q["audit"], round_no=1, max_rounds=1)
+                    _q["redistribution"] = _rr
+                    if _rr["applied"]:
+                        _mv = ", ".join(m["from"] + "→" + m["to"]
+                                        for m in _rr["moves"][:3])
+                        print(f"  再分配：借出 {_rr['totalMoved']:.1f}s（{_mv}）")
+                    if _wdq:
+                        (_outq / "scene_quota.json").write_text(
+                            _jq.dumps(_q, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                except Exception as _e_rd:                 # noqa: BLE001
+                    print(f"  ⚠️ 再分配未运行：{type(_e_rd).__name__}: {_e_rd}")
             except Exception as _e_dp:                      # noqa: BLE001
                 print(f"  ⚠️ 处置未生成：{type(_e_dp).__name__}: {_e_dp}")
         except Exception as _e_q:                          # noqa: BLE001

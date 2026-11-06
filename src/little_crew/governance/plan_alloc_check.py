@@ -125,6 +125,38 @@ def main() -> int:
           all(q["shotIdeal"] >= q["shotMin"] for q in r2["scenes"]),
           str([(q["sceneId"], q["shotIdeal"], q["shotMin"]) for q in r2["scenes"]]))
 
+
+    print(); print("G. 一轮时长再分配（P4，防震荡）")
+    from little_crew.governance.plan_alloc import MAX_BORROW, redistribute
+
+    def _q(*pairs):
+        return {"scenes": [{"sceneId": s, "sceneSeconds": c} for s, c in pairs]}
+
+    def _au(*pairs):
+        return {"scenes": [{"sceneId": s, "seconds": u} for s, u in pairs]}
+
+    qq = _q(("S01", 30), ("S02", 20))
+    r = redistribute(qq, _au(("S01", 12), ("S02", 26)))
+    check("G1 ★★ 余量场借给超时场", r["applied"] and r["moves"], str(r["moves"]))
+    check("G2 ★★ 借入方上限提高、借出方降低",
+          dict((x["sceneId"], x["sceneSeconds"]) for x in qq["scenes"])["S02"] > 20,
+          str([(x["sceneId"], x["sceneSeconds"]) for x in qq["scenes"]]))
+    check("G3 ★ 借出方不会被掏空（仍 > 已用量）",
+          dict((x["sceneId"], x["sceneSeconds"]) for x in qq["scenes"])["S01"] > 12,
+          "")
+    q2 = _q(("S01", 30), ("S02", 20))
+    r2 = redistribute(q2, _au(("S01", 12), ("S02", 26)), round_no=2, max_rounds=1)
+    check("G4 ★★★ 第二轮一律不生效（防震荡）",
+          r2["applied"] is False and "上限" in r2["reason"], r2["reason"])
+    q3 = _q(("S01", 30), ("S02", 20))
+    r3 = redistribute(q3, _au(("S01", 12), ("S02", 12)))
+    check("G5 没有超时场 -> 不动", r3["applied"] is False and r3["moves"] == [], "")
+    q4 = _q(("S01", 20), ("S02", 30))
+    r4 = redistribute(q4, _au(("S01", 26), ("S02", 10)))
+    moved = sum(m["seconds"] for m in r4["moves"])
+    check("G6 ★★ 借入不超过「缺口」且不超过 MAX_BORROW",
+          moved <= min(6.0, 20 * MAX_BORROW) + 1e-6, f"moved={moved}")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

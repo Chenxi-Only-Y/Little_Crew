@@ -329,3 +329,82 @@ def audit(quotas, shots) -> dict:
             "findings": findings, "sceneCount": total,
             "compliantScenes": ok,
             "complianceRate": round(ok / total, 3) if total else 0.0}
+
+
+#: 允许"超额场"从别处借到的最大比例（借完仍不超过 cap × (1+MAX_BORROW)）
+MAX_BORROW = 0.25
+
+
+def redistribute(quotas, audit, *, round_no: int = 1, max_rounds: int = 1) -> dict:
+    """**一轮**时长再分配：把有余量的场次借给超时的场次（P4，2026-11-06）。
+
+    ## 为什么要限"一轮"
+
+    一旦允许反复借，就会出现 A 借给 B → B 超标 → 再借回 A 的**震荡**。
+    所以：`round >= max_rounds` 直接返回 `applied=False`，
+    并记录 `redistributedFrom`（谁给了谁），**第二轮不再让**。
+
+    ## 规则
+
+    1 出借方：`used < cap` 的场，余量 = `cap - used`
+    2 借入方：`used > cap` 的场，缺口 = `used - cap`
+    3 借入上限 = `缺口`，且借完 `cap` 不超过 `原 cap × (1 + MAX_BORROW)`
+    4 借出方的 `cap` 相应减少（它自己的余量本来就富余）
+    5 任何一方都不会被压到 `cap < used × 0.5`（防止把好场次掏空）
+    """
+    # ⚠️ 用 `round > max_rounds`，不是 `>=`：
+    # 第 1 轮就是"唯一允许的那一轮"，写 `>=` 会把正常的一轮也挡掉
+    # （第一次跑就踩了：applied=False 且 KeyError）。
+    if round_no > max_rounds:
+        return {"kind": "quota.redistribution", "applied": False,
+                "reason": "已达轮次上限（只允许一轮，防震荡）",
+                "moves": [], "round": round_no, "totalMoved": 0.0}
+
+    rows = []
+    for q in (quotas or {}).get("scenes") or ():
+        row = next((r for r in (audit or {}).get("scenes") or ()
+                    if r.get("sceneId") == q.get("sceneId")), None)
+        if row is None:
+            continue
+        rows.append({"q": q, "used": float(row["seconds"]), "cap": float(q["sceneSeconds"])})
+
+    donors = [r for r in rows if r["cap"] - r["used"] > 0.5]
+    takers = [r for r in rows if r["used"] - r["cap"] > 0.5]
+    donors.sort(key=lambda r: -(r["cap"] - r["used"]))
+    takers.sort(key=lambda r: -(r["used"] - r["cap"]))
+
+    moves = []
+    for tk in takers:
+        need = tk["used"] - tk["cap"]
+        room = tk["cap"] * MAX_BORROW
+        need = min(need, max(0.0, room))
+        for dn in donors:
+            if need <= 1e-6:
+                break
+            spare = dn["cap"] - dn["used"]
+            # 不许把出借方掏到"低于已用量的 1.5 倍"
+            keep = max(dn["used"] * 1.5, dn["used"] + 1.0)
+            spare = min(spare, max(0.0, dn["cap"] - keep))
+            give = min(spare, need)
+            if give <= 1e-6:
+                continue
+            tk["cap"] = round(tk["cap"] + give, 1)
+            dn["cap"] = round(dn["cap"] - give, 1)
+            need -= give
+            moves.append({"from": dn["q"]["sceneId"], "to": tk["q"]["sceneId"],
+                          "seconds": round(give, 1)})
+
+    applied = []
+    for m in moves:
+        for r in rows:
+            if r["q"]["sceneId"] == m["to"]:
+                r["q"]["sceneSeconds"] = r["cap"]
+            elif r["q"]["sceneId"] == m["from"]:
+                r["q"]["sceneSeconds"] = r["cap"]
+    for m in moves:
+        applied.append(m)
+    return {"kind": "quota.redistribution", "applied": bool(moves),
+            "round": round_no, "moves": applied,
+            "totalMoved": round(sum(m["seconds"] for m in applied), 1),
+            "reason": (f"把 {len(applied)} 次余量借给超时场" if applied
+                       else "没有可借的余量（或没有超时场）")}
