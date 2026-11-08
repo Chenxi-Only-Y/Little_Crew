@@ -1,0 +1,165 @@
+{
+  "episodeId": "EDE",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：整场没有任何阻力。S02 结尾父亲下了硬期限——\"天亮之前，让他滚\"——但 S04 正是这一夜，父亲的期限却没有回来施压：不许开门、不许送药、母亲被拦，一概没有。全场只剩换布、掰干粮、听呓语，动作重复而无对抗。', suggestion='让父亲的期限在这一夜兑现或逼近：例如后半夜父亲在门外压着嗓子催、母亲端水被夺下，或她必须在灯灭前决定要不要去灶房偷药——把 S02 的威胁接到场内，守夜才有被注视的紧张。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：\"扯下肩上的披肩——那是母亲绣了整整一冬的\"是一笔很重的代价，但此后全剧再无回响：S03 母递灯、S08 母亲端水盆，都没有碰这块披肩，代价付完就丢了，观众记不住。', suggestion='让披肩回场：S03 母亲发现撕碎的披肩而沉默，或 S08 把它补好搭在篮子边、篮口朝北——把一次性支出变成贯穿全集的记账符号。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：刚建立的转折被结尾抹平。\"原来是我自己\"\"那我就带着自己走\"是她全集最关键的一次自立转折，紧接着却用\"也有人说，她是循着花香，去寻他去了\"收束，把确定的独立选择重新软化成对男人的依附，转折的重量被自己的结尾泄掉。', suggestion='删去或改造传闻句：让\"循着花香寻他\"只作为村里人的误读放在 S08 由老奶奶说破（\"他们以为她去找他，她是去找那条河\"），把确定性留给 S07 的她。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：父亲的情绪转折缺少触发。S05 他抬着手\"始终没落下来\"，S07 她离村时他完全缺席，S08 开口第一句就是\"她真走了？\"——从\"别姓这个姓\"到朝空路喊\"路滑——走慢些\"，中间\"得知女儿不告而别\"的反应被整个省略，180 度的转向只靠老奶奶两句台词推完成。', suggestion='在 S08 开头补一个他得知消息的瞬间（如他追到岔路口只看见脚印、或攥着那顶空篮子从别人口中听到），让转变从动作里长出来，老奶奶的话只做点破而不做驱动。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.978
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 116.01
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价没有在场内兑现，而是用叙述总结掉：「她后来才知道自己付了什么：从那天起，村里再没有一次集会叫过她。有人在山道上遇见她，会绕到路的另一边走。」这是旁白式交代，观众在这一场看不到她付出的代价，只听到结论。', suggestion='把排斥做进场内——比如她端药进去时，门外邻居收衣服、母亲的药碗被顺走不再补上；或让一个具体人物（送水的母亲、路过的村人）当场退开。代价要被看见，而不是被念出来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：冲突被明确许诺又当众落空：父亲说「半炷香过了，我不敲门，我直接推」。时限到了之后，推门的后果一次也没有发生——接下来只是母亲送水被夺，父亲的威胁原地取消，阻力在最紧的地方松掉了。', suggestion='让门槛被真的推开一次（哪怕只是父亲掀帘、看见少女护在床前，两人对峙后他摔门退走），把「我直接推」兑现；或者删掉这句限时限令，改用不含具体承诺的压制，避免空头威胁。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场最强的阻力在最后一刻自我取消：父亲「抬起手——那只手在半空中停住了，始终没落下来」「他吼了一半，后半句没有词」；村人也只「有人低低抽了口气」。阻力没有真正落到少女身上，她的离村因此没有挣出代价，像被默许地走出去。', suggestion='让阻拦结结实实发生一次：父亲抓住她的包袱、把结拽散，或村人堵住村口；少女必须做出一个具体选择（丢下包袱/掰开他的手/交出篮子）才通过。手停在半空可以留，但要放在她已经付出东西之后，作为后果而非替代。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：对峙是单方面的：少女四次逼问，旅人从头到尾只「还是不答，只是又笑了一次」，不辩解、不反诘、不设防，对手拒绝交锋；最后的谜底「我就是你想远行的心啊」又当场宣布对方不是真实对手——前六场的对抗在揭底的一瞬被取消，而不是被攻破。', suggestion='给旅人实质的抵抗：让他先反问或刺她一句（比如「你背我回来那天想的是谁」），逼少女自己说出那个答案；把「我就是你想远行的心」改成她掷花时的自我判定，对手被她拆穿而散，比被她问不出话更像一次冲突的解决。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：人物的转折没有场内触发就完成了：父亲上一场还是「天亮之前，让他滚」「抬起手」，这一场到场即软化——「路滑——走慢些！」；母亲补好的披肩搭上篮口也没有任何与父亲的和解动作承接。情绪的改变是直接跳到的，中间缺一拍。', suggestion='补一个转折的支点：比如父亲先盯着空篮子发火要扔回灶房，母亲把补好的方块抖开搭上去，他才停手；或让他先说半句硬话、被雾里无人应答的回声截住，再改口喊「走慢些」。转折要由一个看得见的动作推出来。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 65.882
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 142.676
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧积累的对抗在最关键的出发场被一句话卸掉：父亲说“你走可以，这些东西是我的粮换的”——他只反对带走财物，不反对离开；随后“她没有挣，把臂上的竹篮褪下来，塞进父亲怀里；父亲两手一接，手腕就松了”，肢体冲突一个动作就结束，父亲再无后续阻拦。S02–S04 里那个会摔碗、会抬手的人，在少女真正踏出村子的这一刻反而不拦了，于是“远行”这一全剧核心行动没有遇到任何实质阻力。', suggestion='让父亲的对抗延续到最后一刻：他不松口“你走可以”，而是堵在院门口/抓住手腕不放，逼她在众人面前做一个选择（比如当众承认“我不要这个家了”才放行），或者要求她留下比竹篮更重的东西（例如父亲亲手做的某样物件、或她在家中的名分/口粮）。这样 S08 他冲着雾喊“路滑——走慢些”才是被自己的阻拦反噬的代价，而不是顺理成章的温情收尾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：这是全剧转折后的独行场，但没有任何阻力：少女面对的只是一条空路，“远处的村口，有人喊了一声什么，隔着雾，听不清。她没有回头。”唯一一处可能构成对抗的东西（村里的呼喊）被写成听不清、也没有内容、更没有后果——她不回头不花任何代价，于是这场的“坚持”是零成本的，情绪是平的。', suggestion='给那声喊一个能真正拉扯她的内容（母亲喊她的名字、父亲喊“回来”、或喊的是与旅人有关的话），让她停一下、攥紧花束、再决定不回头——把“不回头”写成一次要付代价的选择；或者干脆设置一个实体阻力（雾中岔路、追上来的邻居婶子劝阻），让 S07 成为 S06 揭示之后的第二次考验，而不是纯粹的抒情过渡。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.587
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 250.646
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 69.4）"
+}

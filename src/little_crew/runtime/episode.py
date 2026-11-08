@@ -1486,6 +1486,28 @@ class EpisodeRunner:
                     except Exception as _e_fg:                # noqa: BLE001
                         print(f"  ⚠️ 造音色未运行：{type(_e_fg).__name__}: {_e_fg}")
                 _cast_map = _cast(_chars, _sheets, _have)
+                # ---- 对白编辑（`dialogue_editor`）—— 2026-11-08 首次接上 ----
+                #
+                # 名册早就声明 `script.final -> shot.voice`，但从未被调用，
+                # 配音是在这里**内联算**的：产物不可审、策略不可换。
+                # 现在优先用职位的产物；没绑定时退回内联（行为不变）。
+                _voice_plan = None
+                try:
+                    _impls_v = getattr(self.orch, "_impls", {}) or {}
+                    if "dialogue_editor" in _impls_v:
+                        _jv_out = self.orch.run_stage(
+                            "dialogue_editor", "shot.voice",
+                            {"script.final": script_draft})
+                        if getattr(_jv_out, "ok", False):
+                            _voice_plan = self.orch.blackboard.value("shot.voice")
+                            if _voice_plan is not None:
+                                print(f"  对白编辑：{_voice_plan.get('lineCount', 0)} 句 · "
+                                      f"计划 {_voice_plan.get('totalSeconds', 0):.1f}s")
+                        else:
+                            print(f"  ⚠️ 对白编辑未产出：{_jv_out.error}")
+                except Exception as _e_de:                     # noqa: BLE001
+                    print(f"  ⚠️ 对白编辑未运行：{type(_e_de).__name__}: {_e_de}")
+
                 # 台词来源**优先结构化字段** `dialogue`（2026-11-06 加），
                 # 没有才退回正则抽正文 —— 并在每条上记 `source`，便于统计。
                 _lines = []
@@ -1502,6 +1524,15 @@ class EpisodeRunner:
                         for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
                                                      known=_known or None):
                             _lines.append({**_d, "sceneId": _sid, "source": "regex"})
+                if _voice_plan and _voice_plan.get("lines"):
+                    # 用职位的产物替换内联结果：句序、情绪、估时都来自 `shot.voice`
+                    _lines = [{"character": str(x.get("character") or ""),
+                               "text": str(x.get("text") or ""),
+                               "sceneId": str(x.get("sceneId") or ""),
+                               "emotion": str(x.get("emotion") or ""),
+                               "plannedSeconds": float(x.get("estimateSeconds") or 0),
+                               "source": "dialogue_editor"}
+                              for x in _voice_plan["lines"]]
                 _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
                 _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
                 # 全部合成（0 = 不截断）：一集 30+ 句也就多花 ~2 分钟，

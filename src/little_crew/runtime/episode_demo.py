@@ -391,6 +391,18 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  文风编辑：**真实 LLM 批评家**"
                       f"（{_judge} / {cross_family(args.llm_model, _judge)['judgeFamily']} 族 / 盯文风一致性）")
 
+    # ---- 对白编辑（`dialogue_editor`，2026-11-08 首次绑定）----
+    # 名册声明 `script.final -> shot.voice`；确定性实现（规则 + 已标定的估时），
+    # **不调模型** —— 断句与停顿是可数的事，让模型重写只会引入抖动。
+    if getattr(args, "voice", False):
+        try:
+            from little_crew.agent.dialogue_editor_agent import DialogueEditorAgent
+
+            stubs["dialogue_editor"] = DialogueEditorAgent()
+            print("  对白编辑：dialogue_editor 已绑定（确定性，不调模型）")
+        except Exception as _e_de:                              # noqa: BLE001
+            print(f"  ⚠️ dialogue_editor 绑定失败：{type(_e_de).__name__}: {_e_de}")
+
     # ---- 成片整体审（`review_board`，2026-11-08 首次绑定）----
     # 它声明的产物是 `shot.list`（不是 shot.image）—— 审的是"整集节奏/覆盖/偷懒"。
     # 与文风编辑一样**跨族**：审查方不能与生成方同族。
