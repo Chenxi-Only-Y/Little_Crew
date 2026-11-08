@@ -351,11 +351,32 @@ def main(argv: list[str] | None = None) -> int:
             # 所谓「双维审查」实际是同一模型的两个提示词，
             # 独立性弱于跨族（docs/00 §5.10.16 ①）。
             # 现在：生成方 DeepSeek / 剧评人 MiMo / 文风编辑 GLM，**三个职位三个族**。
-            critic_client = LlmClient(args.llm_critic_model)
-            critic = CriticLlm("story_editor", client=critic_client)
-            stubs["story_editor"] = critic
-            print(f"  文风编辑：**真实 LLM 批评家**"
-                  f"（{args.llm_critic_model} / 第三个族 / 盯文风一致性）")
+            # ---- 审查必须**跨族**（2026-11-08 复核）----
+            # 同族模型审自己写的稿 = 自我验证盲区。所以这里做两道闸：
+            #   ① 没显式指定 -> 自动挑一个跨族的
+            #   ② 显式指定但同族 -> **拒绝启用**（宁可没审查，也不要假独立）
+            from little_crew.runtime.model_family import (  # noqa: PLC0415
+                cross_family, pick_judge)
+
+            _judge = args.llm_critic_model
+            if not _judge:
+                _picked = pick_judge(args.llm_model)
+                if _picked["ok"]:
+                    _judge = _picked["model"]
+                    print(f"  审查模型自动选跨族：{_judge}（{_picked['reason']}）")
+                else:
+                    print(f"  ⚠️ 找不到跨族审查模型：{_picked['reason']}")
+            if _judge:
+                _ind = cross_family(args.llm_model, _judge)
+                if not _ind["independent"]:
+                    print(f"  ❌ 审查模型与生成同族，已拒绝启用：{_ind['reason']}")
+                    _judge = ""
+            if _judge:
+                critic_client = LlmClient(_judge)
+                critic = CriticLlm("story_editor", client=critic_client)
+                stubs["story_editor"] = critic
+                print(f"  文风编辑：**真实 LLM 批评家**"
+                      f"（{_judge} / {cross_family(args.llm_model, _judge)['judgeFamily']} 族 / 盯文风一致性）")
 
     # ---- 导演（2026-11-05 补）----
     #
