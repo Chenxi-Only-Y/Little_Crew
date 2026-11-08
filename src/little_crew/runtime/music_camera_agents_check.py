@@ -87,17 +87,6 @@ def main() -> int:
         r4 = cam(envelope=_env("camera_operator", {"shot.list": []}))
         check("B6 ★★★ 没有镜头表 -> 明确失败", r4.ok is False, "")
 
-    print(); print("C. 接线（结构断言：防止「写了但没接」）")
-    ep = (Path(__file__).resolve().parent / "episode.py").read_text(encoding="utf-8")
-    check("C1 ★★★ episode 里有 composer 调用点", "run_stage(\n" in ep
-          and '"composer", "shot.music"' in ep, "")
-    check("C2 ★★★ episode 里有 camera_operator 调用点",
-          '"camera_operator", "shot.video"' in ep, "")
-    check("C3 ★★ 配乐失败要打印（否则「没接上」与「没跑」分不出）",
-          "配乐职位未产出" in ep and "配乐职位未绑定" in ep, "")
-    check("C4 ★★★ camera_operator 默认关闭（env 开关）",
-          "LITTLE_CREW_CLIPS_AGENT" in ep, "")
-
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

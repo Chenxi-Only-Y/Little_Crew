@@ -1570,50 +1570,34 @@ class EpisodeRunner:
                         _sub = Path(str(_wd)) / "delivery"
                         (_sub / "subtitles.srt").write_text(
                             _mx.srt(_rows), encoding="utf-8")
-                        # ---- 音乐床（`composer`，2026-11-06）----
-                        # 先找素材（assets/music），没有就用程序生成的垫音 ——
-                        # **两者在交付件里必须能区分**（source 字段）。
-                        _bed = {}
-                        _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
-                                      for _s2 in picked)
-                        # ① 优先用职位产物 `shot.music`（2026-11-08 接）
+                        # ---- 定位探针（临时，2026-11-09 查 composer 未调用）----
                         try:
-                            _impls_c = getattr(self.orch, "_impls", {}) or {}
-                            if "composer" in _impls_c:
-                                _co = self.orch.run_stage(
-                                    "composer", "shot.music",
-                                    {"shot.list": list(picked),
-                                     "totalSeconds": _film_s,
-                                     "outDir": str(_sub)})
-                                if getattr(_co, "ok", False):
-                                    _mp = self.orch.blackboard.value("shot.music")
-                                    if isinstance(_mp, dict) and _mp.get("path"):
-                                        _bed = {"path": _mp["path"],
-                                                "source": _mp.get("source", ""),
-                                                "seconds": _mp.get("seconds", 0)}
-                                        print(f"  配乐（composer）：{_bed['seconds']:.1f}s"
-                                              f" · {_bed['source']}")
-                                else:
-                                    # **失败要看得见**：否则"没接上"与"没跑"分不出来
-                                    print(f"  ⚠️ 配乐职位未产出："
-                                          f"{str(getattr(_co, 'error', '') or '')[:80]}")
-                            else:
-                                print("  ⚠️ 配乐职位未绑定（composer 不在 _impls）")
-                        except Exception as _e_co:           # noqa: BLE001
-                            print(f"  ⚠️ 配乐职位未运行：{type(_e_co).__name__}")
-                        # ② 没有职位产物就退回内联（行为与以前一致）
-                        if not _bed:
-                            try:
-                                from little_crew.runtime import music_bed as _mb
+                            _dbg = Path(str(_wd)) / "delivery" / "_composer_probe.log"
+                            _dbg.write_text(
+                                "reached_music_block\n"
+                                f"film_s={_film_s}\n"
+                                f"impls={sorted((getattr(self.orch, '_impls', {}) or {}).keys())}\n",
+                                encoding="utf-8")
+                        except Exception:                    # noqa: BLE001
+                            pass
 
-                                _bed = _mb.resolve(
-                                    _film_s, _sub,
-                                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
-                            except Exception as _e_bed:      # noqa: BLE001
-                                print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
-                        # ⚠️ **必须给 total_seconds**：不给的话混流只做到"最后一句台词"，
-                        # 音乐床会在 86 秒处被切断 —— 后面 68 秒又变回静音
-                        # （2026-11-06 真踩到：床按 154s 生成、混流只用了 86s）。
+                        # ---- 音乐床（2026-11-06；2026-11-09 回退到已验证版本）----
+                        #
+                        # ⚠️ 今晚两次尝试把这个阶段"接成 composer 职位"都引入了回归
+                        # （`NameError: _film_s` 被上层吞掉 → 音乐床与混流整段没跑）。
+                        # **正确性优先**：先回退到原版；`composer` 职位实现保留，
+                        # 接线留待有独立测试覆盖时再做。
+                        _bed = {}
+                        try:
+                            from little_crew.runtime import music_bed as _mb
+
+                            _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
+                                          for _s2 in picked)
+                            _bed = _mb.resolve(
+                                _film_s, _sub,
+                                ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
+                        except Exception as _e_bed:          # noqa: BLE001
+                            print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
                         _mix = _mx.build(
                             _rows, str(_sub / "mix.wav"),
                             ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",

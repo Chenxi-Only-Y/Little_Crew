@@ -57,6 +57,45 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.204] — 2026-11-09（**根因找到并回退**：composer 接线引入回归，音乐床与混流整段没跑）
+
+### 根因（不是"没接"，是**我改坏了**）
+
+查法：加文件探针 + `--from render` 快速复现（跳过剧本/分镜，约 90 秒一次）。
+
+```
+⚠️ 配乐职位异常：NameError: name '_film_s' is not defined
+⚠️ 混流未运行：NameError: name '_film_s' is not defined
+```
+
+我在重写那段时**删掉了 `_film_s` 的赋值**，而外层 `try/except` 把 `NameError` 吞了，
+外部表现就是「配乐职位已绑定、却从来没被调用」。
+
+> **这条比 bug 本身更值得记：**
+> **被 `except` 吞掉的异常，会把"代码崩了"伪装成"这段没跑"。**
+> 上次给视觉闸加 `_wdv` 时是同一个形态（也是 `NameError` 被吞）。
+
+### 处理：**正确性优先，回退接线**
+
+- 音乐床段**恢复为已验证版本**（`music_bed.resolve` + `try/except`）
+- 移除 `composer` 在 demo 里的绑定（避免"已绑定却没人调"的误导）
+- **`composer` 职位实现保留**（`runtime/composer_agent.py`，12 项自检全过，
+  含"时长够 / source 如实标 / 垫音不冒充配乐"）
+- `camera_operator` 保留（默认关闭，`LITTLE_CREW_CLIPS_AGENT=1` 才走）
+
+### 复验
+
+```
+回退后：混流：5.0s · 峰值 -16.6 dBFS · 字幕 3 条     ← 恢复正常
+全量 2249 项 + 架构守卫 PASS
+```
+
+### 教训（写进流程）
+
+改长流水线里的一段时：**先确认这段自己能不能单独跑通**，
+再动它；并且**不要把异常吞成 print**（吞了就等于没跑）。
+
+---
 ## [0.4.0-alpha.203] — 2026-11-09（接 `composer` / `camera_operator`；**一个真跑没看到**，如实记下）
 
 ### ① `composer`：`shot.list -> shot.music`
