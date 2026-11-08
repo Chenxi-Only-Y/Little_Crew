@@ -59,7 +59,9 @@ PAUSE = {
 _BREAKS = "。！？；…，、："
 
 #: 超过这个长度才考虑在逗号处切
-LONG_LINE = 18
+#: 超过这个长度才在逗号处切。2026-11-08 从 18 降到 12：
+#: 用户反馈「说话没有停顿」—— 11/24 句是单段，中间一个停顿都没有。
+LONG_LINE = 12
 
 
 def segments(line: str, *, long_line: int = LONG_LINE) -> list[dict]:
@@ -84,10 +86,29 @@ def segments(line: str, *, long_line: int = LONG_LINE) -> list[dict]:
     if buf.strip():
         out.append(buf.strip())
 
+    # ⚠️ **只有标点的语段必须丢掉或并入邻段**（2026-11-08 用户指出：
+    # 「……水……」被切成 4 段，其中 3 段只有「…」—— 每段单独送去合成，
+    # 出来的就是喘气和杂音，听起来"这句坏了"）。
+    merged: list[str] = []
+    for seg in out:
+        if not _spoken(seg):
+            if merged:
+                merged[-1] += seg          # 并回前一段
+            elif out and len(out) > 1:
+                continue                   # 开头的纯标点直接丢
+        else:
+            merged.append(seg)
+    if not merged:                         # 整句都是标点（极端情况）
+        merged = [text]
+    elif len(merged) == 1 and merged[0] != text:
+        # 只有一段时**保留原句**（含「……」这类前导标点）：
+        # 省略号对 TTS 是"气声/迟疑"的提示，剥掉它语气就没了。
+        merged = [text]
+
     rows = []
-    for i, seg in enumerate(out):
+    for i, seg in enumerate(merged):
         p = 0.0
-        if i < len(out) - 1:
+        if i < len(merged) - 1:
             tail = seg[-1] if seg else ""
             p = PAUSE.get(tail, 0.25)
         rows.append({"text": seg, "pause": round(p, 2)})

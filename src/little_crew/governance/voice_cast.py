@@ -57,6 +57,12 @@ ALIGN_TOLERANCE = 0.5
 MAX_SPEEDUP = 0.2
 
 
+#: 本机 breeze 目前**只有一个**可保存音色（`voices/gentle_sister.breeze`）。
+#: 这是硬约束：想"音色稳定"就所有人都得用它；想"角色音色不同"就必须再存几个。
+#: 2026-11-08：用户反馈「音色一直在变」—— 优先**稳定**，角色差异改由语气承担。
+LOCAL_VOICE_HINT = "gentle_sister"
+
+
 def pick_voice(gender: str, index: int = 0, available=()) -> str:
     """按性别挑音色。`index` 是**同性别里的第几个角色**（让两个女角色不同音色）。
 
@@ -69,8 +75,50 @@ def pick_voice(gender: str, index: int = 0, available=()) -> str:
         pool = [v for v in VOICE_POOL["f"] + VOICE_POOL["m"]
                 if not available or v in set(available)]
     if not pool:
+        # 传入的是**本机已存音色**（不在 SAPI 池里）—— 全组共用一个，锁住音色
+        avail = [str(x) for x in (available or ()) if str(x)]
+        if avail:
+            return avail[0]
         return ""
     return pool[index % len(pool)]
+
+
+#: 情绪 -> 语气描述（拼在 instruction 后面）。
+#:
+#: 为什么需要它：**同一个角色在不同场景语气应该不同**（质问 vs 妥协 vs 哽咽），
+#: 但音色**不能变**。所以音色由 `--voice` 锁死，语气靠这段文字调。
+EMOTION_NOTES: dict[str, str] = {
+    "平静": "语气平稳",
+    "质问": "语气质问、带压迫感",
+    "隐忍": "语气压着、很克制",
+    "哽咽": "带哭腔、断续",
+    "叹息": "带叹息、很累",
+    "急切": "语速偏快、着急",
+    "冷淡": "语气冷淡、不带情绪",
+    "温柔": "语气温柔、放轻",
+    "愤怒": "压抑着怒意",
+    "迟疑": "边说边犹豫",
+}
+
+
+def emotion_note(emotion: str) -> str:
+    """情绪 -> 语气短语。**认不出就返回空**（不猜、不乱加）。"""
+    return EMOTION_NOTES.get(str(emotion or "").strip(), "")
+
+
+def seed_for(name: str, base: int = 42) -> int:
+    """给每个角色一个**固定种子**。
+
+    目的：同一角色跨句的韵律抖动小一点（音色已由 `--voice` 锁死，
+    种子管的是**韵律细节**）。**稳定**比"随机"重要得多。
+    """
+    s = str(name or "").strip()
+    if not s:
+        return base
+    h = 0
+    for ch in s:
+        h = (h * 131 + ord(ch)) % 100000
+    return base + h % 97
 
 
 def describe(gender: str, age_band: str = "") -> str:
@@ -109,7 +157,7 @@ def cast(characters, sheets=None, available=()) -> dict:
             desc = describe(gender, str(sheet.get("ageBand") or ""))
         if forced:
             out[name] = {"name": name, "voice": forced, "gender": gender,
-                         "instruction": desc,
+                         "instruction": desc, "seed": seed_for(name),
                          "source": "sheet" if desc else "auto"}
             continue
         g = "m" if gender in ("m", "男", "男性") else "f"
@@ -117,6 +165,7 @@ def cast(characters, sheets=None, available=()) -> dict:
         used[g] = idx + 1
         out[name] = {"name": name, "voice": pick_voice(g, idx, available),
                      "gender": gender, "instruction": desc,
+                     "seed": seed_for(name),
                      "source": _desc_source if not forced else "sheet"}
     return out
 

@@ -83,7 +83,7 @@ _SCREENWRITER_SYSTEM = """你是《小剧组》平台的**编剧**，负责把�
       "heading": "内景·旧书店·夜",
       "characters": ["林晚", "店主"],
       "dialogue": [
-        {"character": "林晚", "line": "这一句是她说的。"},
+        {"character": "林晚", "line": "这一句是她说的。", "emotion": "质问"},
         {"character": "店主", "line": "这一句是他说的。"}
       ],
       "text": "这一场的正文。要有对白与动作，200-400 字。",
@@ -340,7 +340,8 @@ class ScreenwriterLlm:
                     continue
                 if names and who not in names:
                     continue
-                dialogue.append({"character": who, "line": line[:200]})
+                dialogue.append({"character": who, "line": line[:200],
+                             "emotion": str(d.get("emotion") or "").strip()[:8]})
 
             out.append({
                 "scene_id": str(s.get("scene_id") or s.get("id") or f"S{i:02d}"),

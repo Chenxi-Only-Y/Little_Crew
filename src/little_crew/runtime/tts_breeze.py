@@ -71,7 +71,7 @@ def list_voices() -> list[str]:
 
 
 def synth(text: str, out_wav, *, voice: str = "", instruction: str = "",
-          ref_audio: str = "", ref_text: str = "", seed: int = DEFAULT_SEED,
+          ref_audio: str = "", ref_text: str = "", seed: int | None = DEFAULT_SEED,
           timeout: float = TIMEOUT_S) -> dict:
     """合成一句台词。返回 `{ok, seconds, voice, seed, error, bytes, sha256}`。
 
@@ -90,10 +90,15 @@ def synth(text: str, out_wav, *, voice: str = "", instruction: str = "",
     cmd = [str(exe_path()), str(model_path()), "--text", text,
            "--output", str(out), "--seed", str(int(seed)),
            "--voices-dir", str(voices_dir())]
+    # ⚠️ **两者要同时给**（2026-11-08 用户反馈"音色一直在变"）：
+    # 原来写成 `if instruction: ... elif voice:` —— 只要给了语气描述，
+    # `--voice`（音色锚点）就被跳过，于是**每句音色都跟着提示词漂**。
+    # 实测 CLI 支持 `--voice` + `--instruction` 并用：
+    #   voice 锁音色，instruction 只调语气/节奏。
+    if voice:
+        cmd += ["--voice", str(voice)]
     if instruction:
         cmd += ["--instruction", str(instruction)]
-    elif voice:
-        cmd += ["--voice", str(voice)]
     if ref_audio:
         cmd += ["--ref-audio", str(ref_audio)]
         if ref_text:

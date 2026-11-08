@@ -59,13 +59,13 @@ def build(images, shots, out_mp4, *, audio: str = "", srt: str = "",
         img = imgs[i % len(imgs)]
         frames = max(1, int(round(d * fps)))
         seg = wd / f"seg_{i:03d}.mp4"
-        vf = (f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
-              f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,"
-              f"zoompan=z='min(zoom+0.0009,{ZOOM_MAX})':d={frames}:"
-              f"s={W}x{H}:fps={fps},format=yuv420p")
+        from little_crew.runtime.video_operator import frame_filter as _ff
+
+        vf = _ff(d, size=(W, H), fps=fps, zoom_max=ZOOM_MAX)
         cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error",
                "-loop", "1", "-i", img, "-t", f"{d:.3f}",
-               "-vf", vf, "-c:v", "libx264", "-preset", "veryfast",
+               "-filter_complex", vf, "-map", "[v]",
+               "-c:v", "libx264", "-preset", "veryfast",
                "-pix_fmt", "yuv420p", str(seg)]
         r = _run(cmd, timeout)
         if r["code"] != 0:

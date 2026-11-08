@@ -111,7 +111,7 @@ def assign_to_shots(lines, shots) -> list[dict]:
 
 
 def trim_silence(path, out_path, *, threshold: int = 300,
-                 keep: float = 0.06) -> dict:
+                 keep: float = 0.10) -> dict:
     """裁掉 wav 头尾的静音（16-bit PCM）。**只用标准库**。
 
     为什么需要：breeze 每段合成都自带头尾静音；分句合成后如果不裁，
@@ -196,7 +196,7 @@ def join_wavs(paths, out_path, gaps) -> dict:
 
 def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
                       plan=None, max_seconds: float = 0.0,
-                      min_pause: float = 0.08) -> dict:
+                      min_pause: float = 0.08, seed=None) -> dict:
     """**按语段分别合成，再按停顿拼接** —— 对白编辑的落地。
 
     与"整句念"的区别：句子之间有**真实静音**（0.18~0.35 秒），
@@ -223,8 +223,11 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
                 s["pause"] = round(max(min_pause, s["pause"] * _scale), 2)
             pl["segments"] = segs
             pl["pauseScaledTo"] = round(max_seconds, 2)
+    _kw = {"voice": voice, "instruction": instruction}
+    if seed:
+        _kw["seed"] = seed
     if len(segs) <= 1:
-        r = synth(text, out_path, voice=voice, instruction=instruction)
+        r = synth(text, out_path, **_kw)
         r.setdefault("segments", 1)
         return r
 
@@ -234,7 +237,7 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
     try:
         for i, seg in enumerate(segs):
             sp = tmpdir / f"seg{i:02d}.wav"
-            r = synth(seg["text"], sp, voice=voice, instruction=instruction)
+            r = synth(seg["text"], sp, **_kw)
             if not r.get("ok"):
                 return {"ok": False, "seconds": 0.0, "error": r.get("error", ""),
                         "segments": i, "sha256": ""}
@@ -292,10 +295,18 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
         if out_dir:
             wav = str(Path(str(out_dir)) / f"voice_{n:02d}_{who}.wav")
             # 走对白编辑：分句合成 + 停顿拼接（单句时自动退化为整句合成）
+            # 音色=ver（固定锚点）· 语气=instruction（角色基调 + 本句情绪）
+            from little_crew.governance.voice_cast import emotion_note
+
+            _ins = str(spec.get("instruction") or "")
+            _emo = emotion_note(str(ln.get("emotion") or ""))
+            if _emo:
+                _ins = f"{_ins}，{_emo}" if _ins else _emo
             r = synth_with_pauses(
                 ln["text"], wav, synth=synth,
                 voice=str(spec.get("voice") or ""),
-                instruction=str(spec.get("instruction") or ""),
+                instruction=_ins,
+                seed=int(spec.get("seed") or 0) or None,
                 max_seconds=float(ln.get("shotSeconds") or 0))
         a = align(float(r.get("seconds") or 0),
                   float(ln.get("shotSeconds") or 0))

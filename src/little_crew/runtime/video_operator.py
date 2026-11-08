@@ -72,6 +72,34 @@ def _h3_ready(timeout: float = 1.5) -> bool:
         return False
 
 
+def frame_filter(duration: float, *, size=(768, 1024), fps: int = 24,
+                 zoom_max: float = 1.12, fade: float = 0.12,
+                 blur: int = 18) -> str:
+    """**模糊填充**：背景是放大模糊的同图，前景保持原比例居中。
+
+    为什么不直接 crop：源素材 1216×832（宽幅）对 768×1024（竖幅），
+    硬裁只留中间 44% 宽度 —— 人脸被放大、构图全丢（2026-11-08 实测截图确认）。
+    为什么不留黑边：用户直接指出「黑边」难看。
+
+    模糊填充既填满画幅、又保住构图，是短视频/竖屏的标准做法。
+    """
+    W, H = int(size[0]), int(size[1])
+    frames = max(1, int(round(float(duration) * fps)))
+    return (
+        f"[0:v]split=2[bga][fga];"
+        f"[bga]scale={W}:{H}:force_original_aspect_ratio=increase,"
+        f"crop={W}:{H},gblur=sigma={int(blur)}[bg];"
+        f"[fga]scale={W}:{H}:force_original_aspect_ratio=decrease[fg];"
+        f"[bg][fg]overlay=(W-w)/2:(H-h)/2,"
+        f"zoompan=z='min(zoom+0.0009,{zoom_max})':d={frames}:"
+        f"s={W}x{H}:fps={fps},"
+        f"fade=t=in:st=0:d={fade},"
+        f"fade=t=out:st={max(0.0, float(duration) - fade):.2f}:d={fade},"
+        f"format=yuv420p[v]"
+    )
+
+
+
 def render(image, out_path, *, duration: float, size=(768, 1024), fps: int = 24,
            backend: str = "kenburns", ffmpeg: str = "ffmpeg", prompt: str = "",
            h3_steps: int = 8,
@@ -100,12 +128,12 @@ def render(image, out_path, *, duration: float, size=(768, 1024), fps: int = 24,
     out.parent.mkdir(parents=True, exist_ok=True)
     W, H = int(size[0]), int(size[1])
     frames = max(1, int(round(dur * fps)))
-    vf = (f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
-          f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,"
-          f"zoompan=z='min(zoom+0.0009,{zoom_max})':d={frames}:"
-          f"s={W}x{H}:fps={fps},format=yuv420p")
+    # 模糊填充 + 淡入淡出（2026-11-08）：既填满画幅又不裁掉构图。
+    # 详见 `frame_filter()` 的注释（crop 会把构图切没、pad 会留黑边）。
+    vf = frame_filter(dur, size=(W, H), fps=fps, zoom_max=zoom_max)
     cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error",
-           "-loop", "1", "-i", str(img), "-t", f"{dur:.3f}", "-vf", vf,
+           "-loop", "1", "-i", str(img), "-t", f"{dur:.3f}",
+           "-filter_complex", vf, "-map", "[v]",
            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
            str(out)]
     try:

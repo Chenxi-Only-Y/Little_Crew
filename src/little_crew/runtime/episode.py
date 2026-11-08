@@ -1217,7 +1217,14 @@ class EpisodeRunner:
                 try:
                     from little_crew.runtime import mixdown as _mx
 
-                    _rows = _mx.plan(_trk["utterances"])
+                    # **按镜头起点排台词**（2026-11-08）：不这样做的话 24 句会被
+                    # 摞成一条连续旁白带 —— 画面在切镜、声音不跟着切，
+                    # 表现就是「字幕对不上 + 镜头衔接怪 + 语气生硬」。
+                    _offsets, _acc = {}, 0.0
+                    for _s3 in picked:
+                        _offsets[str(_s3.shot_id)] = round(_acc, 3)
+                        _acc += float(getattr(_s3, "duration_sec", 0) or 0)
+                    _rows = _mx.plan(_trk["utterances"], shot_offsets=_offsets)
                     if _wd and _rows:
                         _sub = Path(str(_wd)) / "delivery"
                         (_sub / "subtitles.srt").write_text(

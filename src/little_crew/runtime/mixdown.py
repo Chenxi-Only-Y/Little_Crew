@@ -26,25 +26,48 @@ import subprocess
 from pathlib import Path
 
 
-def plan(utterances, *, gap: float = 0.25) -> list[dict]:
-    """把对白排成时间轴：**按顺序紧接**，每句之间留 `gap` 秒。
+def plan(utterances, *, gap: float = 0.25, shot_offsets=None,
+         lead: float = 0.30) -> list[dict]:
+    """把对白排成时间轴。
 
-    ⚠️ 这里刻意**不按镜头时长拉伸**：
-    镜头时长是导演的决定，混流不该偷偷改它。
-    对不齐的差额由 `voice_cast.align` 在合成阶段就报出来了。
+    ## 两种排法（`shot_offsets` 决定）
+
+    | 给了 shot_offsets | 行为 |
+    |---|---|
+    | 否 | **顺序摞**：从头往后接，只在句子间留 `gap`（旧行为） |
+    | 是 | **按镜头起点摆**：每句从它所属镜头的起点 +`lead` 开始 |
+
+    ## 为什么必须按镜头摆（2026-11-08 用户反馈驱动）
+
+    旧行为下 24 句被摞成一条"连续旁白带"：第 1 镜 5 秒，
+    但第 1 句 1.2 秒就说完、第 2 句 1.45 秒就开始 —— **画面还在第 1 镜，声音已经到第二句**。
+    表现就是"字幕对不上、镜头衔接怪、语气接得生硬"。
+
+    ## 冲突处理
+
+    若前一句结束晚于本镜起点 + `lead`，本句**顺延**（不重叠）——
+    宁可这一句晚点开口，也不要两句叠在一起。
     """
-    rows, t = [], 0.0
+    rows: list[dict] = []
+    t = 0.0
     for i, u in enumerate(utterances or (), 1):
         if not u.get("ok"):
             continue
         d = float(u.get("audioSeconds") or 0)
         if d <= 0:
             continue
-        rows.append({"index": i, "start": round(t, 3), "end": round(t + d, 3),
+        sid = str(u.get("shotId") or "")
+        if shot_offsets and sid in shot_offsets:
+            start = max(float(shot_offsets[sid]) + float(lead), t)
+        else:
+            start = t
+        rows.append({"index": i, "start": round(start, 3),
+                     "end": round(start + d, 3),
                      "character": str(u.get("character") or ""),
                      "text": str(u.get("text") or ""),
+                     "shotId": sid,
                      "wav": str(u.get("wav") or "")})
-        t = round(t + d + gap, 3)
+        t = round(start + d + gap, 3)
     return rows
 
 
