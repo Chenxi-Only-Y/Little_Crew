@@ -53,6 +53,25 @@ __all__ = [
 # 交付物
 # ==========================================================================
 
+class _ResumedCycle:
+    """续跑用的"空闭环"：`final` 直接给出上次定稿，`rounds` 为空。
+
+    ⚠️ 它不是"假装剧本通过了"：报告里 `scriptRounds=0` 且 `resumed=True`，
+    读者能看出这一集**没有再跑剧本返工**。
+    """
+
+    def __init__(self, draft):
+        self.final = draft
+        self.rounds = ()
+        self.round_count = 0
+        self.resumed = True
+        # 续跑**不产生裁定** —— 这里如实写"续跑"，而不是伪造 PASS：
+        # 报告里能看出这一集没有重新走剧本门禁。
+        self.accepted = True
+        self.failure_kind = "resumed"
+        self.reason = "剧本阶段从 checkpoint 续跑（未重新生成、未重走门禁）"
+
+
 @dataclass
 class EpisodeManifest:
     """成片清单（母版的"目录"）。
@@ -597,9 +616,22 @@ class EpisodeRunner:
         #: `--limit` 的值。白模与渲染都要用它，否则两者看的镜头不一致。
         self._limit = int(limit or 0)
         self._mark("script")
-        cycle = self.orch.run_script_cycle(
-            {"source.novel": source, "episodeId": self.episode_id,
-             "title": self.title})
+        # ---- 续跑：剧本阶段已有产物就直接用（2026-11-08）----
+        #
+        # 为什么不"跳过一段代码"：`run()` 各阶段共享十几个局部变量，
+        # 跳过等于改主流程。这里只替换**取值的来源**，后面代码一行不动。
+        _resume = getattr(self, "resume_data", None) or {}
+        _resume_draft = _resume.get("draft")
+        if _resume_draft:
+            from little_crew.agent.crew_llm import _as_draft as _asd
+
+            script_draft = _asd(_resume_draft)
+            cycle = _ResumedCycle(script_draft)
+            print("  ↩ 剧本：从 checkpoint 续（未重新生成）")
+        else:
+            cycle = self.orch.run_script_cycle(
+                {"source.novel": source, "episodeId": self.episode_id,
+                 "title": self.title})
 
         # ---- 剧本闭环逐轮落盘（2026-11-01）----
         #
@@ -689,6 +721,22 @@ class EpisodeRunner:
         if script_draft is None and self.force_accept_script and cycle.rounds:
             script_draft = cycle.rounds[-1].draft
 
+        # ---- 阶段 checkpoint：剧本（2026-11-08）----
+        try:
+            from little_crew.runtime import stage_checkpoint as _sc
+
+            _wd_ck = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_ck and script_draft is not None and not _resume_draft:
+                _sc.save(_wd_ck, "script",
+                         {"draft": (script_draft.as_dict()
+                                    if hasattr(script_draft, "as_dict")
+                                    else script_draft)},
+                         meta={"episodeId": self.episode_id,
+                               "sourceLen": len(str(source or "")),
+                               "sourceHead": str(source or "")[:80]})
+        except Exception:                                    # noqa: BLE001
+            pass
+
         # ---- 1.5) 导演：定预算，交给分镜 ----
         self._mark("director")
         #
@@ -716,6 +764,23 @@ class EpisodeRunner:
         _sb_attempts: list[dict] = []
         _sb_retries = int(getattr(self, "storyboard_retries", 2))
         out = None
+        # 续跑：分镜已有产物 -> 塞回黑板，不调模型
+        if (_resume_shots := (getattr(self, "resume_data", None) or {}).get("shotList")):
+            from little_crew.runtime.replay_agent import _restore as _rs
+
+            _obj = _rs(_resume_shots, "shot.list")
+            if _obj and _obj.get("shot.list") is not None:
+                self.orch.blackboard.put("shot.list", _obj["shot.list"],
+                                         owner="storyboard_artist")
+                print("  ↩ 分镜：从 checkpoint 续（未重新生成）")
+                class _OK:                       # 轻量结果对象，字段与 StageOutcome 齐
+                    ok = True
+                    error = ""
+                out = _OK()
+                _sb_attempts.append({"attempt": 0, "ok": True,
+                                     "shots": len(_obj["shot.list"].shots),
+                                     "error": "", "resumed": True})
+                _sb_retries = -1
         for _i in range(1 + max(0, _sb_retries)):
             out = self.orch.run_stage("storyboard_artist", "shot.list",
                                       {"script.final": script_draft})
@@ -777,6 +842,21 @@ class EpisodeRunner:
                         f"剧本 {cycle.round_count} 轮，最后一轮裁定 "
                         f"{_last_verdict or chr(31354)}"),
                 wall_seconds=time.perf_counter() - t0)
+        # ---- 阶段 checkpoint：分镜（2026-11-08）----
+        try:
+            from little_crew.runtime import stage_checkpoint as _sc2
+
+            _wd_ck2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _sl_ck = self.orch.blackboard.value("shot.list")
+            if _wd_ck2 and _sl_ck is not None and not _resume_shots:
+                _sc2.save(_wd_ck2, "storyboard",
+                          {"shotList": (_sl_ck.as_dict()
+                                        if hasattr(_sl_ck, "as_dict") else _sl_ck)},
+                          meta={"episodeId": self.episode_id,
+                                "shots": len(getattr(_sl_ck, "shots", ()) or ())})
+        except Exception:                                    # noqa: BLE001
+            pass
+
         planned = len(shots) if limit is None else min(len(shots), int(limit))
         picked = shots[:planned]
 
@@ -1332,6 +1412,20 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
+        # ---- 阶段 checkpoint：渲染（2026-11-08）----
+        try:
+            from little_crew.runtime import stage_checkpoint as _sc3
+
+            _wd_ck3 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_ck3:
+                _sc3.save(_wd_ck3, "render",
+                          {"perShotArtifacts": dict(per_shot_artifacts),
+                           "artifacts": {k: list(v) for k, v in artifacts.items()}},
+                          meta={"episodeId": self.episode_id,
+                                "shots": len(per_shot_artifacts)})
+        except Exception:                                    # noqa: BLE001
+            pass
 
         # ---- 配音轨（§3.11，2026-11-06）----
         #

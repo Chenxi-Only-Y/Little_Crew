@@ -1,0 +1,165 @@
+{
+  "episodeId": "ERM",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场唯一的阻力是少女自己的一次呼吸级犹豫——「她犹豫了一瞬，手指缩回来，又伸出去」，下一拍就自行消解；除此之外没有任何东西在阻挡这次救援（没人反对、没有时间压力、伤者也不挣扎），场面退化成对一个动作的白描。', suggestion='给这场一个真正的对手方：或让伤者在昏迷中抓挠抗拒、血止不住形成倒计时；或让少女的迟疑具体化为可被击退的恐惧（听见村里人声/父亲的规矩在脑中回响），她必须付出一个可见的决定动作才越过它。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突（父亲拍桌逼问）是成立的，但代价被写成了台词之外的一段旁白式补记——「代价是她从此再没有回过村子里的集会——第二年春天，集会上的位置空着」，这是在场景结束后由叙述者直接宣布的，观众没有经历任何失去的时刻。', suggestion='把代价放进戏里：让这场或下一场出现一个具体切口（母亲赴集会时在门口看她一眼/她独自留在院中听见远处的钟声），让「空着的位置」被人真正注意到一次，而不是靠旁白交代。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02 建立的反对力量在这里集体消失：「村里人围在远处看，没有人上前」，父亲母亲干脆不在场；老奶奶是来送花的，不是来拦的。于是少女的出走全程无人阻挡，「我跟你走」这句话没有撞上任何东西。', suggestion='让离村必须过一道关：父亲堵在门口或当众质问、村民有人上前一步被谁拦下；或把老奶奶的赠花改成一笔交易/一句警告式的条件，迫使少女在放弃与坚持之间当场选一次。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：转折本身（化烟）够猛，但主题被旅人自己说破——「我就是你想远行的心啊」，把一次应该由观众自己体会的反转降格成了解释；而且掷花、消散、台词连成一条直线，少女中间没有任何反应拍。', suggestion='让意义由画面和她的反应承担：化烟后先给她一拍伸手扑空的动作，再让那句话从风里来（或干脆删掉半句，只留「我就是你想……」让观众补完）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶抛出了全剧最硬的一记反驳——「花是真的，人不是。你还要往哪儿走？」，少女却没有回答它，只用一个词「往北」宣告胜利，老奶奶随即「手松开了，站在雾里没有再喊」。最后一场的对抗在最强的问题上被一句宣言卸掉，没有升级也没有代价。', suggestion='逼少女正面接这一枪：让她承认他不是人、明知是假仍然走，并为此付出点什么（交还某物、说出一句会伤害老奶奶的真话），再让老奶奶是在被说服或被刺痛后才松手，而不是自己泄气。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 12.02
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.752
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场的核心对抗被跳过了：「父亲堵在门口，一步没让」之后，剧本直接写「少女解下肩上那条披肩……放在门槛上」，紧接着就是老奶奶出场。父亲堵门这个唯一的正面阻力如何被突破，舞台上完全没有呈现，观众看到的是对抗被宣布、然后凭空消失。', suggestion='把「跨门」这一下写实：例如她把披肩放在门槛上时，父亲伸手攥住她的手腕/攥住竹篮，两人僵持片刻，她一根手指一根手指掰开，跨出去；或者父亲自己侧身让开、背过身去——无论哪种，都要让「堵门→让路」在场面上发生一次，对抗才有解决的过程。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场唯一的正面冲突一触即收：母亲质问「你就不能出去说一句话？」，少女一句「说了，他们就更要问他是谁」，「母亲没再说话」，对抗当场熄灭。其余压力（鼓声、婶子的议论、原本属于她的头一句）全部发生在画外，场上从头到尾只有扇子在扇，局势没有往前推一格。', suggestion='给这场一个升级动作：母亲被顶回后可以再逼一步（伸手拉她、要夺她手里的扇子、把冷水盆端走），少女必须做出一个新动作才能守住立场；这样结尾「她听得清每一个字」的痛才有前面挣出来的重量，场次也不再是平的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：转折来得太便宜：她上一场刚为这个人弃家舍姓，这一场只得到「一个她从前没见过的笑容」和半句没说完的话，就立刻举花掷出——放弃之间没有任何迟疑、试探或诱惑的节拍，前面付出的代价像没发生过。', suggestion='在掷花前插入一个选择点：让他给出一个真正的诱饵（伸手来接花、说「跟我走就别问了」、替她擦掉掌心碎瓣），让她有半秒钟真的心动/抬手要递过去——然后才掷。犹豫过的选择，放弃才是代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：老奶奶的阻拦没有赌注：她站在雾里问「你还要往哪儿走」，但剧本从未交代她凭什么拦、拦不住会怎样；少女一句「您也照过一个人吧」，她就「手指扣紧了篮沿」退开，一场对峙一句话结束，且 S04 立下的「应了就不能反悔，反悔的人花会枯在你手里」这条条件至此再无下文。', suggestion='先明确阻拦的后果（她握着花的枯荣、或她有权让少女「回不去也走不了」），再让少女用竹篮/碎瓣做一次实际的交换或对赌；同时给 S04 的「花会枯」一个回收——哪怕只是少女摊开掌心，碎瓣真的枯成黑的，她仍不回头。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.18
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 143.697
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.48,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：交易的筹码不落地：旅人说\"给了我，你就不用再问了\"，但她留下花究竟会失去什么、交出花又能得到什么，剧本都没有兑现；而他既是\"你想远行的心\"，她的拒绝在剧情上不产生任何后果——S06 她照样提着半篮花往前走，冲突双方都没有被这场对抗改动。', suggestion='给这场交易一个真实的赌注：要么花是她跨出门槛时\"不反悔\"的凭证（S04 老奶奶明言反悔者花会枯在手里），交出去等于毁约、留下等于孤身走无名之路；要么让旅人提出\"留下花就留下我\"，逼她在同行与独行之间二选一。让任一方付出可感的损失，拒绝才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：她开出的价\"半篮花，够不够换一个我\"从未被收取：老奶奶只问了一句\"花枯了呢？\"，她摊开掌心的碎瓣，老奶奶\"手慢慢松开了\"——交易没成交，她既没交出花，也没被枯萎惩罚，只是\"把空手垂下去，从她身边走过去\"。紧接着 S07 陶罐里还插着\"干透的薰衣草\"，连那束花也没真正失去。', suggestion='让价格被付掉：老奶奶真的接过篮子/花束，少女空着手穿过雾（呼应\"把空手垂下去\"），S07 的干花改成母亲早年私藏的一枝、或由老奶奶归还的枯枝。或者把\"枯了就枯了\"变成她的赌注——花在她手里当众成灰，她付出了可被村民记住的代价。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 67.48,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 59.409
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 95.611
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 67.5）"
+}

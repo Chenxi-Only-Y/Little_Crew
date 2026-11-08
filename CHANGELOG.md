@@ -57,6 +57,64 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.197] — 2026-11-08（**`--from` 断点续跑**：剧本与分镜被"回放"）
+
+### 为什么是重放，不是"跳过代码块"
+
+`run()` 是一条 900 行的流水线，块与块之间共享十几个局部变量
+（`cycle` / `script_draft` / `shots` / `picked` / `irs` …）。
+"跳到第 4 步"等于把这些变量都搬出来重写主流程 —— 一处漏改就静默出错。
+
+**这一版只替换"取值来源"**：
+
+```
+--from render
+   ├ 读 checkpoint/stages.json
+   ├ 剧本：用上次定稿（不再调模型、不再走门禁）
+   ├ 分镜：用上次镜头表（塞回黑板）
+   └ 渲染：本来就命中缓存
+```
+
+### 阶段 checkpoint（`runtime/stage_checkpoint.py`）
+
+`delivery/../checkpoint/stages.json` 记 `script` / `storyboard` / `render` 三段的产物与 meta。
+**合并写**，不覆盖别的阶段。
+
+### 三道护栏（都写进自检 16/16）
+
+1 **集号不一致直接拒绝**（重放别人的产物就是错）
+2 **缺前置阶段拒绝**，并说明缺哪段
+3 **没有 checkpoint 拒绝**，不去猜
+
+### 真跑（ERM，2 镜）
+
+```
+续跑自 render：可以续跑
+  复用 ['script', 'storyboard'] · 重算 ['render', 'voice', 'mix', 'final']
+  ↩ 剧本：从 checkpoint 续（未重新生成）
+  ↩ 分镜：从 checkpoint 续（未重新生成）
+墙钟 105.7s（同集完整跑远高于此）
+```
+
+剩下的大头是导演 / review_board / 视觉闸 的 LLM 调用与渲染缓存命中判定 —— **剧本与分镜的返工轮次全省掉了**。
+
+### 踩的三个坑（都很典型）
+
+| 坑 | 症状 |
+|---|---|
+| `_ResumedCycle` 插在 `@dataclass` 与 `class EpisodeManifest` 之间 | 装饰器挪到 helper 头上 → `EpisodeManifest() takes no arguments` |
+| helper 缺 `accepted` / `failure_kind` / `reason` | 续跑第一行就 `AttributeError`，半成品报告 |
+| `as_dict()` 存**驼峰键**（`shotId`），还原按**蛇形键**找 | 还原出 0 镜 → **静默退回真实现**，续跑白做（最隐蔽） |
+
+### 验证 Verification
+
+```
+ [v] 断点续跑自检 16/16
+ [v] 全量 2198 项 + 架构守卫 PASS
+ [v] 真跑 ERM：↩ 剧本 + ↩ 分镜，成片 2 镜 10.0s
+```
+
+---
 ## [0.4.0-alpha.196] — 2026-11-08（P0 收尾：指纹可验 · 0 镜自动重试 · 视觉闸默认开）
 
 ### ① provider 指纹现在**可被独立复核**（原来是"落了盘没人看"）

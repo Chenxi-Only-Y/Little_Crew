@@ -147,6 +147,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--final", action="store_true",
                     help="跑完后把静帧+音轨+字幕合成 mp4（需 --voice 才有音轨）")
+    ap.add_argument("--from", dest="from_stage", default="",
+                    choices=["", "script", "storyboard", "render", "voice",
+                             "mix", "final"],
+                    help="从 checkpoint 续跑（剧本/分镜被回放，不重新生成）")
     ap.add_argument("--vision-review", action="store_true", default=True,
                     help="渲染后用视觉模型逐镜判「崩没崩」（默认开）")
     ap.add_argument("--no-vision-review", action="store_true",
@@ -466,6 +470,28 @@ def main(argv: list[str] | None = None) -> int:
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
     runner.voice_enabled = bool(args.voice)
+    # ---- 续跑（2026-11-08）----
+    _resume_info = None
+    if getattr(args, "from_stage", ""):
+        from little_crew.runtime import stage_checkpoint as _sc0
+
+        _wd0 = Path(args.workdir)
+        _chk = _sc0.check(_wd0, args.from_stage,
+                          inputs={"episodeId": args.episode_id})
+        print(f"  续跑自 {args.from_stage}：{_chk['reason']}")
+        if _chk["ok"]:
+            _resume_info = {
+                "from": args.from_stage,
+                "draft": _sc0.payload_of(_wd0, "script", "draft"),
+                "shotList": _sc0.payload_of(_wd0, "storyboard", "shotList"),
+                "reuse": _chk["reuse"], "recompute": _chk["recompute"],
+            }
+            runner.resume_data = _resume_info
+            runner.force_accept_script = True
+            print(f"    复用 {_chk['reuse']} · 重算 {_chk['recompute']}")
+        else:
+            print("  ⚠️ 续跑条件不满足，改为完整跑一遍")
+
     runner.vision_review_enabled = bool(args.vision_review) and not bool(args.no_vision_review)
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)
@@ -597,6 +623,18 @@ def main(argv: list[str] | None = None) -> int:
     print("-" * 78)
     print(f"  实算 {res.rendered}  命中 {res.cache_hits}  失败 {res.failed}")
     print(f"  耗时 {res.wall_seconds:.1f}s")
+    if _resume_info:
+        try:
+            import json as _jr
+
+            _outr = Path(args.workdir) / "delivery"
+            _outr.mkdir(parents=True, exist_ok=True)
+            (_outr / "resume.json").write_text(
+                _jr.dumps({"kind": "episode.resume", **_resume_info,
+                           "wallSeconds": round(res.wall_seconds, 1)},
+                          ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
     for f in res.failures[:5]:
         print(f"    ❌ {f['graphId']}  [{f['failure']}] {f['reason'][:60]}")
 
