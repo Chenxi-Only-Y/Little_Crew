@@ -57,6 +57,56 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.203] — 2026-11-09（接 `composer` / `camera_operator`；**一个真跑没看到**，如实记下）
+
+### ① `composer`：`shot.list -> shot.music`
+
+名册早就声明，一直没接 —— BGM 是混流时内联调的 `music_bed`。
+现在优先用职位产物（`shot.music`），失败才退回内联。
+
+**Agent 单测（真跑 ffmpeg）**：
+
+```
+镜头 23 个 · 总时长 141.5s
+产出 ok=True 141.5s source=generated:ffmpeg-sine   ← 垫音，如实标注
+文件存在 ✓ · 够长 ✓
+```
+
+`source` 只有 `asset:<文件>` 或 `generated:...` 两种 —— **垫音不许冒充配乐**。
+`notDone` 明确写「作曲/编曲」「情绪曲线跟随」。
+
+### 🔴 但真跑里**没观察到**它被调用
+
+两次真跑（EMS / EMS2）都打了「配乐：composer 已绑定」，
+**都没有打「配乐（composer）：X s」那一行**，也没打失败/未绑定分支。
+
+**结论：`episode.py` 里那段调用点没有执行，原因未知。**
+不假装通过 —— 已加结构断言（C1~C3）防止"写了但没接"，并在本节记录为**未观测**。
+
+### ② `camera_operator`：`shot.image -> shot.video`
+
+```
+Agent 单测（真跑 ffmpeg）：S1 成功 1 段 · S2 缺图记 failed · 片段文件存在 ✓
+```
+
+接线**默认关闭**（`LITTLE_CREW_CLIPS_AGENT=1` 才走）：
+现有 H3 路径带提示词/重试/硬上限，换掉风险大 —— 先用开关隔离。
+
+### ③ 架构守卫又抓到一次（第三次同类）
+
+两个 Agent 写在 `agent/` 却 import `runtime.*` → **反向依赖**（`agent -> runtime`）。
+已移到 `runtime/`（上层可引用 agent，反之不行）。
+
+### 验证 Verification
+
+```
+ [v] 配乐/摄影自检 16/16（12 功能 + 4 结构断言）
+ [v] 全量 2253 项 + 架构守卫 PASS
+ [v] composer 单测真跑 ffmpeg 141.5s；camera_operator 单测成功 1 段
+ [ ] ⚠️ composer 在 episode 内的调用**未在真跑中观测到**（待查）
+```
+
+---
 ## [0.4.0-alpha.202] — 2026-11-08（**接入 `dialogue_editor`**：配音从"内联算"变成有契约的产物）
 
 ### 为什么它值得接

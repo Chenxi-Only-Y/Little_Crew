@@ -1574,16 +1574,43 @@ class EpisodeRunner:
                         # 先找素材（assets/music），没有就用程序生成的垫音 ——
                         # **两者在交付件里必须能区分**（source 字段）。
                         _bed = {}
+                        _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
+                                      for _s2 in picked)
+                        # ① 优先用职位产物 `shot.music`（2026-11-08 接）
                         try:
-                            from little_crew.runtime import music_bed as _mb
+                            _impls_c = getattr(self.orch, "_impls", {}) or {}
+                            if "composer" in _impls_c:
+                                _co = self.orch.run_stage(
+                                    "composer", "shot.music",
+                                    {"shot.list": list(picked),
+                                     "totalSeconds": _film_s,
+                                     "outDir": str(_sub)})
+                                if getattr(_co, "ok", False):
+                                    _mp = self.orch.blackboard.value("shot.music")
+                                    if isinstance(_mp, dict) and _mp.get("path"):
+                                        _bed = {"path": _mp["path"],
+                                                "source": _mp.get("source", ""),
+                                                "seconds": _mp.get("seconds", 0)}
+                                        print(f"  配乐（composer）：{_bed['seconds']:.1f}s"
+                                              f" · {_bed['source']}")
+                                else:
+                                    # **失败要看得见**：否则"没接上"与"没跑"分不出来
+                                    print(f"  ⚠️ 配乐职位未产出："
+                                          f"{str(getattr(_co, 'error', '') or '')[:80]}")
+                            else:
+                                print("  ⚠️ 配乐职位未绑定（composer 不在 _impls）")
+                        except Exception as _e_co:           # noqa: BLE001
+                            print(f"  ⚠️ 配乐职位未运行：{type(_e_co).__name__}")
+                        # ② 没有职位产物就退回内联（行为与以前一致）
+                        if not _bed:
+                            try:
+                                from little_crew.runtime import music_bed as _mb
 
-                            _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
-                                          for _s2 in picked)
-                            _bed = _mb.resolve(
-                                _film_s, _sub,
-                                ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
-                        except Exception as _e_bed:          # noqa: BLE001
-                            print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
+                                _bed = _mb.resolve(
+                                    _film_s, _sub,
+                                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
+                            except Exception as _e_bed:      # noqa: BLE001
+                                print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
                         # ⚠️ **必须给 total_seconds**：不给的话混流只做到"最后一句台词"，
                         # 音乐床会在 86 秒处被切断 —— 后面 68 秒又变回静音
                         # （2026-11-06 真踩到：床按 154s 生成、混流只用了 86s）。
@@ -2594,6 +2621,7 @@ class EpisodeRunner:
             if not stills:
                 return {"ok": False, "reason": "没有可用的静帧路径"}
 
+            self._clip_shots = list(getattr(self, "_shots_for_clips", ()) or ())
             prompts = dict(getattr(self, "_prompts_seen", {}) or {})
             res = self.render_video_stage(
                 stills, prompts, seconds=self.video_seconds,
@@ -2821,6 +2849,39 @@ class EpisodeRunner:
         | 部分成功 | `ok=False`，**但 `clips` 保留成功的** —— 半成品有用 |
         | 缺静帧或缺提示词 | 跳过该镜并记进 `failures`（**不静默丢**） |
         """
+        # ---- 摄影职位（`camera_operator`，2026-11-08 接）----
+        #
+        # 名册声明 `shot.image -> shot.video`。默认关闭（`LITTLE_CREW_CLIPS_AGENT=1`
+        # 才走），因为现有 H3 路径带提示词/重试/硬上限，换掉风险大。
+        # 走职位时把**文件读成 bytes**，与下面 `clips: {shotId: bytes}` 的契约一致。
+        import os as _os_ca
+
+        if _os_ca.environ.get("LITTLE_CREW_CLIPS_AGENT") == "1" and \
+                "camera_operator" in (getattr(self.orch, "_impls", {}) or {}):
+            try:
+                _outdir = Path(str(getattr(self, "_workdir", None) or ".")) / "clips"
+                _ca = self.orch.run_stage(
+                    "camera_operator", "shot.video",
+                    {"shot.list": list(getattr(self, "_clip_shots", ()) or ()),
+                     "images": dict(stills), "outDir": str(_outdir)})
+                if getattr(_ca, "ok", False):
+                    _cv = self.orch.blackboard.value("shot.video") or {}
+                    _clips, _fails = {}, []
+                    for _c in (_cv.get("clips") or ()):
+                        try:
+                            _clips[str(_c["shotId"])] = Path(str(_c["path"])).read_bytes()
+                        except Exception:                      # noqa: BLE001
+                            _fails.append({"shotId": str(_c.get("shotId")),
+                                           "reason": "读不到片段文件"})
+                    if _clips:
+                        print(f"  摄影（camera_operator）：{len(_clips)} 段")
+                        return {"ok": not _fails, "clips": _clips,
+                                "failures": _fails,
+                                "backend": _cv.get("backend", ""),
+                                "reason": "" if not _fails else "部分片段失败"}
+            except Exception as _e_ca:                          # noqa: BLE001
+                print(f"  ⚠️ camera_operator 未运行：{type(_e_ca).__name__}: {_e_ca}")
+
         from little_crew.runtime.h3_video import (
             VideoShot,
             h3_backend,

@@ -1,0 +1,58 @@
+{
+  "episodeId": "EMS",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒（\"三天。三天后他必须走。留他一天，你就别去春集。\"）在本场只以威胁形式抛出，代价却用旁白直接宣布：\"她不知道，从这晚起，村里的集会再没有她的位置。\"——惩罚从未在场面上兑现，人物也没有对这个威胁作出任何反应（少女\"没有低头，也没有辩解\"直接转身离场），观众只被告知她付了代价，没有看见她付。', suggestion='把代价推到场内：让春集的缺席在后续场次可见（如 S04 里同龄人结伴去春集、她只能目送；或母亲偷偷塞给她集市带回的东西却被父亲夺走）。删掉结尾那句全知旁白，让父亲的威胁悬在空中，由行动去证明它是否成真。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场景没有任何阻力：村民问\"还没回来？\"又自答\"问完自己也觉得多余\"，母亲答\"没有\"，老奶奶补一段释义式台词，父亲摆花。所有人物立场一致，无人阻拦、无人质疑、无人争执，父亲的思念与悔意没有遭到任何对抗就直通结尾的抒情画面（\"像有人从很远的地方，正走回来\"）。', suggestion='给收尾场一处对抗：比如村民劝父亲\"别摆了，回不来了\"或劝母亲改嫁/搬走，父亲以摆花或那句\"花又开了\"顶回去；让守候这个动作本身需要辩护、需要付代价，结尾的希望才有重量。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.303
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 41.241
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 69.4）"
+}

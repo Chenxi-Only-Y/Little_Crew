@@ -1,0 +1,110 @@
+{
+  "episodeId": "EMS2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：本场只有'发现伤者—施救'的单向行动，没有对抗力量。旅人昏迷不醒，无法构成阻力；环境（日头偏西、风）也只作为背景存在，未对她的施救形成实质阻碍（原文：'日头一寸寸偏西，她没再站起来'只是时间流逝，不是阻力）。\", suggestion=\"给施救加一道硬阻力：如伤口处理失败一次、或发现追兵/野兽踪迹逼近必须转移、或旅人在她施救时突然痉挛抓伤她——让她付出更具体的代价，也让'留下来挡风'这个决定是在被逼选择中做出的。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：父亲作为本场的阻力只'出现即撤回'——原文'父亲在门外站了很久……最终又退开'，威胁没有兑现，冲突被作者自己撤掉了，全场只剩换湿布的重复照料，局面是平的。\", suggestion=\"让门外的对抗落地：父亲推门进来端走药碗、或逼她交出旅人、或集会的人在院里喊话，使她必须在'听父亲的'和'守夜'之间当场做出有代价的选择；若坚持留白，至少让'退开'伴随一个明确的让步动作与代价（如留下药、留下灯）。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：整场情绪几乎是一条直线：站住—蹲下—系包袱—闻指尖—继续走，没有新的处境变化或情绪拐点，'那就走吧'力度不足以撑起一个独立场次，紧接S07的岔口抉择时观众尚未被推动。\", suggestion=\"给S06一个微转折：如她发现雾中回头的路已彻底消失（被动切断退路）、或捡到旅人留下的某件实物/听到远处村里的钟声（触发新信息），让她从'接受'升级为'下定决心'，为S07的抉择蓄力。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 41.945
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 58.674
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的禁令“明日的集会，你不许去”与少女的回答“我不去”语义相反又可两解：既可以读作她服软，也可以读作她顶回去。观众无法判断这场父女对峙谁赢了、谁付了代价；紧接着母亲一拉袖子，冲突就被卸掉，父亲既没再逼，也没被真正顶回去。', suggestion='把这句改成方向明确的对抗。若她抗命，就让父亲把话说到绝处（如摔门、把灯吹灭），她仍端着药碗进屋——用行动而非含糊的台词分胜负；若她表面服从而内心抗拒，就把“我不去”之后的独白写实，让观众看见这是忍让，并把忍让的代价（整夜不睡、此后再不回集会）明确挂在这一忍上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最硬的阻力（父亲）在她真正离村的这一场缺席；现场唯一的对抗是人群中一句“走了就别回来”，说完即弃，“她没有回头去找那张脸”把冲突一笔带过。离村本应是前几场父女冲突的总清算，实际却是在无人阻拦中完成的。', suggestion='把对立面放到离村这一刻：让父亲或族人堵在村口给出具体障碍（交出篮子、当众划清、要她发誓不回），使“走”必须当场撕破脸才能完成；人群的敌意也应逼出她一个动作或抉择，而不是一句旁白就消散。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 39.88
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 61.551
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.7）"
+}
