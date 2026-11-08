@@ -1,0 +1,165 @@
+{
+  "episodeId": "EVR",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.57,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场只有护理动作与独白，旅人处于昏睡状态，无法形成你来我往的对抗（“换了第三盆水”“热度退了一点”）。她唯一的阻力是抽象的“怕天亮”，没有具体的人或事来阻挡她，整场是静止的。', suggestion='给这一场加入一个外部压力源：比如门外突然传来敲门/母亲在院里喊她、或旅人伤势在后半夜恶化迫使她必须在天亮前做某个抉择，让她的守夜变成一场有对手的消耗战。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：S03 里她押上的是重注——“我守你一夜，明天全村都会知道”，但到了本场，这个代价只兑现为一句“人群里传来窸窣的议论声”，既无人当面质问她，也没影响她跟旅人走的决定，代价几乎为零。', suggestion='让议论升级为实际阻力：有人拦路、父亲追来、或她必须当众否认某件事才能出村——使她为 S03 的选择付出看得见的代价，而不是一句背景音。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：少女在这场里情绪是一条直线：从“没有低头，也没有辩解”“端得很稳”，到结尾“没合眼，也没回头”，立场和状态没有任何起伏；唯一的动作变化（父亲手臂绷很久后落回身侧）发生在配角身上。', suggestion='给她安排一次情绪的破口：比如她走到门口又停住、药碗端到一半洒出、或对着鼓声突然红了眼眶再迅速收住——让观众看到这个决定在她身上留下的一道折痕。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.57,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.708
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 54.943
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.39,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：阻力几乎全部来自外部条件（天色偏西、旅人昏死），少女内心没有对抗：她一句“你不能死在这里”就完成了决定，紧接着“弯腰去拖他的胳膊”一笔带过。原文只写“血蹭在她袖口上，她没有松手”，没有一次拖不动、放不下花篮、走不回坡路的对抗，救人这件事在场内毫无阻力。', suggestion='在“拖他下坡”处加一次失败：拖了几步滑倒、摔破膝盖或花篮滚落坡下，让她在“回去采花/回村叫人/继续拖”之间硬选一次，用可见的体力代价换回这场戏的冲突强度。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突是父亲反对“收留外乡人”，但少女付出的代价是“今年我不去了（村集）”——代价与冲突不对应，村集并不能平息父亲的反对；而父亲这一方“母亲拉住父亲的袖子，摇了摇头”“手臂绷了很久，才慢慢落回身侧”，阻力靠旁人一拉就自行消解，没有任何人承担后果。', suggestion='让代价落在冲突本身：父亲的阻拦要拿到东西才罢手（扣下药钱、让少女当众答应赶人、砸掉一罐药），或把“不去村集”改成由父亲收回某件属于她的承诺，使代价与阻力同源。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲的阻拦（“把药收起来”“你拿什么赔”）被少女一句“拿我的”就压下去了——“母亲沉默了一瞬，忽然提高声音”之后又立刻“退开”，正面冲突没有来回拉扯，只剩一句悬空的“天亮前，你自己选”，而这个“选”在本场内没有被执行，冲突等于原地搁置而非被赢下。', suggestion='让母亲的反对真的执行一次（母亲先一步把药包收进怀里／端走油灯），少女必须绕过或顶撞母亲才拿到药，冲突要交手两回合再让步；“你拿什么赔”则应立即索取一个具体抵押物，而不是留到S04才兑现。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：身份谜底由旅人自己开口揭晓——“你手里的花，比刀还快”，少女随即“把花束举起来，朝着他掷了过去”。真正的对抗是被旅人主动缴械的：他不回避、不阻止、不反击，少女只后退半步就完成一击，整场缺少“逼问—闪避—被识破”的拉锯。', suggestion='把投花改成少女先试探两轮（假装递花、故意走回头路），旅人逐次露出破绽（不接花、不踩自己的影子），由少女自己拆穿并掷出——让最后一击是挣来的，而不是对方拱手送的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场唯一阻力是“远处村里传来早集的鼓声”，但鼓声只是背景音，没有任何人上山追她、没有父亲或母亲出现、也没有回村的实质好处，两条路的选择没有任何东西真的在拽她回头；而“失去旅人”的代价在S05末已经付过，本场情绪“眼睛发酸，却没有哭”到“那就……去找”几乎无消耗。', suggestion='给回村一侧加真实拉力：让村里人（或母亲）的声音/身影出现在坡下叫她，或让她确实往回走了三步才停；同时把代价推到她身上——捏碎花瓣后留下的只是一句空决心，可改为她先朝回村方向走，再折返，用一次可见的反复完成转折。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.39,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.784
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 76.103
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人的阻拦只有一句：“你爹拿镯子换我天亮前离村，没换你。”少女回一句“镯子是我的，路也是我的”，他便不再挡——没有追加条件、没有肢体或道义上的对抗、没有任何代价，阻力一触即溃。', suggestion='让阻拦真正咬人：他给出必须付代价的理由（例如她一出村、父亲抵镯的事就会被村里追究，或他身上带着不能连累人的东西），迫使她做出一个可见的牺牲或公开的对抗，才换到“跟着走”的许可。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：两个明码标价的代价此后音讯全无：“攒了三年买花种的钱——放在灶台：这是抵押”，以及“明早我要是看见他还在，我就去叫村长”。时间直接跳到春天（S04），抵押既没被收回也没被没收，村长的威胁也从未兑现。', suggestion='让账结清：S06母亲喊话时把布袋一起举起来（“镯子、你攒的钱都还你”），或在S04村口让村长出面拦路——把S03押上的东西在结尾处一并退还，少女的拒绝才付满价钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：母亲的招唤是本场唯一阻力，少女只走了三步就自行停下，母亲再无回音，最后一句“娘，镯子我不要了”是对空说的——系列里最后的告别没有对手接招，阻力在终点前自行撤走。', suggestion='把压力保持到最后一格：母亲朝坡上追两步或再喊一轮（带上更狠的筹码，如“你走了你爹的病谁管”），逼她把拒绝完整地说出口、当面说完，再转身走进晨雾。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.341
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 248.658
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.2（REVISE）；最好的是第 1 轮（59.6 分）"
+}

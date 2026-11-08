@@ -1,0 +1,110 @@
+{
+  "episodeId": "EVR2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.35,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲下了明确的最后通牒——“你要留他，就别再去村里的集会。你自己选”，少女的回应却是“集会的事，她一个字也没再提”。代价只被叙述性带过，观众没有看到她为此真正失去什么；同样，母亲冒风险塞药粉（“别说是我说的”）埋下的隐患，此后也再无回响，风险没有兑现成任何代价。', suggestion='让代价落到舞台上：可在本场末尾或 S03 开头加一个短镜头——她远远看着集会散场、被人让开一个位置，或父亲摸到药粉包时停顿的一瞬。哪怕两句台词，也比“一个字也没再提”更能证明她付了钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：离家这一场的阻力全是静态的：“人群在远处看着，没有人上前”；旅人的“你走到一半就会恨我”和老奶奶的“记住”都是预言式警告，不是对抗。没有任何人上前阻拦、夺下包袱或与她争执，她最重要的决定没有遇到需要用力挣脱的阻力。', suggestion='让 S02 的对立在离家时正面撞上：由父亲或一名村民上前扣住门闩/包袱，把“村里的集会”这一威胁具体化为一次当场的阻拦，她挣脱之后再走，决心才是挣来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：场内没有任何对手或阻力。她蹲下捡花穗、说一句“我不找你了”，就完成了从“守着他”到“自己上路”的和解——“她没有哭”是陈述而非呈现，情绪转变靠台词直接宣布，中间没有挣扎的过程，解决得过于便宜。', suggestion='给她一个真实的两难动作来承载转折：走出两步又折回、把花穗举到鼻前又放下、先朝北方迈步再回头看一眼村子的方向，最后才把花攥紧继续走。让“我自己去看看北方”是动作的结果，而不是一句宣言。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 57.35,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.839
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 115.238
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：母亲冒认的代价是实打实的（“我。”/“从今往后，你的事，别拉上你娘。”），但她塞给少女的那包药粉在同一场戏里就被父亲搜出、扔进灶膛烧掉——“药粉，化在汤里”这句嘱托从此再未被提及。牺牲付出了，却什么也没换到：既没让旅人的伤好转（S03他已能背行囊，恢复过程凭空跳过），也没转化为少女的下一步行动。', suggestion='让这包药粉在本场或下场真正起作用：要么少女冒险把药下进汤里、并因此与父亲再起一次正面冲突（把“被搜出”挪到用药之后），要么让母亲的牺牲换到一个具体的回报——比如她借着送药从父亲嘴里掏到一句关于外乡人/北边路的话。代价必须买到东西，否则母亲这条线白流血。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：这一场是全剧的谜底场，却是唯一没有交锋的场次。“你到底是谁？”——“旅人没有回答。他只是笑。”随后她单方面说出判词、单方面掷出花束，旅人全程不辩、不拦、不还一句，答案由风里一句宣告直接给出：“我就是你想远行的心啊。”阻力在她开口的瞬间就撤走了，高潮靠解释和化烟的视觉效果完成，而不是靠两个人你来我往逼出来的。', suggestion='给旅人一个反制动作或一句反击，让她必须付出代价才能问出真相。例如他接住花束、或用她自己的话反问她“你想我是谁”，逼她先承认“我需要一个带我走的人”才肯说出谜底；谜底一旦是她自己挣来的，掷花的动作和随后的空篮落地才有重量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 42.195
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 152.577
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.5）"
+}

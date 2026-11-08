@@ -57,6 +57,66 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.195] — 2026-11-08（**视觉闸 → 定向重渲**：判了之后真的动手）
+
+### 补的是"判完没人动"
+
+视觉闸已经能判「这一镜脸崩了」（alpha.194：EV4 22 镜里 2 镜），
+但 finding 只落盘 —— **成片里还是那张崩的图**。
+
+### 机制：不新造轮子，只改 `attempt`
+
+编译器按 `provenance.seedDerivation` 派生种子：
+
+```
+projectSeed | episodeIdx | sceneIdx | shotIdx | attempt  ->  derive_seed()
+```
+
+`attempt` 进内容哈希 —— 所以 `attempt+1` 就等于"同一镜、换一次尝试"：
+
+```
+attempt=0 -> sha256:5360e0d4b7b9...
+attempt=1 -> sha256:424cf7f752c5...   ← 哈希不同 = 缓存必然 miss = 真重画
+```
+
+**旧图仍留在缓存里，可追溯。**
+
+### 三条闸（都写进自检）
+
+1 **只重画 error 级**（`faces=broken` / `blank`）—— 低一致度是 warn，不自动烧 GPU
+2 **有上限**：默认最多 4 镜、每次最多 2 尝试
+3 **纯函数**：`bump_attempt` 不改原 IR（原对象 attempt 仍是 0）
+
+### 真跑（EVR2，1 镜）
+
+```
+视觉闸：审 1/1 镜 · 严重 0 条 · 提示 0 条
+row: faces=ok  matches=4
+```
+
+**这一镜没崩，所以重渲没触发 —— 这是对的（只对 error 动手）。**
+端到端"崩镜被重画"尚未观测到：需要一集里真出崩镜（EV4 的 2 镜就是那种情况）。
+
+### 踩的坑（同类第三次）
+
+| 坑 | 后果 |
+|---|---|
+| 视觉闸块引用 `_wdv` 但没定义 | **整段静默没跑**（`NameError` 被 except 吞了）→ 图还是崩的 |
+| 把 4.8 段放在 `per_shot_artifacts` 定义**之前** | 真跑必 `UnboundLocalError`（老毛病，已挪到之后） |
+| 自检里局部变量 `_ir` 遮蔽模块级函数 `_ir()` | `UnboundLocalError`（改名 `_irx`） |
+
+> 三条都是"看起来跑了、其实没跑"的类型 —— 这类错误只有真跑才暴露。
+
+### 验证 Verification
+
+```
+ [v] 视觉重渲自检 17/17（含：真哈希变化 / 只挑 error / 上限 / 纯函数 / 无产物记 failed）
+ [v] 全量 2182 项 + 架构守卫 PASS
+ [v] 真跑 EVR2：视觉闸开火，1 镜通过未触发重渲
+```
+
+---
+
 ## [0.4.0-alpha.194] — 2026-11-08（**视觉闸**：deepseek-flash 能看图，22 镜里抓到 2 镜崩脸）
 
 ### 用户指出：`deepseek-flash` 有视觉

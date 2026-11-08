@@ -65,6 +65,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("接口缺陷清单", [sys.executable, "-m", "little_crew.review.interface_defects_check"], 20),
     ("渲染审片", [sys.executable, "-m", "little_crew.review.image_review_check"], 11),
     ("视觉闸", [sys.executable, "-m", "little_crew.review.vision_review_check"], 13),
+    ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 17),
     ("场景预算协调器", [sys.executable, "-m", "little_crew.governance.plan_alloc_check"], 38),
     ("处置闭环", [sys.executable, "-m", "little_crew.governance.disposition_check"], 20),
     ("provider 指纹", [sys.executable, "-m", "little_crew.governance.provider_fingerprint_check"], 14),

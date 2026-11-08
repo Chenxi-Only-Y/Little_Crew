@@ -1213,6 +1213,73 @@ class EpisodeRunner:
             for s in picked
         }
 
+        # ---- 4.8) 视觉驱动重渲：只重画画崩的那几镜（2026-11-08）----
+        #
+        # 视觉闸（4.6x）能判「这一镜脸崩了」，但判完必须有人动 ——
+        # 否则 finding 只是落盘，成片里还是那张崩的图。
+        #
+        # 机制不新造：编译器按 `provenance.seedDerivation` 派生种子，
+        # 其中 `attempt` 进内容哈希 -> 把 attempt+1 就等于"同镜换一次尝试"，
+        # 缓存必然 miss，图会被**真正重画**，旧图仍留在缓存里可追溯。
+        self._vision_rework = {"kind": "vision.rework", "rerendered": [],
+                               "failed": [], "skipped": [], "verified": []}
+        try:
+            _wd_vr = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _vres = getattr(self, "_vision_review", None) or {}
+            _errs = [f for f in (_vres.get("findings") or [])
+                     if f.get("severity") == "error"]
+            if _errs and getattr(self, "vision_rework_enabled", True):
+                from little_crew.runtime import vision_rework as _vrw
+
+                _targets = _vrw.plan(_errs, max_shots=int(
+                    getattr(self, "vision_rework_max_shots", 4)))
+                _ir_by_shot = {}
+                for _s5, _ir5 in zip(picked, irs):
+                    _ir_by_shot[str(_s5.shot_id)] = _ir5
+                _log = {"kind": "vision.rework", "rerendered": [], "failed": [],
+                        "skipped": [], "verified": []}
+                for _tg in _targets:
+                    _sid = str(_tg["shotId"])
+                    _ir = _ir_by_shot.get(_sid)
+                    if _ir is None:
+                        _log["skipped"].append({"shotId": _sid,
+                                                "reason": "没有这镜的 IR"})
+                        continue
+                    _ir2, _att = _vrw.bump_attempt(_ir)
+                    try:
+                        _rb2 = self._render([_ir2]) or {}
+                        _outs = getattr(_rb2.get("batch"), "outcomes", ()) or ()
+                        _names = sorted(getattr(_outs[0], "artifacts", {}) or {}) \
+                            if _outs else []
+                    except Exception as _e_r2:                   # noqa: BLE001
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": f"{type(_e_r2).__name__}: {_e_r2}"})
+                        continue
+                    if not _names:
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": "重画没有产物"})
+                        continue
+                    # **替换**原产物引用，让成片/证据链都用新图
+                    per_shot_artifacts[_sid] = _names
+                    artifacts[str(_ir2.get("graphId", ""))] = _names
+                    _log["rerendered"].append({"shotId": _sid, "attempt": _att,
+                                               "artifacts": _names,
+                                               "kind": _tg.get("kind", ""),
+                                               "reason": _tg.get("reason", "")})
+                    print(f"  ↻ 重画 {_sid}（attempt {_att}）")
+                self._vision_rework = _log
+                if _wd_vr and _log["rerendered"]:
+                    try:
+                        (_ovr := Path(str(_wd_vr)) / "delivery").mkdir(
+                            parents=True, exist_ok=True)
+                        (_ovr / "vision_rework.json").write_text(
+                            __import__("json").dumps(_log, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                        # noqa: BLE001
+                        pass
+        except Exception as _e_vrw:                          # noqa: BLE001
+            print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
         # ---- 配音轨（§3.11，2026-11-06）----
         #
         # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
@@ -1408,6 +1475,11 @@ class EpisodeRunner:
         if getattr(self, "vision_review_enabled", False):
             try:
                 import json as _jv2
+
+                # ⚠️ 工作目录必须在这里取：前面几段各自用过 `_wd`/`_wd_rb`，
+                # 但它们**出了作用域就不存在** —— 真跑踩到 `NameError: _wdv`
+                # （2026-11-08，视觉闸因此整段没跑，而图还是那张崩的）。
+                _wdv = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
 
                 from little_crew.agent.llm import LlmClient as _LC
                 from little_crew.review import vision_review as _vr
