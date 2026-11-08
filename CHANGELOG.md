@@ -57,6 +57,74 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.191] — 2026-11-08（**能力通道层**：本地与云端只是通道不同）
+
+### 用户提的是架构问题
+
+原来的调用方式互不一致：
+
+```
+tts   -> tts_breeze.synth(text, path, voice=…, seed=…)
+video -> video_operator.render(image, path, duration=…, backend=…)
+music -> music_bed.resolve(seconds, out_dir, mood=…)
+text  -> LlmClient.chat(prompt, system=…)
+```
+
+**签名不同、错误语义不同** —— 换云端就得改调用方，于是每换一次通道多一处分叉。
+
+### 这一版做了什么
+
+统一成一个 **能力通道层**：
+
+```
+注册：Channel{channel_id, capability, location} + available()->(bool, reason)
+选择：LITTLE_CREW_<CAP>_CHANNEL = local | cloud | local:<名字> | <名字>
+调用：call(capability, request: dict) -> {ok, path, seconds, provider, channel, location, error}
+```
+
+**四个通道已登记可用**：
+
+```
+text    llm         （复用 models 注册表的默认模型）
+tts     breeze      （本机 breeze-tts-2）
+video   local-video （kenburns / h3）
+music   music-bed   （素材优先，生成兜底）
+```
+
+云端通道（`cloud-tts` / `cloud-video` / `cloud-image` / `cloud-music` / `cloud-text`）
+**已登记但默认不可用** —— 只读 `LITTLE_CREW_CLOUD_<CAP>_ENDPOINT`。
+**没配就是不可用，绝不静默退回本地**（有专门断言守这条）。
+
+### 🔴 中途发现：项目里**早就有**通道层
+
+```
+runtime/channels/   base.py · comfy.py · http.py
+  Channel.submit/poll/watch/collect/cancel/reconcile  —— 作业型（提交渲染任务）
+```
+
+我差点又造一套。现在的定位写清楚了：
+
+| 层 | 文件 | 适合 |
+|---|---|---|
+| **作业层** | `runtime/channels/` | 提交一个渲染任务、轮询、对账（几分钟级） |
+| **能力层** | `runtime/capability_channels.py` | 同步调一次拿结果（秒级：TTS/文本/垫音） |
+
+**硬凑成一层，两边都别扭** —— 但**词汇对齐**（`channel_id` / `available() -> (bool, reason)`）。
+
+### 踩的坑
+
+`prefer="breeze"` 被当成 `location="breeze"` 而永远选不到 → 改成**不带冒号时先按名字匹配**。
+
+### 验证 Verification
+
+```
+ [v] 通道层自检 14/14（注册/未知能力报错/同名覆盖/云端未配置不回落/统一返回/describe）
+ [v] 全量 2136 项 + 架构守卫 PASS
+ [v] 真诊断：text=llm · tts=breeze · video=local-video · music=music-bed 全部 OK
+```
+
+---
+
 ## [0.4.0-alpha.190] — 2026-11-08（**音色由 LLM 设计、TTS 物化** —— 不再要人工样本）
 
 ### 用户纠正了设计方向
