@@ -1,0 +1,1143 @@
+[
+  {
+    "episode": "_FLR",
+    "result": {
+      "kind": "vision.review",
+      "rows": [
+        {
+          "shotId": "SH-EFLR-S01-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "行走方向与描述相反，未弓腰上坡",
+            "花篮背在身后，不是臂弯挎篮",
+            "缺少短披肩和捏袖口细节",
+            "花穗过满，不像半篮"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S01-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "缺少皮靴、血浸布条等伤情细节",
+            "旅人未呈现卧地或受伤状态",
+            "探额头动作方向与描述相反",
+            "画面模糊且背景近乎纯黑"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S01-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "未表现撕布成三条并缠绕小腿",
+            "缺少布条勒紧伤口的动作",
+            "膝头未见碎石和渗血血珠",
+            "构图包含两人，非纯特写"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S01-004",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "模型没给 JSON"
+        },
+        {
+          "shotId": "SH-EFLR-S02-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "父亲腰带与麻绳不符",
+            "少女短披肩缺失",
+            "母亲眉间痣不明显",
+            "碗晃动与药罐细节不足"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S02-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "缺少空药罐和银镯子",
+            "红布包被画成两个红袋",
+            "油灯未明显从下方照脸",
+            "未见推镯子刮桌动作"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S02-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "手为摊开而非攥紧",
+            "银镯不明显",
+            "腕上缺少血披肩断带",
+            "披肩形态位置不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S02-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "未端药碗而是端油灯",
+            "缺少床边守候、添油换巾情节",
+            "未体现灯芯跳三次与天亮春集",
+            "场景与描述部分不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S03-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "服装细节与描述有偏差：图中为白色长裙外搭深蓝马甲",
+            "未体现“把袖口捏在手里”的动作",
+            "村口与春日氛围较弱，背景偏暗",
+            "人物望向远处的姿态不够明确"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S03-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "老奶奶未把花塞给少女，花在少女手中",
+            "缺少窃窃私语的人群场景",
+            "画面多出中间人物",
+            "少女肩上是挎包而非小包袱"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S03-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "老奶奶表情偏笑，不符合没有笑",
+            "未见一只手按在少女手背上",
+            "画面中没有花束",
+            "少女握花束动作缺失"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S03-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "动作不符：少女未挥手，老奶奶未举手半空",
+            "老奶奶发色与描述不符",
+            "日光氛围偏暖，不是雾白",
+            "部分服饰与人群细节不一致"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "镜头偏中景，不是特写",
+            "环境偏暗，缺少黎明光线",
+            "紫色花穗不够突出",
+            "披肩和袖口细节与描述有出入"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "画面整体昏暗，无晨光发灰的氛围",
+            "右侧人物笑意未呈现隔雾无落点的感觉",
+            "左侧人物侧脸较模糊，眉心情绪不清",
+            "旅人腰间麻绳与袖口细节不明显"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "花束未倒转，花梗未递到胸前",
+            "右侧人物未后退侧肩",
+            "无风吹花穗效果",
+            "花型与紫色花穗不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "broken",
+          "matches": 4,
+          "problems": [
+            "左侧人物侧脸特征缺失",
+            "右侧人物面部模糊不清",
+            "未能体现角色特定的发貌细节",
+            "画面细节不足以确认动作"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-005",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "花束仍在手中，未见被风掀飞散成紫色花瓣",
+            "动作更像举花奔跑而非扑抓",
+            "人物服装细节与描述不完全一致",
+            "背景大片黑色且整体简化"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S04-006",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "构图偏半身近景，非全景",
+            "缺少旅人化烟飞向山脊",
+            "掌心有花梗而非空",
+            "画面较简化"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S05-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "未表现转身往回走两步",
+            "雾未漫到脚踝",
+            "下装与马甲不符",
+            "山道更像铁轨"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S05-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "少女背对镜头，无法确认酒红眼睛与脸部细节",
+            "少女未见明显朝老奶奶走两步",
+            "雾中影子与描述中提篮老奶奶的影子不完全对应"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S05-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "broken",
+          "matches": 3,
+          "problems": [
+            "画面模糊",
+            "脸部细节不清",
+            "断带质感不明显",
+            "构图与特写不完全一致"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFLR-S05-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "未呈现走进雾里背影渐淡",
+            "人物疑似侧身回望而非径直走入雾中",
+            "缺少马甲与袖口细节",
+            "少女占画面较大，非远景淡化背影"
+          ],
+          "error": ""
+        }
+      ],
+      "findings": [
+        {
+          "shotId": "SH-EFLR-S01-002",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S02-002",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S02-003",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S02-004",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S03-002",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S03-003",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFLR-S04-004",
+          "kind": "vision.faces-broken",
+          "severity": "error",
+          "reason": "人物脸部崩坏：左侧人物侧脸特征缺失；右侧人物面部模糊不清；未能体现角色特定的发貌细节；画面细节不足以确认动作"
+        },
+        {
+          "shotId": "SH-EFLR-S05-003",
+          "kind": "vision.faces-broken",
+          "severity": "error",
+          "reason": "人物脸部崩坏：画面模糊；脸部细节不清；断带质感不明显；构图与特写不完全一致"
+        }
+      ],
+      "reviewedCount": 21,
+      "total": 22,
+      "skipped": 1,
+      "errors": 1,
+      "notJudged": [
+        "美不美",
+        "角色像不像同一个人（需相似度模型）",
+        "构图是否有意图"
+      ],
+      "kindCounts": {
+        "vision.low-match": 6,
+        "vision.faces-broken": 2
+      }
+    }
+  },
+  {
+    "episode": "_FULL",
+    "result": {
+      "kind": "vision.review",
+      "rows": [
+        {
+          "shotId": "SH-EFULL-S01-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "模型没给 JSON"
+        },
+        {
+          "shotId": "SH-EFULL-S01-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 1,
+          "problems": [
+            "未见伸手碰花穗与后退动作",
+            "倒地男人仅露手部，伤腿不完整",
+            "缺少花穗及明亮午后光",
+            "前景阿薰年龄身形与描述不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S01-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "人物显年轻，不符老年设定",
+            "披肩撕成两半未体现",
+            "血滴入竹篮与紫花穗细节缺失",
+            "身形不够丰盈"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S01-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "人物服装与描述不符",
+            "缺少岩凹中披肩旅人",
+            "篮子花穗数量和内容不符",
+            "多人物拼贴且回头望未体现"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S02-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "模型没给 JSON"
+        },
+        {
+          "shotId": "SH-EFULL-S02-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "阿薰老年丰盈设定不符",
+            "父亲高马尾发型未体现",
+            "碎碗与门槛流动不明显",
+            "门口场景不明确"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S02-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "未蹲地拾碎碗片",
+            "手中是完好的碗",
+            "表情悲伤欲哭",
+            "发型与浅色发缕不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S02-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "阿薰发型与描述不符",
+            "母亲未在父亲身后拉袖摇头",
+            "母亲未转向墙",
+            "门后站位不明显"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S03-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "人物偏年轻，非老年",
+            "缺少灶门灶膛与湿柴细节",
+            "火舌未舔到手背",
+            "鬓角浅色发未体现"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S03-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "手部动作与描述不符：未按围裙或伸回灶膛架柴",
+            "水泡细节不足，白点不像已破水泡",
+            "人物造型有偏差：缺少浅色发缕且不显老年"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S03-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 1,
+          "problems": [
+            "仅见一人，缺少母亲与阿薰同框互动",
+            "药碗在桌上，未表现左手端碗",
+            "未见拽手、藏手及母亲放布转身",
+            "缠手动作与画面不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S04-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "人物站位与描述不符",
+            "旅人未望向远方",
+            "递花对象和动作不清晰",
+            "阿薰未接过花束"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S04-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "父亲未拦阻或掰手指",
+            "紫花仍在阿薰手中未掉落",
+            "父亲发型与描述不符",
+            "人物表情与紧张情境不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S04-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "broken",
+          "matches": 3,
+          "problems": [
+            "人物脸部糊成一片",
+            "关键服饰细节缺失",
+            "画面黑底剪影化，场景还原有限"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S04-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "缺少花与母亲",
+            "解锁放下的动作不符",
+            "赤脚位置不自然",
+            "画风简约细节不足"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S04-005",
+          "reviewed": true,
+          "blank": false,
+          "faces": "broken",
+          "matches": 1,
+          "problems": [
+            "人物与描述不符",
+            "缺少门槛与送别场景",
+            "服饰发色不匹配",
+            "画面模糊且脸部糊成一团"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S05-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "关键动作未体现：阿薰未背对火堆回头，旅人未低头",
+            "无影子缺失表现",
+            "人物细节如浅色发、胸前干花、腕疤不可辨"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S05-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "花的位置和举花动作与描述不完全一致",
+            "青年左手腕旧疤不明显",
+            "服装细节与描述有差异"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S05-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "旅人胸前未见干花",
+            "旅人发型细节与描述有差异",
+            "画面为简化动画风格"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S05-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "动作与描述不符",
+            "缺少花和包袱",
+            "未表现背对躺下",
+            "场景氛围差异较大"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S06-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "模型没给 JSON"
+        },
+        {
+          "shotId": "SH-EFULL-S06-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "画质较模糊",
+            "发型与描述不符",
+            "花和手部细节不清",
+            "服装颜色偏黑"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S06-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "晨光氛围不明显",
+            "阿薰发色偏灰白且发型与描述略有出入",
+            "动作与低头试问、轻声应的情节不够吻合"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S06-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "动作情节与描述不符",
+            "未见花束脱手与掷偏",
+            "缺少人形化作轻烟淡去",
+            "紫色烟雾与花瓣表现较弱"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S07-001",
+          "reviewed": true,
+          "blank": true,
+          "faces": "none",
+          "matches": 0,
+          "problems": [
+            "画面几乎全黑，仅见模糊花瓣",
+            "无人物阿薰",
+            "无山路碎石枯草环境",
+            "与镜头描述严重不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S07-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "跪姿与碎石地面不明显",
+            "左手压右腕动作不明确",
+            "叠布压土细节缺失",
+            "人物年龄感偏年轻"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EFULL-S07-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "画面为近景而非远景",
+            "缺少扶石、磕膝、走岔路等动作",
+            "人物年龄偏年轻",
+            "画面较模糊"
+          ],
+          "error": ""
+        }
+      ],
+      "findings": [
+        {
+          "shotId": "SH-EFULL-S01-002",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（1/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S01-004",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S02-003",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S03-003",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（1/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S04-002",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S04-003",
+          "kind": "vision.faces-broken",
+          "severity": "error",
+          "reason": "人物脸部崩坏：人物脸部糊成一片；关键服饰细节缺失；画面黑底剪影化，场景还原有限"
+        },
+        {
+          "shotId": "SH-EFULL-S04-005",
+          "kind": "vision.faces-broken",
+          "severity": "error",
+          "reason": "人物脸部崩坏：人物与描述不符；缺少门槛与送别场景；服饰发色不匹配；画面模糊且脸部糊成一团"
+        },
+        {
+          "shotId": "SH-EFULL-S04-005",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（1/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S05-004",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S07-001",
+          "kind": "vision.blank",
+          "severity": "error",
+          "reason": "画面几乎空白/纯色"
+        },
+        {
+          "shotId": "SH-EFULL-S07-001",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（0/5）"
+        },
+        {
+          "shotId": "SH-EFULL-S07-003",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        }
+      ],
+      "reviewedCount": 24,
+      "total": 27,
+      "skipped": 3,
+      "errors": 3,
+      "notJudged": [
+        "美不美",
+        "角色像不像同一个人（需相似度模型）",
+        "构图是否有意图"
+      ],
+      "kindCounts": {
+        "vision.low-match": 9,
+        "vision.faces-broken": 2,
+        "vision.blank": 1
+      }
+    }
+  },
+  {
+    "episode": "_V4",
+    "result": {
+      "kind": "vision.review",
+      "rows": [
+        {
+          "shotId": "SH-EV4-S01-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "broken",
+          "matches": 2,
+          "problems": [
+            "无成片花穗与花浪，光线偏暗而非午后强光",
+            "伤者脸朝下，腿布条血渍和手掌摊开细节未见",
+            "多出站立旅人，伤者未在坡石边蜷卧",
+            "人物脸部模糊，服饰细节与描述有偏差"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S01-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "手仍贴在额头，未表现猛地缩回",
+            "阳光斜照、嘴唇发干、盯胸口未体现",
+            "服饰与发型细节不一致",
+            "画面模糊，男人腕疤不可见"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S01-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "未表现脖子绷筋和布纤维撕裂毛边",
+            "血迹未明显沾到浅色裙摆",
+            "男性仅露下半身且无脸",
+            "布条勒紧与撕扯特写的张力较弱"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S01-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "缺少碎石坡、竹篮、紫色花穗等场景元素",
+            "人物发色、眼睛、服装与描述不符",
+            "未体现膝盖磕石、抓灌木根、指甲黑泥等动作细节",
+            "背景几乎纯黑，环境信息不足"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S01-005",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "背柴者未仰脸且背对镜头",
+            "少女位置在坡下而非上坡处",
+            "少女表情与背腿动作不够明显",
+            "右侧人物与村人描述部分相符但未背柴"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S02-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "碗未表现重磕和汤汁溅出",
+            "少女脸部没有被阴影遮半",
+            "母亲未明显缩在桌角绞衣角"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S02-002",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 3,
+          "problems": [
+            "动作未体现：父亲未逼近门边",
+            "母亲未被甩开或撞桌角",
+            "缺少影子笼罩与紧张动态",
+            "碗晃动不明显"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S02-003",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 4,
+          "problems": [
+            "门闩细节与推到底动作不够明确",
+            "少女手指未清楚压在门闩上",
+            "父亲脸部未明显处于阴影",
+            "未见木屑落下"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S02-004",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "人物动作与描述不符",
+            "缺少床边换布条场景",
+            "母亲未被拽出",
+            "油灯位置和持灯人不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S03-001",
+          "reviewed": true,
+          "blank": false,
+          "faces": "ok",
+          "matches": 2,
+          "problems": [
+            "人物面向镜头而非望向院外",
+            "少女未挎包袱",
+            "缺少泥墙、木门、晒柴等院子细节",
+            "动作姿态与描述不符"
+          ],
+          "error": ""
+        },
+        {
+          "shotId": "SH-EV4-S03-002",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S03-003",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S04-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S04-002",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S04-003",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S04-004",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S05-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S05-002",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S05-003",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S05-004",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S06-001",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S06-002",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        },
+        {
+          "shotId": "SH-EV4-S06-003",
+          "reviewed": false,
+          "blank": null,
+          "faces": null,
+          "matches": null,
+          "problems": [],
+          "error": "LLMError: [network] URLError: <urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>"
+        }
+      ],
+      "findings": [
+        {
+          "shotId": "SH-EV4-S01-001",
+          "kind": "vision.faces-broken",
+          "severity": "error",
+          "reason": "人物脸部崩坏：无成片花穗与花浪，光线偏暗而非午后强光；伤者脸朝下，腿布条血渍和手掌摊开细节未见；多出站立旅人，伤者未在坡石边蜷卧；人物脸部模糊，服饰细节与描述有偏差"
+        },
+        {
+          "shotId": "SH-EV4-S01-001",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EV4-S01-004",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EV4-S01-005",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EV4-S02-004",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        },
+        {
+          "shotId": "SH-EV4-S03-001",
+          "kind": "vision.low-match",
+          "severity": "warn",
+          "reason": "与镜头描述不一致（2/5）"
+        }
+      ],
+      "reviewedCount": 10,
+      "total": 23,
+      "skipped": 13,
+      "errors": 13,
+      "notJudged": [
+        "美不美",
+        "角色像不像同一个人（需相似度模型）",
+        "构图是否有意图"
+      ],
+      "kindCounts": {
+        "vision.faces-broken": 1,
+        "vision.low-match": 5
+      }
+    }
+  }
+]

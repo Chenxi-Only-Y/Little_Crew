@@ -31,6 +31,14 @@ from pathlib import Path
 #: 单次最多看几镜（控制成本；0 = 全部）
 DEFAULT_MAX_SHOTS = 12
 
+#: 「与描述不一致」的阈值 —— **实测标定，不是拍的**（2026-11-08，55 镜）：
+#:   matches 分布 {0:1, 1:3, 2:16, 3:28, 4:7}，中位 3
+#:   <=1 命中 7%（当真信号）· <=2 命中 36%（太吵）· <=3 命中 87%（无意义）
+LOW_MATCH_WARN = 1
+
+#: 单镜最多尝试几次（解析失败/网络抖动各一次）——实测解析失败约 7%
+ASK_ATTEMPTS = 2
+
 _PROMPT = """看图，**只输出一行 JSON，不要推理过程**：
 {"blank": false, "faces": "ok", "matches": 3, "problems": []}
 
@@ -54,23 +62,29 @@ def _ask(client, image_path: Path, desc: str) -> dict:
         data = base64.b64encode(image_path.read_bytes()).decode()
     except Exception as e:                                    # noqa: BLE001
         return {"ok": False, "error": f"读图失败:{type(e).__name__}"}
-    try:
-        from little_crew.agent.llm import LlmClient  # noqa: F401  (类型提示用)
+    from little_crew.agent.llm import LlmClient  # noqa: F401  (类型提示用)
 
-        reply = client.chat_image(_PROMPT.replace("{desc}", desc[:300]), data,
-                                  what="画面审查",
-                                  max_tokens=VISION_MAX_TOKENS)
-        text = reply if isinstance(reply, str) else getattr(reply, "text", "")
-        obj = _extract_json(text)
-        if obj is None:
-            return {"ok": False, "error": "模型没给 JSON"}
+    last = ""
+    for _attempt in range(1, max(1, int(ASK_ATTEMPTS)) + 1):
+        try:
+            reply = client.chat_image(_PROMPT.replace("{desc}", desc[:300]), data,
+                                      what="画面审查",
+                                      max_tokens=VISION_MAX_TOKENS)
+            text = reply if isinstance(reply, str) else getattr(reply, "text", "")
+            obj = _extract_json(text)
+            if obj is None:
+                last = "模型没给 JSON"
+                continue
+        except Exception as e:                                # noqa: BLE001
+            last = f"{type(e).__name__}: {str(e)[:70]}"
+            continue
         return {"ok": True, "blank": bool(obj.get("blank")),
                 "faces": str(obj.get("faces") or "?"),
                 "matches": int(obj.get("matches") or 0),
                 "problems": [str(x)[:80] for x in (obj.get("problems") or ())][:4],
-                "error": ""}
-    except Exception as e:                                    # noqa: BLE001
-        return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:80]}"}
+                "error": "", "attempts": _attempt}
+    return {"ok": False, "error": last or "未知失败",
+            "attempts": int(ASK_ATTEMPTS)}
 
 
 def _extract_json(text: str):
@@ -124,6 +138,7 @@ def review(shots, images, *, client, max_shots: int = DEFAULT_MAX_SHOTS) -> dict
         row = {"shotId": sid, "reviewed": bool(r.get("ok")),
                "blank": r.get("blank"), "faces": r.get("faces"),
                "matches": r.get("matches"), "problems": r.get("problems") or [],
+               "attempts": int(r.get("attempts") or 1),
                "error": r.get("error") or ""}
         rows.append(row)
         if not r.get("ok"):
@@ -135,7 +150,7 @@ def review(shots, images, *, client, max_shots: int = DEFAULT_MAX_SHOTS) -> dict
             findings.append({"shotId": sid, "kind": "vision.faces-broken",
                              "severity": "error",
                              "reason": "人物脸部崩坏：" + "；".join(r.get("problems") or [])[:80]})
-        if int(r.get("matches") or 0) <= 2:
+        if int(r.get("matches") or 0) <= LOW_MATCH_WARN:
             findings.append({"shotId": sid, "kind": "vision.low-match",
                              "severity": "warn",
                              "reason": f"与镜头描述不一致（{r.get('matches')}/5）"})

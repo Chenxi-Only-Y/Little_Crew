@@ -73,6 +73,25 @@ def main() -> int:
               r2["findings"] == [], str(r2["findings"]))
         check("B3 错误被记下来", r2["errors"] == 1, str(r2["errors"]))
 
+        print(); print("B4. 重试（解析失败一次后成功）")
+        class _Flaky:
+            def __init__(self):
+                self.n = 0
+
+            def chat_image(self, prompt, b64, *, what="", max_tokens=0):
+                self.n += 1
+                if self.n == 1:
+                    return "先是一段推理文字，没有 JSON"
+                return json.dumps({"blank": False, "faces": "ok",
+                                   "matches": 4, "problems": []})
+
+        fl = _Flaky()
+        r6 = VR.review([_Shot("S1", "x")], {"S1": str(img)}, client=fl)
+        check("B4 ★★★ 第一次没 JSON -> 重试后成功（不白丢一镜）",
+              r6["rows"][0]["reviewed"] is True and fl.n == 2, f"calls={fl.n}")
+        check("B5 ★★ 记录里写明尝试次数", r6["rows"][0].get("attempts") == 2,
+              str(r6["rows"][0].get("attempts")))
+
         print(); print("C. 边界")
         r3 = VR.review([_Shot("S9", "x")], {}, client=_FakeClient([]))
         check("C1 ★★ 没有图 -> reviewed=False 且原因写明",
