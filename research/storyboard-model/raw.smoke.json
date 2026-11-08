@@ -1,0 +1,47 @@
+[
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 29.0,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 65.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S03：分镜师调用失败：[network] URLError: <urlopen error [WinError 10061] 由于目标计",
+    "seconds": 140.7,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 1
+  }
+]

@@ -1,0 +1,227 @@
+[
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 20.0,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 60.3,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [SSL: CERTIFICATE_VERI",
+    "seconds": 15.3,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 34.7,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 2
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 69.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 2
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [SSL: CERTIFICATE_VERI",
+    "seconds": 14.4,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 2
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 23.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 3
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 66.8,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 3
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [SSL: CERTIFICATE_VERI",
+    "seconds": 12.0,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 3
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 30.8,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 4
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 74.2,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 4
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [SSL: CERTIFICATE_VERI",
+    "seconds": 12.6,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 4
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 28.4,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 5
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 89.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 5
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": false,
+    "shots": 0,
+    "why": "逐场分镜有场次未通过：S01：分镜师调用失败：[network] URLError: <urlopen error [SSL: CERTIFICATE_VERI",
+    "seconds": 16.8,
+    "compliance": 0.0,
+    "findings": 3,
+    "perScene": [
+      0,
+      0,
+      0
+    ],
+    "repeat": 5
+  }
+]

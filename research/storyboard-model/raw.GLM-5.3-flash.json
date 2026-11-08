@@ -1,0 +1,77 @@
+[
+  {
+    "model": "GLM-5.3-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 231.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 1
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 455.3,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 2
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 147.1,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 3
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 222.6,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 4
+  },
+  {
+    "model": "GLM-5.3-flash",
+    "ok": true,
+    "shots": 11,
+    "why": "",
+    "seconds": 307.5,
+    "compliance": 1.0,
+    "findings": 0,
+    "perScene": [
+      4,
+      3,
+      4
+    ],
+    "repeat": 5
+  }
+]
