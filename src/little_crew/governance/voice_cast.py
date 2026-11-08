@@ -151,6 +151,10 @@ def cast(characters, sheets=None, available=()) -> dict:
         sheet = (sheets or {}).get(name) or {}
         gender = str(sheet.get("gender") or "")
         forced = str(sheet.get("voice") or "")
+        # 角色名与已存音色同名 -> 直接绑。
+        # （`python tools/save_voice.py --ref-audio 父亲.wav --name 父亲` 之后自动生效）
+        if not forced and available and name in {str(x) for x in available}:
+            forced = str(name)
         desc = str(sheet.get("voiceDescription") or "")
         _desc_source = "sheet" if desc else "auto"
         if not desc:

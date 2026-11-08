@@ -59,6 +59,13 @@ PAUSE = {
 _BREAKS = "。！？；…，、："
 
 #: 超过这个长度才考虑在逗号处切
+#: **句尾呼吸**（秒）：一句话说完，留一点静默再切镜。
+#:
+#: 2026-11-08 用户反馈「说话没有停顿」—— 查下来 11/28 句是**单段**，
+#: 段间停顿为 0，而句尾又紧贴下一个镜头，听起来就是"抢字"。
+#: 段间停顿管的是句内断句，这里补的是**句末的气口**。
+TAIL_PAUSE = 0.18
+
 #: 超过这个长度才在逗号处切。2026-11-08 从 18 降到 12：
 #: 用户反馈「说话没有停顿」—— 11/24 句是单段，中间一个停顿都没有。
 LONG_LINE = 12
@@ -158,7 +165,9 @@ def advise(line: str, shot_seconds: float, *, tolerance: float = 0.5) -> dict:
 def speech_plan(line: str, shot_seconds: float = 0.0) -> dict:
     """给合成层的完整计划：几段、每段文字、每段后停多久。"""
     segs = segments(line)
+    tail = TAIL_PAUSE if segs else 0.0
     return {"kind": "dialogue.plan", "segments": segs,
             "totalPause": round(sum(s["pause"] for s in segs), 2),
-            "estimate": estimate(segs),
+            "tailPause": tail,
+            "estimate": round(estimate(segs) + tail, 2),
             "advice": advise(line, shot_seconds)}

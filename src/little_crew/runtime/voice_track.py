@@ -110,6 +110,28 @@ def assign_to_shots(lines, shots) -> list[dict]:
     return out, dropped
 
 
+def append_silence(path, seconds: float) -> dict:
+    """在 wav 末尾补一段静音（**句尾呼吸**）。原地改写，只用标准库。"""
+    import wave
+
+    sec = float(seconds or 0)
+    if sec <= 0:
+        return {"ok": True, "appended": 0.0}
+    try:
+        with wave.open(str(path), "rb") as w:
+            params = w.getparams()
+            frames = w.readframes(w.getnframes())
+        n = int(round(sec * params.framerate))
+        pad = b"\x00" * (params.sampwidth * params.nchannels) * n
+        with wave.open(str(path), "wb") as out:
+            out.setparams(params)
+            out.writeframes(frames)
+            out.writeframes(pad)
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "appended": 0.0, "error": f"{type(e).__name__}: {e}"}
+    return {"ok": True, "appended": round(sec, 3)}
+
+
 def trim_silence(path, out_path, *, threshold: int = 300,
                  keep: float = 0.10) -> dict:
     """裁掉 wav 头尾的静音（16-bit PCM）。**只用标准库**。
@@ -226,9 +248,14 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
     _kw = {"voice": voice, "instruction": instruction}
     if seed:
         _kw["seed"] = seed
+    _tail = float(pl.get("tailPause") or 0.0)
     if len(segs) <= 1:
         r = synth(text, out_path, **_kw)
         r.setdefault("segments", 1)
+        if r.get("ok") and _tail > 0:
+            append_silence(out_path, _tail)
+            r["seconds"] = round(float(r.get("seconds") or 0) + _tail, 3)
+            r["tailPauseSeconds"] = _tail
         return r
 
     tmpdir = Path(tempfile.mkdtemp(prefix="dlg_"))
@@ -253,9 +280,13 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
         if not j.get("ok"):
             return {"ok": False, "seconds": 0.0, "error": j.get("error", ""),
                     "segments": len(parts), "sha256": ""}
-        return {"ok": True, "seconds": j["seconds"],
+        if _tail > 0:
+            append_silence(out_path, _tail)
+        return {"ok": True,
+                "seconds": round(j["seconds"] + _tail, 3),
                 "voiceseconds": round(total, 3),
                 "pauseSeconds": round(sum(gaps), 3),
+                "tailPauseSeconds": _tail,
                 "trimmedSeconds": round(_trimmed_total, 3),
                 "segments": len(parts), "error": "", "sha256": ""}
     finally:

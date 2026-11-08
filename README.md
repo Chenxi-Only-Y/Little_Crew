@@ -1,6 +1,6 @@
 # 小剧组 · Little Crew
 
-**当前版本 `0.4.0-alpha.188`** · Apache-2.0 · Python 3.12+
+**当前版本 `0.4.0-alpha.189`** · Apache-2.0 · Python 3.12+
 
 > 基于多智能体协作的 **AIGC 漫剧生成平台**
 >
