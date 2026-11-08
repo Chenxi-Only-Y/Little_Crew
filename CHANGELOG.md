@@ -57,6 +57,62 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.194] — 2026-11-08（**视觉闸**：deepseek-flash 能看图，22 镜里抓到 2 镜崩脸）
+
+### 用户指出：`deepseek-flash` 有视觉
+
+验证（纯红/纯蓝图判别）：
+
+```
+纯红图 -> "红色"      纯蓝图 -> "蓝色"        ✅
+```
+
+**所以视觉闸不必等云 VLM**。已加 `LlmClient.chat_image()`（多模态调用）。
+
+### 这道闸补的是**最要命的空洞**
+
+可数审片只看「存在/尺寸/串镜」，**抓不到"脸崩了"** —— 而真跑里确实会出现无脸镜头。
+
+### 真跑标定（EV4，22 镜）
+
+```
+已审 22/23 · 错误 1
+matches: 中位 3 · 均值 2.77 · 分布 [1, 2×8, 3×9, 4×5]
+faces: **broken 2 镜**（S03-002 / S04-003）
+发现: vision.low-match 8 · vision.faces-broken 2
+```
+
+**这 2 镜以前会直接进成片。**
+
+### 三条纪律（都写进自检）
+
+1 **未审 != 通过**：模型不给 JSON / 调用失败 → `reviewed=False`，**不产生任何 finding**
+2 **`faces=broken` 记 error（可驱动重渲），低一致度只记 warn**（else 8/22 全要重渲）
+3 **明确列出「没判什么」**：美不美、角色像不像、构图是否有意图
+
+### 踩的两个坑（都改了）
+
+| 坑 | 症状 |
+|---|---|
+| `max_tokens=400` 太小 | **推理模型把额度花在思考上，JSON 被截断** → 6 镜 5 镜"没给 JSON" |
+| 取错描述字段 | `master.json` 里叫 **`prompt`** 不是 `description` → 全判"与描述无关(0/5)" |
+
+### 顺带修好一处**名不副实**
+
+`review_board` 声明审 `shot.list`，但 `_REVIEWERS_BY_ARTIFACT["shot.list"]` 配的是
+`dramaturge`（它只审 `script.draft`）→ **走默认映射必然失败**，于是这个职位从未被调用。
+现在 episode 显式传 `reviewers=("review_board",)`，真跑确认 `reviewed=True`。
+
+### 验证 Verification
+
+```
+ [v] 视觉闸自检 13/13（正常/崩坏/空白/未审/上限/提示词额度）
+ [v] 全量 2165 项 + 架构守卫 PASS
+ [v] 真跑：22 镜视觉标定 + review_board 首次真审（mimo 跨族）
+```
+
+---
+
 ## [0.4.0-alpha.193] — 2026-11-08（**按任务类型路由 + 审查必须跨族**）
 
 ### 用户的纠正：不是"用更强的模型"，是"让合适的模型做合适的事"

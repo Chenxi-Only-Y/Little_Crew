@@ -1,0 +1,110 @@
+{
+  "episodeId": "ERB2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力几乎零成本化解：母亲一句\"别再逼她了\"，父亲\"甩开手，却终究没有再喊\"，冲突当场收束；而少女付出的真正代价——与村子决裂——是用旁白句\"从那一夜起，她再没有回过村子里的集会\"陈述出来的，不是这场戏里她用行动换来的。观众看到的是她端药转身，没有看到任何对抗性动作或实际损失。', suggestion='把代价搬进场内：让少女在父亲摔碗时做出一个有后果的动作（例如当着父亲的面把药碗稳稳放下、说出一句顶回去的话，代价是父亲拂袖而去、门被摔上、她被晾在原地），并把\"不再参加集会\"改为可拍的画面——窗外鼓声起，她抬眼看向门口，终究没有起身，镜头留在此刻而不是替观众总结。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：前一场建立的主力阻力（父亲\"他是外乡人\"的反对）在这一场完全缺席：少女\"身上只有一个小包袱\"要跟陌生人离开村子，父亲没有出现、没有阻拦，人群只有\"低低的议论\"，旅人也没有拒绝她。老奶奶塞花+警告属于悬念伏笔，不构成对抗。整场是宣布决定，不是争取决定。', suggestion='让阻力到场：父亲堵在门口或当众拦下包袱（对 S02 冲突的延续与升级）；或让旅人明确拒绝\"我不能带你走\"，逼少女以撕掉包袱、扔下身份为代价换一个同行资格。老奶奶的警告也应转为即时阻力——比如当众点破、村民要求她留下验证，而不是说完就转身走掉。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：\"你到底是谁？\"旅人的回应是\"没有回答\"加\"一个她从前没见过的笑\"——阻力方以回避代替对抗，质问与回避之间没有交锋、没有加码，冲突在单方面发问中就滑向了高潮（掷花、化烟）。', suggestion='让旅人在化烟前给出一句反问或条件（\"跟上来你就知道了\"\"你确定要知道？\"），逼少女在\"继续做梦\"与\"戳破真相\"之间做选择；这样掷花是她主动撕破幻象的抉择，代价（亲手消灭想远行的自己）才由她自己支付，而不是被动触发。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 8.909
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 68.014
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.5,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：老奶奶设计的“验花”是本场唯一的裁判装置，但结果“花瓣一动没动”之后没有任何人接招——父亲只是“背过身去”说断姓，人群没有反应，老奶奶也不解释。检验做了，局势却一点没变，等于白验。更麻烦的是，S04 揭示旅人“就是你想远行的心”（即所谓不洁之物），可这束“能让不洁的东西现形”的花在他面前毫无反应，这条线索既没证实也没证伪，观众无从判断是花是假的、还是检验标准本身有问题。', suggestion='让检验产生一个具体的、可行动的后果：比如花瓣始终不动，老奶奶自己收花说一句“这花验不出东西”，当场揭穿仪式的虚假，父亲的断姓因此变成恼羞成怒而非正义裁决；或者反过来，让花对旅人有可感的反应（发烫、变色、香气转冷），把 S04 的身份揭示提前埋成因果，而不是靠最后一句台词倒出来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧收尾的对抗强度反而最弱。村妇始终在画外喊话，喊了三声“妇人站了一会儿，转身往村里走”，没有进入场面、没有拉扯、没有真正拦她；而少女那句最终决定“我不回去了”被注明“声音不大，风吹散了也说不定”——她等于把抉择说给了风，对手从没听见，也就没有反驳。父亲咳血、镯子还留在石头上（最狠的两记愧疚牌）都只以画外音投进来，逼到面前却没人接着往下压。', suggestion='让村妇走进场面，把阻力做成动作：拉住她的手臂、把包袱或镯子塞回她手里、甚至替她父亲跪下，逼少女必须当着一个人的面把“我不回去了”说出口并扛住回应。抉择只有被对手听到、被挡了一次，才算真正付了代价。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.5,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 39.733
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 106.412
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.5）"
+}

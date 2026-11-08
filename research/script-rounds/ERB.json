@@ -1,0 +1,94 @@
+{
+  "episodeId": "ERB",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.160000000000004,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场几乎没有对抗：母亲是来帮忙的（\"她小声说门闩上了，说她爹其实也不好受\"），少女只是独自守夜，\"手已经麻了\"属于耐力消耗而非阻力；唯一的动向是旅人吐出\"北方\"二字，属于信息披露，不构成冲突。全场是静态的护理过程，观众容易走神。', suggestion='给这一场加一个阻力源：比如母亲劝她天亮前把人送走（怕父亲发现）、或少女听见外屋父亲起身的动静必须屏息藏灯——让\"守夜\"变成一次需要冒险的动作，与 S02 的禁令形成连续对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价被旁白预告而非呈现：\"天亮时她才明白，她要付的代价，不只是这一晚\"是作者替人物说出的总结，观众看不到她究竟付出了什么；父亲那句\"集会就别再进\"的惩罚也未在本场或后续兑现其分量。', suggestion='删掉末句旁白，把代价落到可见的行动上：比如天亮她走出里屋，发现门口搁着她的篮子被父亲扔在雨里／她摸出那张集会的入场木牌攥在手里最终没敢带。让禁令的痛感由动作传递。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：少女决定离家是全剧最大的一次付出，但没有呈现任何代价：旅人的劝阻\"路很远，没有人会在路上等她\"被她\"把包袱往肩上一提\"一句动作轻轻带过，解决得过于便宜；随后\"父亲到底没有出来\"只是一个旁观镜头，母亲完全缺席，她与这个家的断裂没有她的反应作支点。', suggestion='让离家的阻力再压一次：旅人明确拒绝她（不是皱眉而是转身走），她必须追上去或说出一句赌上什么的话；并给她一个与家的告别动作——比如她把门环上的那束干花摘下带走，或回头朝窗内母亲的方向跪一下。让\"走\"带上可见的代价。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 58.16,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.086
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 56.154
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 2,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.772
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": false,
+            "produced": [],
+            "error": "剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+            "seconds": 106.634
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）"
+}

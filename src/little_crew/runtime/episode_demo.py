@@ -147,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--final", action="store_true",
                     help="跑完后把静帧+音轨+字幕合成 mp4（需 --voice 才有音轨）")
+    ap.add_argument("--vision-review", action="store_true",
+                    help="渲染后用视觉模型逐镜判「崩没崩」（deepseek-flash 支持看图）")
     ap.add_argument("--no-forge-voices", action="store_true",
                     help="不自动为缺音色的角色造音色（默认会造）")
     ap.add_argument("--voice", action="store_true",
@@ -378,6 +380,25 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  文风编辑：**真实 LLM 批评家**"
                       f"（{_judge} / {cross_family(args.llm_model, _judge)['judgeFamily']} 族 / 盯文风一致性）")
 
+    # ---- 成片整体审（`review_board`，2026-11-08 首次绑定）----
+    # 它声明的产物是 `shot.list`（不是 shot.image）—— 审的是"整集节奏/覆盖/偷懒"。
+    # 与文风编辑一样**跨族**：审查方不能与生成方同族。
+    if getattr(args, "llm", False):
+        try:
+            from little_crew.agent.critic_llm import CriticLlm as _CL
+            from little_crew.runtime.model_family import pick_judge as _pj
+
+            _rb_pick = _pj(args.llm_model)
+            if _rb_pick["ok"]:
+                stubs["review_board"] = _CL(
+                    "review_board", client=LlmClient(_rb_pick["model"]))
+                print(f"  成片整体审：review_board 已绑定"
+                      f"（{_rb_pick['model']} / 跨族）")
+            else:
+                print(f"  ⚠️ review_board 未绑定：{_rb_pick['reason']}")
+        except Exception as _e_rb:                              # noqa: BLE001
+            print(f"  ⚠️ review_board 绑定失败：{type(_e_rb).__name__}: {_e_rb}")
+
     # ---- 导演（2026-11-05 补）----
     #
     # 🔴 **整集链路里一直没有导演。**
@@ -443,6 +464,7 @@ def main(argv: list[str] | None = None) -> int:
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
     runner.voice_enabled = bool(args.voice)
+    runner.vision_review_enabled = bool(args.vision_review)
     runner.voice_debug = bool(args.voice)
     runner.forge_voices = bool(args.voice) and not args.no_forge_voices
     runner.ffmpeg = r"D:\AI\FFmpeg\bin\ffmpeg.exe"

@@ -53,7 +53,9 @@ def cross_family(gen_model: str, judge_model: str) -> dict:
 
 
 #: 审查方的候选模型（按优先级；会在其中挑第一个**跨族且存在**的）
-JUDGE_CANDIDATES = ("GLM-5.3-flash", "mimo-v2.6-flash", "deepseek-flash")
+#: 顺序按"本机可用性"排：GLM 在本机有证书链问题（
+#: `SSL: CERTIFICATE_VERIFY_FAILED`），放在最后 —— 否则每次审查都要先失败一次。
+JUDGE_CANDIDATES = ("mimo-v2.6-flash", "GLM-5.3-flash", "deepseek-flash")
 
 
 def pick_judge(gen_model: str, candidates=None) -> dict:

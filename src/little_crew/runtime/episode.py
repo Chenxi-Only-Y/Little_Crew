@@ -897,6 +897,64 @@ class EpisodeRunner:
                 _plan = None
             if not isinstance(_plan, dict):
                 _plan = None
+            # ---- 成片整体审（`review_board`）—— 2026-11-08 首次接上 ----
+            #
+            # 为什么显式传 reviewers：`_REVIEWERS_BY_ARTIFACT["shot.list"]` 配的是
+            # `dramaturge`（它只审 `script.draft`），走默认映射**必然失败**；
+            # 而 `review_board` 的 CRITIC_CHECKS 声明的产物正是 `shot.list`。
+            # 也就是说：**这个审查职位一直存在，却从来没有被调用过。**
+            #
+            # 纪律：**没审 != 通过** —— 没绑定/失败都要写进产物。
+            _rb = {"kind": "shotlist.review", "reviewed": False,
+                   "reviewers": [], "blockers": 0, "why": "", "defects": []}
+            try:
+                _impls = getattr(self.orch, "_impls", {}) or {}
+                if "review_board" in _impls:
+                    try:
+                        _sl = self.orch.blackboard.value("shot.list")
+                    except Exception:                          # noqa: BLE001
+                        _sl = None
+                    _revs, _why = self.orch.review_artifact(
+                        "shot.list", generator_id="storyboard_artist",
+                        payload={"shot.list": _sl if _sl is not None else list(picked)},
+                        reviewers=("review_board",))
+                    _rb["reviewers"] = ["review_board"]
+                    if _why:
+                        _rb["why"] = str(_why)[:200]
+                    else:
+                        _rb["reviewed"] = True
+                        _txt = " ".join(
+                            str(x) for _f in (_revs or ())
+                            for x in (getattr(_f, "issues", ()) or ()))
+                        import re as _re_rb
+
+                        for _m in _re_rb.finditer(r"S\d{2}", _txt):
+                            _rb["defects"].append({
+                                "sceneId": _m.group(0), "kind": "review.blocker",
+                                "severity": "error", "reason": _txt[:160]})
+                        _rb["blockers"] = len(_rb["defects"])
+                    # 措辞必须区分三态：有意见 / 通过 / **未审**
+                    _state = ("有意见" if _rb["blockers"]
+                              else ("通过" if _rb["reviewed"] else "未审"))
+                    print(f"  成片整体审：{_state}（{_rb['blockers']} 条）"
+                          + (f" · {_rb['why']}" if _rb["why"] else ""))
+                else:
+                    _rb["why"] = "review_board 未绑定（本次未审）"
+            except Exception as _e_rb:                          # noqa: BLE001
+                _rb["why"] = f"{type(_e_rb).__name__}: {_e_rb}"[:200]
+            _wd_rb = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_rb:
+                try:
+                    (_o_rb := Path(str(_wd_rb)) / "delivery").mkdir(
+                        parents=True, exist_ok=True)
+                    import json as _j_rb
+
+                    (_o_rb / "shotlist_review.json").write_text(
+                        _j_rb.dumps(_rb, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                except Exception:                              # noqa: BLE001
+                    pass
+
             _payload = _idef.collect(
                 scene_conflicts=self.scene_conflicts,
                 shots=picked,
@@ -906,6 +964,8 @@ class EpisodeRunner:
                 budget_shots=shots,
             )
             _payload.setdefault("inputs", {})["planKeyHit"] = _plan_key
+            if _rb.get("defects"):        # 整体审的意见并进缺陷清单，让定向返工接住
+                _payload.setdefault("defects", []).extend(_rb["defects"])
             _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wd:
                 # ---- 定向返工（§3.10.2 第二层执行，2026-11-04）----
@@ -1337,6 +1397,43 @@ class EpisodeRunner:
                     print(f"  ⚠️ 成片失败：{_fr['error']}")
             except Exception as _e_f:                      # noqa: BLE001
                 print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
+
+        # ---- 视觉闸：真的看图判「崩没崩」（2026-11-08）----
+        #
+        # 为什么加这道：可数审片只看存在/尺寸/串镜，**抓不到"脸崩了"**。
+        # 真跑标定（EV4，22 镜）：faces=broken **2 镜**、低一致度 8 镜 ——
+        # 这 2 镜以前会直接进成片。
+        #
+        # 纪律：**未审 != 通过**（模型不给 JSON / 调用失败都记 reviewed=False）。
+        if getattr(self, "vision_review_enabled", False):
+            try:
+                import json as _jv2
+
+                from little_crew.agent.llm import LlmClient as _LC
+                from little_crew.review import vision_review as _vr
+
+                _imgs = {}
+                for _s4 in picked:
+                    _nm = (per_shot_artifacts.get(_s4.shot_id) or [""])[0]
+                    _hit = list(Path(str(_wdv)).rglob(_nm)) if (_wdv and _nm) else []
+                    if _hit:
+                        _imgs[_s4.shot_id] = str(_hit[0])
+                _vrres = _vr.review(
+                    picked, _imgs,
+                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash"),
+                    max_shots=int(getattr(self, "vision_max_shots", 12)))
+                if _wdv:
+                    (_outv := Path(str(_wdv)) / "delivery").mkdir(
+                        parents=True, exist_ok=True)
+                    (_outv / "vision_review.json").write_text(
+                        _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                _bad = sum(1 for f in _vrres["findings"] if f["severity"] == "error")
+                print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
+                      f" · 严重 {_bad} 条 · 提示 {len(_vrres['findings']) - _bad} 条")
+                self._vision_review = _vrres
+            except Exception as _e_vr:                          # noqa: BLE001
+                print(f"  ⚠️ 视觉闸未运行：{type(_e_vr).__name__}: {_e_vr}")
 
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
         #

@@ -1,0 +1,392 @@
+{
+  "kind": "vision.review",
+  "rows": [
+    {
+      "shotId": "SH-EV4-S01-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "缺少午后强光和花穗花浪",
+        "倒地者姿态与伤势细节不符",
+        "多出一名站立人物",
+        "场景偏夜晚且无坡石"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S01-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "背景纯黑，缺少阳光斜照",
+        "手正在贴额，未表现缩回与指节蜷起",
+        "嘴唇发干和胸口起伏不明显",
+        "篮子位置与蹲跪姿态不够明确"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S01-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "未明显表现脖子绷筋和布纤维毛边撕裂",
+        "男人仅露腿局部，缺少人物全貌",
+        "裙摆上的血迹不明显",
+        "画面较粗糙，细节简化"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S01-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "缺少竹篮和紫色花穗",
+        "缺少碎石坡与磕膝动作",
+        "背景纯黑不符",
+        "人物服装细节不匹配"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S01-005",
+      "reviewed": false,
+      "blank": null,
+      "faces": null,
+      "matches": null,
+      "problems": [],
+      "error": "模型没给 JSON"
+    },
+    {
+      "shotId": "SH-EV4-S02-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "碗中火光更像油灯，未见汤汁溅出",
+        "少女脸部受光较完整，不是半张脸",
+        "母亲左手腕旧疤不明显"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S02-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "动作与描述不一致",
+        "缺少父亲逼近及影子笼罩",
+        "母亲被甩、踉跄撞桌角未体现",
+        "画面模糊细节不清"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S02-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "门闩与推闩动作不明确",
+        "缺少木屑落下细节",
+        "父亲脸部未处于阴影中",
+        "画面较模糊、特写感不足"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S02-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "父亲端灯动作不明显，油灯在少女手中",
+        "母亲未被拽出，只是站立",
+        "少女未在床上换布条",
+        "场景与人物关系不符"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S03-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "少女未挎旧包袱",
+        "旅人未望向院外小路",
+        "缺少晒柴等院子细节",
+        "人物站位与描述不完全一致"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S03-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "broken",
+      "matches": 3,
+      "problems": [
+        "缺少簸箕脱手弹起画面",
+        "未表现抢包袱、布带崩断和衣物散落",
+        "中间人物无脸且与描述不符",
+        "少女膝压豆、泥点溅裙等细节不足"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S03-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "母亲背对未扶门框喊叫",
+        "未体现脖颈筋绷起和回声",
+        "少女张嘴表情不符只是看着",
+        "院门窄巷场景感不足"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S04-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "无石头与铜钥匙，少女未上前放置",
+        "扁担横举未抵石墩",
+        "围观村人稀少且母亲未出现",
+        "父亲服饰发型部分接近但少女细节不符"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S04-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 1,
+      "problems": [
+        "未见银镯褪下及刮红皮肤",
+        "未见铜钥匙与银镯并排",
+        "没有啐地及泥点细节",
+        "父亲动作与描述不符"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S04-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "broken",
+      "matches": 3,
+      "problems": [
+        "人物面部模糊",
+        "母亲拽袖动作未体现",
+        "少女衣着颜色偏亮",
+        "扁担离地高度不明显"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S04-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "背景纯黑，无人群与路的画面，老奶奶也未望向少女身后",
+        "老奶奶头发花白且盘起，与设定中乌黑蓬松微卷中长发不符",
+        "未见外套下摆细边、手腕旧疤等细节，身形不够纤细高挑",
+        "老奶奶未贴近耳边低语，唇部动作不明显"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S05-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "男性身形偏壮，不够清瘦文弱",
+        "未明确表现先低头看花再抬头的动作",
+        "旅人手腕疤痕位置与描述不完全一致"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S05-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "远处道路未清晰呈现",
+        "晨光逆光方向不够明确"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S05-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "未明显表现绿色汁水",
+        "晨光与下颌抬起不明确",
+        "手指与花茎细节偏糊"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S05-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "旅人未消失，仍站在画面中",
+        "少女只是举着花束，未用力掷出",
+        "缺少花瓣四散与路的尽头空旷感",
+        "紫色轻烟位置与消散情境不符"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S06-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "手部姿势与描述不符",
+        "风感与袖口贴腕未体现",
+        "领口扣子数量不一致",
+        "长发及腰未清晰呈现"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S06-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "仅呈现蹲下看花瓣，未表现拈起、擦拭、塞入衣襟及起身按压等动作",
+        "画面模糊，细节不清",
+        "未体现丰盈端庄身形和捏袖口的习惯",
+        "拾取花瓣动作不明确"
+      ],
+      "error": ""
+    },
+    {
+      "shotId": "SH-EV4-S06-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 2,
+      "problems": [
+        "人物正面朝向而非背对",
+        "身形偏瘦不丰盈",
+        "未表现袖口捏在手里",
+        "道路像柏油路且无背影消失"
+      ],
+      "error": ""
+    }
+  ],
+  "findings": [
+    {
+      "shotId": "SH-EV4-S01-001",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S01-004",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S02-002",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S02-004",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S03-002",
+      "kind": "vision.faces-broken",
+      "severity": "error",
+      "reason": "人物脸部崩坏：缺少簸箕脱手弹起画面；未表现抢包袱、布带崩断和衣物散落；中间人物无脸且与描述不符；少女膝压豆、泥点溅裙等细节不足"
+    },
+    {
+      "shotId": "SH-EV4-S04-001",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S04-002",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（1/5）"
+    },
+    {
+      "shotId": "SH-EV4-S04-003",
+      "kind": "vision.faces-broken",
+      "severity": "error",
+      "reason": "人物脸部崩坏：人物面部模糊；母亲拽袖动作未体现；少女衣着颜色偏亮；扁担离地高度不明显"
+    },
+    {
+      "shotId": "SH-EV4-S05-004",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    },
+    {
+      "shotId": "SH-EV4-S06-003",
+      "kind": "vision.low-match",
+      "severity": "warn",
+      "reason": "与镜头描述不一致（2/5）"
+    }
+  ],
+  "reviewedCount": 22,
+  "total": 23,
+  "skipped": 1,
+  "errors": 1,
+  "notJudged": [
+    "美不美",
+    "角色像不像同一个人（需相似度模型）",
+    "构图是否有意图"
+  ],
+  "kindCounts": {
+    "vision.low-match": 8,
+    "vision.faces-broken": 2
+  }
+}

@@ -443,6 +443,56 @@ class LlmClient:
                     "retryKind": e.kind, "retryReason": str(e)[:120]})
                 time.sleep(delay)
 
+    def chat_image(self, prompt: str, image_b64: str, *, mime: str = "image/png",
+                   what: str = "看图", temperature: float | None = None,
+                   max_tokens: int = 400) -> str:
+        """**带图**的一次调用（多模态）。返回文本。
+
+        2026-11-08 实测：`deepseek-flash` 接受 `image_url` 形式的 base64，
+        纯红/纯蓝图能正确回答颜色 —— 所以视觉闸不需要额外云服务。
+
+        ⚠️ 不是所有模型都吃图：不支持时会返回 **[llm-error]** 之类的失败，
+        **调用方必须把它当成"未审"，不能当成"通过"**。
+        """
+        backend = (getattr(self.spec, "backends", None) or [None])[0]
+        if backend is None:
+            raise LLMError("no-backend", f"模型 {self.model_id!r} 没有后端")
+        url = backend.endpoint.rstrip("/") + backend.path
+        body = {
+            "model": self.model_id,
+            "max_tokens": int(max_tokens),
+            "messages": [{"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url",
+                 "image_url": {"url": f"data:{mime};base64,{image_b64}"}},
+            ]}],
+        }
+        if temperature is not None:
+            body["temperature"] = float(temperature)
+        reply = self._post_with_retry(url, body, self.timeout_s)
+        try:
+            from little_crew.governance.provider_fingerprint import note_reply
+
+            note_reply(kind=f"vision:{what}",
+                       provider=_provider_of(backend), model=self.model_id,
+                       served_model=str(getattr(reply, "served_model", "") or ""),
+                       params={"max_tokens": max_tokens},
+                       request=prompt + "|" + image_b64[:64])
+        except Exception:                                       # noqa: BLE001
+            pass
+        text = str(getattr(reply, "text", "") or "")
+        if not text.strip():
+            # ⚠️ 实测：`deepseek-flash` 看图时 `content` 可能为空，
+            # 真正的内容在 `reasoning_content` 里（2026-11-08 踩到：
+            # 6 镜里 5 镜报"模型没给 JSON"，其实答案在另一个字段）。
+            try:
+                raw = getattr(reply, "raw", {}) or {}
+                msg = (raw.get("choices") or [{}])[0].get("message") or {}
+                text = str(msg.get("reasoning_content") or "")
+            except Exception:                                   # noqa: BLE001
+                text = ""
+        return text
+
     def chat_json(self, prompt: str, *, system: str = "",
                   temperature: float | None = None,
                   what: str = "输出") -> dict[str, Any]:
