@@ -57,6 +57,52 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.196] — 2026-11-08（P0 收尾：指纹可验 · 0 镜自动重试 · 视觉闸默认开）
+
+### ① provider 指纹现在**可被独立复核**（原来是"落了盘没人看"）
+
+`export_evidence.py` 在 manifest 里增加 `fingerprint` 段：
+记录数、提供方、缺 servedModel 条数，以及**规范化记录的 sha256 摘要**。
+`verify_evidence.py` 新增 `check_fingerprint()` 并计入 PASS 条件。
+
+```
+干净包：  provider 指纹: 8 条 · 提供方 2 个 · 缺 servedModel 0 条 → PASS
+篡改一条： [指纹] 摘要不匹配（记录被改过）              → FAIL ✅
+```
+
+> 文件 sha256 只能证明"文件没被换"；**摘要才能证明"记录本身没被改"**。
+
+### ② 0 镜自动重试 —— 真跑当场救了一集
+
+```
+分镜重试：共 2 次（0镜 / 26镜）
+```
+
+第一次返回 0 镜，重试拿到 26 镜。以前这种情况**整集直接结束**，要人手工重跑。
+每次尝试都落 `delivery/storyboard_attempts.json`（**重试不是掩盖失败**）。
+
+### ③ 视觉闸默认开
+
+`--vision-review` 默认 `True`，新增 `--no-vision-review` 关闭。
+证据里**缺席也写**：`vision_review.absent.json` ——
+"这集没审"与"审过且通过"必须能区分。
+
+### ④ 清理 `outputs/`（保守）
+
+只删本次会话产生的临时目录（`_RB`/`_RB2`/`_VR`/`_VR2`/`_vis`/`_forge`/`_aud`/`_verify`），
+2479 → 2475 MB。
+⚠️ **大头没动**：`ep_white` 1888 MB（最老那集 E100，9664 张 PNG）。
+删它会破坏那集的证据可复核性 —— **留给你决定**。
+
+### 验证 Verification
+
+```
+ [v] 全量 2182 项 + 架构守卫 PASS
+ [v] 真跑 EP0：分镜重试（0 镜 → 26 镜）· 视觉闸默认开 · 证据含 vision
+ [v] 真跑证据包：PASS；篡改指纹记录 → FAIL（摘要不匹配）
+```
+
+---
 ## [0.4.0-alpha.195] — 2026-11-08（**视觉闸 → 定向重渲**：判了之后真的动手）
 
 ### 补的是"判完没人动"
