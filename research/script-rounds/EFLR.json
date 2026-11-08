@@ -1,0 +1,164 @@
+{
+  "episodeId": "EFLR",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 54.95,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的反对只以动作带过——「父亲把碗搁在桌上，瓷底磕出闷响」，随后「她没有争辩，只把父亲的话当成一阵穿堂风」。父亲到底说了什么、反对的理由是什么，观众一句都没听到；阻力被旁白性描述消解，对抗没有真正立起来。', suggestion='把父亲的台词写实（例如他反对收留外乡人、怕坏了名声、家里药和粮都紧），让少女与父亲有一回合的正面交锋，哪怕只是半句被母亲打断的话，冲突才有着力点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：最强阻力位空缺——「父亲没有出来」。家中唯一明确的反对者在关键抉择场缺席，剩下的阻力只有旅人的两句劝退（「路远」「不该把一辈子押在一个外乡人身上」）和人群的低声议论，而她「包袱往肩上一甩」就全部解决了，对抗一次交手即结束。', suggestion='让父亲出现在门口或井台边，用一句具体的话拦她（或沉默地挡路），使她的离开必须绕过或越过一道实体阻力；旅人的劝退也可加一层更硬的条件（他必须承认自己有家室/有未了的事）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最大转折缺乏因果链——「花穗掷出去时……旅人的轮廓被风撕碎，化作一阵轻烟」，投掷与消失之间的规则从未建立；且「她想起老奶奶的话」，但 S03 中老奶奶只有塞花动作，一句台词都没有，这句话在文本中不存在，导致转折落在空处。', suggestion='在 S03 给老奶奶一句具体的、带条件的话（例如「花落了，人就留不住」或「这花只送走到路口的人」），并在 S04 前半让少女明确犹豫：问出口/不问、留下/继续走——让消失成为她选择的结果，而不是效果。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 54.95,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 29.301
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 44.846
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：本场的核心动作没有落地。少女两次尝试起身，第二次以'膝盖在碎石上磕出血''风把半篮花吹翻了一地'收尾，她是否把人背起来完全没有交代；下一场开篇旅人已经躺在她家床上。全剧最吃力气、最该被观众看见的那一次'成功'发生在画外，前面铺垫的代价（撕披肩、磕破膝、丢花）也就悬空了。\", suggestion=\"让本场以她终于把他架起来、踉跄走出几步作结——最好加一个反作用力：她每走一步旅人的手臂就往下滑，她不得不用咬住披肩断带的方式固定他，让'成功'本身继续消耗她，而不是靠切镜跳过去。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：代价喊出来了却没被收走。'拿我的嫁妆'是全场最重的一句——父亲'嘴张了一下，没有立刻接上话'，随后母亲一拉袖子，这半句就被按回去了。嫁妆、'药只剩三副'、'粮还剩半袋'三笔账在本场和后续场次里都没有兑现，成了空头支票。\", suggestion=\"让父亲当场把代价收走：他不说话，而是直接转身从箱子里取出嫁妆的某件实物（比如红布包着的银镯）搁在桌上当药钱——比言语更狠；或者删掉'嫁妆'这句，只保留她守夜的实际消耗，别立一个不兑付的价。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：转折的触发条件与本场刚立下的规则对不上。旅人明说'问出口，我就留不住了'，但少女始终没有问出那个问题，她做的是陈述'你烧糊涂那晚，喊过一个名字'并掷出花束，随后他'化作一阵紫色的轻烟'。观众看到的死因是扔花，被告知的死因是发问，两者不是一件事，转折的因果链断了。\", suggestion=\"二选一：要么让她真的把问题问出口（'你到底叫什么'），他的消散就是规则的直接兑现；要么把规则改成与花绑定——'花离了手，人就留不住'（老奶奶在 S03 已埋了这句），这样掷花即触发，前后两句台词正好闭合。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：本场唯一的阻力是老奶奶的'回去还来得及。你爹把门留着'，但少女只'回头望了一眼''我知道'就过去了，老奶奶随即'闭上了嘴'。诱惑没有附带任何重量，拒绝它也没有付出新的代价，最后的选择几乎是零阻力完成的，情绪是平的。\", suggestion=\"给这条回头路加一个真价码：让老奶奶转达一个具体消息（父亲病倒/门是虚掩着等人抬的），使'回去'从抽象温情变成一笔她算得清的账；或者让少女在原地有实质动作——比如真的往回走了两步，再靠腕上那半条断带子把自己拽回来，转折才落在身体上。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 42.907
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 142.23
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.55,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的对抗只停在氛围层面：村民的阻力是「人群里有窃窃的声响」，老奶奶的阻力是一句谜语式的预言（「花离了手，人就留不住」）。没有人真正出手拦她——不阻拦、不索还花束、不提出条件。少女说「我跟你走」，脚就抬起来了，离开的过程零摩擦，她在本场也没有付出任何可见的代价（代价被推迟到 S05 的解断带）。', suggestion='给老奶奶一个带阻力的动作，让警告变成交易而非旁白：例如她先收回一半花束，说「拿走可以，走出村口就不许再用村里的名字」；或让村民真的堵一下路、要她留下药钱。这样她的「那我就不撒手」才是顶着压力说的，代价也在当场付出。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最大的转折——旅人的真身——是靠一句事后的画外台词交付的：「我就是你想远行的心啊」。这一句由正在消失的角色自己宣告，属于解释而非呈现；而前四场（他烫手的额头、能站能走、S03 中他先说「我要回去了」）里没有任何可回溯的线索，观众此刻只能被动接受设定，无法产生「原来如此」的重看冲动。', suggestion='在本场让她自己撞破证据：比如递花时她碰到他的手是凉的、没有脉搏，或她低头看见他脚下没有影子、伤口处没有血——她先发现，台词只做半句确认。同时在 S01 埋同一颗钉子（如她撕披肩勒紧伤口时，渗出的不是血而是更深的黑紫色），转折就由她的动作挣来，而不是被赠予。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：终场的对抗来自老奶奶带来的消息，但消息在同句里被自己拆掉了：「你爹昨儿病倒了。郎中说不要紧」——唯一的外部阻力被当场宣布为无害。老奶奶随后只是报信，既不劝留、也不阻拦（手只是「在篮沿上按了按」），所以少女「往回走了两步／停住」的抉择，实际上是在没有对手的情况下完成的，最后的割舍（解断带、与村庄断绝）缺少正面拉扯。', suggestion='把压力还给老奶奶：让她不只报信，而是真的提出要求——「你爹等的是你，不是药」，并把断带往回推一次，逼少女说出拒绝；或把「不要紧」改成一个必须她本人在场才能解决的具体事（不闩的门、没人抓的药）。这样少女的「我知道」才是赢过一次抵抗之后的选择，终场的代价才立得住。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 58.55,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 44.891
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 65.403
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 58.5（REVISE）；最好的是第 3 轮（58.5 分）"
+}

@@ -1222,10 +1222,30 @@ class EpisodeRunner:
                         _sub = Path(str(_wd)) / "delivery"
                         (_sub / "subtitles.srt").write_text(
                             _mx.srt(_rows), encoding="utf-8")
+                        # ---- 音乐床（`composer`，2026-11-06）----
+                        # 先找素材（assets/music），没有就用程序生成的垫音 ——
+                        # **两者在交付件里必须能区分**（source 字段）。
+                        _bed = {}
+                        try:
+                            from little_crew.runtime import music_bed as _mb
+
+                            _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
+                                          for _s2 in picked)
+                            _bed = _mb.resolve(
+                                _film_s, _sub,
+                                ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
+                        except Exception as _e_bed:          # noqa: BLE001
+                            print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
+                        # ⚠️ **必须给 total_seconds**：不给的话混流只做到"最后一句台词"，
+                        # 音乐床会在 86 秒处被切断 —— 后面 68 秒又变回静音
+                        # （2026-11-06 真踩到：床按 154s 生成、混流只用了 86s）。
                         _mix = _mx.build(
                             _rows, str(_sub / "mix.wav"),
                             ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
-                            ambient=True)
+                            ambient=True,
+                            bgm=str(_bed.get("path") or ""),
+                            total_seconds=_film_s)
+                        _mix["bgmSource"] = str(_bed.get("source") or "")
                         (_sub / "mix.json").write_text(
                             _jv.dumps({k: v for k, v in _mix.items()
                                        if k != "command"},
