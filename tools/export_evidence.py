@@ -93,6 +93,27 @@ def build(workdir: Path, out: Path, *, with_images: bool = False) -> dict:
         "count": len(copied),
         "withImages": bool(with_images),
     }
+    # ---- provider 指纹摘要（2026-11-08）----
+    #
+    # 为什么要单独存一份摘要：文件 sha256 只能证明"这个文件没被换"，
+    # **证明不了记录本身是否完整/一致**。这里对"规范化后的记录"再算一次哈希，
+    # 复核时可以重算 —— 改一条记录，摘要就对不上。
+    _fp = out / "delivery" / "provider_fingerprint.json"
+    if _fp.is_file():
+        try:
+            _j = json.loads(_fp.read_text(encoding="utf-8"))
+            _recs = _j.get("records") or []
+            manifest["fingerprint"] = {
+                "file": "delivery/provider_fingerprint.json",
+                "total": len(_recs),
+                "providers": _j.get("providers") or [],
+                "missingServedModel": int(_j.get("missingServedModel") or 0),
+                "digest": "sha256:" + hashlib.sha256(
+                    json.dumps(_recs, ensure_ascii=False, sort_keys=True,
+                               separators=(",", ":")).encode("utf-8")).hexdigest(),
+            }
+        except Exception as _e:                                # noqa: BLE001
+            manifest["fingerprint"] = {"error": f"{type(_e).__name__}: {_e}"}
     (out / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     return manifest

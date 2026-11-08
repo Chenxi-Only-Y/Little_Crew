@@ -41,6 +41,14 @@ def _fake_episode(root: Path) -> Path:
     (wd / "delivery" / "image_review.json").write_text(json.dumps({
         "kind": "image.review", "total": 1, "findings": [],
         "notReviewed": ["画面质量"]}), encoding="utf-8")
+    # provider 指纹（2026-11-08 起 verify 会校验它；真实一集必然有）
+    (wd / "delivery" / "provider_fingerprint.json").write_text(json.dumps({
+        "kind": "provider.fingerprint", "total": 1,
+        "providers": ["api.deepseek.com"], "missingServedModel": 0,
+        "records": [{"kind": "llm.json", "provider": "api.deepseek.com",
+                     "model": "deepseek-flash", "servedModel": "deepseek-flash",
+                     "params": {}, "requestHash": "sha256:" + "a" * 64,
+                     "responseId": "resp-1"}]}), encoding="utf-8")
     return wd
 
 

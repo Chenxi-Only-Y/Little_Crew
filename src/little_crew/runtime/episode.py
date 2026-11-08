@@ -380,6 +380,19 @@ def write_delivery(
         pass
     if result is not None:
         _dump("run.report.json", result)
+    # ---- 视觉闸 / 重渲 结论进证据（2026-11-08）----
+    # 缺席也要写：**"这集没审"和"这集审过且通过"必须能区分**。
+    try:
+        for _vn in ("vision_review.json", "vision_rework.json",
+                    "storyboard_attempts.json"):
+            _vf = out / _vn
+            if not _vf.is_file():
+                (out / _vn.replace(".json", ".absent.json")).write_text(
+                    _json.dumps({"kind": _vn, "present": False,
+                                 "why": "本次未产生（未开启或缺依赖）"},
+                                ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:                                       # noqa: BLE001
+        pass
     return out
 
 
@@ -694,8 +707,48 @@ class EpisodeRunner:
         # ---- 2) 分镜 ----
         self._mark("storyboard")
         # （制片主任在分镜产出后跑 —— 它消费镜头表）
-        out = self.orch.run_stage("storyboard_artist", "shot.list",
-                                  {"script.final": script_draft})
+        # ---- 0 镜自动重试（2026-11-08，P0）----
+        #
+        # 实测：分镜偶发返回 0 镜（模型输出被截断/结构不对），
+        # 之前**一失败就整集结束**，每集都要人手工重跑。
+        # 现在自动重试（默认 2 次），并把每次的结果记进报告 ——
+        # 重试不是"掩盖失败"：重试几次、每次拿到几镜，都要能看见。
+        _sb_attempts: list[dict] = []
+        _sb_retries = int(getattr(self, "storyboard_retries", 2))
+        out = None
+        for _i in range(1 + max(0, _sb_retries)):
+            out = self.orch.run_stage("storyboard_artist", "shot.list",
+                                      {"script.final": script_draft})
+            _got = 0
+            try:
+                _sl0 = self.orch.blackboard.value("shot.list")
+                _got = len(getattr(_sl0, "shots", ()) or ())
+            except Exception:                                  # noqa: BLE001
+                _got = 0
+            _sb_attempts.append({"attempt": _i + 1, "ok": bool(out.ok),
+                                 "shots": _got,
+                                 "error": str(getattr(out, "error", "") or "")[:120]})
+            if out.ok and _got > 0:
+                break
+            if _i < _sb_retries:
+                print(f"  ↻ 分镜第 {_i + 1} 次没出镜头（{_got} 镜），重试…")
+        self._storyboard_attempts = _sb_attempts
+        if len(_sb_attempts) > 1:
+            print(f"  分镜重试：共 {len(_sb_attempts)} 次（"
+                  + " / ".join(f"{a['shots']}镜" for a in _sb_attempts) + "）")
+        try:
+            _wd_sb = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_sb:
+                (_osb := Path(str(_wd_sb)) / "delivery").mkdir(
+                    parents=True, exist_ok=True)
+                import json as _jsb
+
+                (_osb / "storyboard_attempts.json").write_text(
+                    _jsb.dumps({"kind": "storyboard.attempts",
+                                "attempts": _sb_attempts}, ensure_ascii=False,
+                               indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
         if not out.ok:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,

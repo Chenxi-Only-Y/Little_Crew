@@ -147,8 +147,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--final", action="store_true",
                     help="跑完后把静帧+音轨+字幕合成 mp4（需 --voice 才有音轨）")
-    ap.add_argument("--vision-review", action="store_true",
-                    help="渲染后用视觉模型逐镜判「崩没崩」（deepseek-flash 支持看图）")
+    ap.add_argument("--vision-review", action="store_true", default=True,
+                    help="渲染后用视觉模型逐镜判「崩没崩」（默认开）")
+    ap.add_argument("--no-vision-review", action="store_true",
+                    help="关闭视觉闸（赶时间/省调用时用，产物会标「未审」）")
     ap.add_argument("--no-forge-voices", action="store_true",
                     help="不自动为缺音色的角色造音色（默认会造）")
     ap.add_argument("--voice", action="store_true",
@@ -464,7 +466,8 @@ def main(argv: list[str] | None = None) -> int:
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
     runner.voice_enabled = bool(args.voice)
-    runner.vision_review_enabled = bool(args.vision_review)
+    runner.vision_review_enabled = bool(args.vision_review) and not bool(args.no_vision_review)
+    runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)
     runner.forge_voices = bool(args.voice) and not args.no_forge_voices
     runner.ffmpeg = r"D:\AI\FFmpeg\bin\ffmpeg.exe"

@@ -1,0 +1,161 @@
+{
+  "episodeId": "EP0",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 46.2,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：冲突在开场即到顶（父亲把碗重重搁在桌上），随后少女'没有低头，也没有辩解'绕过桌角进里屋——对抗被无声回避，场景后半段直接滑入照护蒙太奇（'换了三次凉布，添了两次柴'），情绪由顶点一路走平，没有任何升级或落地的对抗回合。\", suggestion=\"给父女一次正面交锋的回合：让父亲说出具体的禁令（如'天亮前把人送走'），少女给出一个有代价的回应（如'人是我带回来的，要送送我'），冲突才有来有回；照护蒙太奇只作为交锋后的余波。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：离家是全剧最重的决定，却零阻力：'父亲站在院门口没有过来'，村里人的议论也只是背景音，没有一个人上前阻拦，少女'把带子系得紧紧的''转身就走'毫无对抗。\", suggestion=\"让父亲真的出手一次——走上前、抓住她的包袱带、或把话说死，迫使她掰开他的手或绕过他；阻力具体化，'回头看了一眼自家的屋顶'这个动作才有分量。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：全场对抗的核心动作——'她低头看着手里的花束，又抬头看旅人，问得很直接'——没有写出问的是什么；旅人以'只是笑'回应。关键提问缺席，观众不知道她在逼问什么，笑的对抗性也就无从成立。\", suggestion=\"把那句'很直接'的问题写出来（例如'你是不是根本不会带我走'），并把旅人的笑改成一句躲闪的答非所问，让'问—躲—逼'形成完整回合，才有理由升级到掷花。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：整场没有阻力也没有决断：'她没有哭''低头看了看空空的掌心''继续往前走'全程是平的，最终的转折（'再没有人见过她''循着花香去寻他'）全部由旁白交代，发生在画面之外。\", suggestion='把最后一个转折做成她本人的选择动作——例如走到岔路口停下，把衣襟里那穗花掏出来看一眼，再迈步；旁白只保留村人的传说，转折本身必须由她在场完成。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 46.2,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 32.237
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 91.837
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 64.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场唯一阻力是旅人一句『别管我，会给你惹麻烦的』，少女一句『你不能死在这里』就轻易化解，双方没有真正交锋；发现伤者之后也没有任何外部障碍（无人目击的紧迫、搬动的困难、追兵的威胁），整场基本是『发现—施救』的平铺叙述。', suggestion='给救援加一道硬阻力：比如远处传来村人的脚步声/狗吠，她必须在被发现前把人藏好；或让旅人挣扎拒绝、伤口二次撕裂，救他要付出更具体的代价，让施救成为一次真正的选择而非本能动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：终场没有任何对抗：『她回头看了看来路……她没有转身』——回家的诱惑只用一句叙述带过，没有具象阻力（没有父亲的追赶、没有村人的呼喊、没有身体的迟疑），独白式的自问自答替代了冲突。', suggestion='把『回去』变成一个可被阻拦的动作：让她已经转身走了几步，或听见村里传来熟悉的喊声/看见自家门槛的灯火，再由花香把她拉回来——冲突成立，最后的选择才有分量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 64.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.104
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 80.9
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 76.05,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这场的对抗几乎不成立：旅人只说了一句「我要回去了」，少女答「我跟你走」，旅人仅「皱眉」便默认她跟上——「他没有回答，只是把目光移向远处的山」。没有一方真正阻拦或拒绝，告别戏变成了顺畅的同行起点。此外老奶奶的警告（「不洁的东西现形」）指向含混，既没落到少女头上也没落到旅人头上，构不成有效阻力。少女在本场问「那你告诉我」未获回答，而 S04 又原样重问一遍「你到底是谁」，等于同一冲突被拆成两次空转。', suggestion='让旅人明确拒绝她随行（点出具体理由/危险），或让老奶奶的警告当场产生后果——比如村民拦路、点破她「藏过不洁之物」，把 S01 的隐瞒变成 S03 的实打实的障碍；同时删去 S04 中重复的质问，把身份追问集中到一处。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 76.05,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 55.171
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 77.417
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 76.0）"
+}

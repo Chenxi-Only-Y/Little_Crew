@@ -66,6 +66,47 @@ def locate(workdir: Path, fname: str) -> Path | None:
     return None
 
 
+def check_fingerprint(root: Path, manifest: dict) -> list[str]:
+    """校验 provider 指纹：文件在不在、记录完不完整、摘要对不对。
+
+    返回问题列表（空 = 通过）。
+    """
+    import hashlib as _hl
+
+    problems: list[str] = []
+    spec = (manifest or {}).get("fingerprint")
+    if not spec:
+        return ["指纹：manifest 里没有 fingerprint 段"
+                "（可能是旧包 —— 无法证明用了哪个模型）"]
+    if spec.get("error"):
+        return [f"指纹：导出时就出错了（{spec['error']}）"]
+    rel = str(spec.get("file") or "")
+    fp = root / rel if rel else None
+    if fp is None or not fp.is_file():
+        return [f"指纹：包里缺 {rel or '（未写文件名）'}"]
+    try:
+        j = json.loads(fp.read_text(encoding="utf-8"))
+    except Exception as e:                                    # noqa: BLE001
+        return [f"指纹：解析失败 {type(e).__name__}: {e}"]
+    recs = j.get("records") or []
+    if int(spec.get("total", -1)) != len(recs):
+        problems.append(f"指纹：记录数不一致（manifest {spec.get('total')} vs 实际 {len(recs)}）")
+    digest = "sha256:" + _hl.sha256(
+        json.dumps(recs, ensure_ascii=False, sort_keys=True,
+                   separators=(",", ":")).encode("utf-8")).hexdigest()
+    if digest != spec.get("digest"):
+        problems.append("指纹：**摘要不匹配**（记录被改过）")
+    need = ("provider", "model", "requestHash")
+    bad = [i for i, r in enumerate(recs) if any(not str(r.get(k) or "") for k in need)]
+    if bad:
+        problems.append(f"指纹：{len(bad)} 条记录缺必填字段（provider/model/requestHash）")
+    miss = sum(1 for r in recs if not str(r.get("servedModel") or ""))
+    if miss != int(spec.get("missingServedModel") or 0):
+        problems.append(f"指纹：缺 servedModel 的条数不一致（manifest "
+                        f"{spec.get('missingServedModel')} vs 实际 {miss}）")
+    return problems
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="校验一集的证据链（重算 sha256）")
     ap.add_argument("workdir", nargs="?", default=".", help="某一集的输出目录")
@@ -141,8 +182,13 @@ def main(argv=None) -> int:
         note = ("证据里没有 artifactHashes（产物文件哈希）—— "
                 "这一集是在补该字段之前生成的，只能核验\"有没有文件\"，"
                 "不能核验\"文件有没有被改\"")
+    # ---- ② provider 指纹（2026-11-08）----
+    # 只有文件哈希还不够：它只能证明"文件没被换"，不能证明"记录本身完整"。
+    fp_problems = check_fingerprint(workdir, man or {}) if man else \
+        ["指纹：没有 manifest（不是证据包，无法校验指纹）"]
     total = len(rows)
-    verdict = ("PASS" if (bad == 0 and miss == 0 and total > 0 and man_bad == 0)
+    verdict = ("PASS" if (bad == 0 and miss == 0 and total > 0
+                          and man_bad == 0 and not fp_problems)
                else "FAIL")
     result = {"kind": "evidence.verification", "workdir": str(workdir),
               "verdict": verdict, "total": total, "ok": ok,
@@ -150,7 +196,9 @@ def main(argv=None) -> int:
               "shotsWithHash": len(hashes),
               "fileHashes": len(file_hashes), "note": note, "rows": rows,
               "manifestFiles": len(man_rows), "manifestBad": man_bad,
-              "manifestRows": man_rows}
+              "manifestRows": man_rows,
+              "fingerprint": (man or {}).get("fingerprint") or {},
+              "fingerprintProblems": fp_problems}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
@@ -161,6 +209,13 @@ def main(argv=None) -> int:
         else:
             print("  manifest：无（不是证据包，只按产物哈希校验）")
         print(f"  证据里 IR 哈希: {len(hashes)} 镜 · 产物文件哈希: {len(file_hashes)} 个")
+        _fp = (man or {}).get("fingerprint") or {}
+        if _fp and not _fp.get("error"):
+            print(f"  provider 指纹: {_fp.get('total', 0)} 条 · "
+                  f"提供方 {len(_fp.get('providers') or [])} 个 · "
+                  f"缺 servedModel {_fp.get('missingServedModel', 0)} 条")
+        for _p in fp_problems:
+            print(f"    [指纹] {_p}")
         if note:
             print(f"  ⚠️ {note}")
         for r in man_rows:
