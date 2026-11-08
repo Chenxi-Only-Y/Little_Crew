@@ -1,0 +1,167 @@
+{
+  "episodeId": "EHG2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：阻力只有旅人一句『别碰我』，且随即『他的头一沉，又昏了过去』——冲突在场面中段就自行消解，后半段变成少女单方面的施救流程，没有持续的对抗或外部威胁介入。', suggestion='让抵抗延续到施救完成：例如他昏迷中反复挣脱、伤口二次撕裂迫使她用身体压住他；或加入山坡上逼近的环境阻力（天色、寻人的人、下山的路），使她的救助始终在对抗中进行。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：她决定留下（『那我叫你旅人』），但整场没有付出任何实质代价——守夜、害怕都只是情绪，没有损失、没有被阻拦、没有必须放弃的东西；『天亮了，你得自己走』这句立下的规矩，后文也没有形成对抗或兑现的压力。', suggestion='给这个决定装上代价：比如点灯温药被父亲撞见并当场发作，或她为此耽误了必须交差的活计/错过了什么；让『天亮他就走』在下一场变成一场真正的拉锯，而不是被S04的『我跟你走』悄悄绕过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：旅人面对掷来的花『没有回答』『没有否认』，全程零抵抗、零反击，一束花就解决了对手——『你到底是谁——』的喊问也没有得到任何对抗性回应，解决过程缺乏张力。', suggestion='让他在消散中反扑或讨价还价：比如他伸手去抓那束花、或以她最在意的东西（父亲、归途、村里的名字）作最后的挽留与威胁，让她的『掷』必须顶着阻力完成，胜利才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父亲质问『你早知道那是什么东西』是本场唯一的正面交锋，但老奶奶用半句『花不在了……』就把它挡了回去，随后『三个人都不说话了』——冲突刚起头就被沉默压灭，没有人付账、没有人被击中。', suggestion='让这句质问真的落地：逼老奶奶说出她早知道花/旅人是什么、当年为何不说，让父亲的愤怒有对象、母亲的愧疚有来源；至少让三人因这个真相产生一次立场分裂，而不是共同沉默。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场没有任何阻力：雾是背景，空路是背景，她对着雾说话、自己笑、继续走——『我不找他了』之后没有任何反向拉力（不犹豫、不回头、不害怕），平铺直叙到底。', suggestion='在她宣称放下时设置一次真实的动摇：比如她本能地往回走了几步、或在雾里看见/听见了什么必须抗拒的东西，让『只是想看看北边』成为挣出来的结论而不是顺口说的台词。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 43.681
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 90.52
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲在本场结尾已下通牒：「天一亮，他必须走。」到了 S03，父亲撞见剪碎的布，「只把手里那块布头捡起来」「说出了那句通牒」——同一句威胁原样再出一次，第二次不但没有加码，反而把 S03 本来更硬的冲突（剪布换药、断一冬灯油）稀释成了重复。', suggestion='删掉 S02 结尾那句通牒，让它只留在 S03 的爆发点上；S02 收在父亲更切身的要挟（织机、集市、盐）和她整夜守着的沉默里，把「必须走」的最后通牒留给 S03 当场宣判。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：母亲的对抗全靠一句从未写出的台词撑住：「母亲站在屋檐下，只说了那一句，没有别的了。」观众听不到那句话，母亲的立场就悬空，父女对峙变成二对一还是二对二完全不确定。', suggestion='把母亲那句话实写出来——她既不拦女儿也不劝丈夫，只说一句关于织机/布/她自己当年的话，让这一场的阻力从单向（父亲）变成双向撕扯。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场她没有付出任何代价：老奶奶塞花、旅人后退、她跟上，全程只有「心里第一次生出一点怕」。离家的代价已在 S04 付清，这一场等于零成本地把她送上了山路。', suggestion='给她一个当场的、不可逆的小牺牲：比如老奶奶塞花时当众说了半句点破她身份的话，她必须在众人注视下接下这束花（坐实「跟外乡人走」的名声）；或她回头看了院门一眼、把某样随身之物留下。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全剧最大转折（他化烟消散）之后，收束靠「风里只剩下很低的一句话」——关键台词空缺，观众不知道他最后说了什么，转折的情绪落点悬空。', suggestion='把那句话写出来，且必须与 S05 老奶奶没说完的半句形成呼应（补完/反证），让她的「空了」有具体的言语重击可依附。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场的枢纽是母亲的爆料：「母亲的脸白着，手抠着桌沿，说出了她一直没说的事」，随后「屋里静了一瞬，然后裂开了」。引爆点内容缺失，裂开没有可指认的裂缝，父亲转向烧花田的动机链条断了一环。', suggestion='实写母亲那件事（四十年前她知情、她默认、或她就是那个帮着瞒下的人），让父亲的怒从「女儿背叛」改道为「被至亲瞒了四十年」，S07 的决裂才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全剧收场只有少女一人，雾中人影不阻拦她、不说话、不逼近，「她捂住耳朵，站在原地，数自己的呼吸」是她自己化解的——没有任何外部阻力，她几乎是无对抗地走出了结局。', suggestion='让人影/喊声产生实际阻滞：喊的名字是她真正在意的称呼（母亲或父亲给她的名字），人影挡在三步宽的路上逼她绕行或绕回；或让她必须做出一次可感的拒绝动作（把篮子砸向人影）才能通过。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 6,
+        "blockerCount": 0,
+        "repairHintCount": 8,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 88.433
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 96.137
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场没有明确的阻力。少女发现伤者→包扎→守到日偏西→背下山，是一条顺畅的动作链（“她没退”“她坐着看他”“把人半半背半拖地弄下山”），唯一的摩擦来自伤者一句“别让那花……靠近我”和她低声骂的“重死了”，而她救人的决定从头到尾没有被任何力量反对或动摇过。冲突缺失，这一场就成了纯粹的铺陈。', suggestion='给救与不救之间加一道对抗：让伤者在她靠近时骤然发作——攥住她的手腕、把花穗挥开甚至撕裂刚包好的布条，逼她一边制住他一边处理伤口，把“别让那花靠近我”从台词变成动作阻力；或加一道外部阻力（村民路过看见、竹篮是家里当天的收成），让她救他必须当场付出可见的代价。同时把“她坐着看他，看到日头偏西”这类叙述性转变改写成一个具体的小动作，让情绪转折被演出来而不是被讲出来。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价被一句旁白宣布而非兑现：“代价来得安静：从这一夜起，村里每逢集会，再没有人见过她。”这条限制在后三场完全没有产生任何约束——S03她照样剪布守夜，S04她照样背包袱出门，S05她径直走进全村人最多的村口，禁令形同虚设；她本人也从头到尾没有为反抗或绕开这个禁令付出过任何行动上的力气。代价白付，等于没有代价。', suggestion='让禁令真正卡住她：比如伤者需要的药/盐只能在集上买到，她必须托母亲代买、或趁天没亮偷偷去换，途中撞见村里人的指指点点，把“不许往人前站”变成她每次行动都要翻越的障碍；或者把那句总结性的旁白删掉，改由S04黎明出逃时让村口的流言与围观成为她出门的直接阻力，使代价在她做选择的那一刻才结账。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.276
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 225.836
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 69.4）"
+}

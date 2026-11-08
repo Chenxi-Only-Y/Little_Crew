@@ -249,6 +249,13 @@ class EpisodeResult:
 
     clip_video: str = ""
 
+    #: **人工 Gate**（2026-11-08）：`{"decision", "reviewed", "approved", "assisted", ...}`。
+    #:
+    #: 为什么必须有：机器判"有没有/崩没崩"，判不了"能不能给人看"。
+    #: `reviewed=False` 表示**没问人** —— 它与"人看过且认可"是两件事，
+    #: 混在一起，答辩数据就会把"跳过"算成"通过"。
+    human_gate: dict[str, Any] = field(default_factory=dict)
+
     #: **片段音轨检查结果**（V3，2026-10-18）：`{"ok", "clips", "passed", "failed", "reason"}`。
     #:
     #: 为什么单独一个字段：`clip_video` 只说"有没有拼出成片"，
@@ -310,6 +317,8 @@ class EpisodeResult:
             "previs": dict(self.previs),
             "clipAudio": dict(self.clip_audio),
             "advisory": [dict(a) for a in self.advisory],
+            # 人工 Gate 必须进报告：否则"人没看过"和"人看过并认可"分不出来
+            "humanGate": dict(self.human_gate or {}),
             "director": dict(self.director),
             "gaffer": dict(self.gaffer),
             "plannedShots": self.planned_shots,
@@ -1792,6 +1801,58 @@ class EpisodeRunner:
                 ok = False
                 reason = str(self._clip_audio.get("reason") or "片段缺音轨")
 
+        # ---- 人工 Gate（2026-11-08）----
+        #
+        # 机器只判"有没有/崩没崩"，判不了"能不能给人看"。
+        # 这一屏是**给人看的**，不是给机器看的：
+        # 人点认可 -> humanReviewed=True；驳回 -> 本集不算通过（assisted=True）；
+        # 没问人（关掉/非交互）-> skip，**绝不等于通过**。
+        _hg = None
+        if getattr(self, "human_gate_enabled", False):
+            try:
+                import json as _jh
+
+                from little_crew.runtime import human_gate as _hgm
+
+                _verrs = sum(
+                    1 for f in ((getattr(self, "_vision_review", None) or {})
+                                .get("findings") or ())
+                    if f.get("severity") == "error")
+                _sum = _hgm.summarize(
+                    manifest.shot_count, manifest.total_seconds,
+                    pending=len(failed), vision_errors=_verrs, gate_ok=bool(ok))
+                _res_hg = _hgm.decide(
+                    auto=str(getattr(self, "gate_auto", "") or ""), summary=_sum)
+                _hg = _hgm.as_record(_res_hg, shots=manifest.shot_count,
+                                     seconds=manifest.total_seconds)
+                print(f"  人工确认：{_hg['decision']}"
+                      f"（{'人已看过' if _hg['reviewed'] else '未问人'}）")
+                # 改判规则抽成纯函数（human_gate.apply），可单测：
+                # **只有 reject 改判**；approve 不能把失败变成功、skip 不做任何事
+                ok, reason = _hgm.apply(ok, reason, _hg)
+            except Exception as _e_hg:                       # noqa: BLE001
+                print(f"  ⚠️ 人工 Gate 未运行：{type(_e_hg).__name__}: {_e_hg}")
+        else:
+            # 没开也要能回答"这集有没有人看过"
+            _hg = {"kind": "human.gate", "decision": "skip", "reviewed": False,
+                   "approved": False, "assisted": False, "by": "disabled",
+                   "reason": "未开启人工 Gate（--human-gate 可开）",
+                   "interactive": False, "shots": manifest.shot_count,
+                   "seconds": round(manifest.total_seconds, 1)}
+        self._human_gate = _hg
+        try:
+            import json as _jh2
+
+            _wd_hg = (getattr(self, "_workdir", None)
+                      or getattr(self, "workdir", None))
+            if _wd_hg:
+                (_ohg := Path(str(_wd_hg)) / "delivery").mkdir(
+                    parents=True, exist_ok=True)
+                (_ohg / "human_gate.json").write_text(
+                    _jh2.dumps(_hg, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
+
         return EpisodeResult(
             episode_id=self.episode_id, ok=ok,
             script_rounds=cycle.round_count,
@@ -1818,6 +1879,7 @@ class EpisodeRunner:
             # 记的正是同一个坑（`previs`）。**同一个函数，第二次。**
             clip_video=clip_video,
             clip_audio=clip_audio,
+            human_gate=_hg,
             characters=self.characters,
             advisory=advisory,
             director=director_info,

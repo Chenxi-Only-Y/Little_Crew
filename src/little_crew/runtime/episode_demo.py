@@ -147,6 +147,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--final", action="store_true",
                     help="跑完后把静帧+音轨+字幕合成 mp4（需 --voice 才有音轨）")
+    ap.add_argument("--human-gate", action="store_true",
+                    help="成片前请人确认一次（跳过 ≠ 通过，产物里会标明）")
+    ap.add_argument("--gate-auto", default="",
+                    choices=["", "approve", "reject", "skip"],
+                    help="非交互时的人工决定（用于回归验证）")
     ap.add_argument("--from", dest="from_stage", default="",
                     choices=["", "script", "storyboard", "render", "voice",
                              "mix", "final"],
@@ -492,6 +497,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("  ⚠️ 续跑条件不满足，改为完整跑一遍")
 
+    runner.human_gate_enabled = bool(args.human_gate)
+    runner.gate_auto = str(getattr(args, 'gate_auto', '') or '')
     runner.vision_review_enabled = bool(args.vision_review) and not bool(args.no_vision_review)
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)

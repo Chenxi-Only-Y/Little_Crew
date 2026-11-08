@@ -1,0 +1,165 @@
+{
+  "episodeId": "EHG",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲两次加压——“你留他，村里人怎么看你”“你走出这个门去集会，别怪我不给你留脸”——但这场的解决方式是少女默默不去集会，父亲的威胁被一场沉默化解；承诺的代价（村人的眼光、家里的脸面）在后续 S05 之前始终没有兑现，等于恐吓免费。', suggestion='让代价当场发生：例如母亲被父亲迁怒、药碗被摔、或邻居/村里人真的上门质问，让少女为守着他付出可见的东西（失去集会资格、被夺走某个物件、母亲替她挨骂），S05 的决裂才有铺垫。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人两次抛出关键信息“北方……门……别开”“……花……别拿花……”，少女唯一的反应是“凑近问什么门”，随后就切到“忽然觉得累得厉害”——重要线索没有任何行动或情绪转折，场次后半段退化为照护流水账，局面是平的。', suggestion='让这句梦话产生一个当场可感的异样：她按他说的看花/看窗/看他的伤口，发现一处不对劲（伤口不该好的这么快、影子与人不同步、药碗里的药自己少了一半），给她一个“起了疑心”的转折，直接接上 S06 的试探。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：父亲“你走了，就别认这个家”是本场最强阻力，但少女“指尖收紧，却没有退回门槛”之后，父亲“没有再喊”，冲突一触即散；老奶奶的薰衣草是凭空进场的解围道具，整场离别几乎没有对抗。', suggestion='把阻力拉满再让她跨出去：父亲上前拦住门/夺下包袱/要她先把话说死（例如要她当众发誓），她必须付出一个具体动作的代价（留下披肩、跪一次、摔碎一件家里的东西）才换来离开，老奶奶的花再作为这场撕裂后的补偿进场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：少女正面发难“你到底是谁？为什么北方有你的路，却没有你的来处？”——旅人以“路就是来处”“别拿这个试我”两次挡回，局面停在“隔着半步”，既无新信息也无新损失；且“那个笑容她从前没见过”这句与 S07 的描写完全重复，说明 S06 的对峙只是 S07 同一问句的预演，本场没有属于自己的转折。', suggestion='让试探产生实体后果：花碰到他时留下痕迹（烫出紫痕、他下意识后退摔倒露出未愈的伤、他身上的影子/气息出现破绽），少女因此获得一个确证而非仅获得怀疑，S07 的掷花才是在“已知”后的处决，而不是重复提问。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：S07 已完成“掷花—化烟—空山”的全部动作与情绪顶点，S08 的“手里什么也没有了”“花穗落了一地”“沿着那条路继续往前走”基本是把 S07 的收尾画面再演一遍，没有新压力、新代价、新选择，属于叠床架屋的平场。', suggestion='二选一：把 S08 压缩并入 S07 作尾拍；或给 S08 一个真正的余波——例如雾中出现第二个去北方的身影/包袱里的花穗发出异响/身后村口传来父亲或母亲追来的脚步，让她在“回去还是继续”之间做一次不可逆的选择，用选择作结。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 38.055
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 76.606
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：整场是流水式的救援动作——探额头、撕披肩、扎紧、跑去水源、喂水、扶起，没有一处可能失败的节点。旅人始终昏死，只提供被动条件（\"又昏死过去\"），不构成阻力；\"日头偏西时，她终于扶着他站起来\"是时间推移的结果，不是抗争的胜利。', suggestion='给场景加一个真会翻盘的障碍：布条缠紧仍压不住血、发烧抽搐让她险些脱手、拖行途中天色骤暗或路过村人见死不救——让她在某个瞬间真的要放弃，再靠代价（撕掉整条披肩、丢下半篮花、摸黑往返两次）换到\"站起来\"这个结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：对峙的前置论据站不住：\"老奶奶讲得没错，不洁的东西碰花会现形\"——S05 里老奶奶只说了\"留一枝路上用\"，从未讲过碰花现形；同时本场\"抽花试探—旅人否认/翻脸\"与 S06 的\"抽花抵腕—冒烟—他低喝别试我\"是同构重复，冲突没有升级，只是把上一场的证据再念一遍。', suggestion='把\"碰花现形\"的规则由老奶奶在 S05 递花时说出，让 S07 站得住；并把 S07 的冲突从\"再验证一次\"改成不可逆的对决——例如她掷花之前先要他付出一个承诺或答一个无法回避的问题，让他拒绝的那一刻成为她出手的正当性来源。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：断绝关系的代价第二次用同构方式支付：S05 父亲已吼过\"走出这个门就别认这个家\"、少女已跪下说\"就当我不孝\"；S08 又是\"若走就永远别回来\"，第二次没有升级到新的痛处，反而让 S05 的跪别贬值。且最狠的动作——\"父亲把篮子劈了\"——发生在画外，由母亲转述，代价是被报出来的，不是被看到的。', suggestion='让 S08 的代价换一个方向并真的落在少女身上：由母亲自己付出（跟父亲决裂才替她留下这截断提手，或母亲被罚不能送她），把\"劈篮\"搬进画面；或让 S05 只是冷场与夺篮，把彻底断绝这一刀完整留给 S08，使两场的代价形成递进而非重复。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 128.545
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 119.808
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的禁令「今晚的集会，你不许去」，少女的回答是「我不去」——双方立场完全一致，正面冲突被一句顺从当场卸掉，阻力没有真正建立，这一场只剩下氛围。', suggestion='让她顶回去（例如「我要去」），把对抗推到落锁、夺药碗或父亲堵在门口的实处；她的守夜改为「违令的代价」而不是「双方同意的结果」，冲突才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力只有一句「山路会吃人」，少女用「那就让它吃」接住后，他既没有坚持也没有真正放行——「旅人已经走出很远，却没有回头催她」等于双方都没有动作，冲突靠一方自行消解收场，她付出的代价（离家、只带一个小包袱）因此显得白付。', suggestion='给旅人一次实质性的阻拦动作（把她的小包袱丢回、转身往回赶她、以「跟上来我就丢下你」相胁），让她用更硬的代价（丢掉干粮、划破手抓着不放）换到跟随资格，转折才不廉价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：掷花的解决只付出了「几片紫色的碎瓣」；而揭示「我就是你想远行的心」之后，她既没有失去远行的冲动、也没有失去与之对峙的凭据（整束花是她自己扔的），代价没有落到人物身上，S08 她照常提篮离家，看不出这一场撕裂过她。', suggestion='让代价可见：他消散时同时带走她的一部分（袖中藏的那枝小花一并化灰、她的脚步第一次想往回走、或她必须亲手烧掉篮子里剩下的花穗），S08 再用她的犹豫或她留下的某样东西承接，代价才有回声。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 77.479
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 112.839
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 2 轮（59.9 分）"
+}

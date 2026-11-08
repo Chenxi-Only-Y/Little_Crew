@@ -57,6 +57,64 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.199] — 2026-11-08（**人工 Gate**：跳过 ≠ 通过）
+
+### 为什么要有它，又要能跳过
+
+机器现在能判"崩没崩""有没有镜头"，但判不了"这集能不能给人看"。
+而整集 20~30 分钟、批量实验几十次，每次都停下来问人不现实 —— **所以必须能跳过**。
+
+### 三态，各有各的痕迹
+
+| 决定 | 含义 | 记录 |
+|---|---|---|
+| `approve` | 人看过并认可 | `humanReviewed=True` · `assisted=False` |
+| `reject` | 人驳回 | 本集**改判不通过** · `assisted=True` |
+| `skip` | 没问人 | `humanReviewed=False` · **不假装通过** |
+
+### 改判规则抽成纯函数（可单测）
+
+```python
+human_gate.apply(ok, reason, record) -> (ok, reason)
+```
+
+**只有 `reject` 改判**：
+`approve` 不能把失败变成功（机器判失败就是失败），`skip` 不做任何事。
+—— 这条防止"人工认可"掩盖真实故障。
+
+### 真跑（EHG，1 镜）
+
+```
+人工确认（这一步只有人能判）
+  镜头 1 个 · 成片 6.0 秒
+  门禁 通过 · 待办 0 条
+人工确认：approve（人已看过）
+```
+
+`delivery/human_gate.json`：
+`{"decision":"approve","reviewed":true,"approved":true,"assisted":false,
+  "notJudged":["节奏闷不闷","能不能给人看","像不像样"]}`
+
+**驳回路径也真跑过**（dry-run + `--gate-auto reject`）：
+`人工确认：reject（人已看过）`、`门禁 未过`。
+
+### 用法
+
+```bash
+--human-gate                # 开；交互式问一次
+--gate-auto approve|reject  # 非交互（回归验证用）
+（不开时）                   # 产物里写 "disabled" —— 缺席可辨
+```
+
+### 验证 Verification
+
+```
+ [v] 人工 Gate 自检 17/17（含 apply 的四条改判规则）
+ [v] 全量 2215 项 + 架构守卫 PASS
+ [v] 真跑 EHG approve / EHG2 reject（dry-run）
+```
+
+---
 ## [0.4.0-alpha.198] — 2026-11-08（**「以内」改「要写满」**：6~7 场 → 稳定 8 场）
 
 ### 起因：§6.18 的结论被推翻了一半
