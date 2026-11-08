@@ -288,8 +288,12 @@ class ScreenwriterLlm:
 
     def _build_prompt(self, source: str, episode_id: str, title: str,
                       critique: Mapping[str, Any] | None) -> str:
+        # ⚠️ 「N 场**以内**」= 上限，模型会合理地只写 6~7 场（2026-11-08 实测：
+        # 8 场以内 -> 7/6/6；同一句改成「要写满 8 场」-> 8/8/8）。
+        # 于是这里明确"写满"，把"下限"也说出来 —— 只改一句话，不换模型。
         head = (f"【本集】{episode_id}《{title}》\n"
-                f"【要求】改编成 {self.max_scenes} 场以内的漫剧分场剧本。\n")
+                f"【要求】改编成 {self.max_scenes} 场（**要写满 {self.max_scenes} 场**，"
+                f"不要只写一部分）的漫剧分场剧本。\n")
         body = f"\n【素材】\n{source[:6000]}\n"
         if isinstance(critique, Mapping) and critique:
             # 返工意见原样给模型 —— **不要替他总结**。
