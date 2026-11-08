@@ -153,8 +153,15 @@ def cast(characters, sheets=None, available=()) -> dict:
         forced = str(sheet.get("voice") or "")
         # 角色名与已存音色同名 -> 直接绑。
         # （`python tools/save_voice.py --ref-audio 父亲.wav --name 父亲` 之后自动生效）
-        if not forced and available and name in {str(x) for x in available}:
-            forced = str(name)
+        if not forced and available:
+            from little_crew.governance.voice_design import slug as _slug
+
+            _avail = {str(x) for x in available}
+            # 角色名本身合法就用它，否则用 slug（中文名 -> girl/father/…）
+            if name in _avail:
+                forced = str(name)
+            elif _slug(name) in _avail:
+                forced = _slug(name)
         desc = str(sheet.get("voiceDescription") or "")
         _desc_source = "sheet" if desc else "auto"
         if not desc:

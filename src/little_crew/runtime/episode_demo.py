@@ -147,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--final", action="store_true",
                     help="跑完后把静帧+音轨+字幕合成 mp4（需 --voice 才有音轨）")
+    ap.add_argument("--no-forge-voices", action="store_true",
+                    help="不自动为缺音色的角色造音色（默认会造）")
     ap.add_argument("--voice", action="store_true",
                     help="启用配音轨（本机 breeze-tts-2，每句约 3~4 秒）")
     ap.add_argument("--dry-run", action="store_true",
@@ -421,6 +423,7 @@ def main(argv: list[str] | None = None) -> int:
                      title=args.title, backend=backend)
     runner.voice_enabled = bool(args.voice)
     runner.voice_debug = bool(args.voice)
+    runner.forge_voices = bool(args.voice) and not args.no_forge_voices
     runner.ffmpeg = r"D:\AI\FFmpeg\bin\ffmpeg.exe"
     runner.final_enabled = bool(args.final)   # §3.11 配音轨（默认关闭）
     runner.engine_seed = args.seed

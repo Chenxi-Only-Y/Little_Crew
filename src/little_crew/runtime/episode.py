@@ -1175,7 +1175,34 @@ class EpisodeRunner:
                             _sheets[_c] = _jv.loads(_sp.read_text(encoding="utf-8"))
                         except Exception:                  # noqa: BLE001
                             _sheets[_c] = {}
-                _cast_map = _cast(_chars, _sheets, _tts.list_voices())
+                _have = _tts.list_voices()
+                # ---- 缺音色就**自己造**（2026-11-08）----
+                # 分工：设定来自角色表（LLM 可覆盖），物化交给 TTS 的试音。
+                # 不再需要人给参考音。
+                if getattr(self, "forge_voices", True):
+                    try:
+                        from little_crew.runtime import voice_forge as _vf
+                        from little_crew.governance.voice_design import (
+                            from_sheet as _vfs, slug as _vslug)
+
+                        _need = [c for c in _chars
+                                 if _vslug(c) not in set(_have)
+                                 and c not in set(_have)]
+                        if _need:
+                            _specs = {c: _vfs(_sheets.get(c) or {}) for c in _need}
+                            _fr = _vf.forge_all(
+                                _specs, synth=_tts.synth,
+                                workdir=str(Path(str(_wd)) / "delivery" / "voices")
+                                if _wd else None)
+                            if _fr["count"]:
+                                print(f"  已造音色 {_fr['count']} 个"
+                                      f"（{', '.join(x['name'] for x in _fr['forged'])}）")
+                            if _fr["failed"]:
+                                print(f"  ⚠️ 音色失败 {len(_fr['failed'])} 个")
+                            _have = _tts.list_voices()
+                    except Exception as _e_fg:                # noqa: BLE001
+                        print(f"  ⚠️ 造音色未运行：{type(_e_fg).__name__}: {_e_fg}")
+                _cast_map = _cast(_chars, _sheets, _have)
                 # 台词来源**优先结构化字段** `dialogue`（2026-11-06 加），
                 # 没有才退回正则抽正文 —— 并在每条上记 `source`，便于统计。
                 _lines = []

@@ -73,6 +73,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("混流", [sys.executable, "-m", "little_crew.runtime.mixdown_check"], 12),
     ("音乐床", [sys.executable, "-m", "little_crew.runtime.music_bed_check"], 14),
     ("存音色工具", [sys.executable, "-m", "little_crew.runtime.voice_save_check"], 4),
+    ("音色设计", [sys.executable, "-m", "little_crew.runtime.voice_design_check"], 15),
     ("成片合成", [sys.executable, "-m", "little_crew.runtime.finalize_check"], 9),
     ("摄像接口", [sys.executable, "-m", "little_crew.runtime.video_operator_check"], 12),
     ("证据链可校验", [sys.executable, "-m", "little_crew.runtime.evidence_verify_check"], 9),
