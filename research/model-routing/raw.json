@@ -5,64 +5,130 @@
     "scenes": 7,
     "completeness": 0.875,
     "structOk": 7,
+    "dialogue": 43,
+    "seconds": 34.8,
+    "why": "",
+    "repeat": 1
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
+    "dialogue": 31,
+    "seconds": 177.4,
+    "why": "",
+    "repeat": 1
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "scenes": 7,
+    "completeness": 0.875,
+    "structOk": 7,
+    "dialogue": 47,
+    "seconds": 43.5,
+    "why": "",
+    "repeat": 2
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
+    "dialogue": 24,
+    "seconds": 186.2,
+    "why": "",
+    "repeat": 2
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "scenes": 7,
+    "completeness": 0.875,
+    "structOk": 7,
+    "dialogue": 30,
+    "seconds": 42.7,
+    "why": "",
+    "repeat": 3
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
+    "dialogue": 28,
+    "seconds": 87.8,
+    "why": "",
+    "repeat": 3
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "scenes": 7,
+    "completeness": 0.875,
+    "structOk": 7,
+    "dialogue": 35,
+    "seconds": 43.6,
+    "why": "",
+    "repeat": 4
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
+    "dialogue": 31,
+    "seconds": 990.6,
+    "why": "",
+    "repeat": 4
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
+    "dialogue": 45,
+    "seconds": 44.0,
+    "why": "",
+    "repeat": 5
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 7,
+    "completeness": 0.875,
+    "structOk": 7,
+    "dialogue": 28,
+    "seconds": 156.8,
+    "why": "",
+    "repeat": 5
+  },
+  {
+    "model": "deepseek-flash",
+    "ok": true,
+    "scenes": 7,
+    "completeness": 0.875,
+    "structOk": 7,
+    "dialogue": 38,
+    "seconds": 40.0,
+    "why": "",
+    "repeat": 6
+  },
+  {
+    "model": "mimo-v2.6-flash",
+    "ok": true,
+    "scenes": 8,
+    "completeness": 1.0,
+    "structOk": 8,
     "dialogue": 34,
-    "seconds": 36.6,
+    "seconds": 219.5,
     "why": "",
-    "repeat": 1
-  },
-  {
-    "model": "mimo-v2.6-flash",
-    "ok": true,
-    "scenes": 8,
-    "completeness": 1.0,
-    "structOk": 8,
-    "dialogue": 29,
-    "seconds": 114.1,
-    "why": "",
-    "repeat": 1
-  },
-  {
-    "model": "deepseek-flash",
-    "ok": true,
-    "scenes": 7,
-    "completeness": 0.875,
-    "structOk": 7,
-    "dialogue": 49,
-    "seconds": 56.9,
-    "why": "",
-    "repeat": 2
-  },
-  {
-    "model": "mimo-v2.6-flash",
-    "ok": true,
-    "scenes": 8,
-    "completeness": 1.0,
-    "structOk": 8,
-    "dialogue": 29,
-    "seconds": 78.6,
-    "why": "",
-    "repeat": 2
-  },
-  {
-    "model": "deepseek-flash",
-    "ok": true,
-    "scenes": 7,
-    "completeness": 0.875,
-    "structOk": 7,
-    "dialogue": 50,
-    "seconds": 55.0,
-    "why": "",
-    "repeat": 3
-  },
-  {
-    "model": "mimo-v2.6-flash",
-    "ok": true,
-    "scenes": 7,
-    "completeness": 0.875,
-    "structOk": 7,
-    "dialogue": 25,
-    "seconds": 117.5,
-    "why": "",
-    "repeat": 3
+    "repeat": 6
   }
 ]
