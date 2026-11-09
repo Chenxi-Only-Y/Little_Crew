@@ -1,0 +1,138 @@
+{
+  "episodeId": "EDBG",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价由旁白直接宣布——“代价是从此再没有回过村子里的集会”，既没有在场面中演出来，也没有在后续任何一场戏里兑现。父亲用“往后集会别去了”作筹码，可少女 S04 就已离村，这条惩罚线彻底悬空，等于宣称了代价却从未收取。', suggestion='把“失去集会”改成一个可在画面里完成的具体动作（比如父亲当着她的面收起她的外出头巾、母亲替她把名字从集会名单上划掉），或干脆删掉这句旁白，把代价换成旅人伤情恶化、她被迫烧掉自己唯一的披肩这类当场可见的损失。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力一敲即散。父亲在门外放出狠话“他若死在这屋里，我们家就完了”，这是本场最强的对抗，但“父亲沉默片刻，脚步走远”——没有任何加码、没有推门进来查验、没有留下后手，威胁说完即被解除，少女不付任何周旋成本就赢了。', suggestion='让父亲的阻力在场内落地：他推门进来要查看被褥，少女必须把染血布条和伤口同时藏住才过关；或让母亲替她挡在门口、付出实际代价，使这场对抗有来有回而不是一句台词就退场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：两个对立观点正面相撞却零交锋。老奶奶抛出核心翻案“那花不是让她验人，是让她认路”，父亲的全部反应是问一句“什么路？”、接住花穗后“愣住”，随即“没再说话”。对立面没有反驳、没有恼羞成怒的反击，观点冲突在对方一句话里自行缴械。', suggestion='给父亲一个像样的回击——他可以揪住老奶奶“那你早干什么去了”、可以质疑她当年为何不拦，逼老奶奶付出代价（说出自己当年的隐瞒）才换来真相；母亲的哭也应由这场交锋引爆，而不是在父亲闭嘴后凭空出现。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.541
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 90.169
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：『父亲看了她很久，又看了看母亲的额头，什么也没说，转身出去』——她用掌心一刀顶替真相所付的代价，以及父亲那份没说出口的怀疑，在后续场次里彻底消失：S04 换帕子、S05 磕头、S06 掷花，没人看一眼她的手；S07 父亲的怒火只指向老奶奶和名单。', suggestion='让这笔代价在后面兑现：S05 她磕头时露出掌心结痂的口子，父亲认出那是自己逼出来的；或 S07 父亲说出『那晚你手上的口子』，把 S03 的怀疑变成 S07 对自己的指控，两场才扣得上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对立面全在窗外（鼓声、火光、集会、被划掉的名字），屋里两个人却从头到尾没有一次互相顶回去：『你该去的』『我的名字被划掉了』『因为救我』『因为我想救』四句全是互相理解，她随后剪短灯芯，场面只剩气氛在撑。', suggestion='给这一场一个当面的阻力：比如她开口『等你腿好了，带我一起走』，他拒绝或含糊过去，逼她当场做选择。既制造对抗，也为 S06 的起疑和 S05 的出走埋线。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：父亲最重的那句威胁——『你跨出这个村口，就别再姓这个姓』——说完就落空：他没真去收这个姓，S07 怒的是老奶奶，S08 又张罗着重写名字，这句威胁全剧既没被兑现，也没被收回，她出走的代价比场景宣称的要轻。', suggestion='把它兑现：S05 里让威胁当场生效（他先夺走一件属于这个家的东西，她再磕头）；或在 S08 重写名字时明确把姓还回去（『名字划了能重写，姓也一样』），两次关于『名字』的戏才咬合。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：关键对峙里旅人毫无抵抗：『旅人没有回答，只是笑』，且他自己先说『你手里的花，是替我送行的』——她掷花这个『反抗』恰好完成他指定的动作，『你不是人』的揭露也是他笑着认下的，全场没有一次推挡。', suggestion='给他一次反扑或诱惑：比如他伸手说『跟我往北走，就不用再回村』，要她先自己拒绝、再举花。她的掷花才是一次付出代价的选择，而不是照他的台词执行。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父亲连抛两记重拳——『您早知道他不是人，那您早干什么去了？』『您这是拿她填您的旧账！』——老奶奶只答了『当年为什么不拦』，对『早知道为什么还给花、是不是拿我闺女还账』始终没正面接；紧接着母亲哭出自陈『名单是我划的』把火力引开，正面冲突没打上就散了。', suggestion='让老奶奶正面接这一拳，哪怕是一句认账的话（『我给花，就是要她看清——看清了她才走得出去』），父亲的哑口才打得响；母亲的忏悔放在她接招之后作第二击。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：S07 老奶奶刚点破『一个划名字，一个锁门』，父女各占一份；S08 却只有母亲在付代价——手抖、认『我』、被逼着落笔，而当初下令划名的父亲依旧只下令：『写。』炭塞进母亲手里，他自己一个字没写。', suggestion='让父亲先落笔或先开口：他把炭接过去写第一笔，或必须先说出女儿的名字才许母亲接笔。结尾『按住纸角』才不只是按住风，而是按住他自己那一份。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 6,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 56.786
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 336.683
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 3,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：编剧调用失败：[bad-json] 模型剧本里找不到合法 JSON 对象（前 200 字：'{\\n  \"title\": \"查master\",\\n  \"scenes\": [\\n    {\\n      \"scene_id\": \"S01\",\\n      \"heading\": \"外景·普罗旺斯·山坡·午后\",\\n      \"characters\": [\"少女\", \"旅人\"],\\n      \"dialogue\": [\\n        {\"character\": \"少女\", \"line\": \"你不能再躺在'）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "编剧调用失败：[bad-json] 模型剧本里找不到合法 JSON 对象（前 200 字：'{\\n  \"title\": \"查master\",\\n  \"scenes\": [\\n    {\\n      \"scene_id\": \"S01\",\\n      \"heading\": \"外景·普罗旺斯·山坡·午后\",\\n      \"characters\": [\"少女\", \"旅人\"],\\n      \"dialogue\": [\\n        {\"character\": \"少女\", \"line\": \"你不能再躺在'）",
+            "seconds": 62.9
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 3 轮编剧阶段失败：编剧调用失败：[bad-json] 模型剧本里找不到合法 JSON 对象（前 200 字：'{\\n  \"title\": \"查master\",\\n  \"scenes\": [\\n    {\\n      \"scene_id\": \"S01\",\\n      \"heading\": \"外景·普罗旺斯·山坡·午后\",\\n      \"characters\": [\"少女\", \"旅人\"],\\n      \"dialogue\": [\\n        {\"character\": \"少女\", \"line\": \"你不能再躺在'）"
+}

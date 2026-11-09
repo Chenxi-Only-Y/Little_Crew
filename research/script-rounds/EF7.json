@@ -1,0 +1,58 @@
+{
+  "episodeId": "EF7",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：整场没有任何阻力与对抗：母亲问“她……真没回来？”、老奶奶答“她循着花香走了”、母亲发现门口花束——三个人的信息交换一路顺畅，没有人阻拦、没有人反对、没有人付出行动，属于平铺直叙的收尾交代。', suggestion='给这场安插一个主动的对抗动作：比如父亲已背起行囊要往北寻人，被老奶奶一句“她不想被追上”拦下；或父亲看见门槛上的花勃然摔掉、拒绝相信“她回来过”，再由母亲的哭声与花上的露水把他击垮。让花的出现成为对他的打击，而不是一条被平静告知的消息。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：风中的诱惑几乎没有阻力：“你不追了？”——少女第一拍就笑着回绝“不追了。花我留着。”，试探与答复同一口气完成，没有拉扯、没有动摇，冲突形同虚设。', suggestion='把诱惑写得更具体、更难拒绝：风里传来旅人的声音，许诺只有跟上才能找回 S01 她给他的水囊/披肩，或说出她最挂念的东西；让她真的转身追出几步、几乎动摇，再停住——回头与不回头之间才有戏。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.965
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 131.633
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.7）"
+}

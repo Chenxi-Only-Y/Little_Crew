@@ -800,6 +800,18 @@ class EpisodeRunner:
             # 任何一场失败则整体失败（与设计一致）。
             from little_crew.runtime import storyboard_stage as _sbs
 
+            # 场景主体白名单：剧本里出现的场景名词（runtime 可以 import review）
+            try:
+                from little_crew.review.scene_subject import subjects_in as _subj_ck
+
+                _allowed_ck: list[str] = []
+                for _sc_ck in (getattr(script_draft, "scenes", ()) or ()):
+                    for _s_ck in _subj_ck(_sc_ck):
+                        if _s_ck and _s_ck not in _allowed_ck:
+                            _allowed_ck.append(_s_ck)
+            except Exception:                                # noqa: BLE001
+                _allowed_ck = []
+
             def _sb_call(sub):
                 """`run_stage` 返回 `StageOutcome`，而 `storyboard_per_scene`
                 需要 `CallResult`（读 `.output["shot.list"]`）—— 这里做转换。
@@ -808,7 +820,8 @@ class EpisodeRunner:
                 from little_crew.agent.protocol import CallResult
 
                 o = self.orch.run_stage("storyboard_artist", "shot.list",
-                                        {"script.final": sub})
+                                        {"script.final": sub,
+                                         "scene.subjects": _allowed_ck})
                 if not getattr(o, "ok", False):
                     return CallResult.fail("F-STAGE",
                                            str(getattr(o, "error", "") or "分镜失败"))

@@ -158,6 +158,9 @@ class StoryboardArtistLlm:
         # 处置指令（可选）：定向返工注入的"必须这样改"
         self.rework_hint = tuple(
             str(x) for x in (p.get("rework.hint") or ()) if str(x).strip())
+        # 场景主体白名单（调用方算好传进来；agent 不 import review 层）
+        self.allowed_subjects = tuple(
+            str(x) for x in (p.get("scene.subjects") or ()) if str(x).strip())
         draft = _as_draft(p.get("script.final") or p.get("script.draft"))
         if draft is None:
             return CallResult.fail("F-INPUT", "分镜师未收到定稿剧本")
@@ -287,6 +290,25 @@ class StoryboardArtistLlm:
                 budget_lines.append(
                     f"  视觉动机（尽量体现）：{'、'.join(self.plan['motifs'])}")
             budget_lines.append("")
+
+        # ---- 场景主体白名单（2026-11-10）----
+        #
+        # 实测：剧本写"山坡采花"，分镜写成"**花田**" → 场景主体检查判"越权" →
+        # **否决交付**（整集没有清单、只有退出码）。与其放宽检查（会放过真越权），
+        # 不如**把允许的主体直接告诉分镜**：它只负责怎么拍，不负责发明地点。
+        try:
+            # **白名单由调用方传入**（`payload["scene.subjects"]`）：
+            # agent 属于上层，不能反向 import review（架构守卫会拦）。
+            _allowed = [str(x) for x in (getattr(self, "allowed_subjects", ()) or ())]
+            if _allowed:
+                lines.append("【场景主体白名单 —— **只能出现这些**，不得新增地点/道具】")
+                lines.append("  " + "、".join(_allowed[:24]))
+                lines.append("  ⚠️ 新增主体会被判「越权」并**否决整集交付**；"
+                             "需要别的场景时，用白名单里最近的替代"
+                             "（例如「花田」→「山坡」）。")
+                lines.append("")
+        except Exception:                                     # noqa: BLE001
+            pass
 
         lines += budget_lines
 

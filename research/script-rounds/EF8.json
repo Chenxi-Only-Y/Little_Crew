@@ -1,0 +1,165 @@
+{
+  "episodeId": "EF8",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒「今晚的集会你去不去？去了，就把里屋那个人抬出去」是一条会被执行的威胁，但结局只是「父亲的手在半空停着，最后重重拍在桌面上」——阻力在真正兑现之前就自己泄了气，少女没有做出任何对抗动作就赢了。', suggestion='让威胁落地：父亲真的伸手去掀里屋门帘、或真去抬人，逼少女用身体挡在门前（或打翻药碗、或当众顶撞），冲突才需要她付代价才能赢；若不想升级，就删掉这条通牒，换成一个她必须当场二选一的具体动作。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲的台词「鼓声快停了。你现在去，还来得及」是劝告不是阻拦，少女「摇了摇头」就结束了；旅人的「别跟着我」发生在闭眼昏迷中，也不构成对她的对抗。整场实际上没有阻力，且母亲劝她去集会与 S02 父亲的逼问是同一个节拍的重复。', suggestion='把母亲的劝升级为动作——她掀帘要进来抱走药碗、或直接去开窗叫人；同时让旅人醒着反抗（挣扎下床、推开她的手、说清楚「别跟着我」），形成少女同时要按住病人、堵住母亲的两线冲突。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：少女察觉了异常（「香气也发苦，像被什么东西烧过」「手指僵了一下」），但她付出的全部代价是「半步的距离，一直到天亮都没再补回来」——发现真相没有让她损失任何东西，怀疑是免费的，所以她继续跟上也显得轻易。', suggestion='让这个发现产生实际损耗：比如她必须把枯萎的花穗藏起来不让他看见（从此失去老奶奶给的「现形」凭据），或她一度转身往回走、丢了包袱里从家带的东西才又折返——把「知情」和「失去」绑在一起。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场景没有任何阻力：「她没有哭」「拍了拍膝盖上的土」「那我自己走」，情绪从失去到决断是一条直线，而独自上路这个决定在 S04 离家时已经做过一次，等于用同样的选择收尾，没有新的对抗。', suggestion='给她一个真实的岔口：让她先朝村口方向走出几步再停住（回家的诱惑），或在路上发现自己撕下包扎旅人的那条披肩/一摊干涸的血迹，逼她在「回去」与「继续」之间真正挣扎一次，再落那句「那我自己走」。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：村民的中伤被老奶奶一句「你们谁做得到？」就化解了——「没人接话」，对立面自行消失，没有一句回击真正落在母亲身上；母亲倒花的告别动作也无人阻拦，收场零阻力、零代价。', suggestion='让村民的话刺进去：比如有人提到父亲（或他后来的下落）、「洗个碗」被当场戳穿为自欺，逼母亲必须当众回应并付出难堪或眼泪的代价；老奶奶的花穗也应被某个村民拂落，再由她重新插回石缝，才让这份守护有分量。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 30.858
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 65.619
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：出发一场几乎没有真正的阻力。旅人只说了两句推脱——'你走不了三天''别拿自己赌气'——两句都被她一句顶回来就过去了；'人群里有人低声说了句什么，声音一散就没了'把唯一的外部压力刻意抹掉了，等于自废对抗。她离家的代价也只以'回头看了一眼自家那扇关着的门'一瞥带过，没有人当面为她出门这件事发难。\", suggestion=\"给一次实体拦截：让父亲或某个村民堵在门口索要说法（或要她把包袱留下），逼她在'被拦下'与'硬走出去'之间做一次可见的动作选择；老奶奶那句'记住'也应带上条件或代价（比如要她保证什么），而不只是临别赠言。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：这一场的两处'阻力'都是意外而非对抗：'包袱被路边的荆棘挂住''干粮袋漏了'与她的选择无关，走在前面的旅人只说了一句'风大，走快些''包袱里有声音'，既没起疑也没阻拦。她亲手埋掉凭据这个关键动作，全程没有任何人、任何力量与她对抗，冲突维度是空的。\", suggestion=\"把埋花改成一次要冒险的行为：让她蹲下埋花时旅人正好回头或走回来，她必须遮掩、撒谎（'石头'那句提前到此处），制造被撞破的风险；干粮的损失也改成她为了不让他等而主动丢下，让代价出自她的选择而不是荆棘。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：第八步停下的全部依据是'一摊干涸发黑的血迹'和'扎了半年勒进石头的布'，但这与上一场的揭示直接冲突——S06 明写'布条底下什么伤口也没有，皮肤平得像从没落过刀'。既然从未有过伤口，血从哪来？观众会先去质疑这个证据本身，第八步的分量就被削掉了。\", suggestion=\"统一血的来源：或删掉血迹，改用更硬的落点（她自己勒他时被挣破的手、披肩上她留下的另一处痕迹）；或保留血迹但让它指向她自己（她拖他下坡时磨破的膝盖/掌心），使'证据'落在她身上而非一个逻辑上不该存在的伤口上。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 58.143
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 142.988
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力被写得很硬——“不行”“北边不是你走得了的地方”——但少女只回了一句“我走到走不动为止”，他“眉头皱了一下”之后，这条对抗线就被老奶奶的登场整个接走了，她的“我跟你走”始终没有得到答复，阻力是自行消失的，不是被解决的。', suggestion='让他的拒绝在场内得到回应或升级：比如他真的转身走掉、或对老奶奶那句“花在，人在”提出异议，把“答应条件”写成突破他阻力所付的代价，而不是绕开他另起一条线。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：抓包时刻本该是本场最紧的一下——“‘你在做什么。’她猛地回头。他就站在三步之外”——但她的谎话“石头。绊了一下”“摔的”被他一句“别落下”直接接住，既不追问也不点破，情绪从紧张瞬间滑回平淡的赶路，转折没立起来。', suggestion='让他对这句谎话做出反应：追问、伸手要拨开那角枯枝、或冷冷点破一半再走开，把压力延后引爆；同时让少女为这次掩埋当场付出可见代价，而不是靠他“没有问”糊过去。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：高潮的对抗是一次性的：她“把花束举起来，朝着他掷了过去”，对方毫无抗拒，“他化作一阵紫色的轻烟，散了”——最后一道阻力在一次动作里自动解除，没有回合、没有讨价还价。', suggestion='给他一个最后的抵抗或交换条件：他试图留下、反过来说服她放弃回去、或要求她亲口说出某句话才肯散，让高潮至少有一个有来有回的对抗回合。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 57.65,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 61.458
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 129.556
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 57.6（REVISE）；最好的是第 2 轮（59.9 分）"
+}

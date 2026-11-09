@@ -649,6 +649,27 @@ def main(argv: list[str] | None = None) -> int:
             if _c.get("severity") == "error":
                 print(f"     {_c.get('shotId')}: {_c.get('reason', '')[:88]}")
         print("     处置：退回分镜重写（不得引入剧本未授权的场景主体）")
+        # ⚠️ **否决也要把证据写下来**（2026-11-10）：
+        # 原来这里直接 return 3，于是整集**没有 master.json / run.report.json**，
+        # 外部只能看到"退出码 1"，看不到"为什么没交付" —— 正是我们反复说的
+        # "缺席可辨"被违反。现在照样写交付目录（含否决原因），再退出。
+        try:
+            from little_crew.runtime.episode import write_delivery as _wd_v
+
+            _m_v = getattr(res, "manifest", None)
+            _ev_v = getattr(res, "evidence", None)
+            write_delivery(Path(args.workdir), manifest=_m_v,
+                           evidence=_ev_v, result=res)
+            _rej = Path(args.workdir) / "delivery" / "rejection.json"
+            _rej.write_text(__import__("json").dumps({
+                "kind": "delivery.rejection",
+                "reason": "场景越权（分镜引入了剧本未授权的场景主体）",
+                "conflicts": [c for c in runner.scene_conflicts
+                              if c.get("severity") == "error"][:10],
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"     已记录否决原因 -> {_rej}")
+        except Exception as _e_v:                              # noqa: BLE001
+            print(f"     ⚠️ 否决记录未写出：{type(_e_v).__name__}: {_e_v}")
         return 3
 
     if args.dry_run:

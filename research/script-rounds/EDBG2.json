@@ -1,0 +1,164 @@
+{
+  "episodeId": "EDBG2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲的台词与 S02 几乎原样重复——『他是外乡人。你留他，村里人怎么看你。』（S02 原句：『你留他，村里人怎么看你。』），威胁也只是把 S02 的『今晚集会你不许去』加了个『以后也别去』。同一场对峙演了两遍，阻力没有加码，冲突在原地打转。', suggestion='给这一场换一个 S02 没用过的压力源：比如门外已有村里人等着要说法，父亲必须当着外人的面表态；或让他提出一个少女无法同时满足的二选一（交出旅人 vs. 父亲替他瞒下、承担包庇的后果），使父女对立升级出新的价码。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：少女完成了关键试探——『她从竹篮里拈起一穗半干的薰衣草，慢慢靠近他的鼻尖』并发现伤口『快得不合常理』，却只换来一句不回答的『他没有回答，只把脸埋进枕里』。她付出零代价得到信息，冲突也没有被推动：『你到底是谁？』悬空落地，探秘无赢无输。', suggestion='让这次试探有支出：花穗靠近时反噬少女（香味灼手、她自己出现异样），或旅人的激烈反应惊动了外屋的父母、迫使她撒谎遮掩并承担后果；再或者她拿到的不是答案而是更危险的把柄（被旅人察觉她在试探），使信息的获取同时埋下新的对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场唯一的阻力只有风里一句『回去吧』，少女答一句『你连影子都不肯留吗？』之后对方不再还击；紧接着的『我就是你想远行的心啊』是 S06 结尾的逐字复述，等于把上一场的转折重播一次。此后『她想起老奶奶凉凉的手，想起父亲那句断绝的话，也想起旅人最后那阵烟』全是前情回顾，没有新的对抗、也没有新的代价被支付，场次是平的。', suggestion='给『回去吧』一个具体的、带诱惑的实体：比如声音承诺把她送回村口、把父亲那句绝话收回去，逼她当场做一次要付代价的选择（交出掌心那瓣紫、或允许自己回头一次）；同时删掉与 S06 重复的那句台词，把揭示的余韵留给行动而不是复述。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 57.134
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 125.823
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：离村是全剧的行动高潮，但阻力几乎为零：原文写父亲\"手里还攥着缰绳，他没有拦，只说了一句\"，人群只是\"站成半圈\"围观，无人动手、无人出声阻拦。S03 中\"从族谱上除名\"的强对抗在这里被提前兑付完毕，这一场剩下的只是仪式性的告别，父女之间的正面交锋没有发生第二次。', suggestion='让阻力在场内真实发生一次：例如父亲攥缰绳的手勒紧、被母亲或村民甲拽住才没上前；或让围观人群中有人伸手去抓她的包袱，由父亲喝止——既保住父亲\"最终放手\"的人物弧，又让少女跨出村口这一步需要当场挣脱一次。老奶奶的赠花警告也就从\"赠言\"变成\"闯关后的奖励\"。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：收尾场只有对话没有对抗：老奶奶问\"那你验出来了没有\"、又说\"这话，你该早说\"，两句都是温和的引导，父亲顺势认错，全程无人阻拦、无人反驳。他的悔恨来得太容易——S03 中他亲手把她推到除名的悬崖边，这里只需一句话就完成了偿还。', suggestion='给认错设一道门槛：让老奶奶先拒绝接受他的花（\"她要的是你亲口对她说，不是对一束草说\"），或让她点出父亲当年是集会里站得最前的那个，逼他先承认自己参与了逼门，才配说\"我那天的话说重了\"。他需要多付一步，这句台词才值钱。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：少女当场救人几乎没有付出：唯一的对抗是伤者一句没说完的\"别……\"，而她\"又按紧了一点\"之后他立刻昏过去，阻力自我消解；撒了一篮花、蹲下来等，都不构成实质代价。她此后被全村孤立的代价全部记在 S02，本场的\"救人\"显得零风险。', suggestion='在本场就埋下第一笔账：比如包扎时被他下意识攥伤、或她听到村口方向的狗叫/人声而必须立刻藏人，让\"回头看了看村子的方向\"从一个静态动作变成一次真实的惊险，代价前置，S02 的孤立才有因果。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.59
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 113.855
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲临关门时承诺“说给他们一个交代”，但这个承诺零代价落地，且在 S04—S07 五场里没有任何履行场面；真正揭底（“举手要赶人的站最前头的是谁”）被推迟到 S08，中间这条对抗线一直悬空。', suggestion='在 S04 或 S05 安排父亲履行“交代”的场面——哪怕当场被村民甲驳回或羞辱，让承诺立刻付出代价；否则 S03 的一夜僵局等于白僵。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：阻力全线溃散：村民甲“手松了”、人群“往两边挪了挪，让出一条窄道”、老奶奶直接送花祝福，全场没有一个真正不松口的对手，对峙只用了一声吼就结束。', suggestion='让村民甲再顶一轮——例如要求父亲先兑现 S03 的“交代”才放人，把僵持拉到必须有人付出代价才能让路。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：核心对抗指向不明：观众不知道她三遍问的到底是什么、他在拒绝什么。阻力量化为一句“我娘讲过，问三遍不答的人不能跟”，但“不答”的对象始终空着，冲突变成规则执行而非人对人。', suggestion='在 S04 或本场开头把她的请求具体说出口（跟他走、要一个名字、要他留下），让“不答”有明确所指，三遍递进才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场无阻力：无人阻拦、无外在对抗，“雾里没有人回答她”又把唯一可能的对手写没了，整场只剩自言自语和抒情收尾，局势自始至终是平的。', suggestion='给她一个具体的抵抗点——中途转身要回村、把包袱放下又捡起、或为那片花瓣停步挣扎，让“走进雾里”是赢过某个念头之后的选择，而不是顺流而下。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 56.935
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 184.343
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 1 轮（59.9 分）"
+}
