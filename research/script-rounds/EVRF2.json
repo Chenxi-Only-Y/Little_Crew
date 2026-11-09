@@ -1,0 +1,110 @@
+{
+  "episodeId": "EVRF2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有任何阻力：少女呼喊、翻找、望路，山谷只是「把她的声音送回来」，岔路的两难（回村/进山）在同场内被一句「终于迈步走向有花香的那一边」直接消解，没有对手、没有代价、没有真正的抉择过程。', suggestion='让岔路的选择付出点东西——比如她先走向回村那条，走出几步又折返；或让花瓣在某一刻彻底失去香气，逼她在「无凭据」的情况下仍要选路，把犹豫拉长成可见的挣扎。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父亲的追人冲动被母亲一句反问「你追得回一个心已经走了的人吗？」当场平息，随即转入老奶奶的点题台词（「照出的，从来都是人自己」），冲突靠一句金句收场，属于廉价解决；父亲的「手攥紧旧披肩」也只是一个姿态，没有下文。', suggestion='给父亲的追回行动一个实际动作（真的追出村口、走到岔路），再让他自己停住或被某个具体事物（旧披肩、空水囊）拦下；主题句留给动作之后，而不是用台词替代冲突。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：本场是对空山自语（「你要是骗我……我就自己走」「可我没打算回头」），雾不答、无人阻拦，局势与情绪都停在原地；且「不回头」的选择在 S06 已经完成，这里只是把同一决定复述一遍，没有新的转折。', suggestion='要么删减并入 S06 收尾，要么给末场一个新信息/新变化：例如她在雾中真的看见了花香的来处却选择不追、或包袱里那片花瓣有了异样，让最后一场承担一个收束性的转折，而非重复表态。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 35.879
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 64.67
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的最后通牒——\"你走出这个村口，就别再姓这个姓\"——被少女一句\"姓我留着，路我也要走\"原地接住：姓留下了，路也走了，父亲随即松手让她抽走包袱带。断绝关系的威胁既没有被执行，也没有被顶回去，双方各说一句狠话就都收了回去，这一场最重的代价没有落到底。', suggestion='让威胁至少兑现一部分：父亲可以真的夺走一件代表姓氏的实物（族谱名字、母亲的旧物、门牌/信物），或让母亲不出现在村口、父亲不追（缺席即代价）。这样少女走出的每一步都带着可见的失去，S07父亲的追赶才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：唯一的对手——那个背影——\"那人不答\"、不阻挡、不回身，全段没有任何对抗；核心信息\"现形的不是旅人，是她自己不肯醒的心\"是少女一次性念出的内心独白，等于作者直接把谜底交给观众，阻力环节缺失。', suggestion='把\"现形\"从独白改成对抗：让背影做出一个只有幻象才会做的动作（对她招手、说出S05里那句\"我就是你想远行的心\"、脚下的花穗穿过他却没有反应却被少女亲手验证），让她必须做出一次拒绝的动作（撕掉花束/背过身去）才能过关，而不是想明白就过了。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 78.478
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 33.25
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 68.7）"
+}

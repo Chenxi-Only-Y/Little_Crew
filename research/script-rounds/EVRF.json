@@ -1,0 +1,163 @@
+{
+  "episodeId": "EVRF",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：冲突以“三天”口头成交收尾（“再给我三天。”“三天。”），但这场交易在本场内没有让她付出任何可感的代价——她不交出什么、不让步什么，父亲单方面撤走。承诺“他要是好了，我亲自送他走”也没有在本场被强化为一个要压住她的约束（比如父亲要她当着母亲的面应下）。', suggestion='把交易写成有分量的让步：父亲逼她交出一样东西作为担保（母亲的屋子、祠堂的资格、或当众应下的承诺），让她在场内就“付账”；这样S04她背弃承诺时，代价才接得上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场真正的对抗点是父亲那句“她跟你走，是要回来，还是不回来”，但“旅人没有回答”——阻力被抛出后既未解决也未被反驳，父亲随后的挡路只是姿态，少女“从他身边走过去”并没有经过任何针对这个质问的较量。', suggestion='让这个质问在场内被接住：要么旅人给出一个敷衍/暧昧的回答逼少女当场表态，要么让父亲用这个沉默当武器（“他连答都不敢答”）逼她退回去，她必须驳倒这句话才能走。沉默要成为障碍，而不是跳过障碍。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：“回去做什么？回去，他们只会说，那是个妖物。”“他走了，路还在。”——这场只有她自问自答，阻力完全来自内心且在两句台词内被自己化解，没有外部对抗，也没有真正的拉扯（她只“走了两步，停下来”）。', suggestion='给这个岔路口加一个实际阻力：比如村里追来的人/父亲的声音从身后传来、雾中出现往回的清晰脚印、或她已经转身走了又发现花束的痕迹消失——让“回村”这条选项在场内真的拽住她一次，她的转身才有分量。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 39.111
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 68.452
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：父亲的阻力在此场一触即溃：S03他当众逼交钥匙、S04他追到山路质问到底，到这里只剩‘他把钥匙还你。回来。’‘她没有接，只是摇头。’两句交锋，父亲便‘手在半空举了很久，落下去’转身离开。建立两场的强硬对抗，没有经过任何新的拉扯就瓦解，冲突显得泄气。', suggestion='给父亲最后一步更强的施压动作（比如提到母亲、或者动手上前拉她），让她的‘不接、摇头’是顶着具体压力做出的拒绝；或把父亲的退场改成被她的某句话真正击中后的溃败，而不是自行软化。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S06结尾她已‘转身往北，走了七八步’，S07开场却是‘她真的转身了。朝下坡走了三步’——从朝北到朝下坡之间缺少任何动机交代与动作衔接，‘真的转身了’所承接的犹豫在S06里并不存在，关键转折凭空跳跃。', suggestion='在S06末尾补一个她转向下坡的诱因（比如雾里烟囱的火光让她想起母亲做饭、或掌心碎屑的触感动摇了她），让S07的‘真的转身’落在一个具体的动摇上；或把S06结尾改为她仍在岔口未决，把转向留给S07。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：‘忽然想起老奶奶塞花时那句话……：孩子，花没了，人就自己走了’——但S03中老奶奶的原话是‘孩子，这花的香气能让不洁的东西现形。记住。’两句完全不同。这句回忆是S08最终情绪转折（‘那我走。我自己走。’）的唯一支点，支点台词在前文不存在，转折变成凭空生成。', suggestion='二选一：把S03老奶奶的台词改成S08引用的版本，使伏笔与回收一致；或在S08改为她自己对那句原话的领悟改写（‘花的香气能让不洁的东西现形——原来不洁的是我舍不得停下的那点念想’），让转折从已有伏笔里长出来。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 24.669
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 111.074
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 57.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：全场只有少女一人，'站到太阳把雾照得发白'到'转身朝坡下走了几步'，阻力完全停留在内心犹豫，没有任何外部对抗物与她较劲，冲突维度近乎真空。\", suggestion=\"给犹豫安一个具体的对手：让身后传来村里的喊声/母亲灶火的炊烟在视线里变浓，或让老奶奶那句'香气能让不洁的东西现形'以幻听形式逼问她，使'留下'变成一种主动的对抗行为而非独处发呆。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：'第七步的时候，她停下来。不是听见了什么，是掌心……掉出一点紫色的碎屑'——转折由道具（香气）自动触发，她不是被什么拦住，而是被自己手里的东西提醒，缺乏与外部阻力的正面交锋。\", suggestion='让香气只作引子，真正的对抗来自她的行动：她已经在下坡路上走了七步、离村子越来越近，必须由她自己停下并否决自己——例如迎面撞见挑水绕道走的女人，用目光逼她做出选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：全场零冲突，人物只有独白：'原来不洁的，是我舍不得停下的那点念想''其实她舍不得的是回头这件事本身'——主题直接由台词宣告，没有任何阻力与她争夺这个结论。\", suggestion=\"把内心解释改成外部事件：雾中出现两条几乎一样的路/身后传来真切的呼唤声/她本能地回头找屋顶，用一次行为上的动摇来呈现'舍不得回头'，删掉点题式的自我剖析台词。\")"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 57.65,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 55.429
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 88.342
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 57.6（REVISE）；最好的是第 1 轮（59.9 分）"
+}

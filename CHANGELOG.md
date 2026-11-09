@@ -57,6 +57,49 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.209] — 2026-11-10（**视觉闸 → 重渲 闭环打通**：判出崩脸真的会重画）
+
+### 顺序 bug（EF8 那集就漏了 1 镜）
+
+```
+4.8 视觉驱动重渲   line 1413
+视觉闸（真看图）    line 1746     ← 在重渲之后，findings 永远到不了它
+```
+
+修法不是搬大段代码（昨晚把缩进搬坏过一次），而是**把两块整体移到 `per_shot_artifacts`
+之后、`finalize(成片)` 之前** —— 顺序变成：
+
+```
+4.7 收集产物 → per_shot_artifacts → 视觉闸 → 定向重渲 → 配音/配乐/混流 → 成片
+```
+
+### 真跑验证（EVRF2，3 镜）
+
+```
+视觉闸：审 3/3 镜 · 严重 1 条 · 提示 1 条
+  SH-EVRF2-S01-001  vision.blank  error
+↻ 重画 SH-EVRF2-S01-001（attempt 1）
+成片：13.0s · ✅ 3/3 镜 · 退出码 0
+```
+
+`delivery/vision_rework.json`：
+
+```
+重渲: 成功 1 · 失败 0
+  SH-EVRF2-S01-001 attempt 1 -> 98340530_SH_EVRF2_S01_001_00001_.png
+```
+
+**闭环成立**：判出 → 重画（换 attempt 换种子）→ 成片用新图 → 全程有记录。
+
+### 验证 Verification
+
+```
+ [v] 全量 2276 项 + 架构守卫 PASS
+ [v] 真跑 EVRF2：视觉闸 3/3 → 重渲 1 镜成功 → 成片 3/3 · 退出码 0
+ [v] vision_review / vision_rework / master / report 四份都落盘
+```
+
+---
 ## [0.4.0-alpha.208] — 2026-11-10（**整集真的跑通了**：33 镜 / 202.5 秒 / 退出码 0）
 
 ### 第一次完整成功

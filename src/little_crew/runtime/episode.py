@@ -1410,73 +1410,6 @@ class EpisodeRunner:
             for s in picked
         }
 
-        # ---- 4.8) 视觉驱动重渲：只重画画崩的那几镜（2026-11-08）----
-        #
-        # 视觉闸（4.6x）能判「这一镜脸崩了」，但判完必须有人动 ——
-        # 否则 finding 只是落盘，成片里还是那张崩的图。
-        #
-        # 机制不新造：编译器按 `provenance.seedDerivation` 派生种子，
-        # 其中 `attempt` 进内容哈希 -> 把 attempt+1 就等于"同镜换一次尝试"，
-        # 缓存必然 miss，图会被**真正重画**，旧图仍留在缓存里可追溯。
-        self._vision_rework = {"kind": "vision.rework", "rerendered": [],
-                               "failed": [], "skipped": [], "verified": []}
-        try:
-            _wd_vr = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            _vres = getattr(self, "_vision_review", None) or {}
-            _errs = [f for f in (_vres.get("findings") or [])
-                     if f.get("severity") == "error"]
-            if _errs and getattr(self, "vision_rework_enabled", True):
-                from little_crew.runtime import vision_rework as _vrw
-
-                _targets = _vrw.plan(_errs, max_shots=int(
-                    getattr(self, "vision_rework_max_shots", 4)))
-                _ir_by_shot = {}
-                for _s5, _ir5 in zip(picked, irs):
-                    _ir_by_shot[str(_s5.shot_id)] = _ir5
-                _log = {"kind": "vision.rework", "rerendered": [], "failed": [],
-                        "skipped": [], "verified": []}
-                for _tg in _targets:
-                    _sid = str(_tg["shotId"])
-                    _ir = _ir_by_shot.get(_sid)
-                    if _ir is None:
-                        _log["skipped"].append({"shotId": _sid,
-                                                "reason": "没有这镜的 IR"})
-                        continue
-                    _ir2, _att = _vrw.bump_attempt(_ir)
-                    try:
-                        _rb2 = self._render([_ir2]) or {}
-                        _outs = getattr(_rb2.get("batch"), "outcomes", ()) or ()
-                        _names = sorted(getattr(_outs[0], "artifacts", {}) or {}) \
-                            if _outs else []
-                    except Exception as _e_r2:                   # noqa: BLE001
-                        _log["failed"].append({"shotId": _sid, "attempt": _att,
-                                               "error": f"{type(_e_r2).__name__}: {_e_r2}"})
-                        continue
-                    if not _names:
-                        _log["failed"].append({"shotId": _sid, "attempt": _att,
-                                               "error": "重画没有产物"})
-                        continue
-                    # **替换**原产物引用，让成片/证据链都用新图
-                    per_shot_artifacts[_sid] = _names
-                    artifacts[str(_ir2.get("graphId", ""))] = _names
-                    _log["rerendered"].append({"shotId": _sid, "attempt": _att,
-                                               "artifacts": _names,
-                                               "kind": _tg.get("kind", ""),
-                                               "reason": _tg.get("reason", "")})
-                    print(f"  ↻ 重画 {_sid}（attempt {_att}）")
-                self._vision_rework = _log
-                if _wd_vr and _log["rerendered"]:
-                    try:
-                        (_ovr := Path(str(_wd_vr)) / "delivery").mkdir(
-                            parents=True, exist_ok=True)
-                        (_ovr / "vision_rework.json").write_text(
-                            __import__("json").dumps(_log, ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-                    except Exception:                        # noqa: BLE001
-                        pass
-        except Exception as _e_vrw:                          # noqa: BLE001
-            print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
-
         # ---- 阶段 checkpoint：渲染（2026-11-08）----
         try:
             from little_crew.runtime import stage_checkpoint as _sc3
@@ -1706,43 +1639,6 @@ class EpisodeRunner:
             except Exception as _e_v:                          # noqa: BLE001
                 print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
 
-        # ---- 成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-06）----
-        if getattr(self, "final_enabled", False):
-            try:
-                import json as _jf
-
-                from little_crew.runtime import finalize as _fz
-
-                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                _imgs, _durs = [], []
-                for _s in picked:
-                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
-                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
-                    if _hit:
-                        _imgs.append(str(_hit[0]))
-                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
-                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
-                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
-                _fr = _fz.build(
-                    _imgs, picked,
-                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
-                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
-                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
-                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
-                    workdir=str(Path(str(_wd2)) / "build"))
-                if _wd2:
-                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
-                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
-                if _fr["ok"]:
-                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
-                          f" · {_fr['size']/1024/1024:.1f} MB"
-                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
-                             if _fr.get("audioPadded", 0) > 0.05 else ""))
-                else:
-                    print(f"  ⚠️ 成片失败：{_fr['error']}")
-            except Exception as _e_f:                      # noqa: BLE001
-                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
-
         # ---- 视觉闸：真的看图判「崩没崩」（2026-11-08）----
         #
         # 为什么加这道：可数审片只看存在/尺寸/串镜，**抓不到"脸崩了"**。
@@ -1784,6 +1680,112 @@ class EpisodeRunner:
                 self._vision_review = _vrres
             except Exception as _e_vr:                          # noqa: BLE001
                 print(f"  ⚠️ 视觉闸未运行：{type(_e_vr).__name__}: {_e_vr}")
+
+        # ---- 视觉闸 -> 定向重渲（2026-11-10 顺序修正）----
+        #
+        # 原来重渲写在视觉闸**之前**，findings 永远到不了它 ——
+        # EF8 有一镜 faces-broken 判出却没重画。现在紧跟在视觉闸之后。
+        #
+        # 视觉闸（4.6x）能判「这一镜脸崩了」，但判完必须有人动 ——
+        # 否则 finding 只是落盘，成片里还是那张崩的图。
+        #
+        # 机制不新造：编译器按 `provenance.seedDerivation` 派生种子，
+        # 其中 `attempt` 进内容哈希 -> 把 attempt+1 就等于"同镜换一次尝试"，
+        # 缓存必然 miss，图会被**真正重画**，旧图仍留在缓存里可追溯。
+        self._vision_rework = {"kind": "vision.rework", "rerendered": [],
+                               "failed": [], "skipped": [], "verified": []}
+        try:
+            _wd_vr = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _vres = getattr(self, "_vision_review", None) or {}
+            _errs = [f for f in (_vres.get("findings") or [])
+                     if f.get("severity") == "error"]
+            if _errs and getattr(self, "vision_rework_enabled", True):
+                from little_crew.runtime import vision_rework as _vrw
+
+                _targets = _vrw.plan(_errs, max_shots=int(
+                    getattr(self, "vision_rework_max_shots", 4)))
+                _ir_by_shot = {}
+                for _s5, _ir5 in zip(picked, irs):
+                    _ir_by_shot[str(_s5.shot_id)] = _ir5
+                _log = {"kind": "vision.rework", "rerendered": [], "failed": [],
+                        "skipped": [], "verified": []}
+                for _tg in _targets:
+                    _sid = str(_tg["shotId"])
+                    _ir = _ir_by_shot.get(_sid)
+                    if _ir is None:
+                        _log["skipped"].append({"shotId": _sid,
+                                                "reason": "没有这镜的 IR"})
+                        continue
+                    _ir2, _att = _vrw.bump_attempt(_ir)
+                    try:
+                        _rb2 = self._render([_ir2]) or {}
+                        _outs = getattr(_rb2.get("batch"), "outcomes", ()) or ()
+                        _names = sorted(getattr(_outs[0], "artifacts", {}) or {}) \
+                            if _outs else []
+                    except Exception as _e_r2:                   # noqa: BLE001
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": f"{type(_e_r2).__name__}: {_e_r2}"})
+                        continue
+                    if not _names:
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": "重画没有产物"})
+                        continue
+                    # **替换**原产物引用，让成片/证据链都用新图
+                    per_shot_artifacts[_sid] = _names
+                    artifacts[str(_ir2.get("graphId", ""))] = _names
+                    _log["rerendered"].append({"shotId": _sid, "attempt": _att,
+                                               "artifacts": _names,
+                                               "kind": _tg.get("kind", ""),
+                                               "reason": _tg.get("reason", "")})
+                    print(f"  ↻ 重画 {_sid}（attempt {_att}）")
+                self._vision_rework = _log
+                if _wd_vr and _log["rerendered"]:
+                    try:
+                        (_ovr := Path(str(_wd_vr)) / "delivery").mkdir(
+                            parents=True, exist_ok=True)
+                        (_ovr / "vision_rework.json").write_text(
+                            __import__("json").dumps(_log, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                        # noqa: BLE001
+                        pass
+        except Exception as _e_vrw:                          # noqa: BLE001
+            print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+        # ---- 成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-06）----
+        if getattr(self, "final_enabled", False):
+            try:
+                import json as _jf
+
+                from little_crew.runtime import finalize as _fz
+
+                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _imgs, _durs = [], []
+                for _s in picked:
+                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
+                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
+                    if _hit:
+                        _imgs.append(str(_hit[0]))
+                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
+                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
+                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
+                _fr = _fz.build(
+                    _imgs, picked,
+                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
+                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
+                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
+                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
+                    workdir=str(Path(str(_wd2)) / "build"))
+                if _wd2:
+                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
+                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
+                if _fr["ok"]:
+                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
+                          f" · {_fr['size']/1024/1024:.1f} MB"
+                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
+                             if _fr.get("audioPadded", 0) > 0.05 else ""))
+                else:
+                    print(f"  ⚠️ 成片失败：{_fr['error']}")
+            except Exception as _e_f:                      # noqa: BLE001
+                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
 
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
         #
