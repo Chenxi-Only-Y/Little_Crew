@@ -791,8 +791,47 @@ class EpisodeRunner:
                                      "error": "", "resumed": True})
                 _sb_retries = -1
         for _i in range(1 + max(0, _sb_retries)):
-            out = self.orch.run_stage("storyboard_artist", "shot.list",
-                                      {"script.final": script_draft})
+            # ---- 逐场分镜（2026-11-09）----
+            #
+            # `storyboard_per_scene` 早就写好（"结构上消灭输出被截断"），
+            # 但**从来没有被调用过** —— episode 一直是一次要 7 场 × 4 镜，
+            # 于是整集真跑经常 `分镜：0 个镜头`（今天连试 3 次都是 0）。
+            # 这里改成逐场：每次只要一场的输出，短到不可能被截断；
+            # 任何一场失败则整体失败（与设计一致）。
+            from little_crew.runtime import storyboard_stage as _sbs
+
+            def _sb_call(sub):
+                """`run_stage` 返回 `StageOutcome`，而 `storyboard_per_scene`
+                需要 `CallResult`（读 `.output["shot.list"]`）—— 这里做转换。
+                （2026-11-09 真跑踩到：`'StageOutcome' object has no attribute 'output'`）
+                """
+                from little_crew.agent.protocol import CallResult
+
+                o = self.orch.run_stage("storyboard_artist", "shot.list",
+                                        {"script.final": sub})
+                if not getattr(o, "ok", False):
+                    return CallResult.fail("F-STAGE",
+                                           str(getattr(o, "error", "") or "分镜失败"))
+                sl = self.orch.blackboard.value("shot.list")
+                return CallResult.success({"shot.list": sl})
+
+            # 只在**真实 LLM 分镜师**上逐场：桩实现是按整份稿返回的，
+            # 逐场拆给它会破坏"每场至少 2 镜"等既有契约（episode_check A3/H5 抓到）。
+            _impl = (getattr(self.orch, "_impls", {}) or {}).get("storyboard_artist")
+            _is_llm = type(_impl).__name__ == "StoryboardArtistLlm"
+            if _is_llm:
+                _res = _sbs.per_scene(self.orch, script_draft,
+                                      progress=lambda sid, n: print(
+                                          f"    分镜 {sid}: {n} 镜"))
+                if not _res["ok"]:
+                    print(f"  ⚠️ 逐场分镜失败：{_res['reason']}")
+                    out = self.orch.run_stage(
+                        "storyboard_artist", "shot.list",
+                        {"script.final": script_draft})
+                else:
+                    out = type("_O", (), {"ok": True, "error": ""})()
+            else:
+                out = _sb_call(script_draft)
             _got = 0
             try:
                 _sl0 = self.orch.blackboard.value("shot.list")
@@ -828,7 +867,10 @@ class EpisodeRunner:
                 episode_id=self.episode_id, ok=False,
                 script_rounds=cycle.round_count,
                     failure_kind="storyboard-failed",
-                reason=f"分镜阶段失败：{out.error}",
+                reason=("分镜阶段失败："
+                        + str(getattr(out, "error", "")
+                              or getattr(out, "error_message", "")
+                              or "（无错误信息）")),
                 wall_seconds=time.perf_counter() - t0)
 
         shot_list = self.orch.blackboard.value("shot.list")

@@ -1,0 +1,165 @@
+{
+  "episodeId": "EF5",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：场面内的对抗只停在父亲的口头威胁，真正的代价被挪到叙述里补写——「那一夜之后，村里再没有人见过她出现在集会上……代价是，她成了村里人嘴里的那个名字。」少女推门进里屋，本场就结束了，落点是平的。', suggestion='把代价搬回场面内：让她次日真的去集会/分种子，被人当面挡回来或被母亲硬拽回家；或让父亲的威胁当场兑现一个可见后果（母亲被迫替她向村里赔罪）。结尾停在一个她必须做出反应的动作上，而不是一句概括性的旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场唯一的阻力是母亲那句「那你图什么」，少女不答、母亲也不再追问，冲突既没升级也没后果；旅人的病情只作为背景状态存在，没有任何东西逼她做选择。', suggestion='给母亲一个具体要求（天亮前把他送去村口/去跟村里说明），逼少女当场拒绝并当场付出代价；或让旅人半夜病情骤变，她必须出门敲门求药——把「守夜」从静态守护变成有对手、有风险的行动。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：反对意见被点名却从不落下：「人群里起了低低的议论」没有人出声，老奶奶只给忠告，旅人只说「我只是个过路人」，少女一步也没有被真正挡住，「我跟你走」是零阻力说出口的。', suggestion='让议论变成一个具体的人挡在她面前（村长或婶娘上前拦路），她必须绕过或推开；旅人的拒绝也应成为真障碍——他转身先走，逼她追上去。这样这句台词才是一次挣来的选择，而不是宣告。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：母亲「一声比一声急」的喊声是全剧最后一次把少女往回拉的力，她只「朝着那个方向望了一眼」就再无反应——没有应声、没有迟疑、没有迈步又被自己拦住，最后的阻力被略过而不是被解决。', suggestion='给她一个真正的抉择瞬间：她应一声或下意识往回迈一步，再自己停住，把鞋并排摆好、转身走；或让母亲的身影在雾里出现到一步之遥，让她看得见却选择不走过去。让最后的回头成为她主动放弃的动作。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 49.951
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 205.839
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：结尾用「天再黑一点，这条路就不是她一个人的了」预告了一个即将来临的夜路威胁，但本集内没有任何兑现：S02 直接切到家中夜戏，S03 她深夜从后门出去也没遇到任何阻碍。这个钩子承诺了冲突却始终没来。', suggestion='让威胁落地——比如她背着昏过去的旅人下山时真的撞上巡夜的村人/寻来的父亲，把「天黑前回不去」变成实际阻力，同时给 S02 父亲的怒火一个外部成因；若无戏可写，就删掉这句，避免向观众许空头支票。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲把药泼进泥里并宣布「这碗药，是最后一碗」——这是本场最重的代价（断掉伤者的治疗）。但到 S04，旅人已经能独自站在村口、头也不回地赶路，断药没有留下任何痕迹；少女怀里揣着空药罐推开后门去寻药，这条行动线也再无下文。代价被宣布，却从未被收取。', suggestion='让代价兑现：S04 中旅人仍虚弱、必须由她搀扶甚至背负，逼她为药再付一次（跑集、换药、求人）；或者把被泼掉的改成本就稀缺、关系到她自己/母亲的东西，使这一泼直接落在人物身上，而不是落在一个随后就痊愈的人身上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：婶娘明明握着真正的筹码（「你爹把你的份子押在村里了」），却只做了一次可被轻易绕过的身体阻拦：「我不让」→「少女侧身，从她臂弯底下钻过去」，之后婶娘的全部反应只是「在后头骂了一声，声音发抖」。阻力在一句话内溃散，没有形成真正的对抗，也没有逼少女做出任何选择。', suggestion='把筹码用起来：婶娘不是挡路而是扣人/扣下包袱，或当众宣布她一旦迈步就立刻处置份子，逼少女在「留下旅人」和「交出自己的份子」之间二选一；让她为通过付出一个看得见的动作（交出种子袋、当众应下一句话），而不是钻一下就过去。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 81.398
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 401.281
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：整场只有劳作没有对抗：药铺掌柜的讨价还价一句就定（“这成色，换两副。”“三副。”），回程的“在石头上绊了一跤”是意外事故而非阻力，没有任何人或规则挡住她。', suggestion='给这场加一道真实的拒绝：比如掌柜认出她是“背外乡人下山的那个”，压价或拒收银镯；或村口有人盘问、不许她出村。让她必须用额外的代价（说出谎话、再押一样东西）才换到药。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场的核心请求被悬置：“我跟你走。”——“北方没有薰衣草，我走的那条路，是死路”——“他没有答应，也没有拒绝，只是往村口又迈了一步。”阻力提出来就搁下了，既没挡她也没放行，冲突没有交锋也没有落点。', suggestion='让旅人给出一次明确的、带伤害性的拒绝（例如点破她离开村子会失去什么，或直言她只是把他当成远行的借口），逼她当场回击；老奶奶赠花的行动应作为对她这次回击的回应出现，而不是替代交锋。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：转折的触发太突兀：“你到底是谁？”之后毫无铺垫，她就“举起花束，朝着他掷了过去”。从正常提问到动用老奶奶的花作武器，中间缺少她产生怀疑的依据，S05–S06 里没有任何“他不对劲”的伏笔被回收。', suggestion='在 S05 或 S06 埋两处可回收的疑点（如他从不吃饭、影子不对、提到北方时眼神空白），让 S07 的质问是累积后的爆发；或把掷花改成她先试探、他先露馅，再由她出手。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结局的选择是免费的：“她只要转身，走回去……她没有转身。”——但份子、口粮、母亲的口粮、两袋种子在 S06 已经全部交割完毕，回家的路她在上一场就亲手掐断了，这一场的“不转身”没有再失去任何东西。', suggestion='给最后的选择留一条真正可走的回头路：比如走到岔口发现村子方向升起炊烟/有人追来喊她回去，让“回家”在这一刻重新变成可选项，她的拒绝才构成新的牺牲。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.202
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 86.999
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 2 轮（59.1 分）"
+}
