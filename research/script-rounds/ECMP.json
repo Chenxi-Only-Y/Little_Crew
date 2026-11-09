@@ -1,0 +1,95 @@
+{
+  "episodeId": "ECMP",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的阻拦只停留在宣告层面——“出了这道门，你就别再回来。”说完她便“把一串钥匙放在石阶上”径直跟上旅人，全程没有拉扯、夺包袱、拦门等任何实际对抗，阻力一触即消，这场戏的核心冲突等于被一句话带过。', suggestion='给父亲一个具体的阻拦动作（如抢下包袱、堵在门口、母亲也来拉），让少女必须“挣脱”一次才踏出村门；这样她放下钥匙的动作才有分量，代价感才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：“月光从他手背上穿了过去”是全剧最大的转折点，但下一句直接跳到“她一整夜都握着那束花，指节发白”——她既没有惊愕、没有试探、也没有向他对质，发现被白白吞掉，情绪线在这里是平的。', suggestion='在发现之后立刻给她一个反应与试探动作：故意把花移近一步看他退不退、盯着那只手再看一次、压低声音问一句“你到底是不是人”，把“发现”转化为她主动的一次进攻，为S07的掷花蓄力。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：明知自己怕花、被花照到就会消散，旅人面对掷来的花束却只“后退半步，还是笑”，既不夺花也不逃开，唯一的机会性抵抗缺席——她的胜利来得毫无阻力，也毫无成本。', suggestion='让他做出最后一次实质阻止：上前夺花、打落她手中的花束、或以“你也会付出代价”来劝阻，让她必须冲破这道阻拦才能掷出花；她的动作才构成真正的对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：面对“我就是你想远行的心”这一身份揭示，少女“她没有哭”，直接跳到捡花穗、背包袱上路，对“他不是人”这一事实零反应、零消化，收尾情绪是平的，前面积累的悬疑没有兑现出场内的领悟。', suggestion='在捡花与上路之间插入一小段她的自问或顿悟（看着空掌心明白他早就是自己的一部分），让“心”的揭示在她身上落地，再接“可路还在”，转折才有回响。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 47.877
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 94.424
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 2,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 54.654
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": false,
+            "produced": [],
+            "error": "剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+            "seconds": 168.821
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）"
+}

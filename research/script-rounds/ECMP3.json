@@ -1,0 +1,164 @@
+{
+  "episodeId": "ECMP3",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的阻力全部是背景音：集会的鼓声只是“远远传来”，她“没动”就化解了；旅人的梦话“北方……别跟来”她一句“你烧成这样”就顶了回去，没有任何一方被真正逼到墙角。整场是守夜的静态描写，对抗没有落到人身上。', suggestion='把阻力具体化、逼到她面前——例如母亲掀帘进来端走药碗逼她去集会，或旅人醒来抓住她逼问她答应了什么，让她必须当场拒绝并承担后果（比如摔了药碗、被母亲当众拉走），这样“她留下”才是挣来的，而不是静止的默认。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶的警告“这花的香气能让不洁的东西现形”“别把花丢了”，明确承诺了一个对抗：旅人可能是危险之物，花是武器。但此后这条对抗线再没被兑现——S06 只是她发问，S07 旅人“仍没有躲”，花束没有试出任何“不洁”，警告变成空响。', suggestion='要么兑现警告（花靠近旅人时出现异状，例如他退避、轮廓发虚，让少女被迫面对“他可能不是人”），要么删掉“不洁的东西现形”这一说辞，只保留“这是你离村的凭据”，避免立下一个不还的债。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：决斗式的一场却零阻力：“旅人看见她举起花束，仍没有躲，只是含笑望着她”——她掷出去，他便散了。唯一的对手主动放弃抵抗，冲突在出手前就已结束，观众等着的对抗没有发生。', suggestion='给他一道最后的阻力：他伸手挡住或转身避开第一掷，甚至反过来说服她留下（“回去吧，你父亲还在等”），逼她掷第二次、并为此说出决绝的话；这样“化作轻烟”才是她挣来的结果，而不是替她完成的结果。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 52.945
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 89.63
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：唯一的对抗来自昏迷者的呓语——\"北方……别跟来\"，少女一句\"我是要救你\"就化解了，没有形成真正的阻力；她救人这件事在场内没有被任何人或任何力量阻拦，只有一句听不清的胡话。', suggestion='让他的拒绝变成动作：他烧得迷糊却死死护住伤口、推开她的手，或抓住她的披肩往回拽，逼她必须按住他才能包扎——这样\"救他\"这个选择在第一场就要付出代价，而不是靠一句俏皮话带过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：花枯是老奶奶单方面演示的预言，旅人只回了一句\"……风大了\"就转身走开，全程没有对少女提出任何要求、也没有任何反制——阻力是静止的道具，不是对手。', suggestion='把试探变成双向对抗：让旅人主动要求她把花扔掉（\"你留着它，就是不信我\"），或他伸手替她拿花、逼她松手。她拒绝并握紧，才叫冲突；现在她只是接受了一件物品。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：\"花束撞在他臂上……人还在\"到\"第二次掷了出去……散了\"之间，转折的触发条件是凭空的——\"这一下不算\"这句台词自己承认了规则不明，为什么第一次无效、第二次生效，剧中没有任何交代。', suggestion='给两次投掷一个可感知的差别：第一次她带着犹豫/半束花，他挡得住；第二次她把残花连同竹篮（她仅剩的家当）一起砸出，或她喊出\"那你就别再等我\"等于亲口断了退路——让他散掉的是她撕破脸的决心，而不是计数。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：父亲的呼唤是本场唯一的阻力，但回应只有\"脚跟往村子的方向转了半寸，又停住\"，随即说出\"……回不去了\"——挣扎半寸就结束，阻力没有真正把她的选择逼到两难的临界点。', suggestion='让呼唤先赢一步：她真的往回走了几步（甚至挎着篮子往村口去），再由掌心花瓣碎成灰/看清村口空无一人之类的具体信号让她停住、转身。先给阻力赢的假象，转折才有重量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 63.042
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 98.165
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：开场她来打水，结尾她提着满桶水往回走（“少女提着满桶水往回走”），处境与开场完全一致——冲突（村妇阻拦）以她自己提水的方式解决，代价只有掌心一道血口子，等于白付；老奶奶那句“你身上有股味儿……总有一天用得上”是主题台词，不是局势变化，全场没有真正的转折。', suggestion='让这场的解决本身带出变化：要么水在争夺中被泼掉/桶绳绷断，她空手而归、必须另想办法（代价翻倍）；要么老奶奶的“作保”实际发生作用并留下痕迹（比如当众给她系了块布、村妇因此记恨），使她与村子的关系在场末发生可被后续引用的改变。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：揭示句“我就是你想远行的心啊”与前文的物理事实正面冲突：S01 有真实的伤口与血（“腿上的布条被血浸透了”）、S04 父亲当面质问“你连他是什么人都都不知道”，说明他此前是村民可见可触的实体。揭底既没有规则铺垫，又瞬间抹掉前三场建立的现实基础。', suggestion='先立规则再揭底：在 S01 或 S05 埋一个“异常细节”（无人真正碰到他、只有她看得见他流血），或把揭示改成半步——烟散时只说“我一直想走”，把“他是不是实体”留白；也可以让揭底发生在她已付出全部代价之后，使观众先信后疑，而不是先推翻再解释。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：父亲是全剧最重的对手（S02 堵门夺药碗、S04 扯包袱夺姓氏），本场却只以画外音出场（“爹不问了！”），她赶回去后面对的是一扇空门——对手缺席，正面冲突没有发生，父女这条线悬在半空，观众期待的对峙被空屋替代。', suggestion='让她真的撞见父亲：门开了，两人相对无言，父亲手里还攥着她走时没带的东西，最后他只是让开半步——用沉默完成和解未遂，代价落在两人身上；或者把“空门”提前在她离开那天就写实（门闩从里面落下），删掉虚假的召回，避免承诺与兑现落差。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 63.7
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 167.094
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.1 分）"
+}

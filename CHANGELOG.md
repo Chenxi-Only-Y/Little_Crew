@@ -57,6 +57,52 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.206] — 2026-11-09（**配音吞吐 50 倍**：server 0.89s/句；composer 端到端打通）
+
+### A. composer 端到端验证成功
+
+```
+已释放 ComfyUI 显存（给配音腾地方）
+对白编辑：43 句 · 计划 121.0s
+配乐（composer）：23.0s · generated:ffmpeg-sine     ← 职位产物被真正使用
+混流：23.0s · 峰值 -15.1 dBFS · 字幕 3 条
+配音：3 句 · 失败 0
+```
+
+### B. 配音吞吐：**测出来的 50 倍差距**
+
+| 后端 | 均耗时/句 | 说明 |
+|---|---|---|
+| **CLI** | 20~25s（首句 145s，一次 180s 超时） | 其中 **~6s 是每句重载 2GB 模型**，生成只要 1.1s |
+| **server（预热）** | **0.89s** | **1.52x 实时**，与上游文档一致 |
+
+**结论：不是算力不够，是"每句重启进程"。**
+
+### 改了三处
+
+1. **`synth()` 默认 server 优先**（`BREEZE_TTS_PREFER=cli` 可强制回去）；server 失败自动落 CLI，**不静默**
+2. **配音前释放 ComfyUI 显存**（`POST /free`，`LITTLE_CREW_FREE_VRAM=0` 可关）——
+   渲完仍占 4~6GB，正是它把 0.89s/句 拖成 65~90s/句
+3. **归一化 wav 头**：server 的流式 wav `nframes=0x7FFFFFFF`，`wave` 写回会
+   `struct.error: 'L' format requires 0 <= number <= 4294967295`
+   → 整段配音挂掉（真跑 ECMP2 踩到）。下载后立刻重写头。
+
+### 影响
+
+```
+一集 47 句配音：45 分钟 -> 约 45 秒
+```
+
+### 验证 Verification
+
+```
+ [v] 吞吐实测：cli 78s/句 vs server 0.89s/句（原始数据 research/tts-throughput/）
+ [v] 全量 2263 项 + 架构守卫 PASS
+ [v] 真跑 ECMP3：配乐（composer）23.0s · 混流 23.0s · 配音 3 句失败 0
+ [v] 归一化后：补句尾 / 去静音 都不再 struct 溢出
+```
+
+---
 ## [0.4.0-alpha.205] — 2026-11-09（composer 接线打通；**顺带挖出 TTS 后端被 Defender 删了**）
 
 ### ① composer：先抽成可单测的函数，再接回主流程

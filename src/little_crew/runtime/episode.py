@@ -1440,6 +1440,26 @@ class EpisodeRunner:
         #
         # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
         # 默认关闭以免拖慢普通验证。
+        # ---- 配音前释放 ComfyUI 显存（2026-11-09）----
+        #
+        # 实测：ComfyUI 渲完仍占 4~6GB；此时音频后端会回落/抖动 ——
+        # TTS server 实测从 0.9s/句 退化到 65~90s/句。渲染已结束，显存该还。
+        try:
+            import os as _os_vr
+            import urllib.request as _ur_vr
+
+            if (_os_vr.environ.get("LITTLE_CREW_FREE_VRAM") or "1") != "0":
+                _req = _ur_vr.Request(
+                    "http://127.0.0.1:8188/free",
+                    data=b'{"unload_models": true, "free_memory": true}',
+                    headers={"Content-Type": "application/json"},
+                    method="POST")
+                with _ur_vr.urlopen(_req, timeout=8) as _r_vr:
+                    if _r_vr.status == 200:
+                        print("  已释放 ComfyUI 显存（给配音腾地方）")
+        except Exception:                                     # noqa: BLE001
+            pass                                              # 释放失败不影响配音
+
         if getattr(self, "voice_enabled", False):
             try:
                 import json as _jv

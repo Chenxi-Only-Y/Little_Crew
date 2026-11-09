@@ -1,0 +1,58 @@
+{
+  "episodeId": "EF3",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：全场无对抗对象：旅人已在 S05 化烟离去，'她对着空山路说：你至少该留个名字'——没有人回应，也没有任何外部阻力介入。整场是少女的独白与动作（捡花、继续走），属于纯情绪延续，缺少阻力。\", suggestion=\"给这一场加一个具体的阻力：例如她在雾中走错路、遇到村里追来的人要她回去（呼应 S02 父亲的禁令与 S07 的'就当没这个女儿'），或花束在雾中丢失迫使她折返；让'继续往前走'这个决定必须打败某个反对才成立。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：'老奶奶……把一束刚绽开的薰衣草塞进她手里'——离家的代价（S02 父亲的威胁'就别怪村里人把你当外人'）在本场只以'人群里起了一阵低低的议论'一笔带过，且是旁人替她付的；她自己没有当场失去或放弃任何可见的东西。\", suggestion=\"在她转身跟上旅人时补一个她付出的动作代价：例如父亲追到村口把她的名字当众划掉、母亲塞给她却又被她留下的某样家里的东西（与 S07 母亲手里的干花枝形成呼应），让'我跟你走'这句台词有具体的账单。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 37.568
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 74.657
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.7）"
+}

@@ -80,6 +80,27 @@ def synth(text: str, out_wav, *, voice: str = "", instruction: str = "",
     text = str(text or "").strip()
     if not text:
         return _fail("empty-text", voice)
+    # ---- 后端选择（2026-11-09 实测后改）----
+    #
+    # 实测（RTX 4060 Laptop / Q8_0 / Vulkan）：
+    #   CLI    : 7.5s/句，其中**约 6s 是每句重新加载 2GB 模型**，生成只要 1.1s
+    #            争用严重时 20~180s（还超时过一次）
+    #   server : **0.89s/句（1.52x 实时）**，模型只加载一次
+    #
+    # 所以默认：**server 活着就用 server**；CLI 仅作兜底。
+    # `BREEZE_TTS_PREFER=cli` 可强制回到 CLI（例如没有常驻服务时）。
+    import os as _os_tts
+
+    _prefer = (_os_tts.environ.get("BREEZE_TTS_PREFER") or "auto").strip().lower()
+    if _prefer != "cli" and server_alive():
+        r = synth_server(text, out_wav, voice=voice,
+                         instruction=instruction, seed=seed)
+        if r.get("ok"):
+            r.setdefault("backend", "server")
+            r.setdefault("voice", voice)
+            return r
+        # 服务端失败 -> 落到 CLI（并保留原因在 error 里，不静默）
+
     if not exe_path().is_file() or not model_path().is_file():
         # ⚠️ 2026-11-09：本机发行版把 `breeze-cli.exe` 换成了 `breeze-server.exe`，
         # 于是 CLI 分支一律 `backend-missing` —— 而**上层只看到"配音失败"**，
@@ -227,6 +248,34 @@ def synth_server(text: str, out_wav, *, voice: str = "", instruction: str = "",
     out = _P(str(out_wav))
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(data)
+    # **必须归一化**：流式头会让后续 wave 写回直接 struct 溢出
+    normalize_wav(out)
     secs = duration_of(out)
     return {"ok": bool(secs > 0), "seconds": round(secs, 3), "error": "",
             "backend": "server", "bytes": len(data)}
+
+
+def normalize_wav(path) -> bool:
+    """把 wav 头改写成**真实帧数**。
+
+    `breeze-server` 返回的是流式 wav：`nframes = 0x7FFFFFFF`。
+    `wave` 读没问题，但**写回**（去静音 / 补句尾静音）会抛
+    `struct.error: 'L' format requires 0 <= number <= 4294967295`
+    —— 2026-11-09 真跑整段配音就是这么挂的。
+    """
+    import wave
+    from pathlib import Path as _P
+
+    f = _P(str(path))
+    try:
+        with wave.open(str(f), "rb") as w:
+            ch, width, rate = w.getnchannels(), w.getsampwidth(), w.getframerate()
+            data = w.readframes(w.getnframes())
+        with wave.open(str(f), "wb") as o:
+            o.setnchannels(ch)
+            o.setsampwidth(width)
+            o.setframerate(rate)
+            o.writeframes(data)
+        return True
+    except Exception:                                         # noqa: BLE001
+        return False

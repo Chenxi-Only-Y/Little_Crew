@@ -1,0 +1,111 @@
+{
+  "episodeId": "ECMP2",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场的阻力几乎全部退到场外：母亲只是“脚步顿了顿”“没接话”，父亲只通过母亲一句“你爹一宿没睡”被提及，没有人真正出手阻止她换药。原文——“母亲把水放下，没接话”——等于默认了她的行为，对抗在场内是空的。', suggestion='让母亲在场内做出一个有分量的阻拦动作，比如伸手按住布条说“这伤不该好得这么快，你别再碰他”，或端走药碗、吹熄灯。把“家人的怀疑”变成她必须当场顶回去的具体动作，这一场才有真正的对手。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：整场是一问一答的信息交换，双方都没有付出代价。少女步步紧逼（“该我先问”“记不清自己叫什么？”），旅人一句“记不清该说的那一部分”就全身而退；她赢了追问，却没失去任何东西，他也为隐瞒没有付出任何代价——“指腹是凉的”只是暗示，不是支付。', suggestion='给追问装上代价：比如她每问一句，他腿上的旧伤就渗一点血，逼她自己停下来；或者她必须先交出自己的秘密（村口那场、她为什么留下）才换来他半句真话。让“真相”变成用东西换来的，观众才会觉得这场对话有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：转折的证据没有埋够。她指控“你没有影子”，但前六场从未出现过影子缺失的画面（脚印在 S06 有铺垫，影子没有）；同时旅人“只是站在那里，像在等这一问”，不辩解、不抵抗、不挽留，最后的对抗在一瞬间就结束了——“旅人朝她伸出手，掌心向上，什么也没有”没有形成拉扯。', suggestion='两处都补：一是在 S02 油灯下或 S04 晨光里加一个细节——灯只照出她一个人的影子；二是给旅人最后一层抵抗，比如他伸手是要接花、或是往北退半步仍想跟上，让“掷花”这个动作真正是在挣脱一次挽留，而不是对一个已经放弃的人下手。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：收尾场内只剩一个人，没有任何阻力：她“看了一眼，只一眼，然后转过身”，情绪是平的、接受也是顺的。S02 她为留人付出的“再没回过村子里的集会”和 S05 父亲“就别再回来”的断绝，到最后一场只被“只一眼”带过，代价没有被真正结算。', suggestion='在山下补最后一次拉扯：让村里的春集鼓声顺着山坡滚上来（回扣 S02），她停住脚、甚至转身半步，才重新往前走——用她主动拒绝那声鼓，把 S02 的代价在终场付清。这样“她没有哭”才是赢来的平静，而不是场戏本来就没写冲突。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 46.134
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 93.026
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：出走这一关键冲突四句对白就自行消解：他只说了一句“我一个人走”，她原样顶回“我跟你走”，随后“他看了她一会儿，没再拦”。阻力没有立场、没有加码，解决过程里双方什么都没付出——她交出包袱、告别家门的全部代价被整场推到 S06 由父亲代为执行，本场等于白写。', suggestion='给他的拒绝装上具体的利害：比如明说跟上一个“没有脚印的人”她会失去什么，或逼她当场放下一样东西（花束、包袱、门槛）才准走。让“迈过门槛”这件事是她用代价换来的，而不是他让出来的；S06 父亲的阻拦才会变成第二道叠加的墙，而非本该属于本场的主冲突。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场的转折点是他从“我一个人走”（S05）陡然反转为攥腕逼迫的“跟我走。到了北边，你就不必问了”，但中间没有任何一拍解释他为何改变立场；原文只用“那个笑容她从前没见过”轻轻带过。拒绝本身在 S05 就没动机，这里的翻转因此读起来像人物自相矛盾，而不是局势转折。', suggestion='在 S05 给他的拒绝埋一个可回收的动机（他拦她是因为跟着他会让她连脚印都留不下），S07 的“跟我走”就成了那个动机的兑现——他本想独自走完，此刻却改了主意要带她走。再补一个可拍的动作节拍（他松手后停顿、掌心摊开之前先看一眼她的伤），让立场翻转在画面上成立。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 70.271
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 215.505
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

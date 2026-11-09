@@ -1,0 +1,50 @@
+{
+  "backend": "server",
+  "n": 5,
+  "wallMean": 0.89,
+  "wallMedian": 0.93,
+  "audioSum": 6.8,
+  "rtf": 1.52,
+  "rows": [
+    {
+      "i": 1,
+      "chars": 8,
+      "ok": true,
+      "wall": 0.78,
+      "audio": 1.12,
+      "backend": "server"
+    },
+    {
+      "i": 2,
+      "chars": 6,
+      "ok": true,
+      "wall": 0.93,
+      "audio": 1.44,
+      "backend": "server"
+    },
+    {
+      "i": 3,
+      "chars": 8,
+      "ok": true,
+      "wall": 0.94,
+      "audio": 1.44,
+      "backend": "server"
+    },
+    {
+      "i": 4,
+      "chars": 5,
+      "ok": true,
+      "wall": 0.77,
+      "audio": 1.12,
+      "backend": "server"
+    },
+    {
+      "i": 5,
+      "chars": 8,
+      "ok": true,
+      "wall": 1.05,
+      "audio": 1.68,
+      "backend": "server"
+    }
+  ]
+}
