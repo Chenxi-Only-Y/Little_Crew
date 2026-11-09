@@ -55,7 +55,9 @@ class ComposerAgent:
 
         out_dir = str(p.get("outDir") or "outputs/_music")
         mood = str(p.get("mood") or self.mood or "")
-        r = MB.resolve(total, out_dir, mood=mood, ffmpeg=self.ffmpeg)
+        # 调用方给的 ffmpeg 优先（默认 "ffmpeg" 在很多机器上不在 PATH）
+        ff = str(p.get("ffmpeg") or self.ffmpeg or "ffmpeg")
+        r = MB.resolve(total, out_dir, mood=mood, ffmpeg=ff)
         payload: dict[str, Any] = {
             "kind": "shot.music",
             "path": str(r.get("path") or ""),

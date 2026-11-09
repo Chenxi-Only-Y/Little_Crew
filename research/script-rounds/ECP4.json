@@ -1,0 +1,167 @@
+{
+  "episodeId": "ECP4",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：代价与 S02 完全同构：S02 父亲的威胁是“往后村里的集会不必再去”，S03 母亲的通牒是“明日的集会就别去了”——同一个价码付了两次，冲突的砝码没有加码，反而显得这一场的对抗只是上一场的重复。', suggestion='让 S03 提出比“不去集会”更硬的代价（例如把旅人交出去、或是牵连母亲在村中的处境），使少女回答“不去了”时付出的东西与 S02 明显不同且更重；“不去集会”只保留给其中一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶赠花是本场的核心动作，但少女接受它没有付出任何东西（“手很凉，凉得少女一缩”只是体感，不是代价），旅人推辞也被老奶奶一句“花知道”轻轻带过，全场无一处失血。', suggestion='把接花绑定一个真实的交换：例如老奶奶要求她当众应下一句誓约、或旅人因这束花明显动怒/受伤，使“接花”成为不可撤回的决定，为 S07 掷花的一刻积蓄重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：对峙停在口头试探：“他问他是谁”“说他方才一直在看这束花”，旅人以“赶路的人”和反问化解，双方都没有被逼到必须亮底牌的位置；场末“却还没掷出去”把动作悬置，冲突只升温不落地。', suggestion='让这场质问产生即时后果——旅人被迫露出破绽（如对花的反应超出“赶路人”的常理、或反过来点破她离家的真相），使 S06 结束时两人关系已不可逆，再接 S07 的掷花。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场没有阻力：少女独自蹲下捡花瓣、对自己说“那就走到底”、继续前行，一路无人阻拦也无内心交战，是纯粹的收束独白；所列代价“父亲的怒声、母亲的沉默、再回不去的集会”全部是 S04 已经付过的旧账，往前走没有再割下新东西。', suggestion='给结尾一个真正的对抗——例如回村的路被雾/人封死，逼她在“回去认错”与“走到底”之间当场抉择，且让她为此舍弃一件具体之物（花束、家门的钥匙、名字），让最后一步也带血。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 43.487
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 57.786
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场收在“她抱着花束站在路中间……她只是在发抖”——情绪被推到最高却没有落成任何行动，局势与开场完全一致（仍是一前一后走在山路上）。更关键的是，本场开场“少女停下，低头看花，又抬头看他：你到底是谁？”“旅人没有回答。他只是笑”，与 S07 的“少女忽然停下。她低头看着手里的花束，又抬头看他”“他没有答。他只是笑”是同一套调度、同一句台词结构，两场被拆成了同一个节拍的两次起手。', suggestion='把 S06 和 S07 合并为一场，或让 S06 完成一次失败的行动：她先掷花，花在半空被他的言语或风挡回、落地即焦，旅人借势反攻（“你已经回不去了”），她第一次动摇；S07 再掷才是付出代价后的第二次、也是最后一次。这样两场各自有不可逆的动作，S07 的消散才是升级而非重复。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶的誓言被写得极重——“不许回头，不许哭，也不许把花丢下”，并且“话一出口，就钉在了那里”。但全剧此后再没有收这笔账：她没有回头、没有哭，唯一可能触发的是 S07 的“她举起花束，朝着他掷了下去”，而剧本把这一次违约直接写成了解决办法，没有任何后果被兑现。', suggestion='让誓言成为必须支付的价格：她掷花的动作就是“把花丢下”，因此要付出对应的代价——比如她从此失去关于他的某段记忆、或者必须当众哭一次才让花生效、或者花散之后她真的回了一次头。誓言要么被守，要么被破了要疼，否则 S05 的当众应诺只是气氛。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场的代价本该是“我就是你想远行的心啊”——她亲手毁掉自己远行的欲望，这是全剧最贵的一笔。但 S08 结尾“也有人说，她是循着花香，去寻他去了”把这笔钱原样退还了：心毁了，人还在循着他去找，牺牲没有留下痕迹。', suggestion='保留那句传说，但让它带着损毁感——比如“她循着花香走，可那香味只有她自己闻不到”，或让 S08 里她摸到怀里只剩碎瓣、却说不清自己为什么上路。代价要留下不可逆的残缺，结尾的传说才不会把 S07 的牺牲抹平。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的要价只是“明日的集会，你别去了”，冲突也以她的沉默收场（“不去了”）；真正的代价却用一句画外补上：“代价是从此以后，村里再有什么集会，她都没有再去过。”——一、代价发生在戏外，观众看不到她付；二、代价的量级远超对方的要价（一次集会 vs. 余生全部集会），逻辑上对不上。', suggestion='要么把代价搬进戏里：紧接一场短戏，村里锣响、她站在门口抱着药碗看着人群走远，门在她身后关上；要么把父亲的要价改重（“往后村里的事你都别沾”），让惩罚与要价同量级。同时删掉末尾那句总结性的旁白。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 48.446
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 149.7
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：整场只有'血止不住'这一层物理困难，没有对抗方：少女发现伤者→施救一气呵成，'血很快洇出来，她又加了一条'是流程而非阻力，读者无法预判她可能失败在哪。\", suggestion=\"给施救加一道外部对抗：比如她听到村里人声渐近（救外乡人会立刻招来父亲的惩罚），或旅人烧糊涂挣扎抗拒、布条勒不住，让她在'被人看见的风险'和'救不救得回'之间做一次选择，把S02的代价提前埋进S01。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：母亲的惩罚是'你认得的那些路，往后都不许你走了'——这是隐喻而非可感的代价，观众不知道她具体失去了什么（是村里的路？还是以后不能再出门/远行的许可？），与S02父亲明确的'集会、祭祀、婚丧一样都不许去'相比反而虚了。\", suggestion='把这句换成一件可拍的具体剥夺：比如母亲摘下她腰间的钥匙/收走她的披肩与出村用的物件，或直接对应S04她出门时被收走的东西，让代价在后文有实物呼应。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：旅人拒绝的阻力几乎为零——'我要回去了''我跟你走''你不知道我要去哪''那就更要去'，四句对话他就放行了，本场实际没有任何对抗发生；老奶奶的三句禁令只是给后面的场次下注，本身不构成当下的冲突。\", suggestion=\"让旅人在此处真正抗拒一次：他可以点破代价（'跟我会有什么下场，你村里人没告诉你？'），或直接转身走掉让她追、让她在众目睽睽下第一次当众选择，把'离村'从宣告变成一场拉锯。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：'她想不起自己为什么要往北走''走得很慢，像在等一个想不起来的人'——失忆与空手的状态在S07结尾已经完成（'她想不起自己为什么要往北走'），S08只是同一状态的延展复述，全场既无新阻力也无新损失，情绪是平的。\", suggestion=\"给尾场一个微小的新变化：比如她摸到碎瓣时做出一个与S07禁令相反的动作（本不该回头却再次停步/把碎瓣埋下又挖出来），或让'花香只有她自己闻不到'这一条在行动上兑现一次——她循香拐向某处却发现什么都没有，用一次小落差收束，而不是以旁白收束。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：本场冲突（她追问/他回避）成立，但代价只有'指尖被花茎硌得疼'这一生理细节，几乎不产生损失；'想回头的念头'只是念头，没有伴随任何实际让步，压力未落到她身上。\", suggestion=\"让追问本身付出代价：比如她每问一句就落后一步、或她主动交出一样东西（把花束递过去求他回答）却被无视，使S06的'掷花'成为累积后的爆发，而不是从零起跳。\")"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 72.386
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 87.037
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 1 轮（50.4 分）"
+}

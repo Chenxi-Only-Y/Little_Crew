@@ -81,6 +81,16 @@ def synth(text: str, out_wav, *, voice: str = "", instruction: str = "",
     if not text:
         return _fail("empty-text", voice)
     if not exe_path().is_file() or not model_path().is_file():
+        # ⚠️ 2026-11-09：本机发行版把 `breeze-cli.exe` 换成了 `breeze-server.exe`，
+        # 于是 CLI 分支一律 `backend-missing` —— 而**上层只看到"配音失败"**，
+        # 真实原因（缺后端）被埋在错误字符串里，整片配音静默没了。
+        # 这里改成：CLI 不在就试服务端（`/v1/audio/speech`，OpenAI 兼容）。
+        if server_alive():
+            r = synth_server(text, out_wav, voice=voice,
+                             instruction=instruction, seed=seed)
+            r.setdefault("backend", "server")
+            r.setdefault("voice", voice)
+            return r
         return _fail("backend-missing", voice)
     out = Path(str(out_wav))
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -135,3 +145,88 @@ def wav_seconds(path) -> float:
 def _fail(reason: str, voice: str) -> dict:
     return {"ok": False, "seconds": 0.0, "voice": voice, "seed": 0,
             "error": reason, "bytes": 0, "sha256": ""}
+
+
+#: 服务端地址（`breeze-server` 的 OpenAI 兼容接口）
+SERVER_ENV = "BREEZE_TTS_ENDPOINT"
+DEFAULT_SERVER = "http://127.0.0.1:8110"
+
+
+def server_endpoint() -> str:
+    import os
+
+    return (os.environ.get(SERVER_ENV) or DEFAULT_SERVER).rstrip("/")
+
+
+def server_alive(timeout_s: float = 2.0) -> bool:
+    """服务端在不在（`/health`）。**失败不抛**：这是探测。"""
+    try:
+        import json as _j
+        import urllib.request as _u
+
+        with _u.urlopen(f"{server_endpoint()}/health", timeout=timeout_s) as r:
+            return bool(_j.loads(r.read().decode("utf-8", "replace")).get("status") == "ok")
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def duration_of(path) -> float:
+    """wav 时长（秒）。读不出来返回 0 —— 调用方按失败处理。"""
+    import wave
+    from pathlib import Path as _P
+
+    f = _P(str(path))
+    try:
+        with wave.open(str(f), "rb") as w:
+            rate = float(w.getframerate() or 0)
+            width, ch = int(w.getsampwidth() or 2), int(w.getnchannels() or 1)
+            frames = int(w.getnframes())
+        # ⚠️ `breeze-server` 返回的是**流式 wav**：头里 nframes 写成 0x7FFFFFFF，
+        # 直接算会得到 89478 秒（实测）。按字节反推才准。
+        if rate <= 0:
+            return 0.0
+        if frames <= 0 or frames > 10_000_000:
+            frames = max(0, (f.stat().st_size - 44) // max(1, width * ch))
+        return frames / rate
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def synth_server(text: str, out_wav, *, voice: str = "", instruction: str = "",
+                 seed: int | None = None) -> dict:
+    """走 `breeze-server` 的 `/v1/audio/speech`。
+
+    背景（2026-11-09）：本机 TTS 发行版把 `breeze-cli.exe` 换成了 `breeze-server.exe`，
+    CLI 后端直接报 `backend-missing`，全片配音因此静默失败
+    （表现是"配音 3 句全失败 → 没有台词 → 混流不跑"）。
+    """
+    import json as _json
+    import urllib.error as _ue
+    import urllib.request as _ur
+    from pathlib import Path as _P
+
+    body = {"input": str(text), "response_format": "wav"}
+    if voice:
+        body["voice"] = str(voice)
+    if instruction:
+        body["instruction"] = str(instruction)
+    if seed is not None:
+        body["seed"] = int(seed)
+    req = _ur.Request(
+        f"{server_endpoint()}/v1/audio/speech",
+        data=_json.dumps(body, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with _ur.urlopen(req, timeout=300) as r:
+            data = r.read()
+    except _ue.HTTPError as e:
+        return {"ok": False, "seconds": 0.0,
+                "error": f"server-http-{e.code}: {e.read()[:120]!r}"}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "seconds": 0.0, "error": f"server-{type(e).__name__}: {e}"}
+    out = _P(str(out_wav))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(data)
+    secs = duration_of(out)
+    return {"ok": bool(secs > 0), "seconds": round(secs, 3), "error": "",
+            "backend": "server", "bytes": len(data)}

@@ -1,0 +1,165 @@
+{
+  "episodeId": "ECP5",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：排斥冲突在本场被提前泄掉：旅人从\"别用花照我\"\"离我远点\"的对抗，只用一句\"对不起\"就软化并昏睡，少女\"第一次犹豫要不要救到底\"没有落成任何抉择动作——她只是把花篮挂到门外又回来了。阻力归零，犹豫悬空，场次以平静收尾。', suggestion='让犹豫变成有代价的动作：她真的把花篮提出门、走出一步才停住，或索性解下他腕上的布条准备放弃，再被某个细节（如他梦里喊出与她有关的话）拉回来。同时把\"药碗打翻、划破手\"从意外改成她主动付出的代价（比如为按住挣扎的他而被碎片划伤），冲突与代价才咬合。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：S03 父亲的威胁——\"你踏进里屋，明天的集会就别去了\"\"村里集会再没有她的位置\"——这条被明确标价的代价到 S05 完全没有兑现，取而代之的是一笔带过的\"她回头望了一眼家的方向，父亲没有来\"。观众等了一整场的后果被一句旁白式细节吞掉。', suggestion='在 S05 让集会的代价显形：她离村时正好撞见集会的人群/火光，村民的沉默和回避就是她付的钱；或把\"父亲没有来\"扩成一个具体动作（门闩从里面插着、灯是灭的），让 S03 的威胁在 S05 以视觉方式结账。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场零阻力：\"旅人没有躲，也没有接\"，少女扑过去只是抓空。对抗在 S06 结尾（\"别举它\"）已经打完，S07 完全是后果展示，观众在这里没有对手可看。', suggestion='给消散过程加一层反向阻力：旅人在化烟前伸手试图夺回花束或拉住她，少女必须再用力一次（再掷、或按住自己的手不让他碰）才能完成驱散——把\"放手\"变成一场拉锯，代价和情绪才有着力点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：与 S07 情绪持平而无新增：S07 已是\"她没有哭，只把空花梗攥紧\"，S08 又是\"她没有哭\"，同一情绪重复两场；唯一的微转\"她想回头，脚却已经往前迈了一步\"幅度小于上一场的生离，之后的旁白（\"后来村里人说…\"）更把余韵提前说尽，整场是平的。', suggestion='删掉重复的\"她没有哭\"，把转折做实：让她真的转身往回走两三步（真正走回村口的方向），再因手里的香气或某个物件而停住、掉头——先给观众\"她放弃了\"的假转，再翻回来。旁白式结局砍掉最后两句，留白给雾中的背影。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 47.556
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 103.883
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有一个真正阻拦她的动作。村民只是\"往旁边挪开半步\"、\"低声说\"，老奶奶是赠花而非阻拦，父亲干脆不在场——S03 立下的重誓（\"你往那间屋里走一步，从明早起，集会再没有你的位置\"）到这一场只兑现成几句耳语和一扇插闩的门。\"少女没有停。她走过那条被让开的路\"——高潮段落是一次畅通无阻的步行。', suggestion='给离村这一刻一个实体阻力：让父亲就站在集会火把边，与她对视后转身（把门闩那一幕搬到这里，变成面对面的第二次拒绝）；或让村民甲上前一步又被老奶奶挡开。阻力越具体，她\"没有停\"这一步才越有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场转折（\"他的笑在看见花的瞬间塌了\"）成立，但她的反应是被动的：手停在半空，场就结束了。她对\"第一次求她\"这件事没有任何情绪落点，转向 S07 时她是被扑上来的，主动权全在对方手里。', suggestion='让她在半空做一个动作再停——把花束往下放半寸（心软）又举回去（执拗），把犹豫演出来。这样 S07 的被扑就是她自己选择不放花的直接后果，两场咬得更紧。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：开场她\"转身，往回走\"回村子——但 S05 里她已明确选择北上，剧本没有给任何往回走的理由；随后靠\"风里的薰衣草味\"再转回来。两次转向中，真正决定性的那一次（留下还是走）动机缺失，最后的反转像被气味临时触发，而不是她付过代价后的抉择。', suggestion='补一个往回走的具体动因（回去取一样落下的东西、想最后看一眼插着闩的门、想确认集会散了没有），让风只负责\"打断\"而不是负责\"决定\"；或删掉回走，改为她走到岔路口停下，由风促成唯一一次转向。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.4,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 61.039
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 1026.794
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的通牒（“从明早起，集会再没有你的位置”）与它的结果在同场内被旁白直接宣告——“从此，村子里的集会再没有她的位置——她也一次都没有再回去过”。威胁刚出口就立刻结算，观众没有为这个代价悬心的余地，也没看到它在她身上留下任何可见的伤（她只是端着药碗走进里屋）。', suggestion='删去旁白中的结果半句，只保留“那一声她记了很多年”这类感受性叙述；把“被逐出集会”的兑现推迟到 S05——村民甲的敌意、众人让开的那条路本就足以承担它，让观众亲眼看见父亲那句话落了地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：冲突是单向的：原文“她拧着布巾，低声问”“他没有答”，对手全程昏迷，她的追问既没有被拒绝、也没有被开价，只换来睡梦中的一抓（“手腕上五个红印”）。她“非要问出来”的执念，在这一场里没有遇到任何要她付出什么的阻力。', suggestion='让他清醒片刻，把“回答”变成一笔交易——他睁眼提出条件（比如：问了就得送他过山口，或从此不能回头），她必须当场应下。这样 S06 那句“我要知道”才有前账可还，而不是从零开始的决心。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人对“她跟着走”的阻力一触即退：他只说了“你不知道我是谁”，被她一句“我问过。你不答”挡回后，没有再争、没有独自上路、也没有开条件，随后场面被老奶奶送花的插曲接管。到转场时，他到底是默许还是反对仍是空的——两人之间没有一个完整的交锋回合。', suggestion='给他一次实打实的阻拦：比如他趁她回屋拿包袱时独自上路，她追到路口才把人拦下；或让他说出同行的代价（“跟着我，你就回不了头”），她的“我跟你走”才是顶着阻力说出口的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：顶点对抗只有一个来回：原文“他扑了上来”→“她把手里的花束朝他掷了过去”→“轮廓也散了”。她没被抓住、没受伤、没被逼到差点放弃追问；观众也始终不知道“被他抓住会怎样”，所以这场本该最紧的戏没有任何险情，胜利来得毫无阻力。', suggestion='加一拍险情：他抓住她持花的手（呼应 S03 抓腕），花几乎脱手，她得付出点什么（扯下别在腰上的花穗、或让他抓住另一只手换这一掷）才挣到出手的机会；并在前面埋一句可感的威胁，让“被抓的后果”成立。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 55.629
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 345.105
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 2 轮（58.4 分）"
+}

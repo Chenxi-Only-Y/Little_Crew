@@ -1587,17 +1587,22 @@ class EpisodeRunner:
                         # （`NameError: _film_s` 被上层吞掉 → 音乐床与混流整段没跑）。
                         # **正确性优先**：先回退到原版；`composer` 职位实现保留，
                         # 接线留待有独立测试覆盖时再做。
-                        _bed = {}
-                        try:
-                            from little_crew.runtime import music_bed as _mb
+                        # 一行调用可单测的决策函数（2026-11-09 重做）：
+                        # `music_stage.resolve_bed` 里是"composer 优先 / 内联兜底"，
+                        # 三层优先级与异常处理**都有单测**，不再靠整集真跑去试。
+                        from little_crew.runtime import music_stage as _ms
 
-                            _film_s = sum(float(getattr(_s2, "duration_sec", 0) or 0)
-                                          for _s2 in picked)
-                            _bed = _mb.resolve(
-                                _film_s, _sub,
-                                ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
-                        except Exception as _e_bed:          # noqa: BLE001
-                            print(f"  ⚠️ 音乐床未生成：{type(_e_bed).__name__}")
+                        _bed = _ms.resolve_bed(
+                            orch=self.orch, shots=picked, out_dir=_sub,
+                            ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
+                        _film_s = float(_bed.get("requestedSeconds")
+                                        or _ms.film_seconds(picked))
+                        if _bed.get("via") == "composer":
+                            print(f"  配乐（composer）："
+                                  f"{float(_bed.get('seconds') or 0):.1f}s"
+                                  f" · {_bed.get('source') or ''}")
+                        elif _bed.get("note"):
+                            print(f"  ⚠️ 音乐床：{_bed['note']}")
                         _mix = _mx.build(
                             _rows, str(_sub / "mix.wav"),
                             ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",

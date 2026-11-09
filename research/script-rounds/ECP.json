@@ -1,0 +1,170 @@
+{
+  "episodeId": "ECP",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲是全剧唯一实质性反对方，此处却只留下一句「你疯了」，随后「父亲别过脸去，没有拦」——阻力在同一场内自行消解，少女的出走没有遇到任何需要她付代价去克服的阻挡。', suggestion='让父亲真正出手拦一次（扣下包袱、堵门、以断绝关系相挟），少女必须做出一个具体让步（留下披肩、留下花篮、说出决裂的话）才能走出村口；把「没有拦」挪到她已迈步之后，作为父亲迟到的软弱，而不是作为冲突的替代品。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人消散的触发点是少女「举起花束朝他掷了过去」，但投掷本身没有被写成一次抉择的代价——她扔掉的是刚从老奶奶手中接过的、被赋予「照出不洁」功能的信物，这一行为的分量在场内没有兑现（她不迟疑、不心疼，随后只捡花瓣）。信物被浪费掉了，却不让人觉得她失去了什么。', suggestion='在投掷前加一拍犹豫：她已举起花又放下一次，或先问最后一句「你是不是根本不存在」；投出后让她本能地去接散落的花瓣却只抓住空手，把「主动戳破幻象」写成一个她事后会疼的动作，而不是一个顺手的解谜开关。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：岔路口看似是选择，实则没有转折：她在 S04 已说「我跟你走」、S05 已说「那我就自己走」，回村这条路在剧情上早已被她自己烧掉（放弃集会、撇下父亲）。她「最终转向北方」只是把已做的决定再说一遍，且雾遮住两条路——选择没有信息差，也就没有代价。', suggestion='给岔路口一个真实的两难：比如雾中传来村里的钟声/母亲的呼喊，或北方路上出现她必须回应的阻碍（塌方、折返的村民），让她为了向北付出一样具体的东西（烧掉包袱里的干粮、撕下布条做路标），选择才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父母之间的对立只走了一个回合：母亲「哽咽着说」，父亲「她自己选的」，母亲没有反驳，老奶奶直接给出答案，父亲随即默默收走布条。全集积压的父子冲突（S02 的质问、S04 的「你疯了」）没有在任何一场里正面对撞过就结束了。', suggestion='让母亲把责任推回去：「是你一次次拦她、是你不让她去集会」，逼父亲正面回应——他可以嘴硬到底，但要用一个动作认输（把布条收好、朝北方站一会儿），并且让这句话在场内产生后果（母亲不再说话、人群散去），而不是靠旁白式的抒情收尾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：S08 与 S06 是同一个结尾的两次宣告，且互相矛盾：S06 的落点是「原来你一直是我自己／那我就自己走」，S08 的落点却回到「也有人说，她是循着花香，去寻他去了」——主角刚完成的自我确立，在最后一场被悄悄改写成仍未摆脱对旅人的追随，主题被自己的尾声推翻。同时「雾气吞没她的背影」「再没有人见过她」与 S06 的「走进雾里」「村里人后来再没有见过她」完全重复。', suggestion='二选一：要么删去 S08 的复述性结尾，让 S08 只承担「花香再现」这一新信息，并让她对花香做出与 S06 不同的反应（闻到却不追，继续按自己的方向走）；要么把 S06 的「自己走」降为犹豫，把真正的落点全部放在 S08，使雾中抉择成为唯一一次、且必须付出代价的转折。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 35.867
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 77.125
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲的最后通牒「你要是不去……往后就别叫这个门」只是一句口头威胁，少女用一句「那我就不去了」就平静接下，本场内没有产生任何实际代价或对抗升级；到 S04 开场她照常「从屋里出来」、包袱在手，威胁全程未兑现，等于把这场建立起来的压力白白放掉。', suggestion='让通牒在本场就落一点实——比如她话音落下时门外传来落闩声、母亲不敢再待下去，或她必须从后门/窗才能出屋；至少在 S04 开场兑现一次（父亲堵在门口、她是从偏门出来的），使 S03 的代价延续到下一场的对抗里。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S05 结尾是全剧最大的丧失：「她跪在山路上，摊开手，什么都没有了」；S06 紧接同一个清晨，她却已冷静地摆干粮、劝母亲回去、条理清晰地系布条——旅人消失的余痛在下一场完全蒸发，情绪转折断层，观众的失落没有被承接。', suggestion='在 S06 开头给一个延续 S05 的痕迹：她手心/虎口的血口还在渗、她把那根断花枝揣在怀里、她走得很快像在逃离那条山路，让母亲的出现打断的是一段尚未消化的悲伤，而不是一段空白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：终场的阻力只有一阵香气，是氛围而非对手：她从「指节发白」到「忽然笑了」几乎瞬间自我说服，「我不追」来得太轻易，没有真正的拉扯，也就让最后的抉择显得像感叹而非决定。', suggestion='给香气一个具体的、需要她付出代价才能拒绝的召唤（带回村里某个真实的声音或她必须放弃的东西），让「我不追」必须先经过一次实质的动摇与放弃，抉择才立得住。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 74.305
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 139.707
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 47.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：阻力只是一句转述——\"村里人说过，外乡人身上带病，碰了要倒霉\"，随后她\"转身往下坡走了七八步\"又自行折返。禁忌没有在场的代言人，她回来时也没有任何外部障碍拦她，救与不救的张力在她蹲下那一刻就自行消散了。', suggestion='把禁忌变成在场的阻力：让某个村民（或她自己的手在岩上被划破、她怕把病带回家里的弟弟）在她伸手前形成具体障碍，让她付出一点代价才把人扎好。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：\"代价是从这一夜起——她再没有回过村子里的集会，也再没有戴过那顶花冠\"是旁白替观众宣布的代价，不是戏剧行动；而且代价与当夜的冲突错位——冲突是\"留不留这个外乡人\"，宣布的损失却是\"不戴花冠\"，两者没有因果。', suggestion='删掉这句宣告，把代价做进场面里：比如天亮时父亲当着她的面把花冠收走/砸了，或让她守夜时听见集会的鼓点、亲手把药碗端给父亲——用一个可见的失去替代旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：与 S02 结构重复：同一夜、父亲逼问、她拒绝、结尾又是\"她转过身去给他换药——这一夜还很长\"，而 S02 结尾已是\"那一夜她守在床边，一整夜没合眼\"。第二次对抗只把冲突从\"不许留外乡人\"换成\"锁门\"，人物情绪没有新的变化，转折被上一场提前用掉。', suggestion='要么把两场并为一场，要么让 S03 付出上一场没有的代价：比如母亲因替她说话被父亲罚、或旅人在这一夜病情恶化必须冒险出门抓药——给这场一个 S02 没有的新损失和新选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的阻拦只有一句\"你要走，别从这个门走\"，她答\"那我就不从\"便化解了，全程没有一次实质对抗；离家的代价也只有一道撕开的裙角，冲突在问答里就结束了。', suggestion='让父亲的禁令有执行力度：他已把后窗闩住/让邻居盯着，她必须真的挣脱或付出代价（丢下包袱、被抓回来一次）才能出村，把\"别从这个门走\"变成一道要闯的关。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人从头到尾不辩解、不阻拦、不挽留，\"他还是不说话\"——对抗完全由少女单方面发起，掷花的高潮缺少来自对方的最后一搏，识破得太顺。', suggestion='在她举起花束前加一个反向动作：旅人伸手挡花束、或劝她\"再走一段就到了\"试图把岔口糊弄过去，让转折建立在一次真正的交锋上，而不是她一个人的顿悟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：母亲是同盟不是阻力：她追上来只为送东西，\"你走这么快做什么\"的挽留一句\"你就说没追上我\"就被化解，场景里没有对抗，情绪是平的，唯一的转折只有那条缝好的旧披肩。', suggestion='给母亲一个真实的立场冲突：她要求女儿至少留下一夜、或她带来父亲的话（\"回来就把窗钉上\"），让少女的\"不回头\"是当着母亲的面作出的拒绝，而不是对空气使劲。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父亲看守的力度靠\"那扇后窗早就钉死了\"支撑，但 S04 她正是从后窗翻出去的——同一个障碍前后矛盾，父亲的阻拦因此显得随意，踢药包之后冲突也没有再升级，停在僵持。', suggestion='把钉窗安排在她第一次出走之后（父亲发现她从后窗跑掉才钉），这样 S07 的阻力既成立又带着上一场的余怒；并让踢药包之后再逼她一步（比如命她把药带走、永远别再回来），把冲突推到底。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：母亲带来的消息\"你爹……卸闩了\"不是新信息——S07 已写明\"闩没有落，但也没有开\"，门本来就没落闩，最终转折的分量被上一场预支掉一半；同时父女的和解始终由母亲转述，两人正面对峙一次也没发生。', suggestion='把 S07 的\"闩没有落\"改回\"门闩落死了\"，让 S08 的卸闩成为真正的变化；并让父亲本人出现在门后（哪怕只是门缝里的一只手），把最后一场对抗留给父女正面完成。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 47.4,
+        "issueCount": 8,
+        "blockerCount": 0,
+        "repairHintCount": 8,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 81.1
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 189.561
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 47.4（REVISE）；最好的是第 2 轮（59.9 分）"
+}

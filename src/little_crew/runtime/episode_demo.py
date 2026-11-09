@@ -391,6 +391,16 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  文风编辑：**真实 LLM 批评家**"
                       f"（{_judge} / {cross_family(args.llm_model, _judge)['judgeFamily']} 族 / 盯文风一致性）")
 
+    # ---- 配乐（`composer`，2026-11-09 重接：决策函数已单测）----
+    try:
+        from little_crew.runtime.composer_agent import ComposerAgent
+
+        stubs["composer"] = ComposerAgent(
+            ffmpeg=getattr(args, "ffmpeg", "") or "ffmpeg")
+        print("  配乐：composer 已绑定（素材优先，程序垫音兜底）")
+    except Exception as _e_cp:                                  # noqa: BLE001
+        print(f"  ⚠️ composer 绑定失败：{type(_e_cp).__name__}: {_e_cp}")
+
     # ---- 摄影（`camera_operator`，2026-11-08 首次绑定）----
     # 名册声明 `shot.image -> shot.video`；只在视频模式真正渲染片段。
     try:

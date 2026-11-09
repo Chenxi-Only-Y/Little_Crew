@@ -57,6 +57,70 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.205] — 2026-11-09（composer 接线打通；**顺带挖出 TTS 后端被 Defender 删了**）
+
+### ① composer：先抽成可单测的函数，再接回主流程
+
+昨天两次"直接改主流程"都引入回归，所以这次换了做法：
+
+```
+runtime/music_stage.py     resolve_bed(orch, shots, out_dir, ffmpeg)
+                           ├ ① composer 绑定且成功 -> 用它
+                           ├ ② 绑定但失败          -> 打印原因，退回内联
+                           └ ③ 未绑定              -> 退回内联（历史行为）
+```
+
+`episode.py` 只留**一行调用**；三层优先级 + 异常处理**全部有单测（14/14）**。
+
+**集成验证**（真 helper + 真 ComposerAgent + 真 ffmpeg）：
+
+```
+via=composer · 10.0s · source=generated:ffmpeg-sine · 文件存在 ✓
+```
+
+### ② 真跑里发现的两个真因
+
+```
+⚠️ 音乐床：composer 没有给出可用文件      ← helper 到了，agent 失败
+混流：21.0s · bgmSource=generated:ffmpeg-sine   ← 内联兜底救了场
+```
+
+**根因：`ComposerAgent` 的 ffmpeg 默认 `"ffmpeg"`（不在 PATH）**，
+而 helper 没把调用方的 ffmpeg 传下去 → agent 必然失败 → 退回内联 →
+外部看起来像"没接上"。已修：helper 透传 + agent 优先用 payload 的 ffmpeg。
+
+> **教训**：**兜底路径会掩盖接线失败**。兜底必须写清"为什么走了兜底"（现在会打印 note）。
+
+### ③ 🔴 更严重：`breeze-cli.exe` 被 Windows Defender 删了
+
+```
+11/09 16:48  breeze-cli.exe  · Trojan:Win32/Malgent · 已处置
+11/09 17:24  ...-vulkan.zip  · 同上
+```
+
+**不是清理脚本删的**（清理记录：删 9584 个文件，**100% `.png`**，全在 `outputs/ep_white`）。
+是 Defender 把这个第三方发行包判成 Trojan 并移除（ML 编译型二进制的常见误报，但不能替它担保）。
+
+**影响与处理**：
+- 语音合成一度**全部静默失败**（`backend-missing`）→ 表现是"配音 3 句全失败 → 没台词 → 混流不跑"
+- 已加 `breeze-server` 后端（`/v1/audio/speech`，OpenAI 兼容）：CLI 缺失时自动回退
+- 用户已恢复 CLI；实测合成 **5~9 秒/句**（首句含加载 33s）
+
+### ④ 流式 wav 的时长 bug
+
+`breeze-server` 返回的 wav 头里 `nframes = 0x7FFFFFFF` → 直接算得 **89478 秒**。
+改成按字节反推：`(size-44)/(rate*width*ch)`。
+
+### 验证 Verification
+
+```
+ [v] 音乐床决策 14/14（含 ffmpeg 透传断言）
+ [v] 全量 2263 项 + 架构守卫 PASS
+ [v] 集成：真 agent → via=composer · 10.0s · 文件存在
+ [v] 真跑 ECP6：helper 被调用（打印了失败原因）、混流 21.0s、字幕 4 条
+```
+
+---
 ## [0.4.0-alpha.204] — 2026-11-09（**根因找到并回退**：composer 接线引入回归，音乐床与混流整段没跑）
 
 ### 根因（不是"没接"，是**我改坏了**）

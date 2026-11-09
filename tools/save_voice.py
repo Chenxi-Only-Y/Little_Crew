@@ -39,14 +39,19 @@ from little_crew.runtime import tts_breeze as T  # noqa: E402
 
 def save(ref_audio: str, name: str, ref_text: str = "") -> dict:
     """调用 breeze-cli 存音色。返回 `{ok, name, path, error}`。"""
-    exe, model = T.exe_path(), T.model_path()
-    if not exe.is_file() or not model.is_file():
-        return {"ok": False, "name": name, "path": "",
-                "error": "找不到 breeze-cli 或模型（见 BREEZE_TTS_ROOT）"}
     ref = Path(str(ref_audio))
+    # ⚠️ 先查**用户能给的信息**（路径错了他能改），再查后端 ——
+    # 顺序反了会把"文件不存在"报成"缺后端"，白白让人去找安装问题。
     if not ref.is_file():
         return {"ok": False, "name": name, "path": "",
                 "error": f"参考音不存在：{ref}"}
+    exe, model = T.exe_path(), T.model_path()
+    if not exe.is_file() or not model.is_file():
+        # 2026-11-09：本机发行版把 CLI 换成 server，**存音色目前没有可用后端**。
+        # 已存音色仍可用（走 server 的 /v1/audio/speech），但**不能再造新的**。
+        return {"ok": False, "name": name, "path": "",
+                "error": ("找不到 breeze-cli（发行版改为 breeze-server 后，"
+                          "存音色没有可用后端；合成不受影响）")}
     T.voices_dir().mkdir(parents=True, exist_ok=True)
     cmd = [str(exe), str(model), "--text", ref_text or "占位",
            "--ref-audio", str(ref), "--save-voice", str(name),
