@@ -1,0 +1,164 @@
+{
+  "episodeId": "ERS1",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：开场抛出的阻力被直接放弃：“父亲把门闩了。你还要守？”——门闩本该是父亲威胁的兑现，但母亲推门就进、临走还替她掖肩，屋里也没有父亲任何后续动作；母亲的劝说一句“那就知道吧”就被顶回，全场实际没有形成对抗。', suggestion='让门闩变成真障碍：母亲是拿了钥匙/从里面开的闩进来，说明父亲确实把门锁死了；或让父亲在门外出现一次（脚步、灯影、隔着门撂话），把S02“集会别去了”的威胁在本场兑现一部分，少女是顶着这个压力守到天亮的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人唯一的阻力“外乡的路不好走”在一行之内就瓦解——他不追问、不拒绝、不说明理由，只“伸手替她扶正包袱的结”；少女为此没有付出任何代价就得到了同行的许可，冲突几乎不存在。', suggestion='给旅人一个具体的拒绝理由并让他坚持两三个回合（他本就准备独自上路、他的身份不容带人、或他明说“跟着我会出事”），让少女必须用某种交换或坚持——比如交出父亲的威胁、交出包袱里属于家里的东西——才换到他点头。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场对抗是单向的：“旅人没有回答，只是笑”“旅人轻声问：‘你怕了？’”——他既不辩解也不掩饰，真相由风里一句“我就是你想远行的心啊”直接播报出来；她的逼问没有逼出任何抵抗，掷花束更像触发机关而非交锋的结果。', suggestion='让旅人在被揭穿前主动抵抗一次：他可以否认、反问她一路的动机、或试图阻止她扔花束（伸手去拦、说出“扔了你就回不去了”），把掷花变成她明知代价仍做出的选择，那句独白也应改由她自己推出来而不是风替他说。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全集最大的抉择点被处理成一次轻描淡写的回望：“她回头看了一眼……然后她提起包袱”，身后是家与父亲的决裂，面前是白雾——两条路的拉扯没有在她身上留下任何挣扎（停顿、折返一步、把花穗攥紧再松开），走下去毫无阻力。', suggestion='在回望和迈步之间插入一次真实的动摇：让她真的往回走两三步，或听见村里的钟声/母亲的声音而停住，再由她自己把包袱换肩、迈出那一步——转折和代价都压在这一步上。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 58.817
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 70.05
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场入戏时门已经落闩（“身后‘咔’一声，门从外头落了闩”），锁门这个事件是入场所态，之后整场只剩送药、母亲进出、门外父亲传话，唯一的进展是结尾一句“旅人的烧退了一点，她的手腕已经酸得抬不起来”——情绪与局势从头到尾没有变化，是典型的平场。', suggestion='在场内放一个能真正改变处境的节点，让场次有“变”的一刻：例如母亲握着钥匙在门外久留、最终把钥匙从门缝塞进来又收回；或旅人在此刻半醒、说漏一句关键信息（他是谁、为何逃）；或父亲推门欲入被母亲拦住、两人在门外爆发一次短争执。任何一条都能把静态照料变成有张力的过场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人在岔口反悔要甩开她（“我改主意了。你爹的银簪我还你”），少女只用两句硬话——“我要一句实话”“那我后悔给你看”——就让他沉默、接过包袱替她系紧。冲突是解决了，但双方谁都没付出代价，最激烈的一次对抗以零成本收场。', suggestion='让这次让步必须有人买单：旅人被迫为带上她付出可见代价（改走险路、银簪必须真正换掉、暴露行踪导致天亮前赶不到山口）；或少女为留下付出具体损失（抛下包袱里母亲的某样东西、答应一个之后必然兑现的苛刻条件）。把代价先记在S05，S06掷花时才有账可算。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：少女在同一场内先回身走“一步，两步，三步”（“娘，别等我”），随即又转身北上（“爹，我不回去了”）。两次转向之间没有新的信息、没有对手、也没有任何阻力——只有钟声和两段回忆，转折靠独白直接宣布，来得随意；且全场只有她一人，冲突维度为空。', suggestion='给这次折返一个摩擦点：让她真的走到村口、看见父亲的背影或母亲留在门框上的某样东西（甚至踩到自己落下的那截披肩穗）再决定掉头北上；或者删掉“往回走”这一半，把回与不回的摇摆前移到S06掷花之前，让S07只呈现一个已经付过代价、不再反复的决定，行动本身就是转折。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 104.716
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 106.732
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲的命令是上一场原话重播：S03「天亮前，让他走」，S04 一字不差再喊一次「天亮前，让他走」。冲突没有升级也没有解决，只被复述；少女的回嘴「他伤还没好」被父亲一句「你想让全村来搜？」压住后，她「转身进了里屋」——这是回避，不是对抗，本场等于把 S03 的僵局原样搬了一遍。', suggestion='让父亲的施压换一种更硬的形式，逼出一个具体抉择：比如他已把话说到「人是你带进来的，交出去还是你替他担」，或他已经准备去开门。让少女必须用行动（藏人、撒谎、挡在门口）回应，而不是端着药碗进里屋——冲突要有胜负，哪怕她输了也行。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父女对峙完全没有阻力：父亲背对她说「锅里有饭」「你娘一宿没睡」，说完便「肩膀动了一下，还是没有回头」。他既不挽留也不阻拦，少女一句「爹，我不回去了」就走掉了。原文「父亲肩膀动了一下，还是没有回头」把唯一可能的对抗动作写没了，代价（抛下父母）因无人阻拦而显得轻飘。', suggestion='给父亲一个真实的阻挡动作——哪怕只是站起来挡在路中、伸手攥住她的包袱带、或把那截披肩穗塞回她手里又夺走。他可以不说话，但必须出手；她挣脱的那一下，才是「我不回去了」该付的价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结尾情绪是平的：她「没有哭」，摔跤、爬起来、走，钟声响起「她没有回头」——原文主动压掉了所有内在波动（「她没有哭」「她没有回头」），只剩匀速行路；「那就走」承接的仍是 S07 已完成的决定，没有新信息、新情绪把局势再翻一层。', suggestion='让雾散开那一瞬出现一次真正的动摇：比如她回头望了一眼钟声的方向，或者花穗在衣襟上掉了、她弯腰去捡——用一个停顿和一个取舍制造最后的情绪落点，再让她继续走下去；拐角那束花留着即可，它已经是转折。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 109.79
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 45.301
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 2 轮（59.9 分）"
+}

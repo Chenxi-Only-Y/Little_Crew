@@ -1,0 +1,58 @@
+{
+  "episodeId": "ERS2",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：这一场只有信息、没有对抗。少女连问两句“测什么？”“你要去哪里？”，旅人的全部回应是一句“你量不出来”，随后又昏睡过去——没有任何阻力真正顶回来，她既没有被拒绝的代价，也没有被迫做选择的关口。整场是‘照料—发现异常’的平铺观察，诡异感来自陈述而非来自交锋。', suggestion='给旅人一个带牙齿的反作用力：比如他短暂清醒时死死按住她的手不让她换药，或坚持天亮前必须离开、威胁会连累她家（呼应S02父亲的处境），迫使少女在“继续救他”与“保全家门”之间当场做一次选择。这样伤口一夜收口的转折才有对手，而不是被她独自‘看’出来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：收尾场没有阻力：她放花、起风、烟散、她说“我知道”、往北走——“这一回，没有人会问她是谁，也没有人答她。”没有任何东西与她对抗，连前几场一直起作用的外部力量（村规、父亲、旅人）在这里全部撤走，最后一段路走得过于顺滑，情绪是平的。', suggestion='在终点给一个反向拉力：让她在岩石前真正犹豫一次——比如篮子里还留着老奶奶那束花、或她回头望向山那边，几乎要折返，最后由她自己掐断这个念头才放下花。让“她自己挑的这条路”是挣来的结论，而不是场景自动送出的结论。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 55.553
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 60.434
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 69.4）"
+}

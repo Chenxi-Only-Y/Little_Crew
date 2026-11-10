@@ -1278,6 +1278,37 @@ class EpisodeRunner:
 
         self.characters = self._design_characters(script_draft)
 
+        # ---- 阶段 checkpoint：**最终**镜头表（2026-11-10）----
+        #
+        # ⚠️ 原来的 checkpoint 写在返工**之前** —— 返工换过镜头后它就成了旧的。
+        # 续跑用旧镜头 -> IR 变 -> 缓存全 miss -> "续跑"等于重渲。
+        # 真跑实测：checkpoint 里 6/5/6（17s），而成片是 21s。
+        try:
+            from little_crew.runtime import stage_checkpoint as _sc_f
+
+            _wd_f = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_f:
+                _picked_final = [{
+                    "shotId": str(getattr(s, "shot_id", "")),
+                    "sceneId": str(getattr(s, "scene_id", "")),
+                    "shotSize": str(getattr(s, "shot_size", "")),
+                    "cameraMovement": str(getattr(s, "camera_movement", "")),
+                    "durationSec": float(getattr(s, "duration_sec", 0) or 0),
+                    "characters": list(getattr(s, "characters", ()) or ()),
+                    "action": str(getattr(s, "action", "") or ""),
+                    "description": str(getattr(s, "description", "") or ""),
+                } for s in picked]
+                _sc_f.save(_wd_f, "storyboard",
+                           {"shotList": {"kind": "shot.list",
+                                         "episodeId": self.episode_id,
+                                         "shots": _picked_final,
+                                         "totalSeconds": round(sum(
+                                             x["durationSec"] for x in _picked_final), 2)}},
+                           meta={"episodeId": self.episode_id,
+                                 "shots": len(_picked_final), "final": True})
+        except Exception:                                    # noqa: BLE001
+            pass
+
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
         #
@@ -1311,6 +1342,27 @@ class EpisodeRunner:
         # 表现是崩溃（`_stage_control_image(None)`），真因在顺序。
         self._prompts_seen: dict[str, str] = {}
         irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
+
+        # ---- IR 指纹：查"续跑为什么还重渲"（2026-11-10）----
+        #
+        # 缓存键 = IR 内容哈希。续跑若 IR 变了，缓存必 miss。
+        # 这里把每镜哈希存进 checkpoint，并在续跑时**对比打印** ——
+        # 否则只能看到"命中 0"，看不出是"哪个字段变了"。
+        try:
+            from little_crew.ir.canonical import content_hash as _ch
+
+            _irh = {str(s.shot_id): _ch(ir) for s, ir in zip(picked, irs)}
+            self._ir_hashes_now = _irh
+            _old = (getattr(self, "resume_data", None) or {}).get("irHashes") or {}
+            if _old:
+                _same = sum(1 for k, v in _irh.items() if _old.get(k) == v)
+                print(f"  IR 对比：{_same}/{len(_irh)} 镜哈希相同"
+                      + ("（应命中缓存）" if _same == len(_irh) else "（**不同 → 必重渲**）"))
+                _diff = [k for k, v in _irh.items() if _old.get(k) and _old.get(k) != v]
+                if _diff:
+                    print(f"    首个不同: {_diff[0]}")
+        except Exception:                                    # noqa: BLE001
+            pass
         _prompts = self._prompts_seen
         if limit is not None:
             irs = irs[:planned]
@@ -1418,6 +1470,7 @@ class EpisodeRunner:
             if _wd_ck3:
                 _sc3.save(_wd_ck3, "render",
                           {"perShotArtifacts": dict(per_shot_artifacts),
+                           "irHashes": dict(getattr(self, "_ir_hashes_now", {}) or {}),
                            "artifacts": {k: list(v) for k, v in artifacts.items()}},
                           meta={"episodeId": self.episode_id,
                                 "shots": len(per_shot_artifacts)})

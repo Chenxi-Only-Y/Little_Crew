@@ -523,6 +523,7 @@ def main(argv: list[str] | None = None) -> int:
                 "from": args.from_stage,
                 "draft": _sc0.payload_of(_wd0, "script", "draft"),
                 "shotList": _sc0.payload_of(_wd0, "storyboard", "shotList"),
+                "irHashes": _sc0.payload_of(_wd0, "render", "irHashes") or {},
                 "reuse": _chk["reuse"], "recompute": _chk["recompute"],
             }
             runner.resume_data = _resume_info
