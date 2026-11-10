@@ -770,6 +770,17 @@ class EpisodeRunner:
         # 之前**一失败就整集结束**，每集都要人手工重跑。
         # 现在自动重试（默认 2 次），并把每次的结果记进报告 ——
         # 重试不是"掩盖失败"：重试几次、每次拿到几镜，都要能看见。
+        # ---- 空剧本守卫（2026-11-10）----
+        #
+        # 真跑 EF16：剧本调用返回 `[no-content]`（空响应），`--accept-script` 又把它放行，
+        # 于是分镜在**空输入**上重试 3 轮、每轮都 0 镜 —— 白等 4 分钟才报错。
+        # 空剧本是**上游失败**，不该由下游重试来"扛"。
+        if not (getattr(script_draft, "scenes", ()) or ()):
+            return EpisodeResult(
+                episode_id=self.episode_id, ok=False,
+                reason="剧本为空：编剧阶段没有产出任何场次，分镜无从谈起",
+                failure_kind="script-failed")
+
         _sb_attempts: list[dict] = []
         _sb_retries = int(getattr(self, "storyboard_retries", 2))
         out = None
@@ -819,9 +830,14 @@ class EpisodeRunner:
                 """
                 from little_crew.agent.protocol import CallResult
 
+                # 第 2 次起不带白名单：万一是"只许出现这些主体"把模型逼成 0 镜，
+                # 也该在重试里被排除掉（2026-11-10 加）。
+                _subs_try = _allowed_ck if _sb_attempts == [] else []
+                if _sb_attempts and _allowed_ck:
+                    pass  # 打印在下面统一给出，避免每场刷屏
                 o = self.orch.run_stage("storyboard_artist", "shot.list",
                                         {"script.final": sub,
-                                         "scene.subjects": _allowed_ck})
+                                         "scene.subjects": _subs_try})
                 if not getattr(o, "ok", False):
                     return CallResult.fail("F-STAGE",
                                            str(getattr(o, "error", "") or "分镜失败"))
@@ -1010,57 +1026,8 @@ class EpisodeRunner:
         except Exception as _e_q:                          # noqa: BLE001
             print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
 
-        # ---- 场景主体冲突（2026-10-29 接入）----
-        #
-        # **先记录，不拦截。** 理由：这条判据刚上线，还不知道会命中多少镜头；
-        # 直接当门禁会让一整集大面积 RETRY，而那种代价没量过。
-        # （同一天的教训：`set` 规则被三次否定，就是因为它先被当成"该加的规则"。）
-        #
-        # 记录进 `self.scene_conflicts`，并打印一行摘要 ——
-        # 先看命中率，再决定它是 WARN 还是 RETRY。
-        self.scene_conflicts = []
-        try:
-            from little_crew.review.scene_subject import check_scene_subject
+        self._check_scene_subjects(picked, script_draft)
 
-            _script_text = str(getattr(script_draft, "text", None)
-                               or getattr(script_draft, "content", None)
-                               or script_draft or "")
-            # **先打印「它拿什么在比」** —— 黑盒判定不可核对（2026-10-29）。
-            # 之前只输出结论，重跑就不复现；看不出是"输入变了"还是"判定变了"。
-            from little_crew.review.scene_subject import subjects_in as _subj
-
-            _s_set = _subj(_script_text)
-            print(f"  剧本场景主体 {sorted(_s_set) or '（空：抽取失败或剧本无场景）'}")
-            self.scene_trace = []
-            for _s in picked:
-                _desc = str(getattr(_s, "description", "") or "")
-                _r = check_scene_subject(_script_text, _desc)
-                _sid = getattr(_s, "shot_id", "")
-                self.scene_trace.append(
-                    {"shotId": _sid, "script": _r["script"], "prompt": _r["prompt"],
-                     "severity": _r["severity"], "descHead": _desc[:60]})
-                if not _r["ok"]:
-                    self.scene_conflicts.append({"shotId": _sid, **_r})
-            # ⚠️ **不许 except: pass**（2026-10-29 自己犯的）：
-            # 这段第一次写的时候吞了异常，于是 `scene_check.json` 没生成而毫无提示 ——
-            # **我为修"静默失败"加的代码，自己静默失败了。**
-            try:
-                import json as _json
-
-                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                if not _wd:
-                    raise RuntimeError("runner 上没有 workdir，无法落盘")
-                _out = Path(str(_wd)) / "delivery"
-                _out.mkdir(parents=True, exist_ok=True)
-                (_out / "scene_check.json").write_text(
-                    _json.dumps({"scriptSubjects": sorted(_s_set),
-                                 "scriptHead": _script_text[:200],
-                                 "shots": self.scene_trace},
-                                ensure_ascii=False, indent=2), encoding="utf-8")
-            except Exception as _e:                          # noqa: BLE001
-                print(f"  ⚠️ scene_check.json 未写出：{type(_e).__name__}: {_e}")
-        except Exception as _e:                              # noqa: BLE001
-            print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
         # ---- 接口缺陷清单（§3.10.2 第一层，2026-11-04）----
         #
         # 验证的输出不该只是 PASS/FAIL —— 那下游只能整篇重抽。
@@ -2266,6 +2233,64 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
+    def _check_scene_subjects(self, picked, script_draft):
+        """场景主体对账：分镜有没有引入剧本没授权的场景（2026-11-10 抽出）。
+
+        结果写进 `self.scene_conflicts`（`severity=error` 才是否决依据），
+        并打印「它拿什么在比」—— 黑盒判定不可核对。
+        """
+        # ---- 场景主体冲突（2026-10-29 接入）----
+        #
+        # **先记录，不拦截。** 理由：这条判据刚上线，还不知道会命中多少镜头；
+        # 直接当门禁会让一整集大面积 RETRY，而那种代价没量过。
+        # （同一天的教训：`set` 规则被三次否定，就是因为它先被当成"该加的规则"。）
+        #
+        # 记录进 `self.scene_conflicts`，并打印一行摘要 ——
+        # 先看命中率，再决定它是 WARN 还是 RETRY。
+        self.scene_conflicts = []
+        try:
+            from little_crew.review.scene_subject import check_scene_subject
+
+            _script_text = str(getattr(script_draft, "text", None)
+                               or getattr(script_draft, "content", None)
+                               or script_draft or "")
+            # **先打印「它拿什么在比」** —— 黑盒判定不可核对（2026-10-29）。
+            # 之前只输出结论，重跑就不复现；看不出是"输入变了"还是"判定变了"。
+            from little_crew.review.scene_subject import subjects_in as _subj
+
+            _s_set = _subj(_script_text)
+            print(f"  剧本场景主体 {sorted(_s_set) or '（空：抽取失败或剧本无场景）'}")
+            self.scene_trace = []
+            for _s in picked:
+                _desc = str(getattr(_s, "description", "") or "")
+                _r = check_scene_subject(_script_text, _desc)
+                _sid = getattr(_s, "shot_id", "")
+                self.scene_trace.append(
+                    {"shotId": _sid, "script": _r["script"], "prompt": _r["prompt"],
+                     "severity": _r["severity"], "descHead": _desc[:60]})
+                if not _r["ok"]:
+                    self.scene_conflicts.append({"shotId": _sid, **_r})
+            # ⚠️ **不许 except: pass**（2026-10-29 自己犯的）：
+            # 这段第一次写的时候吞了异常，于是 `scene_check.json` 没生成而毫无提示 ——
+            # **我为修"静默失败"加的代码，自己静默失败了。**
+            try:
+                import json as _json
+
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if not _wd:
+                    raise RuntimeError("runner 上没有 workdir，无法落盘")
+                _out = Path(str(_wd)) / "delivery"
+                _out.mkdir(parents=True, exist_ok=True)
+                (_out / "scene_check.json").write_text(
+                    _json.dumps({"scriptSubjects": sorted(_s_set),
+                                 "scriptHead": _script_text[:200],
+                                 "shots": self.scene_trace},
+                                ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception as _e:                          # noqa: BLE001
+                print(f"  ⚠️ scene_check.json 未写出：{type(_e).__name__}: {_e}")
+        except Exception as _e:                              # noqa: BLE001
+            print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
 
     def video_out_dir(self) -> Path:
         return (self.workdir or Path(".")) / self.video_subdir
