@@ -1762,34 +1762,39 @@ class EpisodeRunner:
                             encoding="utf-8")
                     except Exception:                        # noqa: BLE001
                         pass
-                # ---- 修复后**复算**越权（2026-11-10）----
-                #
-                # 越权判定在上面（2.8）已跑过，而修复在它之后 ——
-                # 不复算的话，门禁仍按**旧文本**否决整集（EF10 就是这样被否的）。
-                try:
-                    from little_crew.review.scene_subject import (
-                        check_scene_subject as _csc2,
-                    )
-
-                    _text2 = str(script_draft or "")
-                    _conf2 = []
-                    for _s2 in picked:
-                        _r2 = _csc2(_text2, str(getattr(_s2, "description", "") or ""))
-                        if _r2.get("verdict") == "RETRY":
-                            _conf2.append({
-                                "shotId": str(getattr(_s2, "shot_id", "")),
-                                "severity": "error",
-                                "reason": str(_r2.get("reason") or "")[:120],
-                            })
-                    self.scene_conflicts = _conf2
-                    # ⚠️ CLI 的门禁看的是 `scene_veto`（在 2.8 就置 True 了），
-                    # 只改 conflicts 不清这个标志 → 修好了照样否决（EF18 真跑踩到）。
-                    self.scene_veto = bool(_conf2)
-                    print(f"  修复后复算越权：{len(_conf2)} 镜")
-                except Exception as _e_re:                   # noqa: BLE001
-                    print(f"  ⚠️ 修复后复算未运行：{type(_e_re).__name__}: {_e_re}")
         except Exception as _e_fix:                          # noqa: BLE001
             print(f"  ⚠️ 场景主体修复未运行：{type(_e_fix).__name__}: {_e_fix}")
+
+        # ---- 修复后**复算**越权（2026-11-10）----
+        #
+        # 越权判定在上面（2.8）已跑过，而**返工与主体修复都在它之后** ——
+        # 不复算的话，门禁仍按旧文本否决整集：
+        #   · EF10：修复已经改了词，门禁还按旧文本否
+        #   · EF20：返工换掉了那镜（新文本里根本没有"花田"），
+        #           `scene_veto` 仍停在 2.8 的 True -> 白否一集
+        # 所以复算**无条件执行**（不依赖"有没有替换"）。
+        try:
+            from little_crew.review.scene_subject import (
+                check_scene_subject as _csc2,
+            )
+
+            _text2 = str(script_draft or "")
+            _conf2 = []
+            for _s2 in picked:
+                _r2 = _csc2(_text2, str(getattr(_s2, "description", "") or ""))
+                if _r2.get("verdict") == "RETRY":
+                    _conf2.append({
+                        "shotId": str(getattr(_s2, "shot_id", "")),
+                        "severity": "error",
+                        "reason": str(_r2.get("reason") or "")[:120],
+                    })
+            self.scene_conflicts = _conf2
+            # ⚠️ CLI 的门禁看的是 `scene_veto`（在 2.8 就置 True 了），
+            # 只改 conflicts 不清这个标志 → 修好了照样否决（EF18 真跑踩到）。
+            self.scene_veto = bool(_conf2)
+            print(f"  修复后复算越权：{len(_conf2)} 镜")
+        except Exception as _e_re:                   # noqa: BLE001
+            print(f"  ⚠️ 修复后复算未运行：{type(_e_re).__name__}: {_e_re}")
 
         # ---- 计划镜数必须以"最终镜头"为准（2026-11-10）----
         #
