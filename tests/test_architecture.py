@@ -586,9 +586,68 @@ def storage_main() -> int:
     return 1
 
 
+def maintainability_report() -> int:
+    """可维护性提示：**不判失败**，只把超长方法与超大模块列出来。
+
+    ## 为什么只提示不判失败
+
+    `run()` 曾是 1511 行，一个方法里塞了剧本/分镜/渲染/视觉/配音/配乐/混流/成片，
+    2026-11-09~10 的四个事故**全部**出在它里面：
+
+      · `_wdv` 未定义 → 视觉闸静默不跑
+      · `_film_s` 被删 → 音乐床与混流整段没跑
+      · 视觉闸写在重渲之后 → 判出崩脸没人重画
+      · 越权判定在修复之前 → 修复白做
+
+    但"多少行算太长"没有客观阈值 —— 判失败会逼着人为了过检查而机械拆函数。
+    所以这里**只报数**，让人看见趋势：变长要解释，变短是常态。
+    """
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "src" / "little_crew"
+    methods: list[tuple[int, str, str]] = []
+    modules: list[tuple[int, str]] = []
+    for f in root.rglob("*.py"):
+        if f.name.endswith("_check.py") or f.name.startswith("test_"):
+            continue
+        try:
+            tree = ast.parse(f.read_text(encoding="utf-8", errors="replace"))
+        except SyntaxError:
+            continue
+        n = len(f.read_text(encoding="utf-8", errors="replace").splitlines())
+        modules.append((n, str(f.relative_to(root))))
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                ln = node.end_lineno - node.lineno + 1
+                methods.append((ln, str(f.relative_to(root)), node.name))
+
+    print()
+    print("=" * 74)
+    print("可维护性提示（**不判失败**）")
+    print("=" * 74)
+    big = [m for m in sorted(methods, reverse=True) if m[0] >= 200][:6]
+    if big:
+        print("  超长方法（>=200 行）：")
+        for ln, f, name in big:
+            print(f"    {ln:5d} 行  {name:28s} {f}")
+    else:
+        print("  ✅ 没有 >=200 行的方法")
+    huge = [m for m in sorted(modules, reverse=True) if m[0] >= 1500][:5]
+    if huge:
+        print("  超大模块（>=1500 行）：")
+        for ln, f in huge:
+            print(f"    {ln:5d} 行  {f}")
+    print("  说明：这两张表是趋势指标。变长需要解释，不是自动有罪。")
+    print("=" * 74)
+    return 0
+
+
 if __name__ == "__main__":
     _rc = main()
     if _rc == 0:
         print()
         _rc = storage_main()
+    if _rc == 0:
+        maintainability_report()
     raise SystemExit(_rc)
