@@ -1524,6 +1524,55 @@ class EpisodeRunner:
 
         self._stage_image_review(picked, per_shot_artifacts)
 
+        manifest, evidence = self.assembler.assemble(
+            episode_id=self.episode_id, title=self.title,
+            shots=[s.as_dict() for s in picked],
+            artifacts=per_shot_artifacts, ir_hashes=ir_hashes,
+            cache_stats={
+                "hits": len(batch.cache_hits),
+                "rendered": len(batch.rendered),
+                "secondsSaved": batch.seconds_saved,
+                "secondsSpent": batch.seconds_spent,
+            },
+            gate=gate_dict, prompts=_prompts)
+
+        if artifact_hashes:
+            evidence.artifact_hashes = dict(artifact_hashes)
+
+        # 每镜用到哪些角色锚点图 —— 落成附加产物，便于核对"一致性有没有接线"
+        try:
+            _wd0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd0 and getattr(self, "_anchors_used", None):
+                import json as _j0
+
+                _o0 = Path(str(_wd0)) / "delivery"
+                _o0.mkdir(parents=True, exist_ok=True)
+                (_o0 / "anchors_used.json").write_text(_j0.dumps(
+                    {"kind": "anchors.used",
+                     "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
+                     "perShot": dict(sorted(self._anchors_used.items()))},
+                    ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
+
+        failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
+                        "reason": o.reason[:200]} for o in batch.failed)
+        # `ok` 同时看**硬规则**与**门禁**。
+        #
+        # ⚠️ 门禁结论必须影响 `ok`，否则它只是一个"附在证据里的意见" ——
+        # 而 C3 的整个意义就是**让判定能阻断交付**。
+        # 只管记录不管拦截的门禁，与"自我签收"没有实质区别。
+        gate_ok = gate_report is None or gate_report.all_kept
+        ok = (bool(manifest.shot_count) and evidence.all_checks_passed
+              and gate_ok)
+        if ok:
+            reason = "全部镜头就绪"
+        elif not gate_ok:
+            reason = (f"门禁未过：{gate_report.retry} 镜需返工 / "
+                      f"{gate_report.escalate} 镜需人工")
+        else:
+            reason = f"{len(failed)} 镜失败 / 硬规则未全过"
+
         # ---- 6) 视频合成（可选）----
         #
         # 把"成片清单"变成"能播放的一集"。失败**不影响前面各步的结论** ——
@@ -2251,54 +2300,7 @@ class EpisodeRunner:
             print(f"  ⚠️ 渲染审片未运行：{type(_e_rv).__name__}: {_e_rv}")
 
 
-        manifest, evidence = self.assembler.assemble(
-            episode_id=self.episode_id, title=self.title,
-            shots=[s.as_dict() for s in picked],
-            artifacts=per_shot_artifacts, ir_hashes=ir_hashes,
-            cache_stats={
-                "hits": len(batch.cache_hits),
-                "rendered": len(batch.rendered),
-                "secondsSaved": batch.seconds_saved,
-                "secondsSpent": batch.seconds_spent,
-            },
-            gate=gate_dict, prompts=_prompts)
 
-        if artifact_hashes:
-            evidence.artifact_hashes = dict(artifact_hashes)
-
-        # 每镜用到哪些角色锚点图 —— 落成附加产物，便于核对"一致性有没有接线"
-        try:
-            _wd0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd0 and getattr(self, "_anchors_used", None):
-                import json as _j0
-
-                _o0 = Path(str(_wd0)) / "delivery"
-                _o0.mkdir(parents=True, exist_ok=True)
-                (_o0 / "anchors_used.json").write_text(_j0.dumps(
-                    {"kind": "anchors.used",
-                     "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
-                     "perShot": dict(sorted(self._anchors_used.items()))},
-                    ensure_ascii=False, indent=2), encoding="utf-8")
-        except Exception:                                    # noqa: BLE001
-            pass
-
-        failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
-                        "reason": o.reason[:200]} for o in batch.failed)
-        # `ok` 同时看**硬规则**与**门禁**。
-        #
-        # ⚠️ 门禁结论必须影响 `ok`，否则它只是一个"附在证据里的意见" ——
-        # 而 C3 的整个意义就是**让判定能阻断交付**。
-        # 只管记录不管拦截的门禁，与"自我签收"没有实质区别。
-        gate_ok = gate_report is None or gate_report.all_kept
-        ok = (bool(manifest.shot_count) and evidence.all_checks_passed
-              and gate_ok)
-        if ok:
-            reason = "全部镜头就绪"
-        elif not gate_ok:
-            reason = (f"门禁未过：{gate_report.retry} 镜需返工 / "
-                      f"{gate_report.escalate} 镜需人工")
-        else:
-            reason = f"{len(failed)} 镜失败 / 硬规则未全过"
 
 
     def video_out_dir(self) -> Path:
