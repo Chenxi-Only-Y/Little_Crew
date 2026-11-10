@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import sys
 
-from little_crew.runtime.mixdown import _ts, build, plan, srt
+from little_crew.runtime.mixdown import (  # noqa: PLC0415
+    _loudness_filter, _ts, build, loudness_db, plan, srt,
+)
 
 _r = []
 
@@ -50,6 +52,20 @@ def main() -> int:
     check("C1 ★★★ 没有对白文件 -> 明确失败（不是混个静音糊过去）",
           r["ok"] is False and r["error"] == "no-voice-files", str(r)[:80])
     check("C2 失败时给出原因说明", "无从谈起" in r.get("note", ""), r.get("note", ""))
+
+    print(); print("D. 响度归一（EBU R128）")
+    check("D1 ★★★ 开启时用 loudnorm 到 -16 LUFS",
+          "loudnorm=I=-16.0" in _loudness_filter(True, -16.0, -1.5)
+          and "TP=-1.5" in _loudness_filter(True, -16.0, -1.5),
+          _loudness_filter(True, -16.0, -1.5))
+    check("D2 ★★ 关闭时退化为 anull（不偷改音量）",
+          _loudness_filter(False, -16.0, -1.5) == "[mixed2]anull[out]",
+          _loudness_filter(False, -16.0, -1.5))
+    check("D3 ★★★ 目标值可配置（不是写死 -16）",
+          "I=-14.0" in _loudness_filter(True, -14.0, -2.0),
+          _loudness_filter(True, -14.0, -2.0))
+    check("D4 ★★ 测不出的文件返回 0.0（不抛）",
+          loudness_db("/tmp/_never_exists.wav") == 0.0, "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

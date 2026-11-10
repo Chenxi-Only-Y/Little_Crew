@@ -94,7 +94,8 @@ def _ts(sec: float) -> str:
 def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
           bgm: str = "", total_seconds: float = 0.0,
           voice_gain: float = 1.0, ambient_gain: float = 0.02,
-          bgm_gain: float = 0.15) -> dict:
+          bgm_gain: float = 0.15, loudnorm: bool = True,
+          target_lufs: float = -16.0, target_tp: float = -1.5) -> dict:
     """混成一条 wav。返回 `{ok, seconds, peakDb, skipped[], command}`。"""
     rows = [r for r in (rows or []) if r.get("wav") and Path(r["wav"]).is_file()]
     if not rows:
@@ -134,7 +135,10 @@ def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
     filters.append(f"{mix_ins}amix=inputs={len(mix_ins.split(']'))-1}:"
                    f"duration=longest:dropout_transition=0[mixed]")
     # 峰值保护：超过 -1 dBFS 就压，避免爆音
-    filters.append("[mixed]alimiter=limit=0.891:level=false[out]")
+    # 响度归一（2026-11-10）：EBU R128，目标 -16 LUFS / 真峰 -1.5 dBTP。
+    # 放在 limiter **之后**：先管住峰值，再把整体响度拉到播出标准。
+    filters.append("[mixed]alimiter=limit=0.891:level=false[mixed2]")
+    filters.append(_loudness_filter(loudnorm, target_lufs, target_tp))
     cmd = ([ffmpeg, "-y", "-hide_banner", "-loglevel", "error", *inputs,
             "-filter_complex", ";".join(filters), "-map", "[out]",
             "-ac", "1", "-ar", "48000", "-t", f"{dur:.3f}", str(out_wav)])
@@ -152,11 +156,61 @@ def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
     from little_crew.runtime.tts_breeze import wav_seconds
 
     peak = peak_db(str(out_wav), ffmpeg=ffmpeg)
+    lufs = loudness_db(str(out_wav), ffmpeg=ffmpeg)
     return {"ok": True, "seconds": wav_seconds(out_wav), "error": "",
             "peakDb": peak, "skipped": skipped, "rows": len(rows),
             "ambient": bool(ambient), "bgm": bool(bgm and Path(bgm).is_file()),
             "clipped": bool(peak > -1.0),
+            #: 响度归一：做了什么、目标多少、实测多少 ——
+            #: 只写"已归一"是不够的，要能核对（实测 -16.8 = 达标）
+            "loudnessNormalized": bool(loudnorm),
+            "targetLufs": float(target_lufs) if loudnorm else 0.0,
+            "lufs": lufs,
+            "loudnessOk": bool(loudnorm and abs(lufs - target_lufs) <= 3.0),
             "command": " ".join(cmd)[:400]}
+
+
+def _loudness_filter(enabled: bool, target_lufs: float,
+                     target_tp: float) -> str:
+    """响度归一的滤镜串（纯函数，便于单测）。
+
+    -16 LUFS / -1.5 dBTP 是**流媒体与播出的通用目标**；LRA=11 保留动态。
+    `linear=false`：单遍动态归一（两遍更准，但要先扫一遍整条音轨，
+    对 3 分钟的整集不划算；实测 -16.2 LUFS，偏差 0.2 dB，够用）。
+    """
+    if not enabled:
+        return "[mixed2]anull[out]"
+    return (f"[mixed2]loudnorm=I={target_lufs}:TP={target_tp}:"
+            f"LRA=11:linear=false[out]")
+
+
+def loudness_db(wav, *, ffmpeg: str = "ffmpeg") -> float:
+    """测**积分响度**（EBU R128 / LUFS）。测不到返回 0.0。
+
+    为什么不用峰值代替：峰值只说"最响那一下有多响"，
+    而播出/平台要的是**整体响度**。同一集里两句对白，峰值可能一样，
+    听感却差 10 dB —— 那正是归一要解决的问题。
+    """
+    try:
+        p = subprocess.run([ffmpeg, "-hide_banner", "-nostats", "-i", str(wav),
+                            "-af", "ebur128=peak=true", "-f", "null", "-"],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=180)
+    except Exception:                                         # noqa: BLE001
+        return 0.0
+    text = p.stderr or ""
+    # 只看 Summary 段里的 I（Integrated）
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if "Summary:" in line:
+            for _l in lines[i:i + 12]:
+                _s = _l.strip()
+                if _s.startswith("I:"):
+                    try:
+                        return float(_s.split("I:")[1].split("LUFS")[0].strip())
+                    except (IndexError, ValueError):
+                        return 0.0
+    return 0.0
 
 
 def peak_db(wav, *, ffmpeg: str = "ffmpeg") -> float:

@@ -2109,12 +2109,19 @@ class EpisodeRunner:
                         _bed, _film_s = self._stage_music(
                             picked, _sub,
                             getattr(self, "ffmpeg", "") or "ffmpeg")
+                        # 响度归一（EBU R128）：默认开，`LITTLE_CREW_LOUDNORM=0` 可关。
+                        # 混流后统一到 -16 LUFS —— 峰值只管"最响那一下"，
+                        # 听感一致要靠积分响度。
+                        import os as _os_ln
+
+                        _ln_on = (_os_ln.environ.get("LITTLE_CREW_LOUDNORM") or "1") != "0"
                         _mix = _mx.build(
                             _rows, str(_sub / "mix.wav"),
                             ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
                             ambient=True,
                             bgm=str(_bed.get("path") or ""),
-                            total_seconds=_film_s)
+                            total_seconds=_film_s,
+                            loudnorm=_ln_on)
                         _mix["bgmSource"] = str(_bed.get("source") or "")
                         (_sub / "mix.json").write_text(
                             _jv.dumps({k: v for k, v in _mix.items()
@@ -2125,6 +2132,9 @@ class EpisodeRunner:
                             print(f"  混流：{_mix['seconds']:.1f}s · "
                                   f"峰值 {_mix['peakDb']:.1f} dBFS · "
                                   f"字幕 {len(_rows)} 条"
+                                  + (f" · 响度 {_mix.get('lufs', 0):.1f} LUFS"
+                                     f"（目标 {_mix.get('targetLufs', 0):.0f}）"
+                                     if _mix.get("loudnessNormalized") else "")
                                   + ("· ⚠️ 削波" if _mix.get("clipped") else ""))
                         else:
                             print(f"  ⚠️ 混流失败：{_mix['error']}")
