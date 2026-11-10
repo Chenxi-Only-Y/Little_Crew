@@ -36,6 +36,13 @@ def _near(word: str, allowed: list[str]) -> tuple[str, float]:
     return allowed[0], 0.0
 
 
+def _surfaces(canon: str) -> tuple:
+    """归一名 -> 文本里可能出现的写法（花田 -> 花田/花海/花垄/花丛…）。"""
+    from little_crew.review.scene_subject import SCENE_NOUNS
+
+    return tuple(SCENE_NOUNS.get(canon, ())) or (canon,)
+
+
 def plan(shots, allowed, *, detector=None, by_scene=None) -> list[dict]:
     """找出需要替换的词。
 
@@ -62,6 +69,11 @@ def plan(shots, allowed, *, detector=None, by_scene=None) -> list[dict]:
             for w in detector(text):
                 if allow and w in allow:
                     continue
+                # ⚠️ `w` 是**归一名**（花田），文本里可能是 花丛/花垄/花田 混着写 ——
+                # ① 只 replace("花田") 是空操作；② 只替换**第一种**写法也不够：
+                #    真跑 SH-EFR2-S01-001 同时含"花田"和"花垄"，换掉前者后复检仍判越权。
+                # 所以对**每种出现的写法各出一条计划**。
+                _surfs = [s for s in _surfaces(w) if s in text] or [w]
                 # ① 先在这一场的授权词里找相近；② 没有再全局找；③ 最后用本场第一个词
                 new, score = _near(w, _local)
                 if not new or score < 0.2:
@@ -75,14 +87,30 @@ def plan(shots, allowed, *, detector=None, by_scene=None) -> list[dict]:
                         # 这是"有界的猜测"：只在本场确实需要地点、且剧本只授权少数几个时发生，
                         # **且逐条记录**（via=global-default），便于复核。
                         new, score = allow[0], 0.0
-                out.append({"shotId": sid, "sceneId": _scid, "field": f, "old": w,
-                            "new": new, "score": score,
-                            # 本场兜底也算"执行"，但记 score=0 便于审计
-                            "applied": bool(new) and (score >= 0.2 or bool(_local) or bool(allow)),
-                            "via": ("sim" if score >= 0.2 else
-                                    ("scene-default" if _local else
-                                     ("global-default" if allow else "none")))})
+                for _surf in _surfs:
+                    out.append({"shotId": sid, "sceneId": _scid, "field": f,
+                                "old": _surf, "canonical": w,
+                                "new": new, "score": score,
+                                # 本场兜底也算"执行"，但记 score=0 便于审计
+                                "applied": bool(new) and (score >= 0.2 or bool(_local) or bool(allow)),
+                                "via": ("sim" if score >= 0.2 else
+                                        ("scene-default" if _local else
+                                         ("global-default" if allow else "none")))})
     return out
+
+
+def _polish(text: str, new: str) -> str:
+    """替换后修语气：「山坡里 / 山坡间 / 山坡中」→「山坡上」。
+
+    为什么要这一步：`花丛` → `山坡` 直接替换会得到"少女跪在山坡里"，
+    读起来别扭。地点词的可接后缀和植物词不同 —— 这是**替换的副作用**，
+    不是原文的问题，所以在这里收一下。
+    """
+    if not new:
+        return text
+    for bad in ("里", "间", "中", "内"):
+        text = text.replace(f"{new}{bad}", f"{new}上")
+    return text
 
 
 def apply(shots, repairs) -> tuple[list, list]:
@@ -104,10 +132,13 @@ def apply(shots, repairs) -> tuple[list, list]:
                 continue
             new_text = text
             for r in by.get((sid, f), ()):
-                if r["old"] and r["old"] in new_text:
-                    new_text = new_text.replace(r["old"], r["new"])
+                for _w in (r.get("old"), r.get("canonical")):
+                    if _w and _w in new_text:
+                        new_text = new_text.replace(_w, r["new"])
                     done.append({**r, "before": text[:60], "after": new_text[:60]})
             if new_text != text:
+                for r in by.get((sid, f), ()):
+                    new_text = _polish(new_text, r.get("new") or "")
                 changed[f] = new_text
         if changed:
             try:

@@ -61,6 +61,26 @@ def main() -> int:
     check("C4 ★★★ 连授权词都没有 -> 不替换（真的无从猜起）",
           all(not x["applied"] for x in r4), str(r4)[:80])
 
+    print(); print("D. 文本真实写法（真跑踩到的坑）")
+    # 归一名是"花田"，文本里写的是"花垄/花丛" —— 只替换归一名是空操作
+    d1 = SR.plan([_shot("G", "S01", "少女在花丛里撕布")], ["山坡"], by_scene={"S01": ["山坡"]})
+    check("D1 ★★★ 检出归一名，但替换的是文本里的真实写法",
+          bool(d1) and d1[0]["old"] == "花丛" and d1[0]["canonical"] == "花田"
+          and d1[0]["applied"], str(d1)[:100])
+    # 同一镜同时出现两种写法（花田 + 花垄）—— 必须各出一条，否则复检仍越权
+    d2 = SR.plan([_shot("H", "S01", "花田边，少女在花垄间走")], ["山坡"],
+                 by_scene={"S01": ["山坡"]})
+    check("D2 ★★★ 同一镜多种写法 -> 各出一条计划",
+          len({r["old"] for r in d2}) >= 2, str([r["old"] for r in d2]))
+    out2, _ = SR.apply([_shot("H", "S01", "花田边，少女在花垄间走")], d2)
+    check("D3 ★★★ 全部写法都被换掉", "花田" not in out2[0].description
+          and "花垄" not in out2[0].description, out2[0].description)
+    # 语气收尾：山坡里 -> 山坡上
+    d4 = SR.plan([_shot("I", "S01", "少女跪在花丛里")], ["山坡"], by_scene={"S01": ["山坡"]})
+    out4, _ = SR.apply([_shot("I", "S01", "少女跪在花丛里")], d4)
+    check("D4 ★★ 替换后语气自然（山坡里 -> 山坡上）",
+          "山坡上" in out4[0].description, out4[0].description)
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
