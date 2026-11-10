@@ -1479,190 +1479,7 @@ class EpisodeRunner:
         except Exception:                                    # noqa: BLE001
             pass
 
-        # ---- 配音轨（§3.11，2026-11-06）----
-        #
-        # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
-        # 默认关闭以免拖慢普通验证。
-        # ---- 配音前释放 ComfyUI 显存（2026-11-09）----
-        #
-        # 实测：ComfyUI 渲完仍占 4~6GB；此时音频后端会回落/抖动 ——
-        # TTS server 实测从 0.9s/句 退化到 65~90s/句。渲染已结束，显存该还。
-        try:
-            import os as _os_vr
-            import urllib.request as _ur_vr
-
-            if (_os_vr.environ.get("LITTLE_CREW_FREE_VRAM") or "1") != "0":
-                _req = _ur_vr.Request(
-                    "http://127.0.0.1:8188/free",
-                    data=b'{"unload_models": true, "free_memory": true}',
-                    headers={"Content-Type": "application/json"},
-                    method="POST")
-                with _ur_vr.urlopen(_req, timeout=8) as _r_vr:
-                    if _r_vr.status == 200:
-                        print("  已释放 ComfyUI 显存（给配音腾地方）")
-        except Exception:                                     # noqa: BLE001
-            pass                                              # 释放失败不影响配音
-
-        if getattr(self, "voice_enabled", False):
-            try:
-                import json as _jv
-
-                from little_crew.governance.voice_cast import cast as _cast
-                from little_crew.runtime import tts_breeze as _tts
-                from little_crew.runtime import voice_track as _vt
-
-                _chars = sorted({str(c) for sc in (script_draft.scenes or ())
-                                 for c in (sc.get("characters") or ()) if str(c)})
-                _sheets = {}
-                for _c in _chars:
-                    _sp = Path("assets") / "characters" / _c / "sheet.json"
-                    if _sp.is_file():
-                        try:
-                            _sheets[_c] = _jv.loads(_sp.read_text(encoding="utf-8"))
-                        except Exception:                  # noqa: BLE001
-                            _sheets[_c] = {}
-                _have = _tts.list_voices()
-                # ---- 缺音色就**自己造**（2026-11-08）----
-                # 分工：设定来自角色表（LLM 可覆盖），物化交给 TTS 的试音。
-                # 不再需要人给参考音。
-                if getattr(self, "forge_voices", True):
-                    try:
-                        from little_crew.runtime import voice_forge as _vf
-                        from little_crew.governance.voice_design import (
-                            from_sheet as _vfs, slug as _vslug)
-
-                        _need = [c for c in _chars
-                                 if _vslug(c) not in set(_have)
-                                 and c not in set(_have)]
-                        if _need:
-                            _specs = {c: _vfs(_sheets.get(c) or {}) for c in _need}
-                            _fr = _vf.forge_all(
-                                _specs, synth=_tts.synth,
-                                workdir=str(Path(str(_wd)) / "delivery" / "voices")
-                                if _wd else None)
-                            if _fr["count"]:
-                                print(f"  已造音色 {_fr['count']} 个"
-                                      f"（{', '.join(x['name'] for x in _fr['forged'])}）")
-                            if _fr["failed"]:
-                                print(f"  ⚠️ 音色失败 {len(_fr['failed'])} 个")
-                            _have = _tts.list_voices()
-                    except Exception as _e_fg:                # noqa: BLE001
-                        print(f"  ⚠️ 造音色未运行：{type(_e_fg).__name__}: {_e_fg}")
-                _cast_map = _cast(_chars, _sheets, _have)
-                # ---- 对白编辑（`dialogue_editor`）—— 2026-11-08 首次接上 ----
-                #
-                # 名册早就声明 `script.final -> shot.voice`，但从未被调用，
-                # 配音是在这里**内联算**的：产物不可审、策略不可换。
-                # 现在优先用职位的产物；没绑定时退回内联（行为不变）。
-                _voice_plan = None
-                try:
-                    _impls_v = getattr(self.orch, "_impls", {}) or {}
-                    if "dialogue_editor" in _impls_v:
-                        _jv_out = self.orch.run_stage(
-                            "dialogue_editor", "shot.voice",
-                            {"script.final": script_draft})
-                        if getattr(_jv_out, "ok", False):
-                            _voice_plan = self.orch.blackboard.value("shot.voice")
-                            if _voice_plan is not None:
-                                print(f"  对白编辑：{_voice_plan.get('lineCount', 0)} 句 · "
-                                      f"计划 {_voice_plan.get('totalSeconds', 0):.1f}s")
-                        else:
-                            print(f"  ⚠️ 对白编辑未产出：{_jv_out.error}")
-                except Exception as _e_de:                     # noqa: BLE001
-                    print(f"  ⚠️ 对白编辑未运行：{type(_e_de).__name__}: {_e_de}")
-
-                # 台词来源**优先结构化字段** `dialogue`（2026-11-06 加），
-                # 没有才退回正则抽正文 —— 并在每条上记 `source`，便于统计。
-                _lines = []
-                for _sc in (script_draft.scenes or ()):
-                    _sid = str(_sc.get("scene_id") or _sc.get("id") or "")
-                    _known = {str(c) for c in (_sc.get("characters") or ()) if str(c)}
-                    _dia = _sc.get("dialogue") or []
-                    if _dia:
-                        for _d in _dia:
-                            _lines.append({"character": str(_d.get("character") or ""),
-                                           "text": str(_d.get("line") or ""),
-                                           "sceneId": _sid, "source": "dialogue"})
-                    else:
-                        for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
-                                                     known=_known or None):
-                            _lines.append({**_d, "sceneId": _sid, "source": "regex"})
-                if _voice_plan and _voice_plan.get("lines"):
-                    # 用职位的产物替换内联结果：句序、情绪、估时都来自 `shot.voice`
-                    _lines = [{"character": str(x.get("character") or ""),
-                               "text": str(x.get("text") or ""),
-                               "sceneId": str(x.get("sceneId") or ""),
-                               "emotion": str(x.get("emotion") or ""),
-                               "plannedSeconds": float(x.get("estimateSeconds") or 0),
-                               "source": "dialogue_editor"}
-                              for x in _voice_plan["lines"]]
-                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
-                # 全部合成（0 = 不截断）：一集 30+ 句也就多花 ~2 分钟，
-                # 但成片不会出现"大半是静音"（163s 里 145s 静音那次）。
-                _trk = _vt.build(_lines, shots, synth=_tts.synth,
-                                 cast_map=_cast_map, out_dir=_vdir,
-                                 max_lines=0)
-                if _wd:
-                    _vo = Path(str(_wd)) / "delivery"
-                    _vo.mkdir(parents=True, exist_ok=True)
-                    (_vo / "voice_used.json").write_text(
-                        _jv.dumps(_trk, ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-                # 诊断：抽不到台词时，把"角色名单 + 正文样例"打出来 ——
-                # 否则只能看到"0 句"，不知道为什么（2026-11-06 踩过）。
-                if not _lines and getattr(self, "voice_debug", False):
-                    print(f"  [配音诊断] 场数 {len(script_draft.scenes or ())}"
-                          f" · 角色名单 {_chars}")
-                    for _sc in (script_draft.scenes or ())[:2]:
-                        print(f"    {_sc.get('scene_id')} chars={_sc.get('characters')}"
-                              f" text={str(_sc.get('text') or '')[:80]!r}")
-                # ---- 混流：字幕 + 环境音（BGM 无素材就明确跳过）----
-                try:
-                    from little_crew.runtime import mixdown as _mx
-
-                    # **按镜头起点排台词**（2026-11-08）：不这样做的话 24 句会被
-                    # 摞成一条连续旁白带 —— 画面在切镜、声音不跟着切，
-                    # 表现就是「字幕对不上 + 镜头衔接怪 + 语气生硬」。
-                    _offsets, _acc = {}, 0.0
-                    for _s3 in picked:
-                        _offsets[str(_s3.shot_id)] = round(_acc, 3)
-                        _acc += float(getattr(_s3, "duration_sec", 0) or 0)
-                    _rows = _mx.plan(_trk["utterances"], shot_offsets=_offsets)
-                    if _wd and _rows:
-                        _sub = Path(str(_wd)) / "delivery"
-                        (_sub / "subtitles.srt").write_text(
-                            _mx.srt(_rows), encoding="utf-8")
-                        _bed, _film_s = self._stage_music(
-                            picked, _sub,
-                            getattr(self, "ffmpeg", "") or "ffmpeg")
-                        _mix = _mx.build(
-                            _rows, str(_sub / "mix.wav"),
-                            ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
-                            ambient=True,
-                            bgm=str(_bed.get("path") or ""),
-                            total_seconds=_film_s)
-                        _mix["bgmSource"] = str(_bed.get("source") or "")
-                        (_sub / "mix.json").write_text(
-                            _jv.dumps({k: v for k, v in _mix.items()
-                                       if k != "command"},
-                                      ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-                        if _mix["ok"]:
-                            print(f"  混流：{_mix['seconds']:.1f}s · "
-                                  f"峰值 {_mix['peakDb']:.1f} dBFS · "
-                                  f"字幕 {len(_rows)} 条"
-                                  + ("· ⚠️ 削波" if _mix.get("clipped") else ""))
-                        else:
-                            print(f"  ⚠️ 混流失败：{_mix['error']}")
-                except Exception as _e_mx:                # noqa: BLE001
-                    print(f"  ⚠️ 混流未运行：{type(_e_mx).__name__}: {_e_mx}")
-                _rep = _trk["report"]
-                print(f"  配音：{len(_trk['utterances'])} 句"
-                      f"（台词抽出 {len(_lines)} · 丢弃 {len(_trk['dropped'])}）"
-                      f" · 失败 {_rep['failed']} · 对齐均差 {_rep['align']['meanAbs']}s")
-            except Exception as _e_v:                          # noqa: BLE001
-                print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
+        self._stage_voice(picked, shots, script_draft, per_shot_artifacts)
 
         # ---- 视觉闸：真的看图判「崩没崩」（2026-11-08）----
         #
@@ -1775,42 +1592,7 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
-        # ---- 成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-06）----
-        if getattr(self, "final_enabled", False):
-            try:
-                import json as _jf
-
-                from little_crew.runtime import finalize as _fz
-
-                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                _imgs, _durs = [], []
-                for _s in picked:
-                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
-                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
-                    if _hit:
-                        _imgs.append(str(_hit[0]))
-                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
-                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
-                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
-                _fr = _fz.build(
-                    _imgs, picked,
-                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
-                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
-                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
-                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
-                    workdir=str(Path(str(_wd2)) / "build"))
-                if _wd2:
-                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
-                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
-                if _fr["ok"]:
-                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
-                          f" · {_fr['size']/1024/1024:.1f} MB"
-                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
-                             if _fr.get("audioPadded", 0) > 0.05 else ""))
-                else:
-                    print(f"  ⚠️ 成片失败：{_fr['error']}")
-            except Exception as _e_f:                      # noqa: BLE001
-                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
+        self._stage_final(picked, per_shot_artifacts)
 
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
         #
@@ -2150,6 +1932,242 @@ class EpisodeRunner:
         elif bed.get("note"):
             print(f"  ⚠️ 音乐床：{bed['note']}")
         return bed, film_s
+
+
+    def _stage_final(self, picked, per_shot_artifacts):
+        """成片：静帧 + 音轨 + 字幕 -> mp4（2026-11-10 抽出）。
+
+        原块整体搬入（未改一行缩进）：它本来就在 `run()` 的 8 空格层级，
+        正好是方法体层级 —— 这也是上次抽视觉闸失败的原因（我多此一举重排了缩进）。
+        """
+        if getattr(self, "final_enabled", False):
+            try:
+                import json as _jf
+
+                from little_crew.runtime import finalize as _fz
+
+                _wd2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _imgs, _durs = [], []
+                for _s in picked:
+                    _nm = (per_shot_artifacts.get(_s.shot_id) or [""])[0]
+                    _hit = list(Path(str(_wd2)).rglob(_nm)) if (_wd2 and _nm) else []
+                    if _hit:
+                        _imgs.append(str(_hit[0]))
+                    _durs.append(float(getattr(_s, "duration_sec", 0) or 0))
+                _mixp = (Path(str(_wd2)) / "delivery" / "mix.wav") if _wd2 else None
+                _srtp = (Path(str(_wd2)) / "delivery" / "subtitles.srt") if _wd2 else None
+                _fr = _fz.build(
+                    _imgs, picked,
+                    str(Path(str(_wd2)) / "delivery" / "episode.mp4"),
+                    audio=str(_mixp) if (_mixp and _mixp.is_file()) else "",
+                    srt=str(_srtp) if (_srtp and _srtp.is_file()) else "",
+                    ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
+                    workdir=str(Path(str(_wd2)) / "build"))
+                if _wd2:
+                    (Path(str(_wd2)) / "delivery" / "final.json").write_text(
+                        _jf.dumps(_fr, ensure_ascii=False, indent=2), encoding="utf-8")
+                if _fr["ok"]:
+                    print(f"  成片：{_fr['videoSeconds']:.1f}s · 字幕 {_fr['subtitles']}"
+                          f" · {_fr['size']/1024/1024:.1f} MB"
+                          + ("· 音轨补静音 %.1fs" % _fr["audioPadded"]
+                             if _fr.get("audioPadded", 0) > 0.05 else ""))
+                else:
+                    print(f"  ⚠️ 成片失败：{_fr['error']}")
+            except Exception as _e_f:                      # noqa: BLE001
+                print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
+
+
+    def _stage_voice(self, picked, shots, script_draft, per_shot_artifacts):
+        """配音 + 配乐 + 混流（2026-11-10 抽出）。
+
+        原块整体搬入（含：释放 ComfyUI 显存 → 音色 → 对白编辑 → 配音轨 →
+        音乐床 → 混流 + 字幕），**未改一行缩进** —— 它本来就是 `run()` 的
+        8 空格层级，正好是方法体层级。
+        """
+        # ---- 配音轨（§3.11，2026-11-06）----
+        #
+        # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
+        # 默认关闭以免拖慢普通验证。
+        # ---- 配音前释放 ComfyUI 显存（2026-11-09）----
+        #
+        # 实测：ComfyUI 渲完仍占 4~6GB；此时音频后端会回落/抖动 ——
+        # TTS server 实测从 0.9s/句 退化到 65~90s/句。渲染已结束，显存该还。
+        try:
+            import os as _os_vr
+            import urllib.request as _ur_vr
+
+            if (_os_vr.environ.get("LITTLE_CREW_FREE_VRAM") or "1") != "0":
+                _req = _ur_vr.Request(
+                    "http://127.0.0.1:8188/free",
+                    data=b'{"unload_models": true, "free_memory": true}',
+                    headers={"Content-Type": "application/json"},
+                    method="POST")
+                with _ur_vr.urlopen(_req, timeout=8) as _r_vr:
+                    if _r_vr.status == 200:
+                        print("  已释放 ComfyUI 显存（给配音腾地方）")
+        except Exception:                                     # noqa: BLE001
+            pass                                              # 释放失败不影响配音
+
+        if getattr(self, "voice_enabled", False):
+            try:
+                import json as _jv
+
+                from little_crew.governance.voice_cast import cast as _cast
+                from little_crew.runtime import tts_breeze as _tts
+                from little_crew.runtime import voice_track as _vt
+
+                _chars = sorted({str(c) for sc in (script_draft.scenes or ())
+                                 for c in (sc.get("characters") or ()) if str(c)})
+                _sheets = {}
+                for _c in _chars:
+                    _sp = Path("assets") / "characters" / _c / "sheet.json"
+                    if _sp.is_file():
+                        try:
+                            _sheets[_c] = _jv.loads(_sp.read_text(encoding="utf-8"))
+                        except Exception:                  # noqa: BLE001
+                            _sheets[_c] = {}
+                _have = _tts.list_voices()
+                # ---- 缺音色就**自己造**（2026-11-08）----
+                # 分工：设定来自角色表（LLM 可覆盖），物化交给 TTS 的试音。
+                # 不再需要人给参考音。
+                if getattr(self, "forge_voices", True):
+                    try:
+                        from little_crew.runtime import voice_forge as _vf
+                        from little_crew.governance.voice_design import (
+                            from_sheet as _vfs, slug as _vslug)
+
+                        _need = [c for c in _chars
+                                 if _vslug(c) not in set(_have)
+                                 and c not in set(_have)]
+                        if _need:
+                            _specs = {c: _vfs(_sheets.get(c) or {}) for c in _need}
+                            _fr = _vf.forge_all(
+                                _specs, synth=_tts.synth,
+                                workdir=str(Path(str(_wd)) / "delivery" / "voices")
+                                if _wd else None)
+                            if _fr["count"]:
+                                print(f"  已造音色 {_fr['count']} 个"
+                                      f"（{', '.join(x['name'] for x in _fr['forged'])}）")
+                            if _fr["failed"]:
+                                print(f"  ⚠️ 音色失败 {len(_fr['failed'])} 个")
+                            _have = _tts.list_voices()
+                    except Exception as _e_fg:                # noqa: BLE001
+                        print(f"  ⚠️ 造音色未运行：{type(_e_fg).__name__}: {_e_fg}")
+                _cast_map = _cast(_chars, _sheets, _have)
+                # ---- 对白编辑（`dialogue_editor`）—— 2026-11-08 首次接上 ----
+                #
+                # 名册早就声明 `script.final -> shot.voice`，但从未被调用，
+                # 配音是在这里**内联算**的：产物不可审、策略不可换。
+                # 现在优先用职位的产物；没绑定时退回内联（行为不变）。
+                _voice_plan = None
+                try:
+                    _impls_v = getattr(self.orch, "_impls", {}) or {}
+                    if "dialogue_editor" in _impls_v:
+                        _jv_out = self.orch.run_stage(
+                            "dialogue_editor", "shot.voice",
+                            {"script.final": script_draft})
+                        if getattr(_jv_out, "ok", False):
+                            _voice_plan = self.orch.blackboard.value("shot.voice")
+                            if _voice_plan is not None:
+                                print(f"  对白编辑：{_voice_plan.get('lineCount', 0)} 句 · "
+                                      f"计划 {_voice_plan.get('totalSeconds', 0):.1f}s")
+                        else:
+                            print(f"  ⚠️ 对白编辑未产出：{_jv_out.error}")
+                except Exception as _e_de:                     # noqa: BLE001
+                    print(f"  ⚠️ 对白编辑未运行：{type(_e_de).__name__}: {_e_de}")
+
+                # 台词来源**优先结构化字段** `dialogue`（2026-11-06 加），
+                # 没有才退回正则抽正文 —— 并在每条上记 `source`，便于统计。
+                _lines = []
+                for _sc in (script_draft.scenes or ()):
+                    _sid = str(_sc.get("scene_id") or _sc.get("id") or "")
+                    _known = {str(c) for c in (_sc.get("characters") or ()) if str(c)}
+                    _dia = _sc.get("dialogue") or []
+                    if _dia:
+                        for _d in _dia:
+                            _lines.append({"character": str(_d.get("character") or ""),
+                                           "text": str(_d.get("line") or ""),
+                                           "sceneId": _sid, "source": "dialogue"})
+                    else:
+                        for _d in _vt.parse_dialogue(str(_sc.get("text") or ""),
+                                                     known=_known or None):
+                            _lines.append({**_d, "sceneId": _sid, "source": "regex"})
+                if _voice_plan and _voice_plan.get("lines"):
+                    # 用职位的产物替换内联结果：句序、情绪、估时都来自 `shot.voice`
+                    _lines = [{"character": str(x.get("character") or ""),
+                               "text": str(x.get("text") or ""),
+                               "sceneId": str(x.get("sceneId") or ""),
+                               "emotion": str(x.get("emotion") or ""),
+                               "plannedSeconds": float(x.get("estimateSeconds") or 0),
+                               "source": "dialogue_editor"}
+                              for x in _voice_plan["lines"]]
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                _vdir = (Path(str(_wd)) / "delivery" / "voice") if _wd else None
+                # 全部合成（0 = 不截断）：一集 30+ 句也就多花 ~2 分钟，
+                # 但成片不会出现"大半是静音"（163s 里 145s 静音那次）。
+                _trk = _vt.build(_lines, shots, synth=_tts.synth,
+                                 cast_map=_cast_map, out_dir=_vdir,
+                                 max_lines=0)
+                if _wd:
+                    _vo = Path(str(_wd)) / "delivery"
+                    _vo.mkdir(parents=True, exist_ok=True)
+                    (_vo / "voice_used.json").write_text(
+                        _jv.dumps(_trk, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                # 诊断：抽不到台词时，把"角色名单 + 正文样例"打出来 ——
+                # 否则只能看到"0 句"，不知道为什么（2026-11-06 踩过）。
+                if not _lines and getattr(self, "voice_debug", False):
+                    print(f"  [配音诊断] 场数 {len(script_draft.scenes or ())}"
+                          f" · 角色名单 {_chars}")
+                    for _sc in (script_draft.scenes or ())[:2]:
+                        print(f"    {_sc.get('scene_id')} chars={_sc.get('characters')}"
+                              f" text={str(_sc.get('text') or '')[:80]!r}")
+                # ---- 混流：字幕 + 环境音（BGM 无素材就明确跳过）----
+                try:
+                    from little_crew.runtime import mixdown as _mx
+
+                    # **按镜头起点排台词**（2026-11-08）：不这样做的话 24 句会被
+                    # 摞成一条连续旁白带 —— 画面在切镜、声音不跟着切，
+                    # 表现就是「字幕对不上 + 镜头衔接怪 + 语气生硬」。
+                    _offsets, _acc = {}, 0.0
+                    for _s3 in picked:
+                        _offsets[str(_s3.shot_id)] = round(_acc, 3)
+                        _acc += float(getattr(_s3, "duration_sec", 0) or 0)
+                    _rows = _mx.plan(_trk["utterances"], shot_offsets=_offsets)
+                    if _wd and _rows:
+                        _sub = Path(str(_wd)) / "delivery"
+                        (_sub / "subtitles.srt").write_text(
+                            _mx.srt(_rows), encoding="utf-8")
+                        _bed, _film_s = self._stage_music(
+                            picked, _sub,
+                            getattr(self, "ffmpeg", "") or "ffmpeg")
+                        _mix = _mx.build(
+                            _rows, str(_sub / "mix.wav"),
+                            ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
+                            ambient=True,
+                            bgm=str(_bed.get("path") or ""),
+                            total_seconds=_film_s)
+                        _mix["bgmSource"] = str(_bed.get("source") or "")
+                        (_sub / "mix.json").write_text(
+                            _jv.dumps({k: v for k, v in _mix.items()
+                                       if k != "command"},
+                                      ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                        if _mix["ok"]:
+                            print(f"  混流：{_mix['seconds']:.1f}s · "
+                                  f"峰值 {_mix['peakDb']:.1f} dBFS · "
+                                  f"字幕 {len(_rows)} 条"
+                                  + ("· ⚠️ 削波" if _mix.get("clipped") else ""))
+                        else:
+                            print(f"  ⚠️ 混流失败：{_mix['error']}")
+                except Exception as _e_mx:                # noqa: BLE001
+                    print(f"  ⚠️ 混流未运行：{type(_e_mx).__name__}: {_e_mx}")
+                _rep = _trk["report"]
+                print(f"  配音：{len(_trk['utterances'])} 句"
+                      f"（台词抽出 {len(_lines)} · 丢弃 {len(_trk['dropped'])}）"
+                      f" · 失败 {_rep['failed']} · 对齐均差 {_rep['align']['meanAbs']}s")
+            except Exception as _e_v:                          # noqa: BLE001
+                print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
 
 
     def video_out_dir(self) -> Path:
