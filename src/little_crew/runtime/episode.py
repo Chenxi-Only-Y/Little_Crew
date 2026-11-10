@@ -1875,6 +1875,13 @@ class EpisodeRunner:
         音乐床 → 混流 + 字幕），**未改一行缩进** —— 它本来就是 `run()` 的
         8 空格层级，正好是方法体层级。
         """
+        # ⚠️ 工作目录必须在方法内自取（2026-11-10）：
+        # 这段原来在 run() 里，`_wd` 是上游先定义的；抽出方法后它就不在作用域了 ——
+        # 真跑报 `UnboundLocalError: cannot access local variable '_wd'`，
+        # 而**音色只剩"造音色未运行"一行提示**，配音照样能跑（用已有音色），
+        # 单测全绿也发现不了。同类坑今晚第二次（上次是 `_wdv`）。
+        _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+
         # ---- 配音轨（§3.11，2026-11-06）----
         #
         # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
