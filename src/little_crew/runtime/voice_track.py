@@ -333,12 +333,26 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             _emo = emotion_note(str(ln.get("emotion") or ""))
             if _emo:
                 _ins = f"{_ins}，{_emo}" if _ins else _emo
-            r = synth_with_pauses(
-                ln["text"], wav, synth=synth,
-                voice=str(spec.get("voice") or ""),
-                instruction=_ins,
-                seed=int(spec.get("seed") or 0) or None,
-                max_seconds=float(ln.get("shotSeconds") or 0))
+            # 合成失败**重试一次**（2026-11-10）
+            #
+            # 真跑 EF14 出现过：33 句里 1 句 `FileNotFoundError`（wav 没写出来），
+            # 而单独重跑同一句立刻成功 —— 是**瞬时失败**（TTS/显存争用）。
+            # 一句失败 = 那一句在成片里是静音的，靠人眼看不出来，所以必须自愈。
+            _attempts = 2
+            for _att in range(1, _attempts + 1):
+                r = synth_with_pauses(
+                    ln["text"], wav, synth=synth,
+                    voice=str(spec.get("voice") or ""),
+                    instruction=_ins,
+                    seed=int(spec.get("seed") or 0) or None,
+                    max_seconds=float(ln.get("shotSeconds") or 0))
+                if r.get("ok"):
+                    if _att > 1:
+                        r["retried"] = _att
+                    break
+                if _att < _attempts:
+                    print(f"  ↻ 配音重试（第 {_att + 1} 次）：{ln.get('shotId')}"
+                          f" · {str(r.get('error') or '')[:60]}")
         a = align(float(r.get("seconds") or 0),
                   float(ln.get("shotSeconds") or 0))
         rows.append({
@@ -352,6 +366,9 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             "speechSegments": int(r.get("segments") or 1),
             "pauseSeconds": float(r.get("pauseSeconds") or 0.0),
             "error": r.get("error", ""),
+            #: 第几次尝试成功的（1 = 一次过；>=2 = 重试过）——
+            #: 只在行里留痕不够，要能进报告才能发现"后端在抖动"
+            "retried": int(r.get("retried") or 0),
             "align": a,
         })
     ok_rows = [{"shotId": x["shotId"], "character": x["character"],

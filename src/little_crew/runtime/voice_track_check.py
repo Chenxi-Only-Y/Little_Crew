@@ -76,6 +76,32 @@ def main() -> int:
         check("C4 ★★★ 明确写出「没做什么」",
               any("混流" in x for x in rep["notDone"]), str(rep["notDone"])[:40])
 
+    print(); print("D. 失败自愈（真跑 EF14 踩到：1/33 句瞬时失败）")
+    def flaky_synth(text, path, voice="", instruction=""):
+        """第一次失败、第二次成功 —— 模拟 TTS 瞬时错误。"""
+        key = str(text)
+        if key not in _seen:
+            _seen.add(key)
+            return {"ok": False, "seconds": 0.0, "error": "FileNotFoundError: 假故障"}
+        Path(str(path)).parent.mkdir(parents=True, exist_ok=True)
+        Path(str(path)).write_bytes(b"RIFFfake")
+        return {"ok": True, "seconds": 4.0, "voice": voice,
+                "instruction": instruction, "error": "", "sha256": "def"}
+
+    _seen = set()
+    with tempfile.TemporaryDirectory() as td:
+        rep2 = build([{"character": "甲", "text": "别碰我", "sceneId": "S01"}],
+                     shots, synth=flaky_synth,
+                     cast_map={"甲": {"voice": "", "instruction": "甲声"}},
+                     out_dir=td)
+        u = rep2["utterances"][0]
+        check("D1 ★★★ 瞬时失败会重试，最终成功", bool(u["ok"]), str(u)[:90])
+        check("D2 ★★ 重试次数被记录（retried）", int(u.get("retried") or 0) >= 2,
+              str(u.get("retried")))
+        check("D3 ★★ 失败率指标为 0（自愈后不算失败）",
+              float(rep2["report"].get("failRate") or 0) == 0.0,
+              str(rep2["report"].get("failRate")))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
