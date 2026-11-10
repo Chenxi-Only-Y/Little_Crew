@@ -329,6 +329,10 @@ class EpisodeResult:
             "totalSeconds": round(self.total_seconds, 2),
             "wallSeconds": round(self.wall_seconds, 2),
             "playable": self.playable,
+            # 场景越权否决是**交付级**结论，必须进报告（2026-11-10）：
+            # 之前只看 report.ok，会把"被否决的集"统计成"全绿"
+            # （EF17/EF18 就是 ok=True 但 CLI 否决）。
+            "sceneVeto": bool(getattr(self, "scene_veto", False)),
             "video": (self.video.as_dict() if hasattr(self.video, "as_dict")
                       else None),
             "videoPath": str(self.video_path) if self.video_path else "",
