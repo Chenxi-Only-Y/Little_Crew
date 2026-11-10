@@ -1278,6 +1278,8 @@ class EpisodeRunner:
 
         self.characters = self._design_characters(script_draft)
 
+        picked, shots = self._repair_subjects(picked, shots, script_draft)
+
         # ---- 阶段 checkpoint：**最终**镜头表（2026-11-10）----
         #
         # ⚠️ 原来的 checkpoint 写在返工**之前** —— 返工换过镜头后它就成了旧的。
@@ -1309,7 +1311,6 @@ class EpisodeRunner:
         except Exception:                                    # noqa: BLE001
             pass
 
-        picked, shots = self._repair_subjects(picked, shots, script_draft)
 
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
@@ -1343,7 +1344,30 @@ class EpisodeRunner:
         # 这不是「后端不支持」，是「控制图还没生成，施工单就编好了」。
         # 表现是崩溃（`_stage_control_image(None)`），真因在顺序。
         self._prompts_seen: dict[str, str] = {}
-        irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
+        # ---- IR：续跑优先复用 checkpoint 里的施工单（2026-11-10）----
+        #
+        # 为什么不是"重新桥接一遍"：
+        # 桥接结果取决于镜头字段（含 `duration_sec`），而续跑时上游任何一处漂移
+        # （导演重排、返工换镜、修复改文本）都会让 IR 变 → 缓存全 miss。
+        # 真跑实测：checkpoint 里 6.0s，续跑桥接出 4.0s → 0/3 命中。
+        #
+        # 既然 checkpoint 已经存了**整份 IR**（`render` 阶段的 `irJson`），
+        # 续跑就直接用它 —— checkpoint 的语义本来就是"这一步的输入已经定了"。
+        _irs_cached = (getattr(self, "resume_data", None) or {}).get("irJson") or {}
+        _reused = 0
+        if _irs_cached and len(_irs_cached) == len(picked):
+            irs = []
+            for _s_ir in picked:
+                _cached = _irs_cached.get(str(getattr(_s_ir, "shot_id", "")))
+                if isinstance(_cached, dict) and _cached:
+                    irs.append(_cached)
+                    _reused += 1
+                else:
+                    irs.append(self._bridge(_s_ir))
+            if _reused:
+                print(f"  IR：从 checkpoint 复用 {_reused}/{len(picked)} 镜（不重新桥接）")
+        else:
+            irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
 
         # ---- IR 指纹：查"续跑为什么还重渲"（2026-11-10）----
         #
@@ -1356,6 +1380,28 @@ class EpisodeRunner:
             _irh = {str(s.shot_id): _ch(ir) for s, ir in zip(picked, irs)}
             self._ir_hashes_now = _irh
             _old = (getattr(self, "resume_data", None) or {}).get("irHashes") or {}
+            _old_json = (getattr(self, "resume_data", None) or {}).get("irJson") or {}
+            _self_json = {}
+            try:
+                import json as _j_ir
+
+                _wd_ir2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_ir2:
+                    (Path(str(_wd_ir2)) / "_ir_current.json").write_text(
+                        _j_ir.dumps({str(s.shot_id): ir
+                                     for s, ir in zip(picked, irs)},
+                                    ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+            except Exception:                            # noqa: BLE001
+                pass
+            try:
+                from little_crew.runtime import stage_checkpoint as _sc_ir
+
+                _wd_ir = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_ir:
+                    _self_json = {str(s.shot_id): ir for s, ir in zip(picked, irs)}
+            except Exception:                            # noqa: BLE001
+                pass
             if _old:
                 _same = sum(1 for k, v in _irh.items() if _old.get(k) == v)
                 print(f"  IR 对比：{_same}/{len(_irh)} 镜哈希相同"
@@ -1363,6 +1409,26 @@ class EpisodeRunner:
                 _diff = [k for k, v in _irh.items() if _old.get(k) and _old.get(k) != v]
                 if _diff:
                     print(f"    首个不同: {_diff[0]}")
+                    # 字段级 diff：只存哈希时说不出"哪不同"
+                    try:
+                        _old_ir = (_old_json.get(_diff[0]) or {})
+                        _new_ir = (_self_json.get(_diff[0]) or {})
+                        _paths = []
+
+                        def _walk(a, b, path=""):
+                            if len(_paths) >= 6:
+                                return
+                            if isinstance(a, dict) and isinstance(b, dict):
+                                for k in set(a) | set(b):
+                                    _walk(a.get(k), b.get(k), f"{path}.{k}" if path else k)
+                            elif a != b:
+                                _paths.append((path, str(a)[:40], str(b)[:40]))
+
+                        _walk(_old_ir, _new_ir)
+                        for _p, _a, _b in _paths:
+                            print(f"      {_p}: {_a} -> {_b}")
+                    except Exception:                        # noqa: BLE001
+                        pass
         except Exception:                                    # noqa: BLE001
             pass
         _prompts = self._prompts_seen
@@ -1473,6 +1539,10 @@ class EpisodeRunner:
                 _sc3.save(_wd_ck3, "render",
                           {"perShotArtifacts": dict(per_shot_artifacts),
                            "irHashes": dict(getattr(self, "_ir_hashes_now", {}) or {}),
+                           #: 整份 IR —— 续跑时能**字段级**解释"为什么哈希不同"，
+                           #: 只存哈希只能说"不同"，说不清"哪不同"（2026-11-10）
+                           "irJson": {str(s.shot_id): ir
+                                      for s, ir in zip(picked, irs)},
                            "artifacts": {k: list(v) for k, v in artifacts.items()}},
                           meta={"episodeId": self.episode_id,
                                 "shots": len(per_shot_artifacts)})
