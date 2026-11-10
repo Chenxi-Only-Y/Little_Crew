@@ -1734,6 +1734,10 @@ class EpisodeRunner:
                 _allow_by_scene[_sid_f] = sorted(_subj_fix(_sc_f))
             _allow_all = sorted({w for v in _allow_by_scene.values() for w in v})
             _plan_fix = _srep.plan(picked, _allow_all, by_scene=_allow_by_scene)
+            # 无论有没有替换，都打印 + 复算 —— 否则"0 处"和"没跑"看起来一样
+            # （EF17 就是没有任何输出，无法判断是没检出还是没执行）。
+            if not any(x.get("applied") for x in _plan_fix):
+                print("  场景主体修复：0 处（未检出越权词）")
             if any(x.get("applied") for x in _plan_fix):
                 picked, _done_fix = _srep.apply(picked, _plan_fix)
                 shots = tuple(picked)

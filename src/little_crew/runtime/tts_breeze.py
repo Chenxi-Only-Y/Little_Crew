@@ -247,6 +247,12 @@ def synth_server(text: str, out_wav, *, voice: str = "", instruction: str = "",
         return {"ok": False, "seconds": 0.0, "error": f"server-{type(e).__name__}: {e}"}
     out = _P(str(out_wav))
     out.parent.mkdir(parents=True, exist_ok=True)
+    # 空响应必须**显式失败**：写一个 0 字节文件出去，后面会以
+    # `FileNotFoundError` / `wave.Error` 的形式在别处炸，看不出真因
+    # （2026-11-10 EF17：2 句配音两次重试都失败，报的却是 FileNotFound）。
+    if len(data) < 128:
+        return {"ok": False, "seconds": 0.0,
+                "error": f"server-empty-response: {len(data)} 字节"}
     out.write_bytes(data)
     # **必须归一化**：流式头会让后续 wave 写回直接 struct 溢出
     normalize_wav(out)

@@ -254,6 +254,10 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
         r.setdefault("segments", 1)
         if r.get("ok") and _tail > 0:
             append_silence(out_path, _tail)
+            if not Path(str(out_path)).is_file():
+                return {"ok": False, "seconds": 0.0,
+                    "error": "join-没有产出文件", "segments": len(parts),
+                    "sha256": ""}
             r["seconds"] = round(float(r.get("seconds") or 0) + _tail, 3)
             r["tailPauseSeconds"] = _tail
         return r
