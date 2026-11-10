@@ -1481,117 +1481,8 @@ class EpisodeRunner:
 
         self._stage_voice(picked, shots, script_draft, per_shot_artifacts)
 
-        # ---- 视觉闸：真的看图判「崩没崩」（2026-11-08）----
-        #
-        # 为什么加这道：可数审片只看存在/尺寸/串镜，**抓不到"脸崩了"**。
-        # 真跑标定（EV4，22 镜）：faces=broken **2 镜**、低一致度 8 镜 ——
-        # 这 2 镜以前会直接进成片。
-        #
-        # 纪律：**未审 != 通过**（模型不给 JSON / 调用失败都记 reviewed=False）。
-        if getattr(self, "vision_review_enabled", False):
-            try:
-                import json as _jv2
+        self._stage_vision(picked, irs, per_shot_artifacts, artifacts)
 
-                # ⚠️ 工作目录必须在这里取：前面几段各自用过 `_wd`/`_wd_rb`，
-                # 但它们**出了作用域就不存在** —— 真跑踩到 `NameError: _wdv`
-                # （2026-11-08，视觉闸因此整段没跑，而图还是那张崩的）。
-                _wdv = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-
-                from little_crew.agent.llm import LlmClient as _LC
-                from little_crew.review import vision_review as _vr
-
-                _imgs = {}
-                for _s4 in picked:
-                    _nm = (per_shot_artifacts.get(_s4.shot_id) or [""])[0]
-                    _hit = list(Path(str(_wdv)).rglob(_nm)) if (_wdv and _nm) else []
-                    if _hit:
-                        _imgs[_s4.shot_id] = str(_hit[0])
-                _vrres = _vr.review(
-                    picked, _imgs,
-                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash"),
-                    max_shots=int(getattr(self, "vision_max_shots", 12)))
-                if _wdv:
-                    (_outv := Path(str(_wdv)) / "delivery").mkdir(
-                        parents=True, exist_ok=True)
-                    (_outv / "vision_review.json").write_text(
-                        _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-                _bad = sum(1 for f in _vrres["findings"] if f["severity"] == "error")
-                print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
-                      f" · 严重 {_bad} 条 · 提示 {len(_vrres['findings']) - _bad} 条")
-                self._vision_review = _vrres
-            except Exception as _e_vr:                          # noqa: BLE001
-                print(f"  ⚠️ 视觉闸未运行：{type(_e_vr).__name__}: {_e_vr}")
-
-        # ---- 视觉闸 -> 定向重渲（2026-11-10 顺序修正）----
-        #
-        # 原来重渲写在视觉闸**之前**，findings 永远到不了它 ——
-        # EF8 有一镜 faces-broken 判出却没重画。现在紧跟在视觉闸之后。
-        #
-        # 视觉闸（4.6x）能判「这一镜脸崩了」，但判完必须有人动 ——
-        # 否则 finding 只是落盘，成片里还是那张崩的图。
-        #
-        # 机制不新造：编译器按 `provenance.seedDerivation` 派生种子，
-        # 其中 `attempt` 进内容哈希 -> 把 attempt+1 就等于"同镜换一次尝试"，
-        # 缓存必然 miss，图会被**真正重画**，旧图仍留在缓存里可追溯。
-        self._vision_rework = {"kind": "vision.rework", "rerendered": [],
-                               "failed": [], "skipped": [], "verified": []}
-        try:
-            _wd_vr = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            _vres = getattr(self, "_vision_review", None) or {}
-            _errs = [f for f in (_vres.get("findings") or [])
-                     if f.get("severity") == "error"]
-            if _errs and getattr(self, "vision_rework_enabled", True):
-                from little_crew.runtime import vision_rework as _vrw
-
-                _targets = _vrw.plan(_errs, max_shots=int(
-                    getattr(self, "vision_rework_max_shots", 4)))
-                _ir_by_shot = {}
-                for _s5, _ir5 in zip(picked, irs):
-                    _ir_by_shot[str(_s5.shot_id)] = _ir5
-                _log = {"kind": "vision.rework", "rerendered": [], "failed": [],
-                        "skipped": [], "verified": []}
-                for _tg in _targets:
-                    _sid = str(_tg["shotId"])
-                    _ir = _ir_by_shot.get(_sid)
-                    if _ir is None:
-                        _log["skipped"].append({"shotId": _sid,
-                                                "reason": "没有这镜的 IR"})
-                        continue
-                    _ir2, _att = _vrw.bump_attempt(_ir)
-                    try:
-                        _rb2 = self._render([_ir2]) or {}
-                        _outs = getattr(_rb2.get("batch"), "outcomes", ()) or ()
-                        _names = sorted(getattr(_outs[0], "artifacts", {}) or {}) \
-                            if _outs else []
-                    except Exception as _e_r2:                   # noqa: BLE001
-                        _log["failed"].append({"shotId": _sid, "attempt": _att,
-                                               "error": f"{type(_e_r2).__name__}: {_e_r2}"})
-                        continue
-                    if not _names:
-                        _log["failed"].append({"shotId": _sid, "attempt": _att,
-                                               "error": "重画没有产物"})
-                        continue
-                    # **替换**原产物引用，让成片/证据链都用新图
-                    per_shot_artifacts[_sid] = _names
-                    artifacts[str(_ir2.get("graphId", ""))] = _names
-                    _log["rerendered"].append({"shotId": _sid, "attempt": _att,
-                                               "artifacts": _names,
-                                               "kind": _tg.get("kind", ""),
-                                               "reason": _tg.get("reason", "")})
-                    print(f"  ↻ 重画 {_sid}（attempt {_att}）")
-                self._vision_rework = _log
-                if _wd_vr and _log["rerendered"]:
-                    try:
-                        (_ovr := Path(str(_wd_vr)) / "delivery").mkdir(
-                            parents=True, exist_ok=True)
-                        (_ovr / "vision_rework.json").write_text(
-                            __import__("json").dumps(_log, ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-                    except Exception:                        # noqa: BLE001
-                        pass
-        except Exception as _e_vrw:                          # noqa: BLE001
-            print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
         self._stage_final(picked, per_shot_artifacts)
 
         # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
@@ -2169,6 +2060,125 @@ class EpisodeRunner:
             except Exception as _e_v:                          # noqa: BLE001
                 print(f"  ⚠️ 配音未运行：{type(_e_v).__name__}: {_e_v}")
 
+
+    def _stage_vision(self, picked, irs, per_shot_artifacts, artifacts):
+        """视觉闸 + 定向重渲（2026-11-10 抽出，**顺序已修正**）。
+
+        原块整体搬入（8 空格层 → 方法体层，未改缩进）。
+        `per_shot_artifacts` / `artifacts` 以**原地修改**方式回传（dict 可变），
+        所以调用方不用重新赋值 —— 这样即使搬出去也不会漏掉重渲后的新图。
+        """
+        # ---- 视觉闸：真的看图判「崩没崩」（2026-11-08）----
+        #
+        # 为什么加这道：可数审片只看存在/尺寸/串镜，**抓不到"脸崩了"**。
+        # 真跑标定（EV4，22 镜）：faces=broken **2 镜**、低一致度 8 镜 ——
+        # 这 2 镜以前会直接进成片。
+        #
+        # 纪律：**未审 != 通过**（模型不给 JSON / 调用失败都记 reviewed=False）。
+        if getattr(self, "vision_review_enabled", False):
+            try:
+                import json as _jv2
+
+                # ⚠️ 工作目录必须在这里取：前面几段各自用过 `_wd`/`_wd_rb`，
+                # 但它们**出了作用域就不存在** —— 真跑踩到 `NameError: _wdv`
+                # （2026-11-08，视觉闸因此整段没跑，而图还是那张崩的）。
+                _wdv = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+
+                from little_crew.agent.llm import LlmClient as _LC
+                from little_crew.review import vision_review as _vr
+
+                _imgs = {}
+                for _s4 in picked:
+                    _nm = (per_shot_artifacts.get(_s4.shot_id) or [""])[0]
+                    _hit = list(Path(str(_wdv)).rglob(_nm)) if (_wdv and _nm) else []
+                    if _hit:
+                        _imgs[_s4.shot_id] = str(_hit[0])
+                _vrres = _vr.review(
+                    picked, _imgs,
+                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash"),
+                    max_shots=int(getattr(self, "vision_max_shots", 12)))
+                if _wdv:
+                    (_outv := Path(str(_wdv)) / "delivery").mkdir(
+                        parents=True, exist_ok=True)
+                    (_outv / "vision_review.json").write_text(
+                        _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                _bad = sum(1 for f in _vrres["findings"] if f["severity"] == "error")
+                print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
+                      f" · 严重 {_bad} 条 · 提示 {len(_vrres['findings']) - _bad} 条")
+                self._vision_review = _vrres
+            except Exception as _e_vr:                          # noqa: BLE001
+                print(f"  ⚠️ 视觉闸未运行：{type(_e_vr).__name__}: {_e_vr}")
+
+        # ---- 视觉闸 -> 定向重渲（2026-11-10 顺序修正）----
+        #
+        # 原来重渲写在视觉闸**之前**，findings 永远到不了它 ——
+        # EF8 有一镜 faces-broken 判出却没重画。现在紧跟在视觉闸之后。
+        #
+        # 视觉闸（4.6x）能判「这一镜脸崩了」，但判完必须有人动 ——
+        # 否则 finding 只是落盘，成片里还是那张崩的图。
+        #
+        # 机制不新造：编译器按 `provenance.seedDerivation` 派生种子，
+        # 其中 `attempt` 进内容哈希 -> 把 attempt+1 就等于"同镜换一次尝试"，
+        # 缓存必然 miss，图会被**真正重画**，旧图仍留在缓存里可追溯。
+        self._vision_rework = {"kind": "vision.rework", "rerendered": [],
+                               "failed": [], "skipped": [], "verified": []}
+        try:
+            _wd_vr = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _vres = getattr(self, "_vision_review", None) or {}
+            _errs = [f for f in (_vres.get("findings") or [])
+                     if f.get("severity") == "error"]
+            if _errs and getattr(self, "vision_rework_enabled", True):
+                from little_crew.runtime import vision_rework as _vrw
+
+                _targets = _vrw.plan(_errs, max_shots=int(
+                    getattr(self, "vision_rework_max_shots", 4)))
+                _ir_by_shot = {}
+                for _s5, _ir5 in zip(picked, irs):
+                    _ir_by_shot[str(_s5.shot_id)] = _ir5
+                _log = {"kind": "vision.rework", "rerendered": [], "failed": [],
+                        "skipped": [], "verified": []}
+                for _tg in _targets:
+                    _sid = str(_tg["shotId"])
+                    _ir = _ir_by_shot.get(_sid)
+                    if _ir is None:
+                        _log["skipped"].append({"shotId": _sid,
+                                                "reason": "没有这镜的 IR"})
+                        continue
+                    _ir2, _att = _vrw.bump_attempt(_ir)
+                    try:
+                        _rb2 = self._render([_ir2]) or {}
+                        _outs = getattr(_rb2.get("batch"), "outcomes", ()) or ()
+                        _names = sorted(getattr(_outs[0], "artifacts", {}) or {}) \
+                            if _outs else []
+                    except Exception as _e_r2:                   # noqa: BLE001
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": f"{type(_e_r2).__name__}: {_e_r2}"})
+                        continue
+                    if not _names:
+                        _log["failed"].append({"shotId": _sid, "attempt": _att,
+                                               "error": "重画没有产物"})
+                        continue
+                    # **替换**原产物引用，让成片/证据链都用新图
+                    per_shot_artifacts[_sid] = _names
+                    artifacts[str(_ir2.get("graphId", ""))] = _names
+                    _log["rerendered"].append({"shotId": _sid, "attempt": _att,
+                                               "artifacts": _names,
+                                               "kind": _tg.get("kind", ""),
+                                               "reason": _tg.get("reason", "")})
+                    print(f"  ↻ 重画 {_sid}（attempt {_att}）")
+                self._vision_rework = _log
+                if _wd_vr and _log["rerendered"]:
+                    try:
+                        (_ovr := Path(str(_wd_vr)) / "delivery").mkdir(
+                            parents=True, exist_ok=True)
+                        (_ovr / "vision_rework.json").write_text(
+                            __import__("json").dumps(_log, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                        # noqa: BLE001
+                        pass
+        except Exception as _e_vrw:                          # noqa: BLE001
+            print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
 
     def video_out_dir(self) -> Path:
         return (self.workdir or Path(".")) / self.video_subdir
