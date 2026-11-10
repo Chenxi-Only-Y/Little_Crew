@@ -1522,107 +1522,7 @@ class EpisodeRunner:
 
         self._stage_final(picked, per_shot_artifacts)
 
-        # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
-        #
-        # 审片接在**渲染之后**：审的是真产物，不是意图。
-        # 但本机 LLM 客户端没有视觉能力，所以只审**可数项**
-        # （存在/尺寸/体积/串镜），并把"没审什么"写进产物 ——
-        # 缺观测 != 通过。
-        try:
-            from little_crew.review import image_review as _irv
-
-            _base0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            _paths: dict[str, list[str]] = {}
-            for _sid, _names in per_shot_artifacts.items():
-                _got = []
-                for _n in _names:
-                    _f0 = Path(str(_base0)) / _n if _base0 else None
-                    if _f0 is not None and not _f0.is_file():
-                        _hits = list(Path(str(_base0)).rglob(_n)) if _base0 else []
-                        _f0 = _hits[0] if _hits else _f0
-                    _got.append(str(_f0) if _f0 is not None else "")
-                _paths[_sid] = [x for x in _got if x]
-            _review = _irv.review(
-                picked,
-                artifacts_by_shot=_paths,
-                expect_size=(tuple(self.engine_resolution)
-                             if isinstance(self.engine_resolution, (tuple, list))
-                             else None),
-                hashes_by_shot=dict(artifact_hashes),
-            )
-            _wd1 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd1:
-                (_out1 := Path(str(_wd1)) / "delivery").mkdir(parents=True, exist_ok=True)
-                import json as _j1
-
-                (_out1 / "image_review.json").write_text(
-                    _j1.dumps(_review, ensure_ascii=False, indent=2),
-                    encoding="utf-8")
-            _err_n = int((_review.get("counts") or {}).get("error", 0))
-            # ⚠️ **dry-run 不许谎报**（2026-11-06 体检发现）：
-            # 没渲染时每个镜头都会被记成 `missing-artifact` 严重缺陷，
-            # 一次 27 镜就是 27 条 error —— 看起来像灾难，实际是"没跑渲染"。
-            # 判据：**一镜都没尝试渲染且没有失败**（真有失败时仍然要报）。
-            _attempted = int(getattr(self, "rendered", 0) or 0) + int(
-                getattr(self, "failed", 0) or 0)
-            if _attempted == 0:
-                _review["skipped"] = "dry-run（未尝试渲染），审片不适用"
-                print("  审片（可数项）：未渲染 —— 跳过（不是通过）")
-            else:
-                print(f"  审片（可数项）：{_review['total']} 个产物 · 严重 {_err_n} 条")
-            self._image_review = _review
-        except Exception as _e_rv:                            # noqa: BLE001
-            print(f"  ⚠️ 渲染审片未运行：{type(_e_rv).__name__}: {_e_rv}")
-
-
-        manifest, evidence = self.assembler.assemble(
-            episode_id=self.episode_id, title=self.title,
-            shots=[s.as_dict() for s in picked],
-            artifacts=per_shot_artifacts, ir_hashes=ir_hashes,
-            cache_stats={
-                "hits": len(batch.cache_hits),
-                "rendered": len(batch.rendered),
-                "secondsSaved": batch.seconds_saved,
-                "secondsSpent": batch.seconds_spent,
-            },
-            gate=gate_dict, prompts=_prompts)
-
-        if artifact_hashes:
-            evidence.artifact_hashes = dict(artifact_hashes)
-
-        # 每镜用到哪些角色锚点图 —— 落成附加产物，便于核对"一致性有没有接线"
-        try:
-            _wd0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd0 and getattr(self, "_anchors_used", None):
-                import json as _j0
-
-                _o0 = Path(str(_wd0)) / "delivery"
-                _o0.mkdir(parents=True, exist_ok=True)
-                (_o0 / "anchors_used.json").write_text(_j0.dumps(
-                    {"kind": "anchors.used",
-                     "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
-                     "perShot": dict(sorted(self._anchors_used.items()))},
-                    ensure_ascii=False, indent=2), encoding="utf-8")
-        except Exception:                                    # noqa: BLE001
-            pass
-
-        failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
-                        "reason": o.reason[:200]} for o in batch.failed)
-        # `ok` 同时看**硬规则**与**门禁**。
-        #
-        # ⚠️ 门禁结论必须影响 `ok`，否则它只是一个"附在证据里的意见" ——
-        # 而 C3 的整个意义就是**让判定能阻断交付**。
-        # 只管记录不管拦截的门禁，与"自我签收"没有实质区别。
-        gate_ok = gate_report is None or gate_report.all_kept
-        ok = (bool(manifest.shot_count) and evidence.all_checks_passed
-              and gate_ok)
-        if ok:
-            reason = "全部镜头就绪"
-        elif not gate_ok:
-            reason = (f"门禁未过：{gate_report.retry} 镜需返工 / "
-                      f"{gate_report.escalate} 镜需人工")
-        else:
-            reason = f"{len(failed)} 镜失败 / 硬规则未全过"
+        self._stage_image_review(picked, per_shot_artifacts)
 
         # ---- 6) 视频合成（可选）----
         #
@@ -2291,6 +2191,115 @@ class EpisodeRunner:
                 print(f"  ⚠️ scene_check.json 未写出：{type(_e).__name__}: {_e}")
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
+
+    def _stage_image_review(self, picked, per_shot_artifacts):
+        """渲染产物可数审片（2026-11-10 抽出）。
+
+        只审可数项（存在/尺寸/体积/串镜）—— 本机没有视觉能力时，
+        至少把「没审什么」写进产物：缺观测 != 通过。
+        """
+        # ---- 渲染产物可数审片（§3.10.2 第二层，2026-11-05）----
+        #
+        # 审片接在**渲染之后**：审的是真产物，不是意图。
+        # 但本机 LLM 客户端没有视觉能力，所以只审**可数项**
+        # （存在/尺寸/体积/串镜），并把"没审什么"写进产物 ——
+        # 缺观测 != 通过。
+        try:
+            from little_crew.review import image_review as _irv
+
+            _base0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _paths: dict[str, list[str]] = {}
+            for _sid, _names in per_shot_artifacts.items():
+                _got = []
+                for _n in _names:
+                    _f0 = Path(str(_base0)) / _n if _base0 else None
+                    if _f0 is not None and not _f0.is_file():
+                        _hits = list(Path(str(_base0)).rglob(_n)) if _base0 else []
+                        _f0 = _hits[0] if _hits else _f0
+                    _got.append(str(_f0) if _f0 is not None else "")
+                _paths[_sid] = [x for x in _got if x]
+            _review = _irv.review(
+                picked,
+                artifacts_by_shot=_paths,
+                expect_size=(tuple(self.engine_resolution)
+                             if isinstance(self.engine_resolution, (tuple, list))
+                             else None),
+                hashes_by_shot=dict(artifact_hashes),
+            )
+            _wd1 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd1:
+                (_out1 := Path(str(_wd1)) / "delivery").mkdir(parents=True, exist_ok=True)
+                import json as _j1
+
+                (_out1 / "image_review.json").write_text(
+                    _j1.dumps(_review, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
+            _err_n = int((_review.get("counts") or {}).get("error", 0))
+            # ⚠️ **dry-run 不许谎报**（2026-11-06 体检发现）：
+            # 没渲染时每个镜头都会被记成 `missing-artifact` 严重缺陷，
+            # 一次 27 镜就是 27 条 error —— 看起来像灾难，实际是"没跑渲染"。
+            # 判据：**一镜都没尝试渲染且没有失败**（真有失败时仍然要报）。
+            _attempted = int(getattr(self, "rendered", 0) or 0) + int(
+                getattr(self, "failed", 0) or 0)
+            if _attempted == 0:
+                _review["skipped"] = "dry-run（未尝试渲染），审片不适用"
+                print("  审片（可数项）：未渲染 —— 跳过（不是通过）")
+            else:
+                print(f"  审片（可数项）：{_review['total']} 个产物 · 严重 {_err_n} 条")
+            self._image_review = _review
+        except Exception as _e_rv:                            # noqa: BLE001
+            print(f"  ⚠️ 渲染审片未运行：{type(_e_rv).__name__}: {_e_rv}")
+
+
+        manifest, evidence = self.assembler.assemble(
+            episode_id=self.episode_id, title=self.title,
+            shots=[s.as_dict() for s in picked],
+            artifacts=per_shot_artifacts, ir_hashes=ir_hashes,
+            cache_stats={
+                "hits": len(batch.cache_hits),
+                "rendered": len(batch.rendered),
+                "secondsSaved": batch.seconds_saved,
+                "secondsSpent": batch.seconds_spent,
+            },
+            gate=gate_dict, prompts=_prompts)
+
+        if artifact_hashes:
+            evidence.artifact_hashes = dict(artifact_hashes)
+
+        # 每镜用到哪些角色锚点图 —— 落成附加产物，便于核对"一致性有没有接线"
+        try:
+            _wd0 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd0 and getattr(self, "_anchors_used", None):
+                import json as _j0
+
+                _o0 = Path(str(_wd0)) / "delivery"
+                _o0.mkdir(parents=True, exist_ok=True)
+                (_o0 / "anchors_used.json").write_text(_j0.dumps(
+                    {"kind": "anchors.used",
+                     "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
+                     "perShot": dict(sorted(self._anchors_used.items()))},
+                    ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                    # noqa: BLE001
+            pass
+
+        failed = tuple({"graphId": o.graph_id, "failure": o.failure.value,
+                        "reason": o.reason[:200]} for o in batch.failed)
+        # `ok` 同时看**硬规则**与**门禁**。
+        #
+        # ⚠️ 门禁结论必须影响 `ok`，否则它只是一个"附在证据里的意见" ——
+        # 而 C3 的整个意义就是**让判定能阻断交付**。
+        # 只管记录不管拦截的门禁，与"自我签收"没有实质区别。
+        gate_ok = gate_report is None or gate_report.all_kept
+        ok = (bool(manifest.shot_count) and evidence.all_checks_passed
+              and gate_ok)
+        if ok:
+            reason = "全部镜头就绪"
+        elif not gate_ok:
+            reason = (f"门禁未过：{gate_report.retry} 镜需返工 / "
+                      f"{gate_report.escalate} 镜需人工")
+        else:
+            reason = f"{len(failed)} 镜失败 / 硬规则未全过"
+
 
     def video_out_dir(self) -> Path:
         return (self.workdir or Path(".")) / self.video_subdir
