@@ -1522,7 +1522,7 @@ class EpisodeRunner:
 
         self._stage_final(picked, per_shot_artifacts)
 
-        self._stage_image_review(picked, per_shot_artifacts)
+        self._stage_image_review(picked, per_shot_artifacts, artifact_hashes)
 
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
@@ -1778,6 +1778,9 @@ class EpisodeRunner:
                                 "reason": str(_r2.get("reason") or "")[:120],
                             })
                     self.scene_conflicts = _conf2
+                    # ⚠️ CLI 的门禁看的是 `scene_veto`（在 2.8 就置 True 了），
+                    # 只改 conflicts 不清这个标志 → 修好了照样否决（EF18 真跑踩到）。
+                    self.scene_veto = bool(_conf2)
                     print(f"  修复后复算越权：{len(_conf2)} 镜")
                 except Exception as _e_re:                   # noqa: BLE001
                     print(f"  ⚠️ 修复后复算未运行：{type(_e_re).__name__}: {_e_re}")
@@ -2245,7 +2248,7 @@ class EpisodeRunner:
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
 
-    def _stage_image_review(self, picked, per_shot_artifacts):
+    def _stage_image_review(self, picked, per_shot_artifacts, artifact_hashes):
         """渲染产物可数审片（2026-11-10 抽出）。
 
         只审可数项（存在/尺寸/体积/串镜）—— 本机没有视觉能力时，
