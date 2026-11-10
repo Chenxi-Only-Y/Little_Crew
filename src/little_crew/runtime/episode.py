@@ -1309,6 +1309,43 @@ class EpisodeRunner:
         except Exception:                                    # noqa: BLE001
             pass
 
+        # ---- 场景主体修复：把"剧本没授权"的场景词换成本场授权词（2026-11-10）----
+        #
+        # 白名单提示词降低了概率但没根除（EF9 仍有 3 镜写"花田"→ 否决交付）。
+        # 这里做**确定性修复**并逐条记录 —— 修不掉就留给门禁，不瞎猜。
+        try:
+            from little_crew.review.scene_subject import subjects_in as _subj_fix
+            from little_crew.runtime import subject_repair as _srep
+
+            _allow_by_scene: dict[str, list[str]] = {}
+            for _sc_f in (getattr(script_draft, "scenes", ()) or ()):
+                _sid_f = str(_sc_f.get("scene_id") or _sc_f.get("id") or "")
+                _allow_by_scene[_sid_f] = sorted(_subj_fix(_sc_f))
+            _allow_all = sorted({w for v in _allow_by_scene.values() for w in v})
+            _plan_fix = _srep.plan(picked, _allow_all, by_scene=_allow_by_scene)
+            if any(x.get("applied") for x in _plan_fix):
+                picked, _done_fix = _srep.apply(picked, _plan_fix)
+                shots = tuple(picked)
+                print(f"  场景主体修复：{len(_done_fix)} 处"
+                      + (f"（如 {_done_fix[0]['old']}→{_done_fix[0]['new']}）" if _done_fix else ""))
+                _wd_fix = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_fix:
+                    try:
+                        import json as _j_fix
+
+                        _out_fix = Path(str(_wd_fix)) / "delivery"
+                        _out_fix.mkdir(parents=True, exist_ok=True)
+                        (_out_fix / "subject_repairs.json").write_text(
+                            _j_fix.dumps({"kind": "subject.repairs",
+                                          "count": len(_done_fix),
+                                          "repairs": _done_fix},
+                                         ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                        # noqa: BLE001
+                        pass
+        except Exception as _e_fix:                          # noqa: BLE001
+            print(f"  ⚠️ 场景主体修复未运行：{type(_e_fix).__name__}: {_e_fix}")
+
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
         #

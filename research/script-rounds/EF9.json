@@ -1,0 +1,164 @@
+{
+  "episodeId": "EF9",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力被一句顺从化解：他说\"今晚的集会，你不许去\"，少女只答\"我不去\"，随后母亲\"拉住父亲的袖子，摇了摇头\"，对抗零消耗就收场。父亲从头到尾没有真正拦住任何事，\"他是外乡人，你留他，村里人怎么看你\"这个威胁也没有产生任何可见后果。', suggestion='让少女正面顶回去（坚持留人、坚持要出门取药），父亲动用实质手段——夺药碗、摔门、堵在里屋门口——逼她付出代价才能换到守夜的许可；母亲的调停也不要白给，让她替女儿挨一顿斥责。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲\"压低声音\"说了句\"你也糊涂了吗\"，少女\"没有回头\"，母亲就\"叹了口气\"放下水盆走了——阻力只有一句台词，没有持续，也没有升级。', suggestion='让母亲采取动作：端走药罐、掀开被角要抬人、或明说\"明早他必须走\"，迫使少女用一个具体选择（交出什么、答应什么）换母亲默许，冲突才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：父亲\"她要是回来，先认错\"到结尾都没有被检验；三人\"都不说话了\"后，场景以\"后来村里人说……\"的传闻和\"没人看见他有没有红眼\"收束，情绪变化全靠叙述交代，父亲的立场从开场到结尾一字未动。', suggestion='给父亲一个可见的转变动作：夜里把灶上留着的饭端下来又端上去、把修好的锄头放在她惯坐的位置、或走到路口把那句\"先认错\"咽回去。让观众看见他的动摇，而不是替他保留悬念。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：岔口的难题由\"碎石坡上竟浮出一线淡淡的紫光，像有人提前替她撒下的路标\"替她解决——方向是白给的，她为这次抉择没有付出任何东西，也没有失去任何退路（\"身后村子的方向，已经什么也看不见了\"是环境变化，不是她的付出）。', suggestion='让她用手里仅剩的东西换这条光：把最后一片薰衣草捏碎撒进雾里、或把披肩/信物留在岔口做记号——光只亮一次，且从此她没有任何回头的凭据。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 41.353
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 116.815
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：旅人唯一的阻力「你连我是谁都不知道」，被少女一句「路上你会说」当场化解，他没有再争、没有拒绝、也没有提出任何交换条件；真正的社会阻力只以画外音出现——「人群里有人低声说了句什么，声音像针」，既没有指向她的台词，也没有拦住她的动作。整场离开的代价（与全村决裂）是被叙述出来的，不是被对抗出来的。', suggestion='把阻力实体化：让旅人主动推开她／坚持自己走不了远路，逼她做出具体牺牲（替他背包袱、发誓不问来历）才被接纳；同时让人群中一个人走上前直说一句阻拦的话（如「外乡人走的路，你走了就别回来」），让她跨过这句阻拦才迈出村口——离开的代价就由她当场支付，而不是靠旁白补。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：「后来村里人说，再没有人见过她。也有人说，她是循着花香，去寻他去了。」这是全剧视角的传说式收束，却放在 S08 的岔路抉择之前。故事在此已被宣布「结局」，观众知道她不会再有真正的危险，S08 那次事关「还能不能回头」的抉择就被提前抽走了赌注。', suggestion='把这两句传说移到 S08 之后作全剧终场旁白；本场收在她「没有再回头」、雾吞掉来路即止，把「她后来怎样了」的悬念完整留给 S08 的岔路口。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：S04 埋下的承诺是「这花的香气，能让不洁的东西现形」，S08 也复述了这句（「奶奶说，这花的香气能让不洁的东西现形」），但实际兑现的却是一盏照路的灯——「只够照出三步远的路」，全场没有任何「不洁的东西」被照出来。伏笔的兑现物被替换了，观众等待的那个转折（究竟什么是不洁的）从未发生。', suggestion='让紫光真的「现形」出一样东西再熄灭：可以是光里照出来路尽头追来的村影／她自己不敢看的一张脸，哪怕只一闪，她随后捏碎花、放弃回头才成立为抉择；或者改写 S04 老奶奶的台词为「能让迷了路的人看见脚下的路」，使伏笔与 payoff 严格对位。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 57.735
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 67.151
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：“你走了就别回来。”她把父亲那句话自己说了出来——但这句台词在 S04 里出自人群中的妇人（“外乡人走的路，你走了，就别回来”），并非父亲。父亲在 S02 的威胁是“明天的集会你就别去了”，两处没有接上。归属混乱使她此刻对抗的对象模糊：她到底是在对抗父亲、村子，还是自己？', suggestion='统一出处：要么让 S04 的妇人改口、把这句挪给父亲（在 S04 父亲到场送别并说出这句），要么 S07 改为“她把村口那妇人的话自己说了出来”，并补一句父亲 S02 威胁的回响（如集会的空位），让两场的阻力形成同一条线。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：转折落在“原来照出来的是这个：是她自己不敢回头看的这张脸”，但揭示的逻辑没有锚点——老奶奶说的是“花香能让不洁的东西现形”，光却照出母亲，等于把母亲/家判定为“不洁”。这一层含义完全靠观众自行反推，容易被误读成“母亲是阻碍、是鬼”，转折的重量因此泄掉。', suggestion='在她的独白里把这层认知说破一档：她原先以为“不洁”是旅人身上带来的东西，此刻才明白，她一直把“想回头”本身当作要被驱散的脏东西——母亲不是不洁，是她给自己判的罪。让转折落在自我认知的翻转上，而不是意象的并置上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场没有对抗对象：雾只是氛围，而且“来路”已被雾吞掉，退路在物理上不存在，她“往前迈了一步，又一步”是唯一可行的选项。没有可选的另一条路，就没有两难，转折（不回头）因此不构成抉择，观众看到的是一个被推着走的人。', suggestion='给这一场一个真实的分叉：让来路在雾合拢前留出最后一线（比如她能听见村里的钟声、或雾中隐约露出那道弯），她必须在“能回去”和“往前”之间做一次选择，代价才落得下来；或者把 S08 的岔路口前移与此场合并，避免两个独自场功能重复、且前一个更弱。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.693
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 115.607
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 2 轮（59.9 分）"
+}
