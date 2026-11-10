@@ -69,7 +69,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("配乐摄影职位", [sys.executable, "-m", "little_crew.runtime.music_camera_agents_check"], 12),
     ("音乐床决策", [sys.executable, "-m", "little_crew.runtime.music_stage_check"], 14),
     ("逐场分镜", [sys.executable, "-m", "little_crew.runtime.storyboard_stage_check"], 13),
-    ("场景主体修复", [sys.executable, "-m", "little_crew.runtime.subject_repair_check"], 11),
+    ("场景主体修复", [sys.executable, "-m", "little_crew.runtime.subject_repair_check"], 12),
     ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 17),
     ("断点续跑", [sys.executable, "-m", "little_crew.runtime.stage_checkpoint_check"], 16),
     ("人工 Gate", [sys.executable, "-m", "little_crew.runtime.human_gate_check"], 17),

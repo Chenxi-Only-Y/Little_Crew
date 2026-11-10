@@ -52,10 +52,14 @@ def main() -> int:
     check("C2 ★★ 没有授权词 -> 不瞎猜（applied=False）",
           all(not r["applied"] for r in SR.plan([_shot("D", "S01", "花田")], [])), "")
     r3 = SR.plan([_shot("E", "S99", "花田")], ["山坡"])
-    # 场号未知时不瞎猜（字面相似度 0，无法确定该用哪个地点）——
-    # 留给门禁否决，比"换成别场的词"更安全。
-    check("C3 ★★★ 场号未知且无相似词 -> 不替换（不瞎猜）",
-          bool(r3) and all(not x["applied"] for x in r3), str(r3)[:80])
+    # 政策（2026-11-10 改）：本场无地点词、全局也不相近时，**用剧本第一个地点兜底**，
+    # 但必须标 `global-default` 并记录 —— 因为"否决整集"的代价比"换个地点"高得多。
+    check("C3 ★★★ 无本场词 -> 全局兜底，且标明来源",
+          bool(r3) and r3[0]["applied"] and r3[0]["new"] == "山坡"
+          and r3[0]["via"] == "global-default", str(r3)[:90])
+    r4 = SR.plan([_shot("F", "S99", "花田")], [])
+    check("C4 ★★★ 连授权词都没有 -> 不替换（真的无从猜起）",
+          all(not x["applied"] for x in r4), str(r4)[:80])
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

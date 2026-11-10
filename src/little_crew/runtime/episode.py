@@ -1309,42 +1309,7 @@ class EpisodeRunner:
         except Exception:                                    # noqa: BLE001
             pass
 
-        # ---- 场景主体修复：把"剧本没授权"的场景词换成本场授权词（2026-11-10）----
-        #
-        # 白名单提示词降低了概率但没根除（EF9 仍有 3 镜写"花田"→ 否决交付）。
-        # 这里做**确定性修复**并逐条记录 —— 修不掉就留给门禁，不瞎猜。
-        try:
-            from little_crew.review.scene_subject import subjects_in as _subj_fix
-            from little_crew.runtime import subject_repair as _srep
-
-            _allow_by_scene: dict[str, list[str]] = {}
-            for _sc_f in (getattr(script_draft, "scenes", ()) or ()):
-                _sid_f = str(_sc_f.get("scene_id") or _sc_f.get("id") or "")
-                _allow_by_scene[_sid_f] = sorted(_subj_fix(_sc_f))
-            _allow_all = sorted({w for v in _allow_by_scene.values() for w in v})
-            _plan_fix = _srep.plan(picked, _allow_all, by_scene=_allow_by_scene)
-            if any(x.get("applied") for x in _plan_fix):
-                picked, _done_fix = _srep.apply(picked, _plan_fix)
-                shots = tuple(picked)
-                print(f"  场景主体修复：{len(_done_fix)} 处"
-                      + (f"（如 {_done_fix[0]['old']}→{_done_fix[0]['new']}）" if _done_fix else ""))
-                _wd_fix = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                if _wd_fix:
-                    try:
-                        import json as _j_fix
-
-                        _out_fix = Path(str(_wd_fix)) / "delivery"
-                        _out_fix.mkdir(parents=True, exist_ok=True)
-                        (_out_fix / "subject_repairs.json").write_text(
-                            _j_fix.dumps({"kind": "subject.repairs",
-                                          "count": len(_done_fix),
-                                          "repairs": _done_fix},
-                                         ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-                    except Exception:                        # noqa: BLE001
-                        pass
-        except Exception as _e_fix:                          # noqa: BLE001
-            print(f"  ⚠️ 场景主体修复未运行：{type(_e_fix).__name__}: {_e_fix}")
+        picked, shots = self._repair_subjects(picked, shots, script_draft)
 
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
@@ -1668,39 +1633,9 @@ class EpisodeRunner:
                         _sub = Path(str(_wd)) / "delivery"
                         (_sub / "subtitles.srt").write_text(
                             _mx.srt(_rows), encoding="utf-8")
-                        # ---- 定位探针（临时，2026-11-09 查 composer 未调用）----
-                        try:
-                            _dbg = Path(str(_wd)) / "delivery" / "_composer_probe.log"
-                            _dbg.write_text(
-                                "reached_music_block\n"
-                                f"film_s={_film_s}\n"
-                                f"impls={sorted((getattr(self.orch, '_impls', {}) or {}).keys())}\n",
-                                encoding="utf-8")
-                        except Exception:                    # noqa: BLE001
-                            pass
-
-                        # ---- 音乐床（2026-11-06；2026-11-09 回退到已验证版本）----
-                        #
-                        # ⚠️ 今晚两次尝试把这个阶段"接成 composer 职位"都引入了回归
-                        # （`NameError: _film_s` 被上层吞掉 → 音乐床与混流整段没跑）。
-                        # **正确性优先**：先回退到原版；`composer` 职位实现保留，
-                        # 接线留待有独立测试覆盖时再做。
-                        # 一行调用可单测的决策函数（2026-11-09 重做）：
-                        # `music_stage.resolve_bed` 里是"composer 优先 / 内联兜底"，
-                        # 三层优先级与异常处理**都有单测**，不再靠整集真跑去试。
-                        from little_crew.runtime import music_stage as _ms
-
-                        _bed = _ms.resolve_bed(
-                            orch=self.orch, shots=picked, out_dir=_sub,
-                            ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg")
-                        _film_s = float(_bed.get("requestedSeconds")
-                                        or _ms.film_seconds(picked))
-                        if _bed.get("via") == "composer":
-                            print(f"  配乐（composer）："
-                                  f"{float(_bed.get('seconds') or 0):.1f}s"
-                                  f" · {_bed.get('source') or ''}")
-                        elif _bed.get("note"):
-                            print(f"  ⚠️ 音乐床：{_bed['note']}")
+                        _bed, _film_s = self._stage_music(
+                            picked, _sub,
+                            getattr(self, "ffmpeg", "") or "ffmpeg")
                         _mix = _mx.build(
                             _rows, str(_sub / "mix.wav"),
                             ffmpeg=getattr(self, "ffmpeg", "") or "ffmpeg",
@@ -2119,6 +2054,103 @@ class EpisodeRunner:
 
     #: 成片文件名
     video_filename: str = "episode.master.mp4"
+
+    def _repair_subjects(self, picked, shots, script_draft):
+        """把分镜里「剧本未授权」的场景词换成本场授权词（2026-11-10 抽出）。
+
+        返回 `(picked, shots)`；并在修复后复算越权，否则门禁仍按旧文本否决。
+        抽出来的意义：这一段原来躺在 1500 行的 run() 里，改它要读全流程。
+        """
+        # ---- 场景主体修复：把"剧本没授权"的场景词换成本场授权词（2026-11-10）----
+        #
+        # 白名单提示词降低了概率但没根除（EF9 仍有 3 镜写"花田"→ 否决交付）。
+        # 这里做**确定性修复**并逐条记录 —— 修不掉就留给门禁，不瞎猜。
+        try:
+            from little_crew.review.scene_subject import subjects_in as _subj_fix
+            from little_crew.runtime import subject_repair as _srep
+
+            _allow_by_scene: dict[str, list[str]] = {}
+            for _sc_f in (getattr(script_draft, "scenes", ()) or ()):
+                _sid_f = str(_sc_f.get("scene_id") or _sc_f.get("id") or "")
+                _allow_by_scene[_sid_f] = sorted(_subj_fix(_sc_f))
+            _allow_all = sorted({w for v in _allow_by_scene.values() for w in v})
+            _plan_fix = _srep.plan(picked, _allow_all, by_scene=_allow_by_scene)
+            if any(x.get("applied") for x in _plan_fix):
+                picked, _done_fix = _srep.apply(picked, _plan_fix)
+                shots = tuple(picked)
+                print(f"  场景主体修复：{len(_done_fix)} 处"
+                      + (f"（如 {_done_fix[0]['old']}→{_done_fix[0]['new']}）" if _done_fix else ""))
+                _wd_fix = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_fix:
+                    try:
+                        import json as _j_fix
+
+                        _out_fix = Path(str(_wd_fix)) / "delivery"
+                        _out_fix.mkdir(parents=True, exist_ok=True)
+                        (_out_fix / "subject_repairs.json").write_text(
+                            _j_fix.dumps({"kind": "subject.repairs",
+                                          "count": len(_done_fix),
+                                          "repairs": _done_fix},
+                                         ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                        # noqa: BLE001
+                        pass
+                # ---- 修复后**复算**越权（2026-11-10）----
+                #
+                # 越权判定在上面（2.8）已跑过，而修复在它之后 ——
+                # 不复算的话，门禁仍按**旧文本**否决整集（EF10 就是这样被否的）。
+                try:
+                    from little_crew.review.scene_subject import (
+                        check_scene_subject as _csc2,
+                    )
+
+                    _text2 = str(script_draft or "")
+                    _conf2 = []
+                    for _s2 in picked:
+                        _r2 = _csc2(_text2, str(getattr(_s2, "description", "") or ""))
+                        if _r2.get("verdict") == "RETRY":
+                            _conf2.append({
+                                "shotId": str(getattr(_s2, "shot_id", "")),
+                                "severity": "error",
+                                "reason": str(_r2.get("reason") or "")[:120],
+                            })
+                    self.scene_conflicts = _conf2
+                    print(f"  修复后复算越权：{len(_conf2)} 镜")
+                except Exception as _e_re:                   # noqa: BLE001
+                    print(f"  ⚠️ 修复后复算未运行：{type(_e_re).__name__}: {_e_re}")
+        except Exception as _e_fix:                          # noqa: BLE001
+            print(f"  ⚠️ 场景主体修复未运行：{type(_e_fix).__name__}: {_e_fix}")
+
+        # ---- 计划镜数必须以"最终镜头"为准（2026-11-10）----
+        #
+        # `planned` 原来在**返工/主体修复之前**算：那会儿 35 镜，
+        # 修完只剩 33 镜 -> 覆盖率 33/35=0.943 -> 门禁判"未完全跑通"。
+        # 分母比分子大，不是"少交了 2 镜"，是**分母过期**。
+        planned = len(picked)
+        self.planned_shots = planned
+
+        return picked, shots
+
+
+    def _stage_music(self, picked, out_dir, ffmpeg):
+        """决定用哪条音乐床（2026-11-10 抽出）。
+
+        优先 composer 职位产物，失败退回内联；返回 `(bed, film_seconds)`。
+        这段原来在 run() 里缩进 24 层，光对齐就能改错。
+        """
+        from little_crew.runtime import music_stage as _ms
+
+        bed = _ms.resolve_bed(orch=self.orch, shots=picked, out_dir=out_dir,
+                              ffmpeg=ffmpeg or "ffmpeg")
+        film_s = float(bed.get("requestedSeconds") or _ms.film_seconds(picked))
+        if bed.get("via") == "composer":
+            print(f"  配乐（composer）："
+                  f"{float(bed.get('seconds') or 0):.1f}s"
+                  f" · {bed.get('source') or ''}")
+        elif bed.get("note"):
+            print(f"  ⚠️ 音乐床：{bed['note']}")
+        return bed, film_s
+
 
     def video_out_dir(self) -> Path:
         return (self.workdir or Path(".")) / self.video_subdir

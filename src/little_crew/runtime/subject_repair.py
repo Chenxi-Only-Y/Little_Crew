@@ -70,12 +70,18 @@ def plan(shots, allowed, *, detector=None, by_scene=None) -> list[dict]:
                         new, score = new2, sc2
                     elif _local:
                         new, score = _local[0], 0.0
+                    elif allow:
+                        # 本场没有地点词、全局也没有相近的 —— 用剧本第一个地点兜底。
+                        # 这是"有界的猜测"：只在本场确实需要地点、且剧本只授权少数几个时发生，
+                        # **且逐条记录**（via=global-default），便于复核。
+                        new, score = allow[0], 0.0
                 out.append({"shotId": sid, "sceneId": _scid, "field": f, "old": w,
                             "new": new, "score": score,
                             # 本场兜底也算"执行"，但记 score=0 便于审计
-                            "applied": bool(new) and (score >= 0.2 or bool(_local)),
+                            "applied": bool(new) and (score >= 0.2 or bool(_local) or bool(allow)),
                             "via": ("sim" if score >= 0.2 else
-                                    ("scene-default" if _local else "none"))})
+                                    ("scene-default" if _local else
+                                     ("global-default" if allow else "none")))})
     return out
 
 
