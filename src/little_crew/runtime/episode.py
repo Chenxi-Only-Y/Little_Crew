@@ -674,9 +674,33 @@ class EpisodeRunner:
             cycle = _ResumedCycle(script_draft)
             print("  ↩ 剧本：从 checkpoint 续（未重新生成）")
         else:
-            cycle = self.orch.run_script_cycle(
-                {"source.novel": source, "episodeId": self.episode_id,
-                 "title": self.title})
+            # 空剧本**先重试**再判失败（2026-11-11）
+            #
+            # EF16 / EF31 都栽在这里：编剧调用返回 `[no-content]`（空响应），
+            # 一次就把整集判死 —— 而空响应是**瞬时**的（同一题重跑往往就好）。
+            # 最多 3 次尝试，每次带 3 秒退避；3 次都空才判失败。
+            _scr_tries = max(1, int(getattr(self, "script_empty_retries", 3)))
+            cycle = None
+            for _i_s in range(1, _scr_tries + 1):
+                cycle = self.orch.run_script_cycle(
+                    {"source.novel": source, "episodeId": self.episode_id,
+                     "title": self.title})
+                _draft_i = getattr(cycle, "final", None)
+                if _draft_i is None and getattr(cycle, "rounds", None):
+                    _draft_i = getattr(cycle.rounds[-1], "draft", None)
+                _n_sc = len(getattr(_draft_i, "scenes", ()) or ())
+                if _n_sc:
+                    if _i_s > 1:
+                        print(f"  ↻ 剧本重试成功（第 {_i_s} 次，{_n_sc} 场）")
+                    break
+                if _i_s < _scr_tries:
+                    print(f"  ↻ 剧本为空（第 {_i_s} 次），3 秒后重试…")
+                    import time as _t_s
+
+                    _t_s.sleep(3)
+                else:
+                    print(f"  ⚠️ 剧本连续 {_scr_tries} 次为空")
+                    self._script_empty_attempts = _scr_tries
 
         # ---- 剧本闭环逐轮落盘（2026-11-01）----
         #
@@ -814,7 +838,9 @@ class EpisodeRunner:
         if not (getattr(script_draft, "scenes", ()) or ()):
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
-                reason="剧本为空：编剧阶段没有产出任何场次，分镜无从谈起",
+                reason=(f"剧本为空：编剧连续 "
+                        f"{int(getattr(self, 'script_empty_retries', 3))} 次"
+                        f"没有产出任何场次，分镜无从谈起"),
                 failure_kind="script-failed")
 
         _sb_attempts: list[dict] = []
