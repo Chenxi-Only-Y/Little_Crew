@@ -67,6 +67,8 @@ def _ask(client, image_path: Path, desc: str) -> dict:
     last = ""
     for _attempt in range(1, max(1, int(ASK_ATTEMPTS)) + 1):
         try:
+            # 单次 45 秒（2026-11-11）：默认 120s，12 镜 × 2 次尝试最坏拖半小时
+            # （EF29 实测视觉闸单独占了 13 分钟）。一张 768×1024 的判图 45s 够。
             reply = client.chat_image(_PROMPT.replace("{desc}", desc[:300]), data,
                                       what="画面审查",
                                       max_tokens=VISION_MAX_TOKENS)

@@ -2160,7 +2160,10 @@ class EpisodeRunner:
                         _imgs[_s4.shot_id] = str(_hit[0])
                 _vrres = _vr.review(
                     picked, _imgs,
-                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash"),
+                    # 视觉调用单次 45s（默认 120s）：12 镜 × 2 次尝试最坏拖半小时
+                    # （EF29 实测视觉闸单独占 13 分钟）。构造器传，chat_image 没有该参数。
+                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash",
+                               timeout_s=45),
                     max_shots=int(getattr(self, "vision_max_shots", 12)))
                 if _wdv:
                     (_outv := Path(str(_wdv)) / "delivery").mkdir(
@@ -2173,9 +2176,16 @@ class EpisodeRunner:
                     # ⚠️ 0 镜可判 != 没有崩镜（2026-11-11 EF27）：
                     # 全 47 镜的视觉调用都失败，终端却打印"严重 0 条" ——
                     # 读起来像"审过了、没问题"。必须显式说"等于没审"。
+                    #
+                    # ⚠️ 这段**本身不许抛**：EF29 就因为我用 `len(errors)` 处理
+                    # 一个 int，把整段视觉闸炸成"未运行" —— 诚实性代码不能成为新的失败点。
                     self.vision_not_judged = True
-                    print(f"  ⚠️ 视觉闸：0/{_vrres['total']} 镜可判"
-                          f"（{len(_vrres.get('errors') or [])} 镜调用失败）"
+                    try:
+                        _n_err = int(_vrres.get("errors") or 0)
+                    except Exception:                        # noqa: BLE001
+                        _n_err = 0
+                    print(f"  ⚠️ 视觉闸：0/{_vrres.get('total', len(picked))} 镜可判"
+                          f"（{_n_err} 镜调用失败）"
                           f" —— **等于没审**，不能记作「没有崩图」")
                 else:
                     print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
