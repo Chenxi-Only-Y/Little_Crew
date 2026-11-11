@@ -1190,6 +1190,11 @@ class EpisodeRunner:
                                     subjects_in as _s_in,
                                 )
 
+                                # 就地取一份，别依赖别的**方法**的局部量：
+                                # `_script_text` 原来只存在于 `_check_scene_subjects` 里，
+                                # 抽出方法后 run() 没有它 -> NameError ->
+                                # 复验整段被 except 吞掉（EF24 只能靠修复块复算兜住）。
+                                _script_text = str(script_draft or "")
                                 _allowed = set(_s_in(_script_text))
                                 _fresh = []
                                 for _sh in picked:
