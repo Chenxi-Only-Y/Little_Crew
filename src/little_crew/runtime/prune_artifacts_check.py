@@ -22,6 +22,9 @@ def _load(root: Path):
     return mod
 
 
+PA = _load(Path(__file__).resolve().parents[3])
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     print("=" * 66)
@@ -79,6 +82,62 @@ def main() -> int:
         check("C1 ★★ 空目录 -> 0 个、不崩", p2["count"] == 0, str(p2["count"]))
         r2 = mod.main([str(empty)])
         check("C2 ★★ dry-run 返回 0（不删）", r2 == 0, str(r2))
+
+
+    print(); print("G. 按集深度清理（2026-11-11）")
+    import pathlib as _pathlib, tempfile as _tf, os as _os, time as _time
+
+    def _mk(base, ep, age_days):
+        d = base / ep
+        (d / "delivery").mkdir(parents=True, exist_ok=True)
+        (d / "cache").mkdir(parents=True, exist_ok=True)
+        (d / "build").mkdir(parents=True, exist_ok=True)
+        (d / "checkpoint").mkdir(parents=True, exist_ok=True)
+        (d / "delivery" / "episode.mp4").write_bytes(b"x" * 1000)
+        (d / "delivery" / "run.report.json").write_text("{}", encoding="utf-8")
+        (d / "delivery" / "mix.wav").write_bytes(b"x" * 5000)
+        (d / "cache" / "a.png").write_bytes(b"x" * 3000)
+        (d / "build" / "clip.mp4").write_bytes(b"x" * 2000)
+        (d / "checkpoint" / "stages.json").write_text("{}", encoding="utf-8")
+        old = _time.time() - age_days * 86400
+        for f in d.rglob("*"):
+            if f.is_file():
+                _os.utime(f, (old, old))
+        return d
+
+    with _tf.TemporaryDirectory() as td0:
+        base = _pathlib.Path(td0) / "outputs"
+        base.mkdir()
+        for i, age in enumerate((0.1, 0.2, 0.3, 5.0, 6.0)):
+            _mk(base, f"E{i}", age)
+        deep = PA.deep_plan(base / "E3")
+        names = {e["file"] for e in deep["entries"]}
+        check("G1 ★★★ 深度清理会删 wav 与 cache/build",
+              any(n.endswith("mix.wav") for n in names)
+              and any("cache/" in n for n in names)
+              and any("build/" in n for n in names), str(sorted(names))[:110])
+        check("G2 ★★★ 深度清理保留成片 / json / checkpoint",
+              not any(n.endswith("episode.mp4") for n in names)
+              and not any(n.endswith(".json") for n in names),
+              str([n for n in names if n.endswith(('.mp4', '.json'))]))
+        fp = PA.fleet_plan(base, keep_recent=2, keep_names={"E3"}, min_age_days=0)
+        eps = {r["episode"] for r in fp["episodes"]}
+        check("G3 ★★★ 最近 N 集与指定集跳过",
+              "E0" not in eps and "E1" not in eps and "E3" not in eps and "E4" in eps,
+              str(sorted(eps)))
+        fp2 = PA.fleet_plan(base, keep_recent=0, min_age_days=3)
+        check("G4 ★★ 太新的目录不动（min-age-days）",
+              "E2" not in {r["episode"] for r in fp2["episodes"]},
+              str(sorted(r["episode"] for r in fp2["episodes"])))
+        _before = {e["file"] for e in
+                   next(r["plan"] for r in fp["episodes"] if r["episode"] == "E4")["entries"]}
+        res = PA.fleet_apply(base, fp)
+        _gone = all(not (base / "E4" / rel).is_file() for rel in _before)
+        check("G5 ★★★ 清理后成片还在、计划过的文件都删了",
+              (base / "E4" / "delivery" / "episode.mp4").is_file() and _gone,
+              f"plan={sorted(_before)} res={res}")
+        check("G6 ★★ 清理记录落盘（可追溯）",
+              (base / "E4" / "delivery" / "pruned_artifacts.json").is_file(), "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

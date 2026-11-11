@@ -143,12 +143,145 @@ def apply(workdir: Path, plan: dict) -> dict:
             "freedBytes": plan["bytes"], "record": str(delivery / "pruned_artifacts.json")}
 
 
+#: 深度清理时**永不删除**的东西（审计与续跑都靠它们）
+KEEP_ALWAYS = (".json", ".srt", ".md", ".txt", ".yaml", ".yml")
+KEEP_NAMES = ("episode.mp4", "episode.master.mp4")
+KEEP_DIRS = ("checkpoint", "delivery")          # delivery 里再按扩展名筛
+
+
+def deep_plan(workdir: Path) -> dict:
+    """深度清理：删 wav / 中间 mp4 / cache / build，**保住 json+srt+成片+checkpoint**。
+
+    为什么不能只按 ARTIFACT_EXT：实测一集 106MB 里
+      delivery 66MB（其中 wav 51MB）· cache 27MB · build 12MB
+    而 png 只占 27MB —— 光删图回收不到两成。
+    """
+    delivery = workdir / "delivery"
+    hashes = declared_hashes(delivery) if delivery.is_dir() else {}
+    entries, total = [], 0
+    kept = 0
+    for p in sorted(workdir.rglob("*")):
+        if not p.is_file():
+            continue
+        rel = str(p.relative_to(workdir)).replace("\\", "/")
+        parts = p.relative_to(workdir).parts
+        if p.suffix.lower() in KEEP_ALWAYS or p.name in KEEP_NAMES:
+            kept += 1
+            continue
+        if any(seg in KEEP_DIRS for seg in parts[:-1]) and p.suffix.lower() in KEEP_ALWAYS:
+            kept += 1
+            continue
+        size = p.stat().st_size
+        total += size
+        entries.append({"file": rel, "bytes": size,
+                        "sha256": hashes.get(p.name, ""),
+                        "inEvidence": p.name in hashes})
+    return {"kind": "prune.deep", "workdir": str(workdir),
+            "count": len(entries), "bytes": total, "entries": entries,
+            "keptFiles": kept, "evidenceDeclared": len(hashes)}
+
+
+def _dir_mtime(p: Path) -> float:
+    """目录的"最后活动时间" —— 用**内部文件的最新 mtime**，比目录本身准。"""
+    newest = 0.0
+    for f in p.rglob("*"):
+        try:
+            if f.is_file():
+                newest = max(newest, f.stat().st_mtime)
+        except OSError:
+            pass
+    return newest
+
+
+def fleet_plan(outputs: Path, *, keep_recent: int = 3,
+               keep_names: Iterable[str] = (),
+               min_age_days: float = 1.0, deep: bool = False) -> dict:
+    """跨集规划：保留最近 N 集与指定集，其余只清逐镜产物（delivery 不动）。
+
+    为什么按集而不是按文件：一集的**逐镜 PNG**占 70~90%，
+    而 delivery 里的成片/清单/证据才是要留的。
+    """
+    keep = {str(x) for x in (keep_names or ())}
+    dirs = [d for d in outputs.iterdir() if d.is_dir()]
+    ordered = sorted(dirs, key=_dir_mtime, reverse=True)
+    recent = {d.name for d in ordered[:max(0, int(keep_recent))]}
+    now = time.time()
+    rows, total, skipped = [], 0, []
+    for d in ordered:
+        if d.name in keep or d.name in recent:
+            skipped.append({"episode": d.name, "why": "保留（最近或指定）"})
+            continue
+        age_days = (now - _dir_mtime(d)) / 86400.0
+        if age_days < float(min_age_days):
+            skipped.append({"episode": d.name, "why": f"太新（{age_days:.1f} 天）"})
+            continue
+        plan = deep_plan(d) if deep else build_plan(d)
+        if not plan["count"]:
+            skipped.append({"episode": d.name, "why": "没有可删产物"})
+            continue
+        total += plan["bytes"]
+        rows.append({"episode": d.name, "plan": plan,
+                     "count": plan["count"], "bytes": plan["bytes"]})
+    return {"kind": "prune.fleet", "outputs": str(outputs),
+            "keepRecent": int(keep_recent), "keepNames": sorted(keep),
+            "minAgeDays": float(min_age_days), "deep": bool(deep),
+            "episodes": rows, "count": sum(r["count"] for r in rows),
+            "bytes": total, "skipped": skipped}
+
+
+def fleet_apply(outputs: Path, fleet: dict) -> dict:
+    freed, removed, failed = 0, 0, 0
+    for row in fleet["episodes"]:
+        res = apply(outputs / row["episode"], row["plan"])
+        freed += int(res.get("freedBytes") or 0)
+        removed += int(res.get("removed") or 0)
+        failed += int(res.get("failed") or 0)
+    return {"ok": failed == 0, "removed": removed, "failed": failed,
+            "freedBytes": freed}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="清理一集的大体积产物（先记后删）")
-    ap.add_argument("workdir")
+    ap.add_argument("workdir", nargs="?", default="",
+                    help="某一集的工作目录（--all 时不需要）")
     ap.add_argument("--yes", action="store_true", help="真删（默认只看）")
+    ap.add_argument("--all", action="store_true",
+                    help="按集清理 outputs/ 下所有旧集（保留最近 N 与指定集）")
+    ap.add_argument("--outputs", default="outputs", help="--all 时的根目录")
+    ap.add_argument("--keep-recent", type=int, default=3, help="保留最近几集不动")
+    ap.add_argument("--keep", default="", help="逗号分隔的集名，永不清理")
+    ap.add_argument("--deep", action="store_true",
+                    help="深度清理：删 wav/中间 mp4/cache/build，保 json+srt+成片+checkpoint")
+    ap.add_argument("--min-age-days", type=float, default=1.0,
+                    help="少于这么多天的目录不动（默认 1 天）")
     args = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")               # type: ignore[attr-defined]
+    if args.all:
+        outputs = Path(args.outputs)
+        if not outputs.is_dir():
+            print(f"  目录不存在：{outputs}")
+            return 2
+        keep_names = [x.strip() for x in str(args.keep or "").split(",") if x.strip()]
+        fleet = fleet_plan(outputs, keep_recent=args.keep_recent,
+                           keep_names=keep_names,
+                           min_age_days=args.min_age_days,
+                           deep=bool(getattr(args, "deep", False)))
+        print(f"  按集清理：{len(fleet['episodes'])} 集 · "
+              f"{fleet['count']} 个产物 · {fleet['bytes']/1024/1024:.0f} MB")
+        for r in sorted(fleet["episodes"], key=lambda x: -x["bytes"])[:8]:
+            print(f"    {r['episode']:<10} {r['count']:4d} 个  "
+                  f"{r['bytes']/1024/1024:6.1f} MB")
+        if len(fleet["episodes"]) > 8:
+            print(f"    …共 {len(fleet['episodes'])} 集")
+        print(f"  跳过 {len(fleet['skipped'])} 集（保留/太新/无可删）")
+        if not args.yes:
+            print("  这是 dry-run；加 --yes 才删")
+            return 0
+        res = fleet_apply(outputs, fleet)
+        print(f"  已删 {res['removed']} 个（失败 {res['failed']}）· "
+              f"释放 {res['freedBytes']/1024/1024:.0f} MB")
+        return 0 if res["ok"] else 1
+
     wd = Path(args.workdir)
     if not wd.is_dir():
         print(f"  目录不存在：{wd}")
