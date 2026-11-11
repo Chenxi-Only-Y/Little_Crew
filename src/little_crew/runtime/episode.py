@@ -1401,7 +1401,11 @@ class EpisodeRunner:
         # 续跑就直接用它 —— checkpoint 的语义本来就是"这一步的输入已经定了"。
         _irs_cached = (getattr(self, "resume_data", None) or {}).get("irJson") or {}
         _reused = 0
-        if _irs_cached and len(_irs_cached) == len(picked):
+        # 逐镜复用，**不要求数量相等**（2026-11-11）：
+        # 之前写成 `len(cached) == len(picked)`，于是"上次缺 6 镜"这种局面
+        # 直接退化成全量桥接（EF27 续跑实测 0/41 命中、实算 41）——
+        # 恰恰是最需要复用的场景被这条前置条件挡掉了。
+        if _irs_cached:
             irs = []
             for _s_ir in picked:
                 _cached = _irs_cached.get(str(getattr(_s_ir, "shot_id", "")))
@@ -1411,7 +1415,8 @@ class EpisodeRunner:
                 else:
                     irs.append(self._bridge(_s_ir))
             if _reused:
-                print(f"  IR：从 checkpoint 复用 {_reused}/{len(picked)} 镜（不重新桥接）")
+                print(f"  IR：从 checkpoint 复用 {_reused}/{len(picked)} 镜"
+                      f"（其余重新桥接）")
         else:
             irs: list[dict[str, Any]] = [self._bridge(s) for s in picked]
 
