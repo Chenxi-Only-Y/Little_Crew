@@ -251,6 +251,9 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
     _tail = float(pl.get("tailPause") or 0.0)
     if len(segs) <= 1:
         r = synth(text, out_path, **_kw)
+        if r.get("ok") and not Path(str(out_path)).is_file():
+            r = {"ok": False, "seconds": 0.0,
+                "error": "synth-说成功但没产出文件"}
         r.setdefault("segments", 1)
         if r.get("ok") and _tail > 0:
             append_silence(out_path, _tail)
@@ -281,6 +284,10 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
             gaps.append(float(seg.get("pause") or 0.0))
             total += float(r.get("seconds") or 0)
         j = join_wavs(parts, out_path, gaps)
+        if j.get("ok") and not Path(str(out_path)).is_file():
+            return {"ok": False, "seconds": 0.0,
+                "error": "join-说成功但没产出文件",
+                "segments": len(parts), "sha256": ""}
         if not j.get("ok"):
             return {"ok": False, "seconds": 0.0, "error": j.get("error", ""),
                     "segments": len(parts), "sha256": ""}
@@ -357,6 +364,10 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
                 if _att < _attempts:
                     print(f"  ↻ 配音重试（第 {_att + 1} 次）：{ln.get('shotId')}"
                           f" · {str(r.get('error') or '')[:60]}")
+                # 最终失败也要留痕：试了几次、最后一次错什么
+                # （之前只在成功时写 retried，失败行永远是 0 —— 看不出重试过）
+                r["retried"] = _att
+                r["attempts"] = _attempts
         a = align(float(r.get("seconds") or 0),
                   float(ln.get("shotSeconds") or 0))
         rows.append({
