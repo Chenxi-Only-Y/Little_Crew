@@ -60,6 +60,10 @@ def per_scene(orch, draft, *, retries: int = 1, progress=None,
                 "scenes": 0, "scenesCovered": 0, "failed": [],
                 "reason": "剧本没有场次"}
 
+    import time as _time_sb
+
+    _t_sb0 = _time_sb.perf_counter()
+
     def _one(sc):
         """取单场镜头。返回 (sceneId, shots, error)。"""
         sid = _scene_id(sc)
@@ -159,6 +163,10 @@ def per_scene(orch, draft, *, retries: int = 1, progress=None,
                 "reason": f"{len(failed)}/{len(scenes)} 场没有镜头：" +
                           "；".join(f"{f['sceneId']}({f['error']})"
                                    for f in failed[:5])}
+
+    print(f"  分镜：{len(scenes)} 场 · "
+          f"{'并发 ' + str(_workers) + ' 线程' if parallel and len(scenes) > 1 else '串行'}"
+          f" · 用时 {_time_sb.perf_counter() - _t_sb0:.1f}s")
 
     frm = getattr(draft, "frm", "") or "screenwriter"
     sl = ShotList(frm="storyboard_artist", to="*", stage="storyboard",
