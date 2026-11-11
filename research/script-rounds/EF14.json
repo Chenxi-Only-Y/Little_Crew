@@ -1,0 +1,110 @@
+{
+  "episodeId": "EF14",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：两股阻力都在一句话内自行瓦解：父亲的死亡通牒「你今天走出这个村口，就别再回来」与旅人的阻拦「你不该跟我走」，都被少女一句「那我就不回来」「我跟你走」化解，随后父亲只是「脸铁青」、旅人再无回嘴。对抗没有第二回合，决裂像宣告而非争夺。', suggestion='让阻力真正要她付账：父亲可以扣住她的包袱或要她留下一件信物才准走；旅人应坚持到被她用某种行动（如老奶奶的花、或她自述 S01-S03 的付出）逼退，而不是被一句话说服。让观众看见她跨出村口那一刻的代价被具体称量过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：「她很想转身回村……可她站起来……『我不回头』」——唯一的阻力是她内心的动摇，而这份动摇被一句自我台词瞬间化解，没有任何外部对抗替她加压（身后无人追赶，前头无任何阻拦）。独自走雾的场次因此平铺。', suggestion='给这一步设置实物阻力：例如她拾不到花瓣、却拾到父亲的竹篮提手/母亲的干花，逼她当场丢弃；或让来路上出现可听见的钟声、追来的人影，使「我不回头」必须靠放弃某件具体的东西才能说出口。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：S05 的转折是有价的——她掷出花束，旅人化烟消散，她「指缝里只有冷雾」；可到了 S08，那句「我就是你想远行的心啊」原样归还，她一句「那我就带着你走」就重新得到了陪伴，S05/S06 付出的失去被无偿退还，结尾的和解没有再掏一次腰包。', suggestion='让重逢必须再付一次费：她得先交出还剩下的东西（花茎的刺痕、唯一的包袱、回村的可能）才能再听见那声音；或让声音只回答一半、她必须独自走完某段路，把「不是一个人」变成一个未完成的许诺而非既得福利。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 46.434
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 69.714
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：这场的对抗没有实体：他只是'笑了一下'，阻力全靠她'喉咙里那句话越压越硬'的内心戏撑着；而化解冲突的动作——'她把花束举起来，掷了过去……他化作一阵紫色的轻烟'——触发规则从未建立。读者不知道为什么扔花束能让他消散，也不知道他此前在回避什么（前几场他从没表现出怕花），于是这个本该是全集最重的转折变成了无因之果。\", suggestion=\"把'花是他的弱点'这条规则提前埋进前面：S05里她举花束抵到他面前时，让他有一个具体的反应（退半步、袖口碰到花穗就缩手、花粉落处皮肤发烫），S01或S03里也可埋一笔（伤口敷料旁他下意识躲开花穗）。这样S06的'掷'就是她主动利用已知规则逼他现形——冲突从内心独白变成有对手、有攻防的对抗，转折才落得下来。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：全场无阻力：'她回头看一眼——来路上有个身影……她没有喊''她蹲下来拾散落的花茎'——唯一可能形成的对抗（坡口那个身影，疑似父亲）被她主动放弃，之后她拾花、握竹篮、说一句话、走进雾里，一路没有任何东西挡她。这是纯粹的情绪余波场，观众在S06的高潮之后得到的是连续两段无对抗的散步。\", suggestion=\"给这一场一个真正的阻力，并让她的离开成为'顶住阻力后的选择'而非顺流而下：例如坡口的身影朝她走了两步又停住、钟声催她回村而她必须在'回去'与'往前'之间当场撕扯、或雾里先传来旅人半句声音把她叫停再收回。同时把'她对着空山路说出那句话'明确成具体台词——现在这句无指向的话让收束的力气泄掉了。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 60.002
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 107.794
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

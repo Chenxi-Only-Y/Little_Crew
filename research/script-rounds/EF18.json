@@ -1,0 +1,166 @@
+{
+  "episodeId": "EF18",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场没有任何对抗：母亲只是「轻声」告知「集会她爹替她推了，可村里人不会忘」，少女「没有辩解，只说自己知道」，双方从头到尾和气收场（「想说什么，最终只替她拢了拢散开的头发」）。承接 S03 父亲的高压之后，这一场把冲突直接卸掉了，只剩下静态的相互体谅。', suggestion='让母亲带着立场来谈——例如她劝少女去向父亲低头认个错、把人送走，母女之间因此有一轮真正的拉锯；少女的坚持要在拒绝母亲的劝说中才成立，而不是被温柔地告知一个结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：少女提出「我跟你走」这一重大决定时，阻力为零——原文写旅人「怔了一下，没有拒绝」，连象征性的推挡都没有（替她挡荆条反而是接纳的姿态）。一个刚伤愈、去向不明的人默许别人跟自己上路，冲突被完全抹平，决定显得过于轻易。', suggestion='给旅人一次明确的拒绝或警告（「你不该跟我走」「我连自己去哪都不知道」），让少女是在被拒绝之后仍坚持；她的出走才是一次对抗出来的选择，而不是对方点头后的顺水推舟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：关键转折缺少触发：「少女忽然停下脚步」就直接进入「你到底是谁？」的质问，此前 S06 中她已决定同行、情绪稳定，场内没有任何事件或细节让她起疑，发问是凭空出现的，观众会感到突兀。', suggestion='在两人并行时埋一个具体的异样作为扳机——比如旅人踩过水洼没有倒影、他对花香毫无反应、或他重复了一句她昨晚说过的话——由这个细节触发质问，转折才有因果链。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结局把旅人揭示为「我想远行的心」，等于宣布 S01–S06 累积的全部代价（撕披肩救人、被父亲逐出家门、村口诀别）其实与一个幻象无关；而幻象消失本身几乎零代价——少女「没有哭」，一句自白后立刻自我和解并背起包袱上路。冲突解决得太便宜，前面积累的沉重被一句话化解。', suggestion='让代价真正落地：她可以有一段无法轻易走出的时刻（发现包袱里还留着为他采的花、或必须亲手埋掉那束薰衣草才能上路），甚至让「父亲那扇关上的门」在结尾再压她一次——和解要有伤口，不是换个说法继续走。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 56.242
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 114.023
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：结尾的转折建立在一个旁白硬塞的误读上：「他说的是「等我能走路我就走」，可她听成了「我不会走」」——台词本身毫无歧义，观众不会相信她把「等我能走就走」听成「我不会走」，这个误读是解说出来的，不是演出来的。', suggestion='要么把旅人的台词改成真有两可空间（例如只说「我不会赖在这里」，把「走」字留住），要么把误读改成她的主动选择——她明知他要走，却故意对自己隐瞒，让「不走」是她要信的东西，而不是她听错的东西。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人给出两条反对理由，少女只回答了第二条（家），第一条「我连我自己要去哪儿都不知道」被完全跳过；他随即就让步，只留一句「别悔」。核心异议没人接，阻力像被绕过去而不是被攻克，胜利来得太便宜。', suggestion='让旅人必须被正面驳倒：要么少女接住「你不知道去哪儿」这一条（例如「我也不知道，所以才要走」），要么让他加码——提出一个她必须付出的条件或考验，她答应了，「别悔」才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场两个角色之间没有任何阻力，只有连续三个异常细节（照不出他的水洼、闻花不动的鼻翼、整夜望北），而少女的反应全是旁白代劳的自我开脱——「把这事归到自己眼花」「随即又替他解释」。情绪线是升的，但戏剧线是平的，观众比她早十分钟看穿，只能干等她。', suggestion='把怀疑改成正面交锋：让她当场试探、追问、甚至逼他再过一次水洼，他回避、反问、岔开话题，形成猫鼠式的拉扯；自我开脱保留，但要从叙述改成她开口说出的谎话，让观众听见她在骗自己。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：揭晓时刻的两句关键台词指涉不明：「还有他重复过的那句她昨晚才说过的话」——前文并没有他重复她的话的任何铺垫，观众不知道指哪句；「可你已经好了，是不是？」缺少明确宾语，无法判断他说的是她的伤、她的家还是她的念想，反转的情感落点因此悬空。', suggestion='把那句「他重复过的话」在 S06 里实写出来（让他原样复述她某句台词，成为可被识别的线索），并把「你已经好了」改成指向明确的说法，例如「你的伤早就好了」配合他低头看她完好无损的手，让代价在这一句里砸实。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全剧最重的父女对手戏只用一个来回就结束了：她喊一声「爹」，父亲立刻交出鞋和干粮、给出放行的话、转身走人，全程没有对抗。代价只落在她自己身上（指甲翻了、血渗进土里），父亲一方零付出，这场送别因此偏轻。', suggestion='给父亲一个不肯给的动作：他把包袱放下又提起来、或者只放鞋不放干粮、或者骂完才放下，让她在走之前必须从他手里挣到最后一样东西；父亲的痛要花力气才肯承认，她的出走才真正值钱。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 62.759
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 131.344
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：人群的阻力被一句话化解且无后续对抗：'围观的人开始低声说话'→她喊'他说他不会走'→'人群静了一瞬'，村民再无反应。S02 里她为藏人付出的代价（'往后村里的集会，你别去了'）是全村的敌意，到这里敌意却自动退场，冲突赢得太便宜。\", suggestion='让人群真的压上来——比如有人搬出她父亲或集会的规矩堵路，逼她当众付一次价（被指指点点、母亲被牵连、老奶奶的花被质疑），她再翻盘；或把老奶奶的警告改成一个具体的拦截动作，而不是口头赠言。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：旅人开出的代价'到了第一个岔口，你往回走一步，我就当你没跟过'以及'别悔'，此后 8 场里再也没有出现过岔口、也没有人要求她走那一步——这笔许下的价从未兑现，成了空头支票。\", suggestion=\"把岔口做实：在 S05 或 S06 的山道上安排一个真正的路口，让她必须用脚做出选择（迈出去又收回，或当着他的面拒绝走那一步），'别悔'才有落点；否则删掉这个约定，换成她当场就付得出的代价。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：本场是全集的正面摊牌，却几乎没有对抗：她问'你到底是谁？'，'他没答。他只是笑'，真相由风里的画外音'我就是你想远行的心啊'直接宣布，她的唯一动作是'举花掷过去'的一时冲动——揭示是被旁白说出来的，不是被两个人争出来的。\", suggestion=\"让他在被揭穿时仍有立场和抵抗：比如他要她亲口说出放他走的话（'你走吧'）才肯承认，或逼她在'留下他'与'放他走'之间做出有意识的决定——把'化烟'改成她主动选择的结果，真相由她的选择带出，而不是由风带出。\")"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 102.623
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 218.505
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 3 轮（59.9 分）"
+}

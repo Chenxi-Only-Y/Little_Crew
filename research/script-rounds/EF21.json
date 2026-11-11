@@ -1,0 +1,57 @@
+{
+  "episodeId": "EF21",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 78.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场景是无阻力的问答式对话——『你为什么救我？』『你不能死在那里。就这样。』双方立场不相撞，旅人说『我要回去了』也未受到少女任何挽留或质问的对抗；『风从窗缝里钻进来，把灯芯吹得歪了』这类细节只是气氛，不构成戏剧阻力，整场近似过渡过场。', suggestion='给这场加一个硬阻力：让少女的挽留与旅人的离开正面顶撞（例如她逼问『你要回哪里』并挡在门口/收走他的包袱），或让旅人说出一个刺痛她的理由（他本就不属于这里），使少女最后『把花篮挪到床边』的举动成为在被拒绝之后仍坚持付出的选择，代价与情绪落差才立得住。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 78.9,
+        "issueCount": 1,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 45.149
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 104.246
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 78.9）"
+}

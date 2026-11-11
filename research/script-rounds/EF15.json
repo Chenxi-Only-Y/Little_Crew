@@ -1,0 +1,110 @@
+{
+  "episodeId": "EF15",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：全场没有可对抗的阻力：旅人烧得说胡话、'瞳孔里没有焦点'，一个无意识的人无法构成对手；少女的行动（按冷巾、守夜）没有遇到任何阻拦，'你会后悔的'只是氛围性悬念，不是交锋。整场是静止的照护流程，情绪是平的。\", suggestion=\"给这场安一个真的对手：要么让她必须先闯过外部阻力（药被父亲扣在堂屋、她深夜去偷药被母亲拦下），要么让旅人在短暂清醒时激烈抗拒治疗——打翻药碗、攥住她手腕、逼她发誓不问来历，让'救'这个动作每次都付出代价才能推进。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：老奶奶抛出'他不洁'的指控，少女只回了一句'您是说，他不洁？'，对方一岔开话题她就接受了（'我记住了'），随即跑走。阻力刚出现就被自己收掉，没有反驳、没有追问、没有立场对撞，这场只是信息投放。\", suggestion=\"让少女顶回去：坚持追问'他到底哪里不洁'，或当面拒绝收花——把'留下来问清楚'和'立刻追上他'做成一个她必须当场选的两难；她的迟疑才不是心理描写而是动作选择。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：S05 老奶奶的警告是硬设定：'别把花丢了。丢了，你就回不来了。' S07 她把整束花掷出去，代价却没有兑现——旅人消失得毫无反噬，她毫发无损地站在原地，警告沦为空话。冲突解决得太便宜。\", suggestion=\"让丢花当场反噬：她失去方向感/看不见来路、身体变轻无法回头，或必须留下某样东西（衣襟上那枝花、一段记忆、她的名字）才能换旅人消散——把'回不来'变成可见的、不可逆的支付。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.925
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 134.321
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶抛出两难（留下听真相 vs. 跟旅人走），少女却两手都要：她把花推回去、走了三步、又回头抢过花束，再补一句\"我回来再问您\"——既拿走了花，又保留了回村求证的可能。冲突发生了，但少女没有为任何一边付出代价；\"丢了，你就回不来\"的警告也因为花还在她手里而当场失效。更麻烦的是，它直接冲抵了 S04 的代价：上一场她刚把钥匙放在门槛、磕头断亲，这一场她却还在村口的集会上闲逛，并宣称随时可以回去。', suggestion='把选择做成不可退的交易：老奶奶明说花与真相只能取其一——取花就得即刻上路、且此生再进不了这个村口；留下则能听完整件事，但旅人不会等。让少女在两句话之间做出取舍（哪怕只是沉默地把花握紧），S04 已付出的代价才不会在下一场被退款，S07 里\"丢了就回不来\"也才有当下的痛感。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场景没有任何阻力：村人是善意的，主动提出\"我捎个信回去\"，少女两次\"我不记得了\"都没有遭到追问或阻拦，村人只是笑了、退半步、挑担走掉。她转身朝北走进雾里这一决定，没有被任何人、任何事物抵抗过——她不是\"选择\"离开家，而是靠遗忘自动免除了代价，于是结尾的出发是免费的。', suggestion='让村人成为一面带刺的镜子：例如他认出她，说出\"你爹昨夜就往北边寻去了\"或\"你娘还在村口等你赶集\"，逼她必须主动拒绝这条回家的路——不是不记得，而是明知有路却不走。这样她把空花梗别回衣襟、朝北走进雾里，才是付过钱的决定，S02/S04 埋下的父母亲线也在这里完成回收。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 60.309
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 157.937
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

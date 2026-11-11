@@ -1,0 +1,165 @@
+{
+  "episodeId": "ERS6",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem=\"S02：父亲的阻力内容被刻意藏掉：'父亲的声音追上来，压得很低'、'把父亲的后半句话关在外面'——观众自始至终不知道他反对的是什么（反对她救陌生人？反对她离家？反对她顶嘴？）。阻力对象不明，这场的家庭对抗就落不到实处，观众无法判断少女付出了什么代价、跟谁在付。\", suggestion=\"让父亲的一句话露出来（哪怕只半句），例如'家里养不起多一张嘴''你把野人往家里拖'，把阻力钉在具体的事上；后半句仍可关在门外，但前半句必须让观众听清。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：旅人的拒绝是这场唯一的冲突：'他的脸沉了一下，第一次拒绝她，把她父亲的话原样搬了回来'——但解决方式是'她没有争，只把包袱往肩上提了提'，紧接着 S05 开头就是'两人并肩走在山路上'。拒绝被直接跳过，既没有她争取的过程，也没有她为此付出的代价，冲突凭空蒸发。\", suggestion='要么让她付出代价才换来同行（如替他挡下村民/父亲的阻拦、交出某样东西），要么把拒绝延续到 S05 开头，让她在山路上追上他、用行动而非沉默说服他，让这道阻力真正压过一次。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：全场无人对抗：老奶奶说'别等了。她是循着花香，去寻他去了'，父亲的反应是'猛地站起来又坐下，什么也没说'，母亲只是'把灯芯挑亮了一点'。两句台词抛出后没有任何交锋、追问或反驳，情绪无处碰撞，尾声退化成纯静态的画面展示。\", suggestion=\"给父亲一个反向动作：他可以追出去质问老奶奶'你怎么知道'，或与母亲第一次争吵该不该熄灯，让'等/不等'的分歧在两人之间爆一次，再落回挑灯的静场——转折才有落点。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.89
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 80.688
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的要挟是\"你今晚守他，明天的集会你就别去了\"，但集会对少女意味着什么，前文从未交代过一个字。她整夜守人本就是答应了父亲的条件，真正被交出去的代价——集会——因此是空的，观众衡量不出她放弃了什么。', suggestion='在 S01 或 S02 开场先给集会一个具体的分量（她攒了半年要买的东西、一年里唯一能见到外面人的日子、她本打算在集上做的事），再让父亲拿它当筹码；或者把代价换成更切身、更已建立的东西（交出她的花、她的亲事、她的名字）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场唯一的反对意见——\"镇上的人已经在说了……说你屋里藏了个野男人\"——是由盟友母亲转述的，母亲本人随后还送上银顶针，房间里没有任何一个人当面阻拦或逼迫少女。冲突全部发生在画外，这一场就滑成了纯安慰戏。', suggestion='让压力进屋：母亲此行不是送温暖而是被逼着来劝她天亮前把人送走，或者门外就有拍窗的村民、来查夜的父亲。少女必须当面拒绝一个在场的人，顶针才是在阻力之下给出的，而不是无阻力的赠予。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全剧高潮处的对手不还手：旅人自始至终只是\"还是笑\"，不反驳也不阻止；\"你说不说\"→\"她把花朝他掷了过去\"，一次动作就换来了核心谜底\"我就是你想远行的心\"。阻力太薄，谜底像作者直接递出来的，而不是她挣来的。', suggestion='让旅人正面抵抗：拉住她的手腕、把花夺回去，或反过来提出条件（她先交出什么才肯说）。把掷花改写成她必须付出代价才能完成的动作——交出银顶针、或承认自己再也回不去村子——谜底和损失才同时落地。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.896
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 245.366
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场的抉择是个假选择：原文“她看着通往村子的路，又看天边，最终把竹篮扣在花上，弯腰去扶他”——此时救旅人与她的目标（明天的春集、银顶针）并不冲突，她没有放弃任何东西就做出了“决定”，真正的阻力要到 S02 父亲把春集摆上桌才出现，S01 因而只是一段铺垫，本身不构成对抗场。', suggestion='让选择在场内就产生代价：例如山雾将起、背人下山必须绕远，她当场就得丢掉这天采下的全部花穗（“攒了半年”被亲手毁掉一角）；或竹篮在扶人时翻倒、花穗撒进岩缝。有了当场的损失，她的停住与决定才有重量，也为 S02 的“春集作废”埋下同构的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价是用旁白补叙的：“那一夜她守在床边，一整夜没合眼；从此村里再办集会，她真的没有去过。”观众没有看到银顶针、亲事、集会场这三样东西被真正夺走，只听到结论；而且这段旁白已经把同一夜（S03 后半夜）的结局提前支取，S03 的“不送就敲钟”因此从一开始就失去了悬念。', suggestion='把代价搬进场内：本场直接演到第二天清晨，窗外是春集的鼓乐与人声，母亲沉默地把攒下的花穗与银字收进匣子；同时删去“从此……她真的没有去过”这句后日谈式旁白，把长线后果留到 S03／S07／S08 逐场兑现，让 S03 的威胁保持未知。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲的通牒没有结清：“你不送，你爹就要敲钟。到时候全村都来”，加上门外“又是一阵拍窗声”——钟没敲、村民没来、拍窗的人没进屋；少女甩出“我不送”之后，场次以“母亲……把门带上”收束，她的抵抗既没有付出代价，也没有换来任何东西，对峙悬空就切到了 S04。', suggestion='让威胁以某种形式兑现或以等价物结清：要么钟真的响了，村民围到门口，少女在门内守到天亮并因此在 S04 出门时被全村指指点点（代价延续到下一场）；要么把“拍窗／敲钟”改成一个已经发生的既成事实（窗纸已被拍破、门上留下痕迹），并补一个少女在母亲走后的具体动作——她确实把人留到了天亮——把选择演完再切场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场无对抗：少女独自站在雾中回忆三双手、捡花瓣、松手、往前走。唯一的阻力是“她回头望了一眼村子的方向”，但这一眼没有停留也没有代价，诱惑被一句话带过；领悟（“原来我要找的，一直是我自己”）因此来得太便宜——S05 刚付完全部代价，S06 只是把结论念出来。', suggestion='给这场一个具体的对抗物：让她真的往村子方向走了几步（脚印朝回），或雾中传来集会的钟声／母亲喊她吃饭的声音，逼她在“回去”与“继续”之间实际折返一次、再折回来；让“松开花瓣”成为那次折返之后的决定，而不是顺手的动作。这样 S06 的转折才是挣来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：冲突被一句话化解：老奶奶说“你烧得掉花，烧不掉她走过的路”，父亲随即“把灯放下”——让步没有任何触发点，也没有付出代价；他临走“一脚踩烂了最近的一丛花”，等于把对抗原样带走，他认定的“她死了”从头到尾没被正面回应，赢的一方什么也没付出。', suggestion='给让步一个具体的触发与代价：例如父亲举起灯时认出这片花圃是女儿离家那天播的种，或老奶奶拿出一件能证明她活着的实物（他给过的东西又回来了），逼他面对；同时让他完成一个有代价的动作——真的点燃一丛、又自己扑灭，或把油换成水泼下去——用动作而非格言收场，并让“她死了”这句被正面驳回（老奶奶说出她最后一次见到少女的时间）。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 89.213
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 324.695
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 1 轮（59.9 分）"
+}

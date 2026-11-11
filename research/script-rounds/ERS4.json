@@ -1,0 +1,58 @@
+{
+  "episodeId": "ERS4",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：全场只有照料与呓语，没有阻力：'她把湿布换了一次又一次''他没有回答，眉头皱得很紧'。S03 父亲已经下了禁令，但这场深夜戏里父亲、村人完全缺席，压力凭空消失，只剩单向付出。\", suggestion=\"把外部阻力放进这一夜——父亲深夜推门查问她在里屋做什么，或旅人烧中抗拒换药、把她推开说'别碰我'；让她的守夜必须躲着人、付出被抓到的风险，冲突才有支点。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：对峙时旅人'没有回答。他只是笑'，紧接着花一掷他就'化作一阵紫色的轻烟，散了'——对手零抵抗，揭晓完全由她单方面的动作完成，没有拉扯，也没有她必须挣破的阻拦。\", suggestion=\"给旅人一个明确的反制：他退开、按住她的手腕、反问'你确定要我回答吗'，甚至花束第一次被他躲开或捏碎；让她第二次才掷中，把这场对决的对抗性撑起来。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.38
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 80.479
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.7）"
+}

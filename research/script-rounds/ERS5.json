@@ -1,0 +1,166 @@
+{
+  "episodeId": "ERS5",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的最后通牒“你今晚敢进那间屋，明天的集会你就别想去了”所押上的代价（集会、提亲、名声），只在旁白“从此，她再没有回过村子里的集会”里一笔带过，之后全剧再未出现。代价被报告，而不是被追讨。', suggestion='让这笔代价在后面继续咬人：S05 父亲赶她出门时重提“集会的人家早把你忘了”；或 S06 路上出现鼓声/远处集会的热闹，她停半步再走。让观众看见她为那一夜付的利息仍在累积。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：“人群慢慢围过来”摆出了对抗的架势，却没有任何人真正阻拦她——老奶奶只是赠花提醒，旅人径直上山，父亲的反对被推迟到 S05。这一场的阻力是假动作，冲突没接上。', suggestion='让人群或某个人物真的出手：有人堵住村口、有人去里屋报信把父亲引来，把 S05 的正面冲突提前半场点燃；或者删掉“人群围过来”的调度，改为老奶奶单独拦路，冲突集中在一个对手身上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：两人对质升级到“那你照啊”，但少女既没有照、也没有转身回去，旅人也不再逼迫，台词双双落地后“她愣了两息，还是跟了上去”——场景结尾与开头完全同构（继续并肩赶路），冲突被绕开而非解决。', suggestion='让这一回合必须有人付出点什么才能收场：比如她真的举起花，他被照得退缩/衣角透光露馅，逼出下一步行动；或她被激得真的往回走了几步，由他第一次主动挽留——把“谁先让步”变成可见的损失。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：“我就是你想远行的心啊”一句把旅人从实体抽成幻影，S01 的血、S02/S05 父亲为“外乡人”爆发的全部对抗瞬间失去对象；同时本场她掷花失伴的重击，到 S08 开头“她没有哭”被直接跳过，代价在情绪上没有落地。', suggestion='为幻影保留一处不可抹消的实体证据（如篮底血渍、她手上撕披肩留下的勒痕），并在 S07 末尾给她一个真实的损失瞬间——至少一拍失控、一次回身去找的动作，再由 S08 接住，让“失去”先疼过再被消化。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场唯一的人物是少女，唯一的冲突是她的自白“我要是回去，爹会开门……然后我用一辈子想今天没走的那条路”——回去的理由被她自己一句话否决，没有任何外力或实际诱惑来拉扯她，选择在开口前就已注定。', suggestion='给“回去”一个具体的、当下的拉力：远处传来她熟悉的炊烟/母亲的喊声、回村的路清晰地在雾里露出来、脚不由自主转向，她必须主动折返再拒绝一次。让最后一步是挣来的，而不是想出来的。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 42.515
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 167.874
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场几乎没有阻力：母亲是来送干酪、替她圆谎的同盟（\"我说你病了……锅里还有一碗，你自己去盛\"），旅人处于昏迷状态，阿蘅的行动（换药、守夜）无人阻拦。整场是 S02 冲突的余波记录，而非新冲突。', suggestion='给母亲此行加一个硬要求——比如她不是来帮忙，而是来传父亲的话：明早必须去集会谢罪，或必须把人送走；让阿蘅在照护与服从之间当场做一次选择，把 S02 的对抗延续进这一夜。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：老奶奶的通牒\"要走，先解下来还我\"是本场设下的明确代价，但此后无人兑付：S05 父亲追到村口只谈婚事与离家，S06/S07 布条始终绑在旅人腿上，最后随烟留下，被阿蘅缠到自己手腕——老奶奶这条线开出的代价被无声作废。', suggestion='让代价落地：或在 S05 由父亲（而非老奶奶）重提\"先把麻布还村里\"，使离村多一道实际关卡；或在 S08 让老奶奶出现收走布条，与阿蘅争夺这件\"信物\"，把布条的归属变成她付出的最后一笔代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结尾的转折依赖方向：上文刚写\"回村的那条路在雾里清清楚楚地露出来……一直通到村口\"，紧接着\"她走过去……沿着那条路继续往前走\"——\"那条路\"在语法上仍指向回村的路，与\"再没有人见过她\"的结局相抵触，观众可能读成她回家了。', suggestion='把方向写死：先让她踏上回村的白路、走到界石前停下（完成\"回头\"的动作），再写她转身、绕开那条路走上北去的岔道，使\"不回头\"的抉择成为一个可见的、有阻力的动作，而不是含混的走位。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 101.79
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 132.108
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：救人全程无阻力：「她跑过去，蹲下，伸手探他的额头」「你不能死在这里」——从发现到包扎到回村报信，没有任何对抗、时间压力或第三方阻拦，她一句话就做出了改变一生命运的决定，毫不犹豫。', suggestion='给救人加一道摩擦：或有村人经过她必须藏起他、或天色/伤势给出倒计时、或旅人半昏迷中抓住她说出让她忌惮的话。让「救他」这个选择在本场就当场付出可见代价（而不只是丢一只竹篮、撕一件披肩这类道具层面的损失）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：两难是假的：「要么当众认错…要么天亮前把人送走。两条路，你挑一条」——两条路终点相同（都要送走他），她实际只能选「去不去集会」；更关键的是真正对立的那一刻（明早集会、天亮前的执行）被「那一夜之后，她再没回过村子的集会」一句旁白整段跳过，冲突的爆发与代价都是宣告出来的，不是演出来的。', suggestion='让两条路真正分叉（例如：送走他并当众认错 vs. 留下她替他顶下名声/亲事的代价），并把集会或天亮那一刻拍出来——让她在场、当众付一次看得见的代价，而不是用「那一夜之后」收掉。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：障碍被主角自己化解：老奶奶提出「先解下来还我」，少女立刻接「……好。出村口，我就还」，老奶奶没有进一步逼迫，条件在本场既未兑现也未升级；而同一个「交还麻布」的要求在 S05 又由父亲原样重演一次，两次冲突以同一个动作（解布、交还、离村）收尾，重复且无加码。', suggestion='二选一：要么让本场就兑现代价（当场解下交还，她只能用撕下的衣袖替他包扎，使 S05 父亲追讨的东西换成更重的物件），要么删去本场的麻布要求，把「交出村里的东西」这道障碍只留给 S05 一次做完。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：高潮的揭穿零代价：「她举起花束，朝着他掷了过去……旅人的身形淡了」——旅人不辩解、不反扑、不挽留，一掷即散；真相「我就是你想远行的心啊」还是由风在他消失之后补发的。她为这个真相没有付出任何东西，最该疼的一场反而最便宜。', suggestion='让他抵抗：开口挽留、反过来质问她回村的念头、或要她付出具体之物（花、麻布、或她自己的一句话）才肯显形。同时把花的失去明确写成代价——花谢即护佑失效、奶奶的叮嘱到此为止——让散形成为她主动割舍的结果，而不是顺手一掷。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.834
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 286.229
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 50.4（REVISE）；最好的是第 2 轮（59.1 分）"
+}

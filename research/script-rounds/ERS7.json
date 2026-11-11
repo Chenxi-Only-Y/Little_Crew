@@ -1,0 +1,168 @@
+{
+  "episodeId": "ERS7",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的威胁在场内被直接放过：\"她停了一步，说：\\'那我就守到他醒。\\'……父亲甩开她，却没有再拦。\" 主要对抗者一句话就退场，冲突没有真正交锋就结束了，阻力是自己撤掉的。', suggestion='让父亲的阻拦落到底——比如他挡在里屋门口、夺走药碗，或真的把帘子扯下来；把父女的对峙延长半轮，让少女为进门付出可见的代价（挨一掌、摔碎药碗），再让她掀帘进屋。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：与 S02 是同一夜同一地点的连续守床，局势和情绪基本持平：S02 已写\"那一夜她守在床边，一整夜没合眼\"，S03 又写\"少女整夜换布巾\"。从\"烧得说胡话\"到\"额头终于凉下来\"只是一条平缓的病情曲线，没有新的对抗或情绪落点。', suggestion='给这一夜安一个转折点：比如旅人在胡话中说出某个暴露身份/来历的具体信息，让少女对他的判断发生反转；或让药不够用时她被迫做出新选择（去敲邻居的门＝暴露秘密），使 S03 有独立的冲突峰值，而不是 S02 的延长段。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场的阻力几乎瞬间消解：父亲只说了一句\"别把家里的脸面也带走\"，少女立刻回怼\"我带走我自己\"，随后母亲塞干粮、老奶奶赠花，所有人立即转向成全。离家这样重的决定，没有遭遇真正的拦截。', suggestion='让父亲的阻拦升级为行动（拦门、扣下包袱、把旅人推出门外），让少女的\"我跟你走\"是在突破阻力之后才说出口；或把母亲/老奶奶的援助放在阻力最强的当口，使赠花与赠粮成为对抗中的反转，而非顺水推舟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：内心的对抗被一句台词抹平：\"可脚像被那条通往北方的路钉住了\"建立了回头的阻力，但紧接着\"深吸一口气……\\'那就自己去看\\'\"——一个人在原地自问自答，冲突与解决同处一人之口，没有对手，转折是声明出来的而非争取来的。', suggestion='给她一个外化的对抗物：回头的路上出现 S05 父亲追来的身影、或那半截披肩/竹篮的实物牵扯，逼她必须选择；让\"继续北上\"是在挣脱某个具体阻力之后做出的决定，而不是独白的结论。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：尾声场全程无阻力：父亲\"已经站了很多个黄昏\"，老奶奶直接把主题答案递出来——\"照出的是人自己不肯认的东西\"，父亲\"没有再说话\"。信息由台词阐释，人物不与任何东西对抗，局势也没有变化。', suggestion='把主题从台词里拿掉，改由行动承载：让父亲终于迈上通往北方的路、又在某个距离上折返（折返本身就是与自己的对抗）；或安排一次具体的错过（有人带来北方的消息，却是坏消息），用事件完成这个收束。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 66.707
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 58.616
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场同时抛出两条升级中的威胁：旅人说\"他们……会找到这里\"、村长留下\"明日我再来。翻出来，你们一家都别想在村里抬头\"。但此后再无下文——搜查没有第二次，追踪者从未出现，那枚被血换来的铜牌（路引）在S04之后彻底消失，反派压力凭空蒸发。', suggestion='让威胁兑现或删净：或在S04让村长带人二次上门、迫使父亲先一步赶走旅人（把\"外乡人，滚\"的动机接上），或在S07父亲质问铜牌来历；若不打算用这条线，删掉\"路引\"与\"他们会找到这里\"，只保留村长搜查一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：结尾旁白\"后来村里人说，再没有人见过她\"与后两场直接冲突：S07父亲在岔口与她当面对峙，S08货郎在北关口见过\"卖薰衣草的女人\"，村里人明明都听说了她。', suggestion='改为\"村里人说，她再没回过村\"，既保留孤身上路的余味，又不与S07、S08自相矛盾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：\"她掏出老奶奶给的花束，父亲一巴掌打落\"——这束花在S05已被她掷向旅人、\"花瓣散开\"，S06开头也明确写\"手里什么也没有了\"。本场冲突赖以成立的核心道具无中生有。', suggestion='在S06加一笔：她蹲下把散落的花瓣和断枝收进怀里；或S07改为她掏出包袱里新采的薰衣草，让老奶奶那句\"香气能让不洁的东西现形\"的伏线有实物可依。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 85.773
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 113.201
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：本场阻力只有伤情本身：少女发现—蹲下—包扎—塞回布牌一路顺畅，没有任何人或事阻拦她，也没有两难。她唯一的付出是撕了披肩，风险与代价都没建立起来。', suggestion='加一道真正的阻力：比如远处传来村人或父亲的呼喊，她必须当场决定是呼救还是把人藏起来；或伤口血止不住，逼她付出更贵的代价（扯下要带走的衣物、耽误采集）才按住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的冲突刚起就被化解：\"父亲伸手拦她，袖子却被母亲拉住，母亲摇了摇头\"——反对没有推进一步，也没让任何人付出代价，冲突等于被母亲一个动作抹平。', suggestion='让父亲的阻拦真正落地：他夺下药碗或堵在门口不放她进屋，逼少女顶撞或付出可见代价（摔碗、被罚、母亲因此挨责），母亲的劝只能延缓、不能抹平，父女对峙留到S03爆发。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：路引留下的逻辑与代价落点混乱：\"他竟把路引留下了。少女怔在原地：没有路引，他连关口都过不去\"——旅人已化烟消失，这句主语悬空，观众看不清这笔代价记在谁头上，也说不清少女失去的究竟是什么。', suggestion='把代价改写到明确的承受者身上：是他把通关路引留给了她，而打散引路人的正是她自己——让代价落在\"送走他的是我\"这层内疚上；删掉或改写\"他过不去关口\"这句悬空判断。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场既无阻力也无局势变化：少女捡花瓣、揣布牌、走进雾里，情绪从\"失去\"到\"继续走\"是平的，\"像有人在旁边陪着她走\"只给了氛围，没给转折，是本集最平的一场。', suggestion='给一个动作性转折：比如她走到岔口时脚尖已偏向回村的路（为S06的折返埋钩子），或雾中传来村长带人往村里去的动静，逼她当场选择，才能把这场从纯反应戏拉回冲突。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：S05明写\"她想起父亲说的\\'别回头\\'，于是真的没有回头\"，S06她却已\"站在院门口\"替全家顶罪——这个180度回返发生在场外，观众看不到她为什么改变主意，转折缺一个动机瞬间。', suggestion='在场内补触发：她人已走远，却听见院里母亲被扯破棉袄的哭声，或从坡上看见村长正带人进院，让她\"回来\"成为当场做出的选择并立刻付代价（父亲那句\"滚\"），而不是切一场人就到了。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：过关解决得零代价：一句\"沾过血的，官爷嫌晦气\"就让守关人放行，布牌没被查验、谎没被戳穿、花也没被没收，冲突全靠对手主动让路消解。', suggestion='让关口真正咬住她：守关人坚持要看布牌或执意要买花，逼她先交出一样东西（割爱卖出部分薰衣草、或留下布牌作抵押），再用她的机智扳回——先付代价，后脱身。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 48.15,
+        "issueCount": 6,
+        "blockerCount": 0,
+        "repairHintCount": 7,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.213
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 249.258
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 48.1（REVISE）；最好的是第 2 轮（59.1 分）"
+}

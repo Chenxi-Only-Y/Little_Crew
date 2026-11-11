@@ -1,0 +1,164 @@
+{
+  "episodeId": "EF22",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲下了明确的最后通牒——“明天集会，你跟我去，当着大家的面把话说清楚”，但这场正面冲突没有发生：‘第二天村口的集会她没去，第三天也没有’，用两句旁白把对立直接略过了。观众等着看的对峙戏（父女当众摊牌）被叙事吞掉，冲突有头无身。', suggestion='二选一：要么把集会那场写出来，让父亲真的在人前逼她表态，她用沉默或一句话顶回去，代价（被全村孤立）在场内兑现；要么删掉‘当着大家的面’这句狠话，把父亲的威胁降格为关门低吼，让冲突维持在屋里。不要承诺一场戏又不拍它。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场开头是‘油灯烧到只剩一指高，少女一遍遍擦他的额头’，结尾是‘天快亮时她打了个盹’——情绪和局势基本停在原点，只有体力在消耗。‘我不’是对上一场（或上一句）的重复表态，不是本场内的转折；结尾的发现（发辫没解、麻了）是细节，不是局势变化。', suggestion='给这一夜安一个改变局势的支点：比如旅人在昏睡中说出一句只有她听得懂、且日后会反噬她的话（北方的地名、他伤口的真相的一角），让她带着新信息而不是只带着疲惫结束这场戏。夜戏必须换来点什么，否则可以整场删掉并入S02。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场景没有任何一方真正阻拦她：旅人只说“走到一半，我不会送你回来”，是提醒不是禁令；S02里拍桌要带她去集会的父亲，此刻只‘把门轻轻合上’——对立凭空消失了，阻力为零，‘我跟你走’这个决定来得太容易。', suggestion='让父亲的反对落地一次：他可以走出门口拦在村口的路上，或者把包袱皮（旧披肩）扣下一样东西作为代价；也可以让旅人真的转身就走、走出很远才回头确认她是否跟上。离开家门这一场必须撞上一堵墙，观众才相信她付了代价。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 35.005
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 125.04
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的禁足令（「从今天起，这个门你不许出」）是本场的阻力核心，但场末被母亲一句「闩……我一会儿抽了」单方面化解——门闩实际上从未锁住，冲突在同一个场景内自行泄气，没有产生任何实际代价。', suggestion='让门闩真的关住一夜：次日清晨少女撞不开门，或必须从窗口翻出、付出狼狈/受伤的代价才赴S04的村口之约；母亲的「抽闩」改到更晚、且被父亲发现，使母女同盟本身成为要付的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：从S03「把花束藏到竹篮最底下」到S04「把花束攥得更紧」，少女一直在保护这束花；本场却「她举起花束，朝他掷了过去」，中间没有任何犹豫、挣扎或反悔的动作，亲手毁掉自己一路护着的东西这一最重的转折被一句台词跳过。', suggestion='在掷出前插入一个阻力瞬间：她抬手又放下、花束几乎脱手又被攥回、或者旅人不躲反迎上去逼她动手——把「舍不得」演出来，后面的消散才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场没有任何外部对抗（「你骗我。」——「没有人应。」），情绪从崩溃到决断只靠一句「那我就自己走」直接完成，中间只有找花瓣、坐下、系包袱等静止动作，转折缺乏挣扎的中间层次。', suggestion='给一个微小而具体的阻力：她一度朝来路走了几步才停住，或把包袱解开又重新系上、花瓣差点被扔掉——让「自己走」是挣出来的，而不是说出来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：父亲的转变（从S02摔碗禁足，到本场抱着篮子上山寻女）完成得太便宜：他没有付出任何代价——不还口、不被追责，一句哑声的「她人呢？」就换来了老奶奶的点化和自我救赎的入口，前面对女儿的压制没有结算。', suggestion='让他先付出：被村民当众堵住走不掉、被妻子拒之门外、或他必须先承认「是我把她闩在屋里才走的」才能拿到那只篮子——把赎罪的第一步写成他要挨的一下。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 69.831
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 119.395
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场景没有阻力：旅人“什么也没说，先迈了步”，少女“忽然笑了”，老奶奶送花，人群只是“低声议论”。她带着包袱来追随，对方既不接受也不拒绝，没有任何对抗力量把她的选择逼到墙角。', suggestion='给这场加一道明确阻力：让旅人当面拒绝或提出条件（如“你跟了我，家里怎么办”），或让人群的议论升级为当面阻拦、老奶奶的送花实为劝她留下，使她的“跟上”必须顶着压力才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：冲突只靠概述交代而未在台上呈现：“她一句一句问下去”“他反问的那句话，她答不上来”——问了什么、反问了什么全部隐去，阻力看不见，观众无从判断对抗在哪。', suggestion='把至少一句问话和那句反问写实，让对话本身构成攻防（她逼问行程/身份，他用一个问题反将她堵住），用具体台词替换“一句一句”“那句话”这类指代。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：这场是纯收束：捡花瓣、叠包袱、往前走，全程没有对手也没有内在抉择的两难——“第三步停住，回头看”之后她直接就走了，放弃与继续之间没有拉扯。', suggestion='给她一个可失败的瞬间：例如她掏出那片衣襟里的花瓣要扔掉（或折返），在动作完成前被某样东西（空篮、路碑、自己的伤）拦住，让留下与离开在场内真正较量一次再定。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 44.857
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 76.555
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.9 分）"
+}

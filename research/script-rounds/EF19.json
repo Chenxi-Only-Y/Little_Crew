@@ -1,0 +1,165 @@
+{
+  "episodeId": "EF19",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：“父亲堵在路中间，脸色铁青，话像石头一样砸下来”预设了一道物理与意志的封锁，但阻力只落在一句“她已决定”，父亲随即“没有追，只在身后把她的名字喊了一声，又咽回去”。堵路这一动作没有产生任何实际阻拦，对抗在半行之内被化解。', suggestion='让封锁产生一次真实代价：比如父亲真的抓住她的包袱带、或要求她交出那束花/竹篮作为“出门的规矩”，她必须放弃其中一样才能跨过浅沟——把“离开”变成一次当场兑现的交换，父亲松手后再喊名字，情绪才有落点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：少女步步紧逼：“赶路的人不会知道北方的每条岔路，也不会在梦里叫出一个她没听过的地名”，但旅人一句“自己是赶路的人”就滑过去了，追问没有逼出任何让步，也没有让她付出任何代价，冲突被打了个空。', suggestion='让追问换来一次反噬：例如旅人被逼问时平静地说出她从未告诉过任何人的事（她撕披肩那夜的细节、她母亲红的眼），使“查明真相”反而暴露她自己已被看穿——这样S06的掷花才不只是揭穿，而是被逼到墙角后的反击。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场没有任何阻力：她“蹲下去把散落的花枝一根根拾起，又一根根放下”“背起小包袱，沿着山路继续往前走”，拾与放、走与留的取舍在无摩擦中完成，观众看不到她停下来的理由。', suggestion='给继续上路设置一道具体障碍：雾中出现岔路（一条通北方、一条隐约像回村的路），或让她摸到包袱里还剩的东西（空药碗/半块盐）逼她在“回头还有家”和“往前只有香”之间做一次看得见的选择，再用鸡鸣声打断这个选择。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 26.131
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 91.457
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力只有旅人的一句口头警告（“你走不到三天就会后悔”“路不是花田”），少女用两句话顶回去，旅人立刻改口“走吧”，对抗在三行内自行消解；他既没有真正拒绝，也没有开出条件，这一场等于把出发演成了同意。', suggestion='让旅人把拒绝坐实：要么他坚持不带她、转身就走，逼她自己追上去；要么他提出一个必须当场付出的条件（留下某样东西、发一个誓）。把真正的阻力留给 S04 的父亲，S03 就只保留老奶奶那段不祥的赠花作为钩子。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：开场的质问“你到底是谁？”被旅人一句“我是赶路的人”挡开后，少女就再没有追问——她抛出了全剧的核心问题，却在对方回避的当下放弃了对抗，转而被对方的反问击退（“你没说。可你一直带在身上。”）。', suggestion='让她的追问再压一轮：她用已知的破绽逼他（北方岔路、梦中的地名、他为何知道母亲不敢碰父亲），逼到他不得不露出破绽或半承认。这样 S05 才是双向交锋，而不是单方面的心理碾压。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全剧最关键的选择点上，唯一的阻力是雾里一声喊——“丫头——”，随后“雾里没有回应”，父亲始终没有出现。在 S04 里能堵在路中间、攥住包袱带的父亲，到这里被一句话的远声取消，岔路口于是只剩“决定”，没有“对抗”。', suggestion='让父亲从雾里走出来，第二次堵她（复现 S04 的走位：她往左他往左），把她逼回浅沟那一幕；她必须正面过掉父亲这一次，才能走上北边的路。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：整部戏的收束转折——“上个月有人在山口看见一个背竹篮的女人……她不认得路了，可她认得香”——全部由配角转述出口；主角本人不在场，最后一句又“谁也听不真切”，观众得到的是摘要而非被看见的结局，情绪落点被谈话稀释。', suggestion='把结局从转述改成画面：切一个山口镜头，背竹篮的女人走过、闻到香气而停步，让观众亲眼确认她还活着、也确认她付的代价（认不得路）。老奶奶的台词可留作画外音，但转折必须由人物在场完成。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 67.05
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 187.537
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：旅人的阻力写得很硬——\"我不带\"\"一步都没有回头\"，但这个冲突在本场没有被解决，只是被跳过：少女\"追着那个背影跑起来\"之后，下一场（S05）两人已并肩同行，旅人何时、因何接纳她，全程缺席。一个明确的拒绝被一个动作无声消解。', suggestion='在S03内给一个有代价的接受过程：比如旅人停下来给出苛刻条件（不许问话、天黑必须分开、走不动就自己回去），或让她用某个牺牲换取同行资格；否则就把拒绝的解决推迟并正面呈现，别让观众自己脑补。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转场的关键落在\"她没有哭……嘴上说着不信，脚步却一步没停\"，但通读本场，少女从头到尾没有说过任何\"不信\"的话——她只举花、逼问、听真相。\"嘴上说着不信\"在舞台上无处落点，观众看到的只是一个几乎零情绪波动的人。', suggestion='把\"不信\"写成可见的动作或台词：让她把花瓣摔在地上再说一句反驳，或让\"摆花瓣\"这个动作本身承载质疑（比如故意摆成旅人说过的那个地名的形状），使转折的情绪有明确载体。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场冲突与S04几乎完全复刻：同一个岔路口、同一条浅沟、同样\"伸手攥住包袱带\"、同样的\"你没有名字了\"对答（S04\"那我不叫给你们听\"／S07\"那我就用他给的那个\"），顶针也第二次被放回石头上。阻力没有升级，只是把上一场重演一遍。', suggestion='删去与S04重复的拉扯环节，把父亲这次的阻力改在新层面——例如他不是来抓她，而是来告诉她\"旅人根本不是人\"的证据，或带来村里人围上山的消息，逼她在两条真实代价不同的路之间选。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全集收尾场没有对手：唯一的\"对抗\"是老奶奶画外音原样复读S03的台词，不产生新压力；少女的困境是自述的（\"我不认得路了\"），随即靠一句\"可我认得香\"自我解决。没有阻力，结局的张力全靠前面积累的余温。', suggestion='给结尾一道硬阻力：比如雾里出现追来的村民/父亲的脚步声，或香气此刻恰恰指向她不愿去的方向（往北＝回头），让她付出一个真实选择的代价后才走进光里，而不是顺风顺水地收束。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 72.768
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 53.417
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 1 轮（59.9 分）"
+}

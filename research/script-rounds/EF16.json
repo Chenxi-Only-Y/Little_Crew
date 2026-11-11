@@ -1,0 +1,31 @@
+{
+  "episodeId": "EF16",
+  "rounds": [
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 1,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：编剧调用失败：[no-content] 响应里取不到 'choices.0.message.content'",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "编剧调用失败：[no-content] 响应里取不到 'choices.0.message.content'",
+            "seconds": 65.175
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 1 轮编剧阶段失败：编剧调用失败：[no-content] 响应里取不到 'choices.0.message.content'"
+}
