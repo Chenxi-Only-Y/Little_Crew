@@ -349,14 +349,24 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             # 真跑 EF14 出现过：33 句里 1 句 `FileNotFoundError`（wav 没写出来），
             # 而单独重跑同一句立刻成功 —— 是**瞬时失败**（TTS/显存争用）。
             # 一句失败 = 那一句在成片里是静音的，靠人眼看不出来，所以必须自愈。
-            _attempts = 2
+            # 3 次尝试 + 退避（2026-11-11）：
+            # 同一句话在跑挂之后**手动重调就成功** —— 说明是后端瞬时不可用，
+            # 2 次不够；再加异常包裹（FileNotFound 之类也要算一次失败，
+            # 不能让它直接炸掉整句）。
+            import time as _time
+
+            _attempts = 3
             for _att in range(1, _attempts + 1):
-                r = synth_with_pauses(
-                    ln["text"], wav, synth=synth,
-                    voice=str(spec.get("voice") or ""),
-                    instruction=_ins,
-                    seed=int(spec.get("seed") or 0) or None,
-                    max_seconds=float(ln.get("shotSeconds") or 0))
+                try:
+                    r = synth_with_pauses(
+                        ln["text"], wav, synth=synth,
+                        voice=str(spec.get("voice") or ""),
+                        instruction=_ins,
+                        seed=int(spec.get("seed") or 0) or None,
+                        max_seconds=float(ln.get("shotSeconds") or 0))
+                except Exception as _e_att:                   # noqa: BLE001
+                    r = {"ok": False, "seconds": 0.0,
+                         "error": f"{type(_e_att).__name__}: {_e_att}"}
                 if r.get("ok"):
                     if _att > 1:
                         r["retried"] = _att
@@ -364,6 +374,7 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
                 if _att < _attempts:
                     print(f"  ↻ 配音重试（第 {_att + 1} 次）：{ln.get('shotId')}"
                           f" · {str(r.get('error') or '')[:60]}")
+                    _time.sleep(0.8 * _att)
                 # 最终失败也要留痕：试了几次、最后一次错什么
                 # （之前只在成功时写 retried，失败行永远是 0 —— 看不出重试过）
                 r["retried"] = _att
@@ -384,6 +395,7 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             #: 第几次尝试成功的（1 = 一次过；>=2 = 重试过）——
             #: 只在行里留痕不够，要能进报告才能发现"后端在抖动"
             "retried": int(r.get("retried") or 0),
+            "attempts": int(r.get("attempts") or 1),
             "align": a,
         })
     ok_rows = [{"shotId": x["shotId"], "character": x["character"],

@@ -1904,6 +1904,32 @@ class EpisodeRunner:
         # 单测全绿也发现不了。同类坑今晚第二次（上次是 `_wdv`）。
         _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
 
+        # 配音前探活（2026-11-11）：EF26/EF28 各有 1~2 句失败，
+        # 事后**手动重调同一句就成功** —— 是 TTS 后端瞬时不可用。
+        # 探一次，不可用就等 10 秒再试（仍失败就照常跑，失败会落进 rows）。
+        if getattr(self, "voice_enabled", False):
+            try:
+                import time as _t_v
+                import urllib.request as _ur_v
+                from little_crew.runtime import tts_breeze as _tts_v
+
+                _ep_v = _tts_v.server_endpoint().rstrip("/") + "/health"
+                _ok_v = False
+                for _try_v in range(1, 3):
+                    try:
+                        with _ur_v.urlopen(_ep_v, timeout=5) as _r_v:
+                            _ok_v = getattr(_r_v, "status", 0) == 200
+                    except Exception:                        # noqa: BLE001
+                        _ok_v = False
+                    if _ok_v:
+                        break
+                    print(f"  ⏳ TTS 探活失败（第 {_try_v} 次），等 5 秒…")
+                    _t_v.sleep(5)
+                if not _ok_v:
+                    print("  ⚠️ TTS 后端不可用 —— 配音很可能出现失败句")
+            except Exception:                                # noqa: BLE001
+                pass
+
         # ---- 配音轨（§3.11，2026-11-06）----
         #
         # 只在 `--voice` 打开时跑：一句台词约 3~4 秒（本机 breeze），
