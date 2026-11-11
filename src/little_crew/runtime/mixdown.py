@@ -139,20 +139,46 @@ def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
     # 放在 limiter **之后**：先管住峰值，再把整体响度拉到播出标准。
     filters.append("[mixed]alimiter=limit=0.891:level=false[mixed2]")
     filters.append(_loudness_filter(loudnorm, target_lufs, target_tp))
+    # 两遍响度（2026-11-11）：先渲到临时文件 -> 扫 -> 带 measured 归一到最终路径。
+    # 单遍会欠冲；两遍实测能到 ±0.5 LU（见 loudnorm_measure 的注释）。
+    _two_pass = bool(loudnorm)
+    _render_path = (str(out_wav) + ".preloud.wav") if _two_pass else str(out_wav)
     cmd = ([ffmpeg, "-y", "-hide_banner", "-loglevel", "error", *inputs,
             "-filter_complex", ";".join(filters), "-map", "[out]",
-            "-ac", "1", "-ar", "48000", "-t", f"{dur:.3f}", str(out_wav)])
+            "-ac", "1", "-ar", "48000", "-t", f"{dur:.3f}", str(_render_path)])
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=300)
     except Exception as e:                                    # noqa: BLE001
         return {"ok": False, "seconds": 0.0, "error": f"{type(e).__name__}: {e}",
                 "peakDb": 0.0, "skipped": skipped, "command": " ".join(cmd)}
-    if p.returncode != 0 or not Path(str(out_wav)).is_file():
+    if p.returncode != 0 or not Path(str(_render_path)).is_file():
         tail = [x for x in (p.stderr or "").splitlines() if x.strip()]
         return {"ok": False, "seconds": 0.0,
                 "error": (tail[-1] if tail else f"exit {p.returncode}")[:200],
                 "peakDb": 0.0, "skipped": skipped, "command": " ".join(cmd)}
+    if _two_pass:
+        _meas = loudnorm_measure(str(_render_path), ffmpeg=ffmpeg,
+                                 target_lufs=target_lufs, target_tp=target_tp)
+        _ap = loudnorm_apply(str(_render_path), str(out_wav), _meas, ffmpeg=ffmpeg,
+                             target_lufs=target_lufs, target_tp=target_tp)
+        if not _ap.get("ok"):
+            # 归一失败不能把成片搞没：**先**把临时文件复制成最终产物（未归一的），
+            # 再删临时文件；顺序反了就等于把成片删了（写这段时差点犯）。
+            try:
+                import shutil as _sh
+
+                _sh.copyfile(str(_render_path), str(out_wav))
+            except Exception:                                # noqa: BLE001
+                pass
+        try:
+            Path(str(_render_path)).unlink(missing_ok=True)
+        except Exception:                                    # noqa: BLE001
+            pass
+        _loud_info = {"twoPass": True, "measure": _meas, "applyOk": bool(_ap.get("ok"))}
+    else:
+        _loud_info = {"twoPass": False}
+
     from little_crew.runtime.tts_breeze import wav_seconds
 
     peak = peak_db(str(out_wav), ffmpeg=ffmpeg)
@@ -164,6 +190,7 @@ def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
             #: 响度归一：做了什么、目标多少、实测多少 ——
             #: 只写"已归一"是不够的，要能核对（实测 -16.8 = 达标）
             "loudnessNormalized": bool(loudnorm),
+            "loudnessPass": _loud_info,
             "targetLufs": float(target_lufs) if loudnorm else 0.0,
             "lufs": lufs,
             "loudnessOk": bool(loudnorm and abs(lufs - target_lufs) <= 3.0),
@@ -182,6 +209,67 @@ def _loudness_filter(enabled: bool, target_lufs: float,
         return "[mixed2]anull[out]"
     return (f"[mixed2]loudnorm=I={target_lufs}:TP={target_tp}:"
             f"LRA=11:linear=false[out]")
+
+
+def loudnorm_measure(wav, *, ffmpeg: str = "ffmpeg",
+                     target_lufs: float = -16.0,
+                     target_tp: float = -1.5) -> dict:
+    """第一遍：**只扫不写**，取 measured_* 与 target_offset。
+
+    单遍 loudnorm 会欠冲（真跑 EF22：目标 -16，实测 -18.9）——
+    因为它边听边调，动态大的内容调不到位。两遍才能到 ±0.5。
+    """
+    import json as _json
+
+    try:
+        p = subprocess.run(
+            [ffmpeg, "-hide_banner", "-nostats", "-i", str(wav),
+             "-af", (f"loudnorm=I={target_lufs}:TP={target_tp}:LRA=11:"
+                     "print_format=json"),
+             "-f", "null", "-"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=300)
+    except Exception:                                         # noqa: BLE001
+        return {}
+    text = p.stderr or ""
+    # ffmpeg 把 JSON 打在 stderr 的最后一对花括号里
+    lo, hi = text.rfind("{"), text.rfind("}")
+    if lo < 0 or hi <= lo:
+        return {}
+    try:
+        return _json.loads(text[lo:hi + 1])
+    except Exception:                                         # noqa: BLE001
+        return {}
+
+
+def loudnorm_apply(src, dst, measured: dict, *, ffmpeg: str = "ffmpeg",
+                   target_lufs: float = -16.0,
+                   target_tp: float = -1.5) -> dict:
+    """第二遍：带 measured_* 与 offset 的**线性**归一（写 dst）。"""
+    if not measured:
+        return {"ok": False, "error": "no-measurement"}
+    try:
+        m = {k: str(measured[k]) for k in
+             ("input_i", "input_tp", "input_lra", "input_thresh",
+              "target_offset") if k in measured}
+        af = (f"loudnorm=I={target_lufs}:TP={target_tp}:LRA=11:"
+              f"measured_I={m.get('input_i', -24)}:"
+              f"measured_TP={m.get('input_tp', -2)}:"
+              f"measured_LRA={m.get('input_lra', 7)}:"
+              f"measured_thresh={m.get('input_thresh', -34)}:"
+              f"offset={m.get('target_offset', 0)}:linear=true:"
+              "print_format=summary")
+        p = subprocess.run([ffmpeg, "-y", "-hide_banner", "-nostats",
+                            "-i", str(src), "-af", af,
+                            "-ar", "48000", "-ac", "1", str(dst)],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=300)
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    if p.returncode != 0 or not Path(str(dst)).is_file():
+        tail = [x for x in (p.stderr or "").splitlines() if x.strip()]
+        return {"ok": False, "error": (tail[-1] if tail else "exit")[:160]}
+    return {"ok": True, "error": ""}
 
 
 def loudness_db(wav, *, ffmpeg: str = "ffmpeg") -> float:

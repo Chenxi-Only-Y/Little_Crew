@@ -1199,6 +1199,10 @@ class EpisodeRunner:
                                 self.scene_conflicts = _fresh
                                 _err2 = [c for c in _fresh
                                          if c.get("severity") == "error"]
+                                # ⚠️ 复验也必须更新 `scene_veto`：
+                                # 它是 CLI 门禁唯一读的标志，2.8 时置过 True，
+                                # 只清 conflicts 不清它 → 重做完照样否决（EF20）。
+                                self.scene_veto = bool(_err2)
                                 print(f"  复验：越权 {len(_err2)} 镜"
                                       + ("（已修好）" if not _err2 else "（仍在）"))
                             except Exception as _e2:               # noqa: BLE001

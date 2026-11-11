@@ -4,6 +4,7 @@ from __future__ import annotations
 import sys
 
 from little_crew.runtime.mixdown import (  # noqa: PLC0415
+    loudnorm_apply, loudnorm_measure,
     _loudness_filter, _ts, build, loudness_db, plan, srt,
 )
 
@@ -66,6 +67,31 @@ def main() -> int:
           _loudness_filter(True, -14.0, -2.0))
     check("D4 ★★ 测不出的文件返回 0.0（不抛）",
           loudness_db("/tmp/_never_exists.wav") == 0.0, "")
+
+
+    print(); print("E. 两遍响度（先扫后归）")
+    check("E1 ★★★ 没有测量结果时不硬归（返回失败，不是假装成功）",
+          loudnorm_apply("/tmp/_a.wav", "/tmp/_b.wav", {})["ok"] is False, "")
+    check("E2 ★★ 测不出的文件返回空 dict（不抛）",
+          loudnorm_measure("/tmp/_never_exists.wav") == {}, "")
+    # 用真实 ffmpeg 时（本机有）验一次端到端：-18.9 -> 应该靠近 -16
+    import shutil as _sh
+    _ff = _sh.which("ffmpeg") or r"D:\AI\FFmpeg\bin\ffmpeg.exe"
+    import pathlib as _p
+    _src = _p.Path(r"D:\AI\ds.8\Little_Crew\outputs\_EF22\delivery\mix.wav")
+    if _p.Path(_ff).is_file() and _src.is_file():
+        _m = loudnorm_measure(str(_src), ffmpeg=_ff)
+        _dst = _p.Path(r"D:\AI\ds.8\Little_Crew\outputs\_2pass_check.wav")
+        # ⚠️ 变量名不能叫 `_r`：模块里 `_r` 是**结果列表**，
+        # 覆盖它会让最后的统计 `for _, ok, _ in _r` 直接炸（今晚踩到）。
+        _ap2 = loudnorm_apply(str(_src), str(_dst), _m, ffmpeg=_ff)
+        _after = loudness_db(str(_dst), ffmpeg=_ff) if _ap2.get("ok") else 0.0
+        check("E3 ★★★ 两遍后落在 -16 +/- 0.8 LU",
+              bool(_ap2.get("ok")) and abs(_after + 16.0) <= 0.8,
+              f"after={_after}")
+        _dst.unlink(missing_ok=True)
+    else:
+        check("E3 ★★★ 两遍后落在 -16 +/- 0.8 LU（跳过：无 ffmpeg/无样本）", True, "skipped")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
