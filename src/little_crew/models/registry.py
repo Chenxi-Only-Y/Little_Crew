@@ -402,6 +402,29 @@ def _image_models() -> list[ModelSpec]:
                    "—— 一致性必须参考图优先。"),
         ),
         ModelSpec(
+            model_id="image-cloud",
+            display_name="云端生图（OpenAI 兼容 /v1/images/generations）",
+            task=TaskKind.IMAGE_T2I,
+            backends=(Backend(
+                kind=BackendKind.HTTP,
+                endpoint=resolve_endpoint("https://api.openai.com",
+                                       "IMAGE_API_ENDPOINT"),
+                api_key_env="IMAGE_API_KEY",
+                path="/v1/images/generations",
+                body_template=(
+                    '{"model": "{model}", "prompt": "{prompt}",'
+                    ' "size": "{width}x{height}", "n": 1}'
+                ),
+                response_path="data.0.url",
+                artifact_kind="image",
+            ),),
+            capability=Capability(),
+            cost=CostProfile(kind="cloud"),
+            maturity=Maturity.EXPERIMENTAL,
+            notes=("**未真跑**：需要 IMAGE_API_KEY。声明的意义是"
+                   "让'本地/云端'在**同一条 IR** 上可切换（通道不同，架构一致）。"),
+        ),
+        ModelSpec(
             model_id="flux2-klein-4b",
             display_name="FLUX.2 Klein 4B",
             task=TaskKind.IMAGE_EDIT,
@@ -636,6 +659,29 @@ def _audio_models() -> list[ModelSpec]:
             maturity=Maturity.BETA,
             notes=("**零额外成本**：音轨与视频同一遍前向产出，不额外占时间。"
                    "优先于独立 TTS —— 省一次模型加载（本机同时只能加载一个模型）。"),
+        ),
+        ModelSpec(
+            model_id="breeze-tts-local",
+            display_name="本地 TTS（breeze server）",
+            task=TaskKind.AUDIO_TTS,
+            backends=(Backend(
+                kind=BackendKind.HTTP,
+                endpoint=resolve_endpoint("http://127.0.0.1:8110",
+                                       "BREEZE_TTS_ENDPOINT"),
+                is_local_by_default=True,
+                path="/v1/audio/speech",
+                body_template=(
+                    '{"input": "{input}", "voice": "{voice}",'
+                    ' "instruction": "{instruction}",'
+                    ' "response_format": "wav"}'
+                ),
+                artifact_kind="audio",
+            ),),
+            capability=Capability(native_audio=True),
+            cost=CostProfile(kind="local"),
+            maturity=Maturity.PRODUCTION,
+            notes=("**零成本、离线**：本机 breeze-tts-2（Q8_0/GGUF）server。"
+                   "实测 0.89 秒/句（1.5x 实时）；音色由目录里的 wav 决定。"),
         ),
         ModelSpec(
             model_id="tts-http",
