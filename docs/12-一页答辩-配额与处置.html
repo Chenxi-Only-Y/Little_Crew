@@ -29,7 +29,7 @@
 </style></head><body>
 
 <h1>多智能体协作：把「生成」变成「可判定的生成」</h1>
-<div class="sub">一页答辩 · 2026-11-11 · alpha.219 · 2302 项测试 + 架构守卫 PASS · 整集真跑 16 次</div>
+<div class="sub">一页答辩 · 2026-11-11 · alpha.219+ · 2307 项测试 + 架构守卫 PASS · 整集真跑 16 次</div>
 
 <div class="claim">
 <b>主张：</b>多智能体的价值不在「生成更全」，而在<b>独立验证</b>——
@@ -88,15 +88,17 @@
     <td>不能证明的事，写进产物里</td></tr>
 </table>
 
-<h2>表四 · 整集真跑（16 次，可复查 outputs/_E*/delivery/run.report.json）</h2>
+<h2>表四 · 整集真跑（17 次，可复查 outputs/_E*/delivery/run.report.json）</h2>
 <table>
 <tr><th>指标</th><th>数值</th><th>说明</th></tr>
-<tr><td>整集规模</td><td>38~46 镜 · 215~246 秒</td><td>逐场分镜 8/8 场，配额遵守 100%</td></tr>
-<tr><td>交付率</td><td>全部 6/16；<b>修复后 3/4</b></td><td>被否的集都留了 <code>rejection.json</code>（原因可查）</td></tr>
-<tr><td>配音</td><td>29~62 句 · <b>失败 0</b></td><td>0.89 秒/句（server）· 失败自动重试一次</td></tr>
-<tr><td>响度</td><td>-16.0 LUFS（EF19）</td><td>单遍会欠冲 → 已改<b>两遍</b>（实测 -16.5）</td></tr>
-<tr><td>视觉闸</td><td>审 12 镜 · 严重 0~1</td><td>判出即 <code>↻ 重画</code>（真跑多次出现）</td></tr>
+<tr><td>整集规模</td><td>31~48 镜 · 181~254 秒</td><td>逐场分镜 8/8 场，配额遵守 100%</td></tr>
+<tr><td>交付率</td><td><b>12 / 15 = 80%</b>（≥20 镜的整集）</td><td>被否的集都留 <code>rejection.json</code>；早期 40% → 现在 80%</td></tr>
+<tr><td>墙钟</td><td>均值 <b>25 分钟</b> / 集（中位 24）</td><td>渲染约 45%（~21 秒/张）；剧本约 40%</td></tr>
+<tr><td>配音</td><td>29~62 句 · <b>失败 0</b>（EF32/EF34）</td><td>0.89 秒/句 · 暖机 + 失败重试 3 次</td></tr>
+<tr><td>响度</td><td><b>-16.0 ~ -16.7 LUFS</b></td><td>EBU R128 两遍（先扫后归）· 达标 ±1 LU</td></tr>
+<tr><td>视觉闸</td><td>抽审 12 镜 · 严重 0~2</td><td>判出即 <code>↻ 重画</code>；0 可判时显式报"等于没审"</td></tr>
 <tr><td>续跑</td><td>命中 <b>2/2</b>，省 48.1s</td><td>复用 checkpoint 里的 IR，不重新桥接</td></tr>
+<tr><td>剧本收敛</td><td>3 轮 → <b>PASS</b>（EF34）</td><td>双审并发下审核链正常收敛</td></tr>
 </table>
 
 <div class="boundary">
