@@ -365,6 +365,15 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
                         seed=int(spec.get("seed") or 0) or None,
                         max_seconds=float(ln.get("shotSeconds") or 0))
                 except Exception as _e_att:                   # noqa: BLE001
+                    # 把**真实堆栈**留一份：这类"换个进程就能成功"的失败，
+                    # 只看 `类型: 消息` 永远查不出是哪一行（2026-11-11）
+                    import traceback as _tb
+
+                    _tail = _tb.format_exc().strip().splitlines()[-4:]
+                    print(f"  ⚠️ 配音异常（{ln.get('shotId')} · 第 {_att} 次）："
+                          f"{type(_e_att).__name__}: {_e_att}")
+                    for _ln_t in _tail:
+                        print(f"       {_ln_t.strip()[:110]}")
                     r = {"ok": False, "seconds": 0.0,
                          "error": f"{type(_e_att).__name__}: {_e_att}"}
                 if r.get("ok"):

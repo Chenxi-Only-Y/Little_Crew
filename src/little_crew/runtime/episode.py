@@ -885,11 +885,13 @@ class EpisodeRunner:
             _impl = (getattr(self.orch, "_impls", {}) or {}).get("storyboard_artist")
             _is_llm = type(_impl).__name__ == "StoryboardArtistLlm"
             if _is_llm:
-                # 并发（2026-11-11）：8 场是 8 次独立云端调用，串行纯属浪费。
-                # `LITTLE_CREW_SB_PARALLEL=0` 可退回串行（对比实验用）。
+                # 并发**默认关闭**（2026-11-11 实测）：
+                #   串行 8 场 = 83.5s · 并发 4 线程 = 95.5s —— 并发反而更慢。
+                # 原因是单场只要 ~10s，线程开销 + 服务端限流吃掉了收益。
+                # 保留开关（`LITTLE_CREW_SB_PARALLEL=1`）：端点变慢/长提示时再试。
                 import os as _os_sb
 
-                _par = (_os_sb.environ.get("LITTLE_CREW_SB_PARALLEL") or "1") != "0"
+                _par = (_os_sb.environ.get("LITTLE_CREW_SB_PARALLEL") or "0") == "1"
                 _res = _sbs.per_scene(self.orch, script_draft,
                                       parallel=_par, subjects=tuple(_allowed_ck),
                                       progress=lambda sid, n: print(
