@@ -193,7 +193,9 @@ def build(rows, out_wav, *, ffmpeg: str = "ffmpeg", ambient: bool = True,
             "loudnessPass": _loud_info,
             "targetLufs": float(target_lufs) if loudnorm else 0.0,
             "lufs": lufs,
-            "loudnessOk": bool(loudnorm and abs(lufs - target_lufs) <= 3.0),
+            # 两遍之后实测偏差能到 0.5 以内（EF22 原 -18.9 -> -16.5）。
+            # 判据收紧到 ±1.0：留出单遍/两遍的差别，又不至于放过明显欠冲。
+            "loudnessOk": bool(loudnorm and abs(lufs - target_lufs) <= 1.0),
             "command": " ".join(cmd)[:400]}
 
 
