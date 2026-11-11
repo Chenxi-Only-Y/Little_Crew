@@ -1927,6 +1927,29 @@ class EpisodeRunner:
                     _t_v.sleep(5)
                 if not _ok_v:
                     print("  ⚠️ TTS 后端不可用 —— 配音很可能出现失败句")
+                else:
+                    # **暖机一句**（2026-11-11）：EF26/EF28/EF30 失败的都是
+                    # S01 的第一句，且重试 3 次都失败 —— 这是 TTS **冷启动**
+                    # 把首次合成就吞了（模型加载）。先拿一句丢弃的试音把
+                    # 冷启动吃掉，别让第一句真实台词承担它。
+                    try:
+                        import tempfile as _tf_v
+
+                        _warm = _tf_v.NamedTemporaryFile(
+                            suffix=".wav", delete=False).name
+                        for _w_try in range(1, 4):
+                            _wr = _tts_v.synth("试音。", _warm, voice="girl")
+                            if _wr.get("ok") and pathlib.Path(_warm).is_file():
+                                print(f"  🔥 TTS 暖机完成（第 {_w_try} 次）")
+                                break
+                            print(f"  ⏳ TTS 暖机失败（第 {_w_try} 次），等 5 秒…")
+                            _t_v.sleep(5)
+                        try:
+                            pathlib.Path(_warm).unlink(missing_ok=True)
+                        except Exception:                    # noqa: BLE001
+                            pass
+                    except Exception as _e_warm:             # noqa: BLE001
+                        print(f"  ⚠️ TTS 暖机未运行：{type(_e_warm).__name__}: {_e_warm}")
             except Exception:                                # noqa: BLE001
                 pass
 
