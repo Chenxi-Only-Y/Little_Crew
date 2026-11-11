@@ -29,7 +29,7 @@
 </style></head><body>
 
 <h1>多智能体协作：把「生成」变成「可判定的生成」</h1>
-<div class="sub">一页答辩 · 2026-11-06 · alpha.174 · 1971 项测试 + 架构守卫 PASS</div>
+<div class="sub">一页答辩 · 2026-11-11 · alpha.219 · 2302 项测试 + 架构守卫 PASS · 整集真跑 16 次</div>
 
 <div class="claim">
 <b>主张：</b>多智能体的价值不在「生成更全」，而在<b>独立验证</b>——
@@ -88,10 +88,21 @@
     <td>不能证明的事，写进产物里</td></tr>
 </table>
 
+<h2>表四 · 整集真跑（16 次，可复查 outputs/_E*/delivery/run.report.json）</h2>
+<table>
+<tr><th>指标</th><th>数值</th><th>说明</th></tr>
+<tr><td>整集规模</td><td>38~46 镜 · 215~246 秒</td><td>逐场分镜 8/8 场，配额遵守 100%</td></tr>
+<tr><td>交付率</td><td>全部 6/16；<b>修复后 3/4</b></td><td>被否的集都留了 <code>rejection.json</code>（原因可查）</td></tr>
+<tr><td>配音</td><td>29~62 句 · <b>失败 0</b></td><td>0.89 秒/句（server）· 失败自动重试一次</td></tr>
+<tr><td>响度</td><td>-16.0 LUFS（EF19）</td><td>单遍会欠冲 → 已改<b>两遍</b>（实测 -16.5）</td></tr>
+<tr><td>视觉闸</td><td>审 12 镜 · 严重 0~1</td><td>判出即 <code>↻ 重画</code>（真跑多次出现）</td></tr>
+<tr><td>续跑</td><td>命中 <b>2/2</b>，省 48.1s</td><td>复用 checkpoint 里的 IR，不重新桥接</td></tr>
+</table>
+
 <div class="boundary">
 <b>边界（不许越界宣传）</b>：证据包证明的是「<b>记录与产物一致、未被篡改</b>」，
 不是「画面好看」；分镜节奏略低于单智能体（方向稳定）；
-画面质量/角色相似度的自动判定<b>本机没有视觉模型，未做</b>。
+画面质量/角色相似度的自动判定<b>本机没有视觉模型，未做</b>；角色一致性仍<b>未打通</b>（无 IPAdapter / LoRA 训练需 22.9GB）；真运动视频仍走静帧 + Ken Burns。
 </div>
 
 <footer>小剧组 · Little Crew · 本文数据均来自 <code>research/</code> 下的原始件，可复查。</footer>
