@@ -333,6 +333,8 @@ class EpisodeResult:
             # 之前只看 report.ok，会把"被否决的集"统计成"全绿"
             # （EF17/EF18 就是 ok=True 但 CLI 否决）。
             "sceneVeto": bool(getattr(self, "scene_veto", False)),
+            #: 视觉闸是否**一镜都没判成**（0 可判 != 没崩图）
+            "visionNotJudged": bool(getattr(self, "vision_not_judged", False)),
             "video": (self.video.as_dict() if hasattr(self.video, "as_dict")
                       else None),
             "videoPath": str(self.video_path) if self.video_path else "",
@@ -1416,8 +1418,17 @@ class EpisodeRunner:
             irs = irs[:planned]
         # ---- 4) 渲染 ----
         self._mark("render_start")
+        # 渲染前健康检查（2026-11-11）：EF27 有 6 镜栽在
+        # `channel_unavailable: 无法连接 127.0.0.1:8188`，而集成 20 分钟才发现。
+        # 先探一次，探不到就**明确报错**，别让 6 镜在后面才丢。
+        self._render_backend_healthcheck()
         rstats = self._render(irs, on_progress=on_progress)
         batch = rstats["batch"]
+
+        # 单镜失败重试一次（只重试"通道不可用"这类瞬时错误）
+        batch, _retried = self._retry_channel_failures(batch, irs, rstats)
+        if _retried:
+            print(f"  ↻ 渲染重试：{_retried} 镜成功（通道瞬时不可用）")
 
         # ---- 4.5) 验收门禁（C3）----
         #
@@ -2132,8 +2143,17 @@ class EpisodeRunner:
                         _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
                         encoding="utf-8")
                 _bad = sum(1 for f in _vrres["findings"] if f["severity"] == "error")
-                print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
-                      f" · 严重 {_bad} 条 · 提示 {len(_vrres['findings']) - _bad} 条")
+                if not _vrres.get("reviewedCount"):
+                    # ⚠️ 0 镜可判 != 没有崩镜（2026-11-11 EF27）：
+                    # 全 47 镜的视觉调用都失败，终端却打印"严重 0 条" ——
+                    # 读起来像"审过了、没问题"。必须显式说"等于没审"。
+                    self.vision_not_judged = True
+                    print(f"  ⚠️ 视觉闸：0/{_vrres['total']} 镜可判"
+                          f"（{len(_vrres.get('errors') or [])} 镜调用失败）"
+                          f" —— **等于没审**，不能记作「没有崩图」")
+                else:
+                    print(f"  视觉闸：审 {_vrres['reviewedCount']}/{_vrres['total']} 镜"
+                          f" · 严重 {_bad} 条 · 提示 {len(_vrres['findings']) - _bad} 条")
                 self._vision_review = _vrres
             except Exception as _e_vr:                          # noqa: BLE001
                 print(f"  ⚠️ 视觉闸未运行：{type(_e_vr).__name__}: {_e_vr}")
@@ -2326,6 +2346,66 @@ class EpisodeRunner:
 
 
 
+
+
+    def _render_backend_healthcheck(self) -> bool:
+        """渲染前探一次后端（2026-11-11）。
+
+        EF27 有 6 镜栽在 `channel_unavailable: 无法连接 127.0.0.1:8188`，
+        而集成是在**整集跑完 20 分钟后**才发现 —— 6 镜已经永久缺图。
+        这里先探一次：不可用就打印一行警告（**不阻断**：可能只是想跑缓存）。
+        """
+        backend = getattr(self, "backend", None)
+        url = str(getattr(backend, "endpoint", "") or "")
+        if "8188" not in url:
+            return True
+        try:
+            import urllib.request as _ur
+
+            with _ur.urlopen(url.rstrip("/") + "/system_stats", timeout=5) as r:
+                ok = getattr(r, "status", 0) == 200
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 渲染后端探活失败：{type(e).__name__}: {e}")
+            print(f"     （{url}）后面 6 镜级的丢失通常就是它引起的")
+            return False
+        return bool(ok)
+
+    def _retry_channel_failures(self, batch, irs, rstats):
+        """把"通道不可用"的失败镜重试一次（2026-11-11）。
+
+        返回 `(新 batch, 重试成功的镜数)`。只重试瞬时错误
+        （`channel_unavailable` / `needs_reconcile`），别的失败不动 ——
+        "一律重试"会把模型本身的问题拖成 2 倍时间。
+        """
+        _retryable = {"channel_unavailable", "needs_reconcile"}
+        bad = [o for o in (getattr(batch, "outcomes", ()) or ())
+               if not o.ok and str(getattr(o, "failure", "")) in _retryable]
+        if not bad:
+            return batch, 0
+        _ids = {str(getattr(o, "graph_id", "")) for o in bad}
+        _irs = [ir for ir in irs if str(ir.get("graphId") or "") in _ids]
+        if not _irs:
+            return batch, 0
+        try:
+            _again = self._render(_irs)
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 渲染重试未运行：{type(e).__name__}: {e}")
+            return batch, 0
+        _b2 = (_again or {}).get("batch")
+        if _b2 is None:
+            return batch, 0
+        _fixed = {str(getattr(o, "graph_id", "")) for o in _b2.succeeded}
+        # 用重试结果替换原 batch 里同名镜头的结论
+        merged = tuple(_b2.succeeded) + tuple(
+            o for o in (getattr(batch, "outcomes", ()) or ())
+            if str(getattr(o, "graph_id", "")) not in _fixed)
+        try:
+            from little_crew.runtime.cached_render import CachedBatch
+
+            new_batch = CachedBatch(outcomes=merged)
+        except Exception:                                     # noqa: BLE001
+            return batch, 0
+        return new_batch, len(_fixed)
 
 
     def video_out_dir(self) -> Path:
