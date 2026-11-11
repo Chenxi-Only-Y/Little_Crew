@@ -738,6 +738,17 @@ def main() -> int:
     _f_source_guards()
     _g_entry_contract()
 
+    print(); print("H. 对外接口的 CLI 子命令（2026-11-11）")
+    from little_crew.cli.__main__ import build_parser as _bp
+    _p = _bp()
+    _subs = set()
+    for _a in _p._actions:                                    # noqa: SLF001
+        if hasattr(_a, "choices") and _a.choices:
+            _subs.update(_a.choices)
+    for _cmd in ("serve", "submit", "status", "fetch"):
+        _results.append((f"H·{_cmd} ★★★ CLI 有 \u0060{_cmd}\u0060 子命令",
+                         _cmd in _subs, str(sorted(_subs))[:80]))
+
     print()
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:

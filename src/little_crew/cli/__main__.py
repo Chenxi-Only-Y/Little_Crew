@@ -128,6 +128,31 @@ def build_parser() -> argparse.ArgumentParser:
                     help="允许往已有**别的集**的工作目录里写（默认拒绝）")
     se.add_argument("--json", action="store_true")
 
+    # ---- serve / submit / status / fetch（HTTP 客户端，2026-11-11）----
+    sv = sub.add_parser("serve", help="启动 HTTP API（对外接口）")
+    sv.add_argument("--host", default="127.0.0.1")
+    sv.add_argument("--port", type=int, default=8787)
+
+    sb = sub.add_parser("submit", help="提交一集（异步，返回 runId）")
+    sb.add_argument("--script", default="", help="剧本文件路径")
+    sb.add_argument("--script-text", default="", help="直接给剧本文本")
+    sb.add_argument("--episode-id", default="API", help="集号")
+    sb.add_argument("--out", default="outputs/api", help="服务端工作目录")
+    sb.add_argument("--limit", type=int, default=0)
+    sb.add_argument("--no-gate", action="store_true")
+    sb.add_argument("--server", default="http://127.0.0.1:8787")
+    sb.add_argument("--json", action="store_true")
+
+    stp = sub.add_parser("status", help="查某次运行的状态")
+    stp.add_argument("run_id")
+    stp.add_argument("--server", default="http://127.0.0.1:8787")
+    stp.add_argument("--json", action="store_true")
+
+    ft = sub.add_parser("fetch", help="下载某次运行的交付产物")
+    ft.add_argument("run_id")
+    ft.add_argument("--out", default="outputs/fetched")
+    ft.add_argument("--server", default="http://127.0.0.1:8787")
+
     return p
 
 
@@ -155,6 +180,10 @@ def main(argv: list[str] | None = None) -> int:
         "compile": commands.cmd_compile,
         "shot": commands.cmd_shot,
         "episode": commands.cmd_episode,
+        "serve": commands.cmd_serve,
+        "submit": commands.cmd_submit,
+        "status": commands.cmd_status,
+        "fetch": commands.cmd_fetch,
     }.get(args.command)
     if handler is None:                                 # pragma: no cover
         print(f"未知命令：{args.command}", file=sys.stderr)

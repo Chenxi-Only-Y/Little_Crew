@@ -505,3 +505,123 @@ def cmd_episode(args: Any) -> int:
 
     _emit(args, "\n".join(lines), payload)
     return ExitCode.OK if res.ok else ExitCode.FAILED
+
+# ---------------------------------------------------------------------------
+# HTTP 客户端（serve / submit / status / fetch）—— 2026-11-11
+# ---------------------------------------------------------------------------
+
+def _http_json(url: str, *, method: str = "GET",
+               body: dict | None = None, timeout: float = 30.0):
+    """最小 JSON 客户端（只用标准库）。返回 `(status, payload)`。"""
+    import json as _json
+    import urllib.error as _ue
+    import urllib.request as _ur
+
+    data = None
+    headers = {"Accept": "application/json"}
+    if body is not None:
+        data = _json.dumps(body, ensure_ascii=False).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = _ur.Request(url, data=data, headers=headers, method=method)
+    try:
+        with _ur.urlopen(req, timeout=timeout) as r:
+            raw = r.read()
+            try:
+                return r.status, _json.loads(raw.decode("utf-8"))
+            except Exception:                                 # noqa: BLE001
+                return r.status, raw
+    except _ue.HTTPError as e:
+        raw = e.read()
+        try:
+            return e.code, _json.loads(raw.decode("utf-8"))
+        except Exception:                                     # noqa: BLE001
+            return e.code, raw
+    except Exception as e:                                    # noqa: BLE001
+        return 0, {"error": f"{type(e).__name__}: {e}"}
+
+
+def cmd_serve(args: Any) -> int:
+    from little_crew.api.server import serve
+
+    import threading as _th
+
+    httpd = serve(host=args.host, port=args.port)
+    print(f"  启动 API：http://{args.host}:{args.port}")
+    print("  端点：POST /v1/episode · GET /v1/runs/{id} · "
+          "GET /v1/runs/{id}/artifacts · GET /v1/capabilities")
+    print("  Ctrl-C 退出")
+    # ⚠️ `serve()` 是给测试用的（后台线程起完就返回）；CLI 必须**阻塞住**，
+    # 否则进程打印两行就退出，客户端连不上（2026-11-11 实测）。
+    try:
+        _th.Event().wait()
+    except KeyboardInterrupt:
+        print("  收到 Ctrl-C，关闭服务")
+    finally:
+        try:
+            httpd.shutdown()
+        except Exception:                                     # noqa: BLE001
+            pass
+    return 0
+
+
+def cmd_submit(args: Any) -> int:
+    """提交一集（异步）。打印 runId，后续用 status/fetch。"""
+    from pathlib import Path
+
+    script = str(args.script_text or "")
+    if args.script:
+        script = Path(args.script).read_text(encoding="utf-8")
+    if not script.strip():
+        print("  缺少剧本：用 --script <文件> 或 --script-text <文本>")
+        return 2
+    body = {"script": script, "episodeId": args.episode_id,
+            "out": args.out, "limit": args.limit or None,
+            "gate": not args.no_gate, "allowReuse": True}
+    st, payload = _http_json(f"{args.server}/v1/episode", method="POST", body=body)
+    _emit(args, f"  提交：HTTP {st} · runId {(payload or {}).get('runId')}",
+          {"status": st, **(payload if isinstance(payload, dict) else {})})
+    return 0 if st == 202 else 1
+
+
+def cmd_status(args: Any) -> int:
+    st, payload = _http_json(f"{args.server}/v1/runs/{args.run_id}")
+    if st != 200:
+        _emit(args, f"  查询失败：HTTP {st} · {payload}", {"status": st,
+                                                          "payload": payload})
+        return 1
+    p = payload or {}
+    human = (f"  {p.get('runId')} · {p.get('state')} · "
+             f"{p.get('kind')} · error={p.get('error') or '无'}")
+    _emit(args, human, p)
+    return 0
+
+
+def cmd_fetch(args: Any) -> int:
+    """把某次运行交付目录里的文件全部下载到 --out。"""
+    from pathlib import Path
+
+    base = f"{args.server}/v1/runs/{args.run_id}"
+    st, listing = _http_json(base + "/artifacts")
+    if st != 200:
+        print(f"  列产物失败：HTTP {st} · {listing}")
+        return 1
+    files = (listing or {}).get("files") or []
+    if not files:
+        print(f"  没有产物：{(listing or {}).get('note') or '交付目录为空'}")
+        return 1
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    got = 0
+    for f in files:
+        name = str(f.get("name") or "")
+        if not name:
+            continue
+        st2, data = _http_json(base + f"/artifacts/{name}", timeout=300.0)
+        if st2 != 200 or not isinstance(data, (bytes, bytearray)):
+            print(f"    ✗ {name}：HTTP {st2}")
+            continue
+        (out / name).write_bytes(bytes(data))
+        got += 1
+        print(f"    ✓ {name}  {len(data)/1024:.1f} KB")
+    print(f"  已下载 {got}/{len(files)} 个 -> {out}")
+    return 0 if got == len(files) else 1

@@ -208,6 +208,64 @@ class RunRegistry:
 # ---------------------------------------------------------------------------
 
 class _Handlers:
+    """业务处理。**只做纯函数式的事情**，不碰 HTTP。"""
+
+    def capabilities(self) -> dict[str, Any]:
+        """能力清单：调用方据此知道"这平台能做什么、用哪些模型"。"""
+        from little_crew.agent.roster import DEFAULT_ROSTER
+        from little_crew.governance.model_routing import ROUTES
+
+        chain = {"screenwriter", "director", "production_designer", "previs",
+                 "storyboard_artist", "gaffer", "line_producer",
+                 "dialogue_editor", "composer", "review_board"}
+        return {
+            "platform": "little-crew",
+            "roster": len(DEFAULT_ROSTER),
+            "inChain": len([a for a in DEFAULT_ROSTER
+                            if a.agent_id in chain]),
+            "modelsByTask": {k: v.get("model") for k, v in ROUTES.items()},
+            "endpoints": {
+                "comfyui": (__import__("little_crew.config", fromlist=["x"])
+                            .env_value("COMFYUI_ENDPOINT", "")
+                            or "http://127.0.0.1:8188"),
+                "tts": "http://127.0.0.1:8110",
+            },
+            "api": ["POST /v1/episode", "GET /v1/runs",
+                    "GET /v1/runs/{id}", "GET /v1/runs/{id}/artifacts",
+                    "GET /v1/runs/{id}/artifacts/{name}",
+                    "GET /v1/runs/{id}/events (SSE)",
+                    "POST /v1/compile", "GET /v1/env",
+                    "GET /v1/capabilities", "GET /healthz"],
+        }
+
+    def artifacts(self, root: str) -> dict[str, Any]:
+        """列交付目录里的文件（名/大小）。**不递归**，防意外遍历。"""
+        from pathlib import Path
+
+        d = Path(str(root or ""))
+        if not root or not d.is_dir():
+            return {"files": [], "count": 0,
+                    "note": "该 run 没有交付目录（可能还没跑完）"}
+        files = []
+        for f in sorted(d.iterdir()):
+            if f.is_file():
+                files.append({"name": f.name, "bytes": f.stat().st_size})
+        return {"dir": str(d), "count": len(files), "files": files}
+
+    def artifact_file(self, root: str, name: str):
+        """读一个交付文件。**路径穿越必须挡住**（只允许单层文件名）。"""
+        from pathlib import Path
+
+        d = Path(str(root or ""))
+        if not name or "/" in name or "\\" in name or name in (".", ".."):
+            return 400, {"error": f"非法文件名 {name!r}"}
+        f = d / name
+        if not root or not f.is_file():
+            return 404, {"error": f"没有这个产物 {name!r}"}
+        try:
+            return 200, f.read_bytes()
+        except Exception as e:                                # noqa: BLE001
+            return 500, {"error": f"{type(e).__name__}: {e}"}
     """把 HTTP 请求映射到各层的调用。
 
     **本类不含业务规则** —— 与 CLI 同理：
@@ -368,7 +426,10 @@ class _Handlers:
         except Exception as exc:                              # noqa: BLE001
             # 落盘失败不该让"跑完了"变成"失败了" —— 但要留痕
             run.emit("交付落盘失败", error=f"{type(exc).__name__}: {exc}")
-        return res.as_dict()
+        _out = res.as_dict()
+        # 产物接口要知道去哪找 —— 交付目录必须进结果（2026-11-11）
+        _out["deliveryDir"] = str((out / "delivery")) if out else ""
+        return _out
 
 
 class _CompileFailed(Exception):
@@ -484,6 +545,19 @@ class ApiServer:
             self.runs.start(run, lambda r: self.handlers.episode(body, r))
             return 202, {"runId": run.run_id, "state": run.state}
 
+        if method == "GET" and parts == ["v1", "capabilities"]:
+            return 200, self.handlers.capabilities()
+
+        if (method == "GET" and len(parts) >= 4 and parts[:2] == ["v1", "runs"]
+                and parts[3] == "artifacts"):
+            r = self.runs.get(parts[2])
+            if r is None:
+                return 404, {"error": f"未知 runId {parts[2]!r}"}
+            root = str((r.result or {}).get("deliveryDir") or "")
+            if len(parts) == 4:
+                return 200, self.handlers.artifacts(root)
+            return self.handlers.artifact_file(root, parts[4])
+
         if method == "GET" and parts == ["v1", "runs"]:
             return 200, {"runs": [r.as_dict() for r in self.runs.all()]}
 
@@ -523,6 +597,14 @@ class _Handler(BaseHTTPRequestHandler):
         return obj
 
     def _send(self, status: int, payload: Any) -> None:
+        if isinstance(payload, (bytes, bytearray)):
+            data = bytes(payload)
+            self.send_response(status)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")

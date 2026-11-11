@@ -140,7 +140,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
-    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 67),
+    ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 71),
+    ("对外接口面", [sys.executable, "-m", "little_crew.api.surface_check"], 14),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
 
