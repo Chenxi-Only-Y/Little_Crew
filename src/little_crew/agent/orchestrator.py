@@ -875,6 +875,27 @@ class CrewOrchestrator:
 
         reviews: list[ReviewFeedback] = []
         stage_outs: list[StageOutcome] = []
+
+        # ---- 双审**并发**（2026-11-11）----
+        #
+        # 剧评人与文风编辑**互不依赖**（各自读同一份剧本、各写自己的意见），
+        # 串行纯属浪费时间。这里用线程池并发，但**不写黑板**：
+        # `run_stage` 会写产物键，两路并发会互相覆盖 —— 所以走
+        # `_invoke_as`（无黑板副作用），从 CallResult.output 里直接取意见，
+        # 失败则整体退回原来的串行路径（行为不变，只是慢）。
+        #
+        # `LITTLE_CREW_REVIEW_PARALLEL=0` 可强制串行（对比用）。
+        import os as _os_rv
+
+        if (len(rids) > 1
+                and (_os_rv.environ.get("LITTLE_CREW_REVIEW_PARALLEL") or "1") != "0"):
+            _par = self._review_artifact_parallel(
+                rids, dict(payload or {}), artifact_key, generator_id)
+            if _par is not None:
+                _reviews, _outs = _par
+                self._last_outcomes = tuple(_outs)
+                return tuple(_reviews), ""
+
         for rid in rids:
             spec = self._spec(rid)
             if spec is None or rid not in self._impls:
@@ -904,6 +925,65 @@ class CrewOrchestrator:
                             f"（查键 {key!r}，得到 {type(fb).__name__}）")
         self._last_outcomes = tuple(stage_outs)
         return tuple(reviews), ""
+
+    def _review_artifact_parallel(self, rids, payload, artifact_key, generator_id):
+        """并发跑多个审核者；**全成功**才返回，任何异常返回 None 退回串行。
+
+        返回 `(reviews, outcomes)`；`None` 表示"并发这条路不可用"。
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        def _one(rid):
+            spec = self._spec(rid)
+            if spec is None or rid not in self._impls:
+                raise RuntimeError(f"审核者 {rid} 未注册或未绑定实现")
+            cap = next(iter(spec.capabilities), "")
+            key = _REVIEW_FEEDBACK_KEY.get(rid) or f"{cap}.feedback"
+            res = self._invoke_as(rid, cap, payload, None)
+            if res is None or not getattr(res, "ok", False):
+                raise RuntimeError(
+                    str(getattr(res, "error_message", "")
+                        or getattr(res, "error_code", "") or "审核失败"))
+            out = getattr(res, "output", {}) or {}
+            fb = out.get(key) or out.get(cap)
+            if fb is None:
+                # 有些实现把意见放在"唯一那个键"下，键名由它自己定
+                _vals = [v for v in out.values() if isinstance(v, (ReviewFeedback, Mapping))]
+                fb = _vals[0] if len(_vals) == 1 else None
+            if isinstance(fb, Mapping) and not isinstance(fb, ReviewFeedback):
+                fb = ReviewFeedback.from_dict(dict(fb), frm=rid)
+            if not isinstance(fb, ReviewFeedback):
+                raise RuntimeError(f"审核者 {rid} 未产出可解析的审查意见")
+            return fb
+
+        try:
+            with ThreadPoolExecutor(max_workers=len(rids)) as ex:
+                reviews = list(ex.map(_one, rids))
+        except Exception:                                     # noqa: BLE001
+            return None
+        outs = [StageOutcome(stage=artifact_key, agent_id=str(r), ok=True)
+                for r in rids]
+
+        # ⚠️ **必须补写黑板**（2026-11-11）：
+        # 并发路径绕过了 `run_stage`，于是产物没进黑板 ->
+        # 依赖没登记、失效传播失效（orchestrator_check 的 I2/I3 直接挂）。
+        # 这里在主线程按 rid 顺序补写，**键/归属/依赖/别名规则与 run_stage 一致**。
+        for rid, fb in zip(rids, reviews):
+            spec = self._spec(rid)
+            if spec is None:
+                continue
+            cap = next(iter(spec.capabilities), "")
+            key = _REVIEW_FEEDBACK_KEY.get(rid) or f"{cap}.feedback"
+            produced = tuple(getattr(spec, "produces", ()) or ())
+            if key not in produced:
+                produced = produced + (key,)
+            deps = self._dependency_entry_ids(getattr(spec, "requires", ()) or ())
+            alias = (cap,) if cap not in produced else ()
+            self.blackboard.put(key, fb, owner=rid, deps=deps, aliases=alias)
+            self._record_ownership(key, rid)
+            if alias:
+                self._record_ownership(cap, rid)
+        return reviews, outs
 
     # ---- 完整循环 ------------------------------------------------------
 
