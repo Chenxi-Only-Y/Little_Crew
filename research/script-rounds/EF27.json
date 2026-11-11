@@ -1,0 +1,94 @@
+{
+  "episodeId": "EF27",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场只有一条动作线——「她把药一勺一勺喂进去」「守到灯芯短了一截」，没有任何阻力与她对抗。上一场父亲的驱逐令、下一场的离村都在场外，场内旅人昏睡、环境顺从，她撕新衣、翻箱底都是一次成功一次，护理过程零失败，这场戏实际是『照护蒙太奇』而非戏剧场面。', suggestion='给这场加一道硬阻力：或让药断了/父亲把药碗扣了（把 S03 的冲突延续进屋），或让旅人高烧反复——缠好的布条再度崩开、她刚撕的新衣也不够用，逼她付出第二次代价（例如半夜翻墙去敲母亲的窗求药，母女因此破例见面）。让护理变成一场有胜负的拉扯，S07 的牺牲才有积累。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：这是全剧最大的决定——「我跟你走」，永久离家，却没有任何人出面拦截：「父亲站在门里侧，没有出来」「父亲已经背过身去了」全是被动姿态，老奶奶只是赠花，旅人也不劝阻。冲突在最该爆发的节点上缺席，等于让主角免费拿走最大筹码。', suggestion='让父亲真的跨出那道门，堵在门口或抓住她的包袱带，说一句决绝的话（与 S03 的「这堂屋你就别再进来」呼应但更狠），使她必须在父亲与北方之间亲手掰开他的手——把成本当场付清，而不是用「背过身」轻轻带过。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：结尾完全由转述和空镜构成：「老奶奶把手里的花穗掐断」「父亲从门里出来……站到日头偏西」「后来村里人说，再没有人见过她」。父亲与少女零接触，他与老奶奶之间也无只言片语的交锋（老奶奶掐断花穗似有隐情，却无人追问），整场只有雾在动，情绪全靠叙述交代。', suggestion='给父亲与老奶奶一次正面摩擦：父亲冲到村口质问「你早知道他不是人，为什么还给她花」，老奶奶不答或只回一句，两人僵住——这样父亲的悔意由对抗中显影，结尾的空镜才压得住，而不是靠旁白补写。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 36.359
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 77.517
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 2,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.421
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": false,
+            "produced": [],
+            "error": "剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）",
+            "seconds": 351.941
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "审核者 dramaturge 执行失败：剧评人调用失败：[bad-json] 模型剧评里找不到合法 JSON 对象（前 200 字：'The request was rejected because it was considered high risk'）"
+}

@@ -1,0 +1,151 @@
+{
+  "episodeId": "EF35",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：代价是用旁白直接报出来的——“代价来得很快——从那天起，村里春天的集会、秋天的分粮，她再没有露过面。人们提起她，只说‘那家的女儿’。”这一段是概述，不是场面；观众听到的是结论，没有看到她被村子推开的任何一次具体时刻，代价因此是账面上的，不是肉身上的。', suggestion='把这段叙述拆成一个可见的小场面：集会锣响时她站在门里往外看、分粮的队伍从门前过而她不出屋、母亲把披肩的旧布替她补上却一句话不说。保留父亲摔碗的冲突，让“孤立”在画面里发生一次，再把概述删掉。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全剧高潮的对抗是空的——“他没有躲。他一直看着她”。她掷出花束时没有任何反作用力，唯一的对手主动散开，紧接着用一句台词“我就是你想远行的心啊”把悬念解释干净。抛掷与消散之间没有拉锯，这场戏只剩特效式的溶解，冲突在最该顶起来的地方泄掉了。', suggestion='给他一个最后的抵抗或阻拦动作（挡在她身前、抓住她的手腕、反过来求她别扔），让她的“掷”必须突破阻力才能完成；身份不要用台词点破，改成他消散前重复S01里那句没说完的话，或让她终于喊出一个名字却只喊出半截——把解释权交还给观众。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：回村还是往前走，这个本该最重的选择没有任何阻力就定了——“她没有回头”，随即“那我就自己走”。故乡的引力只以名词罗列的方式被念出来（“父亲的碗、母亲的袖子、还有那间她守了一整夜的小屋”），她一步都没有动摇过，场上唯一的对手是风。', suggestion='让她真的往回走：转身朝村子方向迈几步，摸到包袱皮上那半幅披肩（母亲织的）才停住，再转回来。选择要有一次可被看见的反复，她的独白才不是宣言而是决定。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 23.54
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：出走这一转折没有遭遇任何正面阻拦。少女宣布“我跟你走”，原文只写“人群里有人低声说了句什么，声音很快散掉”，老奶奶给花也是成全而非阻拦——最大的家庭对抗（S02 父亲“你今天走出这扇门……”）在她真正跨出门的这一刻反而缺席了，冲突在最该爆发处滑过去了。', suggestion='让父亲或母亲在村口出现并正面拦一次（哪怕只是抓住包袱带、一句“你敢走”），把 S02 的威胁在此处兑现；少女挣脱或绕开的动作，就是这一场的阻力与代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全独角戏，内心交锋被一句话带平：她“走了三步”就立刻停住，用“回去，也是那扇门”自我说服，随后直接说出“我不回去”——母亲的披肩本该是往回拉的力量，却没有任何一个瞬间真的把她的身体拽回去，选择来得太顺。', suggestion='让披肩真正发力：比如她已朝村子方向走出一段，摸到披肩后折返的方向与情绪相反（边走边掉泪却不停步），或让远处传来集会锣声/母亲的呼唤作为最后一次拉扯，她顶着它把脚步转回去——代价在动作里付，而不是在台词里说。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：老奶奶独处，既无对手也无抉择：她只是拾花、听风、说一句“这孩子”，然后回村。结尾除了一句回声式的“别……”，没有任何局势或情绪的位移，也无人为这场收尾付出什么。', suggestion='给尾声一个微型对抗/代价：例如她发现花瓣正以不正常的速度枯萎（“香散了”的规则兑现），她必须决定是否回村报信、要不要追；或她把花带回村的那一刻，村人对她投来的目光——让最后一场仍有一次小小的取舍。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 45.636
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：阻力几乎为零：唯一的对抗是「人群里有人低声说了句什么，声音很快散掉」，老奶奶还是来送行、送花的助力方。而真正的阻拦（父亲攥住包袱）被推到 S04，且 S04 开头「少女的脚刚踏上村道」与 S03 结尾「她没有回头看一眼自家的屋檐」在时间上重叠——S03 已经让她毫无阻碍地走出来了，S04 的拦截就成了倒放，削弱了这场对抗的突发力。', suggestion='把两场接成一条线：S03 结尾停在她刚推开门、踏上村道的那一瞬，父亲从屋檐下转出来攥住带子作为切点进入 S04；或在 S03 内先放一个具体堵口（有人堵门、旅人自己不肯带她走），让她在 S03 就付出一次退让的代价，S04 的父女对峙才不会是重复第二次「出门」。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这一场已经完成了一次完整转折——「她背起空了的包袱，朝北边那条路走进去」，可 S07 紧接着又让她停下、被母亲喊声拉回去、再「把脚硬生生拧了回去」。同一个「停步—倾向村子—选择向北—不回头」的转折连做两遍，S06 的决定在真正的考验（锣声与母亲的喊）到来之前就花掉了，第二次的张力被第一次泄掉。', suggestion='删掉 S06 里的决定动作：让她蹲着捡花瓣、念完「是我自己」之后，镜头停在岔口与两条路上——她还没选。把「朝北」这个动作完整留给 S07，S06 负责情绪落地，S07 负责付代价并作出唯一一次选择。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：转折（花在掌心枯成灰）发生在场次最开头，随后用一句说明文直接替观众把含义讲完：「规则兑现了：花既已照出了那东西，也就不必再香。」后面整场只剩她站在不开的门前直到天黑，局势不再有任何变化——付了站到天黑的代价，却没有换回任何一点处境的改变。', suggestion='删去「规则兑现了……」的解说，让花枯与「香散了」这句台词自己完成意义；并在结尾给一个微小但真实的回应：门开一条缝、里面传出「走吧」又合上，或村民甲默默接过枯花——让代价换来一次哪怕是否定性的回响，而不是完全静止的收场。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 20.347
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.9 分）"
+}

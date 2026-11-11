@@ -1,0 +1,164 @@
+{
+  "episodeId": "EF24",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场唯一的阻力是旅人半句“……别——”，随后他便昏过去；真正该发生的对抗（把他弄下山坡）被“她背起他，才发现他比看着要轻”一句化解，人被抬走时没有任何拉扯或失败的可能，救援没有对手戏。', suggestion='让救援本身成为意志对意志的冲突：旅人挣扎、抓开她的手、反复拒绝，或给背负上坡一个具体的物理阻力（坡陡、他从背上滑落、血重新洇开弄脏她的披肩），让少女为“救”当场付出可见的力气与代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲搬出“集会的钟敲过了”“你外婆的银镯子今晚要交”作为代价，但紧接着“母亲站了很久，把灯留下，退了出去”即时退让，代价从未落地；这与S02“母亲拉住父亲的袖子，摇了摇头”是同一模板，连续两场劝阻都以长辈退场收尾，冲突反而递减。', suggestion='让代价真的发生——银镯当夜交到别人手里、母亲替她去集会却当众替她挨下闲话，或母亲留下一句不可撤销的条件（“镯子我替你收着，等你回来”），使少女的守护留下一道看得见的伤口，而不是换来一次安静的退出。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：这是S04“绕过父亲、往前走了一步”的第二次离村，两个连续场景都以“她转身走了”收束。S04父亲“伸到一半的手，停在半空里”的张力，到S05变成“父亲站在原地没有动”“用鞋底慢慢蹭掉界石上的一块泥”，村民也只是看着，人群“已经让开一条路”——阻力自行消失，第二次转折被第一次泄掉。', suggestion='合并为一次离村；或在S05把阻力升级（有人真的挡在界石前、父亲开口要她留下那束花或那个包袱），让她为“走出第二步”再付一次代价。总之只保留一次真正的告别动作，其余场次改为送行或阻拦，不要重复同一个“转身就走”的收尾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：旅人“没有躲”，他的消失是自行完成的，少女的掷花并未成为他消失的原因，代价（失去同行者）是旁观发生的；本场收在“花心里有一点点灰”的意象上，她的承担要到S08的独白“是我自己要走”才兑付，转折极大，但当场没有代价落地。', suggestion='让她的选择成为不可逆的因：例如必须由她亲口说破/承认才能让烟散，或让这一掷直接夺走她此刻唯一依赖的东西（花束、认得的山路、以及“是我在救他”的自我认定），并在场内给出她承受的反应，而不是把情绪结账推给下一场。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 43.351
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 187.339
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：开场婶娘已经宣布结果——「集会名册上，她的名字我划了」，对抗在戏开始前就完成了；随后母亲拿出银镯，但镯子要换回什么（恢复名籍？堵住流言？还是保住她不被除村）始终没有说清，婶娘那句「堵不住那么多张嘴」也没点明嘴在说什么。标的不明，观众无法判断母亲到底在跟谁斗、斗的是什么。', suggestion='把「划名」改成正在发生或待决的动作（婶娘手里捏着笔/名单未落定），并让对话明确代价的指向：例如母亲说「名籍您划回来，镯子是谢礼」，婶娘反问「划回来她就能进得了祠堂？」，让交换条件和剩余阻力同时可见。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：场末「她把手在裙子上擦干净，站起来」只有姿态，没有可辨识的决定或局势变化：雾吞了来路、退了两步找不到脚印，她既没说要往前走，也没接受留在原地，站住之后无事发生。情绪停在「却没有哭」的抑制上，局面是平的。', suggestion='给一个能被看见的选择动作来收束本场：比如她把那点灰撒向雾深处、朝唯一没被雾吞的方向迈出第一步，或把最后一片花瓣插在路口做记号——用一个不可逆的小动作代替静止的站立，转折就落地了。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：屋子这条冲突的解决是免费的：母亲只「摸出一张当票」，老奶奶在院墙外喊一句「薰衣草开花了」，婶娘就「悻悻地出来」，父亲也松口。抵抗方零代价退场，母亲没有付出任何实质的东西，前面积累的镯子、跪半宿的代价到这一场全被抵消。', suggestion='让保住屋子付出看得见的代价：母亲必须交出当票（等于放弃赎回镯子的念想）、答应把西厢让出/替婶娘家做一年工，或当众认下一笔欠情——老奶奶那句话只负责松动，不负责成交。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 50.835
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 87.029
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人的阻力几乎不成立：他皱眉反对「你昨天还在给你娘熬药」，少女只回一句「今天不熬了」，对抗就地瓦解。她抛下病中母亲这一重大选择，没有经过任何真实的拉扯就被轻描淡写地通过了，冲突一触即溃。', suggestion='让阻力落到具体代价上：旅人指出她走后母亲无人熬药、名册已被划、西厢将被收——把 S02/S03 已付出的代价重新压回她面前，逼她在「跟上去」与「回头担下」之间做一次真正的撕扯，再让她选择出发。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：雾的阻力解决得过于廉价：「她蹲下去，把那撮灰撒向雾最浓的地方。灰落下去的一瞬，雾退开了一线」——动作一次成功，没有任何失败、试探或代价，前一场刚建立的「花能现形」规则被无条件兑现。', suggestion='让开路付出代价：灰撒第一次无效（她只剩这么一点，是全部筹码），或雾退一线的同时吞掉她一样东西（竹篮、另一只手里的花梗、来路最后一段记忆），使「迈第一步」成为不可逆的交换，而非顺手的通行证。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场把局势推到最高点——「三日后祠堂议事，她身上这笔秽气，得有人替她认」＋「跪早了，三日后，当着全村人再跪」——但这个待兑现的对抗在后续场次中从未回访，S04–S07 直接跳过三日后的祠堂，赌注悬空。', suggestion='要么在 S04 前插入三日后的对峙（母亲当众跪下，名册仍未落笔），要么把婶娘的期限改为更短、且在少女离村当日到期，使离村这一动作本身成为对祠堂议事的「逃席」，让 S08 婶娘那句「人跟外乡人跑了，名册上我划了」成为对本场的直接清算。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 77.311
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 109.547
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 3 轮（59.9 分）"
+}

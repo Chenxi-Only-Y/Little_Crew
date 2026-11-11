@@ -1,0 +1,166 @@
+{
+  "episodeId": "EF29",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶给出的是一条规则（\"那花会告诉你\"），但整个场景里没有任何阻力：少女问、老人答、少女接花离开，对话全是叮嘱与谜语，没有人为她设障，也没有人为这束花开出价码。她转身离开村口的决定来得太顺。', suggestion='给老人一个反向动作——比如她明确说出这束花的代价（花一用就枯、或用了就再也闻不到家里的味道），或让人群有人上前阻拦、被老人挡回去。让\"得到花\"本身成为一次交换，而不是一次赠予。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：这场对峙是单向的：少女三次出招（\"你到底是谁\"\"不像回家，像逃\"\"我怕的是你走了\"），旅人全部用反问化解（\"这重要吗？\"\"那你为什么还抱着那束花？\"），既不承认也不否认，双方都没有付出、也没有被逼退。冲突停在原地，只靠他\"不暖、太亮\"的笑容做情绪铺垫。', suggestion='让旅人产生一次真实的反制：他可以反过来逼她做选择（要求她把花扔下才继续带路，或直接转身走掉把她甩在山道上），让少女为\"继续跟随\"付出一个具体动作上的代价，为S07的掷花积累势能。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：S05埋下的核心装置——\"花会告诉你他是否不洁\"——被跳过了。S06结尾她只是\"手臂出了一层汗\"，S07开场她已决定\"我要看看你到底是什么\"，中间没有她观察花、得到信号、因而改变主意的那一拍；掷花的触发点是空的。同时旅人面对掷花零抵抗，不躲、不拦、不解释，一句\"我就是你想远行的心啊\"把S01（\"北\"）、S03（\"别跟来\"）的悬念一次性兑付成抽象答案，高潮在无对抗中一击结束。', suggestion='补一个转折拍：花穗在她掌心出现异状（变色、发凉、或香气骤失），她据此改变表情再掷出。并给旅人一次抵抗——伸手来挡、或在消散前说出半句关于\"北\"的真实信息，让谜底分两次兑付，而不是一次说完。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：这一场要同时结清两笔代价：S04的断亲弃家，和S07失去所追之人。但处理是\"她没有哭，也没有喊\"→捡花→继续走，两个重代价被她毫无抵抗地吸收，只剩旁白陈述（\"再没有人见过她\"）。代价被说出来，没有被演出来。', suggestion='在她起身前加一个身体层面的抵抗拍：她朝村口的方向（或来路）走了几步才折返、或蹲下去时手撑不住地、钥匙的重量让她停了一下。让观众先看到她\"几乎要回头\"，再看她没有回头，S05\"别回头\"的规则才真正付清。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 38.114
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 127.013
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：S02末尾她的立场已经确立（不低头、往里屋走、守了一夜并明白领舞曲子听不见了），S03的阻力仍是同一对父母说同一句话（“集会的花冠，我给你放在门槛上了”“今年是你领舞”），她的反应仍是同一个选择——留下。情绪方向与上一场完全同向，没有新的局势变化，只是把已成立的转折重演一遍。', suggestion='给S03一个S02没有的新变量来撬动局势：比如旅人在她按门板时说了一句含混的话、或烧退的时机恰好卡在她即将开门取花冠的一瞬，让她的决定由一个外部突发信息触发，而不是重复“父母施压—她不动”。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：冲突（他夺包袱扔回门槛）的解决几乎没有付出代价——“弯腰把衣裳捡起来，拍掉土，重新打结，重新背到肩上”，损失只是一层土。对抗被化解得过于便宜，她“跟上”的胜利缺乏重量。', suggestion='让这次拒绝造成不可逆的损失：包袱散开时滚出的是她此行唯一带上的东西（如母亲给的干粮、那顶被推下台阶的花冠的穗子），或他踩上去、撕破一件，她只能带着破损继续走——这样“你扔一次，我捡一次”才有代价支撑。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：转折的触发与因果都不清楚：S06她刚拼死喊出“我扔不了”，S07却在没有明确新理由的情况下“把它掷了出去”；而“它不是该对你变黑吗”这句台词之后，花为什么对她自己变黑、这如何构成她必须扔的理由，剧本没有交代。旅人突然消散也只由这一个含混动作触发。', suggestion='补上她改变主意的可感信息：比如花变黑的同时她掌心开始失去知觉、或旅人的身体也开始透明——让“再不扔他就要没了/我自己会先烂掉”成为她掷花的明确动因，转折就从猜测变成必然。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场没有任何外部阻力，只有雾、远处一句问话和她自己的腿在动；同时“转身—停住—再转回”的挣扎，与S03门后按门板、S04捡衣裳、S05“没有再看父亲”、S06“不回头”用的是同一个动作母题，到收束场已是第六次，对抗感被重复稀释。', suggestion='给S08一个具体的外部对抗物来承载她的内心撕扯：比如村口真的有人追上来喊她、或那句“她走了吗”变成实际的脚步声逼近——让她必须在被找回的现实压力下做出最后的转身，而不是在空无一人的雾里独自完成。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 58.694
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 97.646
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：冲突（父亲反对留人）解决后，代价是用旁白直接宣告的——“代价是她从此再没有回过村子里的集会”。这一句已跳出场景，是作者的总结，不是她当场付出的行动；场内真正付掉的只有“忽然发现嘴里的调子哼不出来了”这一瞬。', suggestion='删去那句旁白，把代价写进可见的动作：让她为守夜付出一个当场且不可逆的东西（领舞的铃/花冠被母亲收回、她清晨出门时院里已空、她绕开集会的路口），让观众自己算出她失去了什么。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：转折点是“烫退了，退得那么快，好像从来没有烧过”之后她“手从门板上收回来，坐回炕边”——留下来的理由恰恰被这一句抽走了（不再需要照料），剧本却没有给出任何可读的动机，观众读不出她这一瞬变了什么；母亲“天亮以前你自己想清楚”的通牒也始终没有得到应答，冲突悬空滑进S04。', suggestion='给她的留下一个明确且有代价的触发：比如她拉开门闩，看见院里上路的队伍/母亲的背影，再亲手把闩落回去；或让“烧退得这么快”本身成为她留下的原因（她意识到他不是能放手的人），用一个动作或一句她的自语把这个决定钉死。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：少女进场时已决定“我跟你走”，离场时还是同一决定，场内唯一的变化是旅人的态度——“旅人看着她，什么也没说，转身上路”。他从夺包袱、扔回泥地骤然变成默许，中间没有任何触发点，阻力是自行消失的，而不是被撞破的。', suggestion='给他的转变一个可见的触发（他先走出几步发现她还跟着、再伸手夺包袱却停在半空；或他把踩碎的花穗从鞋底抠出来塞回她怀里），或者把他的拒绝做实——让他明说为什么不能带她，她的“跟上去”才是一次跨越阻力的结果。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：老奶奶的警告与少女之间没有对抗：“攥着，别丢”“追吧”她全部照做，唯一的反问是“……不洁的东西？”，随后“她攥着花往前跑”。信息交代了，冲突没有发生，这一场也没有让她付出任何东西。', suggestion='让她顶回去：她替他辩护、不肯接花，逼老奶奶开出条件（交出包袱里的东西、答应一个她不敢应的誓、或老奶奶直接拦住去路），她付出代价才拿到那束花，后面“攥着花往前跑”才是一次真正的跨越。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 68.667
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 214.279
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 50.4（REVISE）；最好的是第 1 轮（50.4 分）"
+}

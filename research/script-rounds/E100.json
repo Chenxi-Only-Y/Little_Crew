@@ -31,22 +31,18 @@
             "seconds": 0.0
           },
           {
-            "stage": "gate",
+            "stage": "script.draft",
             "agent": "dramaturge",
             "ok": true,
-            "produced": [
-              "script.critique"
-            ],
+            "produced": [],
             "error": "",
             "seconds": 0.0
           },
           {
-            "stage": "gate",
+            "stage": "script.draft",
             "agent": "story_editor",
             "ok": true,
-            "produced": [
-              "style.guard"
-            ],
+            "produced": [],
             "error": "",
             "seconds": 0.0
           }

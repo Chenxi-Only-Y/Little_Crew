@@ -1,0 +1,153 @@
+{
+  "episodeId": "EF36",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全段没有任何阻力就进入施救——『她把竹篮一放，蹲下去探他的额头』，中间没有犹豫、没有掂量、没有想走的瞬间；结尾『山路上一个人影都没有』只是环境渲染，并没有因为她施救与否而改变局势，场面是平的。', suggestion='在她动手前插入一个明确的选择点：先想转身回村叫人（呼应后面『村里人怎么对外乡人』），再被伤者的动静或天色逼回来，做出留下包扎的决定；这样冲突、代价、转折才在同一场内闭环。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲立下最后通牒『他醒了就让他走，一天都不许多留』，但下一场就是同夜，再下一场直接跳到春天——他既没有第二天来赶人，也没有再追究过，对抗无疾而终；『出了事，别来找我』这句狠话也没有兑现任何后果。', suggestion='让通牒落地：第二天父亲真的来赶人或断药，少女付出代价（顶撞、跪、替他挡下）才换来多留的许可；或在 S05 旅人离开前让父亲的禁令回响一次，使这场冲突的账有始有终。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场只有照护加线索投放，没有对抗：『谁？谁会看见？』他『不答』，『我不叫阿蘅』她『声音很轻』带过，铜扣『放回原处，没有问』——三个秘密她一次都没逼问，旅人也没有任何抗拒，代价为零。', suggestion='让她追问到底：发烧的人被摇醒后的挣扎、抓住她不放、把话咽回去的对抗；或加一个外部打断（父亲推门、门外有动静），使『守住这个秘密』变成需要付代价的行动。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：阻力一触即溃：母亲追出来只塞了两个饼，一句『别说了』就转身回屋『没有再出来』，父亲整场缺席；少女『我跟你走』的决定没有遇到任何实质阻挡，离家的代价只靠『指节发白』的细节暗示，没有兑现。', suggestion='让母亲真正拦一次——攥住包袱、说一句重话（提她爹、提这个家），把『抛下一切』的代价当场摆上桌，再让少女挣脱着走出去，S06 的决裂才不显得突然。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 36.802
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场以「忽然听见他含糊地念了一个名字——不是她的」「你念的是谁？」制造核心阻力，这是全剧最尖锐的一次逼问。但直到 S07 旅人化烟，这个具体的名字始终无人回答，悬念钩子悬空，使 S04 的对抗在整体结构里没有落点。', suggestion='让这个名字在结局前被回收——例如 S07 揭示那其实是旅人（即她的心）本该去往的地方之名，或她自己幼时说过的地名；或者把 S04 的冲突焦点改到铜扣/身份上，确保每一场设下的阻力在结局都有兑现。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场主阻力是旅人的拒绝：「不能。跟着我走的人，没有一个走回来过。」但阿蘅只用「那是他们，不是我」「你凭什么替我挑路」两句回怼，旅人既未再坚持，也未开出任何条件，下一场开场已是「两人并肩走了半夜」——阻力凭台词消失，她的跟走没有付出代价，也没有过渡。', suggestion='给这个拒绝设置一道实际门槛：旅人要求她交出或放弃什么（如那束花、村籍的念想），或约定「你若在天亮前追上我便算」，让 S07 的同行是她赢来的，而不是被跳过去的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全剧最后一次正面对抗。旅人此前五场一直抵抗交出名字（「名字给了你，我就走不了了」），到这一场却「没有回答，他只是笑」，被花掷中后直接化烟而去——零反制、零条件、零讨价还价，冲突在她单方面的一个动作里解决，赢得太便宜，最后一战没有撑起前面五场积累的张力。', suggestion='让最后一掷本身遭遇阻力：花瓣贴上前旅人伸手去挡，或反过来要求她先承认「我要离开村子」才肯受这一掷——使交出名字必须以她的自我交代为代价，胜利与代价在同一动作里完成。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 48.097
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的反对刚立起来就被拆掉：他连下两道禁令（「他是外乡人」「今晚的集会，你别去了」），阿蘅只是端起药碗转身，母亲一句「少说一句」给冲突松了绑，父亲再无后续动作。整场对抗止于一句口头威胁，没有真正的阻挡。', suggestion='让父亲的禁令产生实际阻碍——他扣下药碗、挡在门口，或当场收走她的披肩/采花工具；母亲的调停改为拉不住、只能目送，使阿蘅的通行必须靠一次正面冲突换来的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：S05 以「明天，你自己选」收尾，立了一个明确的次日约定；S06 开场却是「天未亮，旅人再次拒绝」，把刚立起的转折直接作废，两场读起来是同一个节拍演了两遍（拒绝→附带条件）。', suggestion='删去 S06 开头的重复拒绝，让他直接兑现 S05 的「你自己选」，并把选择设计成需要她付出新东西的二选一；或把 S05 的收尾改为他不告而别，让 S06 从追赶中起戏。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：「说，你不回村了」这个条件没有新代价：S03 中父亲已说「走出这个村口，就别再姓阿」，她也已经跨出村口，离村在第三场就付清了，第六场再要求她承认一次，观众感受不到痛。', suggestion='把条件换成她尚未交出的东西——老奶奶那束「能让不洁的东西现形」的薰衣草是村子给她的庇护与身份，分花这个动作本身就是代价；台词改成要求她交出花束的来历（「把花还给他们」），而不是重复一个已完成的声明。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：旅人的核心台词是旧信息的复述：「白鹿渡……是你七岁那年说要去的地方。你叫出它，我才走得成」在 S04 已经全部说过了（「那是我七岁时跟母亲说想去的地方」「名字给了你，我就走不了了」）。这场真正的转折只剩最后一句「我就是你想远行的心」，前面的大半段在回收观众早已知道的谜底。', suggestion='把 S04 削到只留疑心（他念出白鹿渡，但不解释），把「叫出名字他才能走」的规则留到 S07 才揭示；这样她掷花那一下既是解开规则，也是自我确认，转折力度才落在终点上。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 59.05
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 2 轮（59.9 分）"
+}

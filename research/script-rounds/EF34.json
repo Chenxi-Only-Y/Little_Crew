@@ -1,0 +1,152 @@
+{
+  "episodeId": "EF34",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：全场只有问答交换信息：'他问她为什么救一个来路不明的人''少女说山路上不能见死不救'，唯一的阻力是他语气变硬的一句'别跟'，属于态度而非对抗；她没有提出任何被挡回的具体诉求（比如要求同行、追问北方、要他留下），冲突是软的。\", suggestion=\"给她一个可执行的动作并让他挡住：比如她已经把披肩包好递上、或跨到门口说'我跟你走到村口'，他伸手拦下或把包袱放回——阻力落到身体上，'碗底裂纹'和'劈柴声停'才有落点。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：S02–S03 用两场戏垒起的父亲阻拦，在此以'父亲追到门槛，没有拦，只说走了就别回来'一句化解——阻力没有经过任何对抗就自行消失，父女线是免费收束的。\", suggestion='让阻拦真正发生一次再放手：他抓住她的包袱带、把门槛上的锁扣按下，最终是自己松手（代价是他先认输），或他提出一个她必须拒绝的条件（把花留下/不许姓氏跟着出门），她拒绝并付出被除名的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：'她以为是角度，挪了挪位置，还是没有''她闭眼装睡，手心全是汗'——发现无影与察觉门外说话是同向递进，两次都以她不动声色收尾，情绪停在同一个刻度上，没有反向变化。\", suggestion=\"在装睡前给她一次反向动作：她摸出薰衣草欲掷又收回、或起身走向门口却在门缝前停住——把'知道危险仍选择跟随'的代价前置，S07 的掷花才不是突然的勇气。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：'先往左走了三步，又停住……她没有再回头，走进雾里'——走向北方这个最终决定没有付出任何新增代价：村子早在 S05 就已离开，此处的'不回头'是重复而非加码；'后来村里人说……也有人说'的传闻式旁白进一步把决定的重量稀释掉了。\", suggestion='让最后的选择带走一件具体的东西（把空包袱里的披肩或花粉留在路边石头上、折返三步后丢下竹篮），或删去传闻旁白，用一个不可逆的实体动作收尾。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 36.981
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：旅人'横过一条手臂，挡在她和路之间'，她'肩头撞上去，被硬生生挡住，脚后跟在地上一滑'——这场对抗以'她抬头看他，忽然笑了——笑得他手臂松了一寸'收束。阻力是被一个笑免费化解的：她既没掉东西、没受伤、没失去什么，他让步也没有付出（伤腿、愧疚、时间都没有体现），双方都是零成本。\", suggestion='给这一挡装上价码：或她硬闯时牵动他的伤腿、他疼得退半步才松手（她用他的痛换来的通行）；或她摔掉了某件信物/包袱散开，得蹲下去捡，让笑容出现在狼狈之后。让步必须有痕迹，否则这个转折是白送的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：全场的对抗只存在于她一个人心里：'她知道只要把花掷出去，就能知道答案。她选择不知道。'旅人全程'没有回头'，只说了一句'睡吧，天亮还有很长的路'，外部零阻力——这是一个内心独白场，不是一场戏。\", suggestion=\"把内心挣扎翻译成可见的动作对抗：她举花时他忽然回头/挪开火堆让她的影子露出来；或他伸手替她拢被子、她必须在离他半步之内把花藏回去。让'不掷'这个选择在过程中差点被打破，观众才看得见阻力。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：S06 已用'他没有影子'把底泄给观众，S07 的转折因此只剩确认而非揭示；而确认之后的落点又太轻——'我就是你想远行的心啊'是概念性的，她实际承受的只有'一地花瓣'，情绪爆点没有落在可感的损失上。\", suggestion=\"把爆点从'他是什么'移到'她失去了什么'：让他在化烟前替她做完一件具体的事（把包袱系紧、指一下北方的路），或让那句台词之后她有一个实质动作的代价——比如扑空摔倒、攥碎手里最后一枝。转折要由她的身体和物件来接，而不是由一句旁白式的台词接走。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：作为收尾场，全程无任何外部阻力：摆放花束、扣竹篮、转身向北，一切顺畅；她唯一的迟疑是'先往下走了三步——往村子的方向——停住'，而这一次出走的真正代价早在 S05 由父亲付清，S08 等于在演一场没有对手的胜利游行。\", suggestion=\"在最后一步上补一个微小但真实的反作用力：村口的钟声/母亲的喊声从背后传来，或雾里出现一个回村的同村人与她擦肩——她必须主动、当着这个阻力的面选择向北，'每一步都是她自己选的'才由叙事变成事件。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 42.405
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的阻力只出现一场就彻底消失：他撂下\"今晚我不回来\"摔门而去，此后全集再未返场，\"村里人怎么看你\"的威胁也没有任何后续兑现——村里的舆论压力仅靠一声集会钟和少女\"没有出门\"带过，对手戏没有形成持续对抗。', suggestion='让父亲的阻力在后段回响：或在 S04 他要跟旅人走时让父亲/村民堵在村口（把 S02 的话原样砸回来），或在 S08 母亲喊她时加上村民围观的指点，使 S02 立下的对抗有回收，她的出走才付得出\"与全村为敌\"的代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人话里的破绽是被刻意埋下的线索——\"先说城里有钟，又说城里的钟早烧了\"——但少女\"追问\"之后这个矛盾就断了，既没被戳穿，也没在后面任何一场（S06/S07 的三次追问、S07 的化烟）中被回收，等于白埋。', suggestion='让这个矛盾成为她识破他的抓手：S06 或 S07 她可以用\"城里的钟早烧了，你敲的是哪口钟\"反将一军，逼出他的失态或那句\"我就是你想远行的心\"，使谎言的裂缝直接通向结局的揭示。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 71.664
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 69.4）"
+}

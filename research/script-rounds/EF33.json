@@ -1,0 +1,166 @@
+{
+  "episodeId": "EF33",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：父亲的阻力在本场突然泄气。S03 里他拍桌、下通牒「明天就送走」「你要留他，就别去春天的集会」，是全剧最强的对抗方；到了 S05，少女真的背着包袱走出家门，他却只说了一句「你敢踏出这一步，就别再回来」便放手，「父亲没有喊她」——最强的阻力点没有兑现成实际阻拦，对手强度前后不连续。', suggestion='让父亲的威胁在本场落成动作：堵住门、伸手夺包袱、或扬手欲打被老奶奶/母亲拦下，使「离开」这一步真正撞上一堵墙；她踏出门的代价（被夺走的东西、被撕破的包袱）要在场面上可见，而不只是一句台词。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场情绪是平的。守夜—擦汗—听见手鼓—掩窗—天亮，唯一的变化是「他的烧退了一点」；旅人的警告「你会后悔……留下我」被少女以「那就等醒了再说」原样挡回，没有在她身上激起任何犹豫、动摇或反向选择，冲突只停在不行动（「她最终没有推门」）。', suggestion='给这句警告一个落点：让她真的走到门边、手已按上门板，被手鼓声或父亲的话逼回来——把「不推门」从静态状态改成一次失败的行动；或让她对警告作出带代价的回应（明知后悔仍喝下某碗药/留下某件信物）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：揭示与前文设定相互矛盾，且由台词直说。S05 老奶奶的花是「香气能让不洁的东西现形」，暗示威胁来自外在的「不洁」；S07 却揭示旅人「我就是你想远行的心」——她自己的心既非「不洁」，花的现形功能也未真正生效（她掷花才让他消散，不是香气现形）。同时「我就是你想远行的心啊」把主题直接念出来，替观众完成了解读。', suggestion='要么让「不洁」另有指向（老奶奶其实看出了什么，给她一个知情的反应），要么让揭示靠动作与意象完成：花香使旅人的轮廓先出现裂纹/她看见自己投在地上的影子与他重合，台词只留半句，让 S08 的独白来收束意义。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场无阻力也无转折。她站着—蹲下捡花—继续走—雾中背影消失，全是静态陈述；「她没有哭」是一句状态描述而非与内心的对抗，最后一句「没有人递花，也没有人送行」也只是氛围收束，没有可让观众情绪换挡的变化点。', suggestion='在尾声里放一个微小但真实的对抗：走到岔路口停住，伸手摸襟前的花又放下（或回头看一眼村口的方向），用一次「几乎停下」来兑现她「走得很慢，却没有停」；让最后一格动作本身完成转折，而不是靠旁白。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 37.284
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 151.515
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：启动全剧的救人行动几乎没有付出：旅人的唯一抵抗（“……别管我”）被一行“现在说这个，晚了”当场化解，少女付出的只是“披肩……撕成布条”和“把竹篮里的花倒出一半”——这两样此后再未被提及，对她的处境零影响。', suggestion='给救人一个会在后面回响的代价：比如被父亲撞见手上和裙上的血渍（直接引出S02的责难）、撕掉的披肩是母亲之物而在S06被认出、或为按住他挣扎的身体被划伤，让伤口/血迹延续到场。同时把旅人的拒绝写得更有分量（推开她、死按住伤口），逼她用一个具体的动作和牺牲换取成功包扎。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲连下两道加码的通牒——“明天就送走”“你要留他，就别去春天的集会”，但硬时限“明天”在S03—S05里既未兑现也未被推翻（旅人一直养伤到S05自己离开），最紧的那根弦在场后自行松掉。', suggestion='要么在S03插一场具体的对抗：父亲推门要抬人，少女以身体挡住门/打翻药碗逼他收手，让她当场付出代价；要么删掉“明天”这个硬时限，把父亲的压力改成不断升级、却始终没被真正执行的持续威胁，避免承诺落空。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场的核心警告“留下我，你会后悔”被“那就等你醒了，再后悔”一句俏皮话接住后就地消解；场面收在与开场完全相同的状态——他昏睡、她继续擦额头，没有新的阻力，也没有任何一处局势变化。', suggestion='让警告在本场兑现成可见的东西：她发现他伤口不流血、体温反常地凉，或他猛地挣扎着要下床、她必须用力按住他并为此付出（被抓伤、打翻油灯、惊动灶间的父亲），把这场从“照料”翻成“对峙”，局势和情绪各转一次。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：“我跟你走”这个决定毫无阻力：人群只是“有人吸气”，老奶奶塞花是馈赠不是阻拦，旅人“站在路那头，没有回头”也不表态——全场没有一个人对她说“不”，真正的对抗被整体推到了下一场。', suggestion='在本场就放一次正面阻拦：旅人明确拒绝（“你别跟着我”），或老奶奶/村民开出条件（“花要先……才许走”），让她为了跟走先付一步、先被挡一次；否则更干脆把这句宣告挪进S06，与父亲的冲突并成一场。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：岔路口的最终选择是免费的：村子那一头在S06已被父亲一句“别再回来”清空，她回去也无处可去，于是“走向上面那条路”成了零成本的默认选项，“只有一眼”的回望撑不起收尾的分量。', suggestion='让回村这条路此刻仍有真实价值——母亲追来、家里仍留着她的位置、或村里手鼓声再次响起——使她抬脚向上成为一次当场放弃；或给花一个不可逆的动作（把花留在路口/撒进雾里）来支付这最后一步的代价。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 72.378
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 142.149
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲的通牒「你要留他，就别去春天的集会，也别叫我爹」是全场最强压力点，但阿薰只是「端起药碗，转身走进里屋」，通牒当场无人执行、无人阻拦；真正的损失推到场末用追述旁白交代——「天亮时她才明白自己交出的是什么：从那天起，村里春天的集会她再没去过一次……」。代价没有在场面里发生。', suggestion='把代价做成可见动作：或让父亲在她转身时真的动手拦下药碗/夺走集会要用的东西，或删去末尾的追述段，把这笔账留给 S04 集会现场的村民侧目去兑现（那里已经写到「人群里有人吸气」，两处不必各记一次）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：本场唯一针对主角选择的正面阻力来自旅人——「你别跟着我」「这条路走上去，就没有回头的」——但他放完话就「走出十几步，没有回头」，此后全程不再阻拦，这句威胁一次也没有兑现；老奶奶的规矩和母亲的沉默倒是一说就中。', suggestion='二选一：让旅人真的拦一次（抓住她的手腕、故意加快脚步甩开她、或向她要一样东西作条件），使「没有回头的」落地；要么删掉这两句威胁性台词，把阻力全部交给老奶奶的规矩与门槛里母亲的影子，避免出现一个说了狠话却从不执行的对手。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：母亲这一趟的全部风险只存在于台词里——「娘，你回去吧，爹会骂」「他骂他的」——父亲自始至终没有出现，也没有任何被发现的可能。整场是两个同盟者的对话，没有对抗，也没有被抓住的悬念。', suggestion='让风险显影：母亲离开时父亲的影子落在坡下/灶间的灯突然灭了表示他已察觉；或者让母亲交出钥匙本身被看见、她必须当场承担后果。哪怕一个被追的脚步声，也能把这场从倾诉变成事件。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 64.764
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 190.7
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 3 轮（59.1 分）"
+}

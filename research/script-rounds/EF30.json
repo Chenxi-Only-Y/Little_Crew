@@ -1,0 +1,111 @@
+{
+  "episodeId": "EF30",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：代价全靠旁白转述：『从那天起，村子里的集会、井边的闲话、晒场上的歌，都不再有她的位置。她把自己那一份，一声不响地放下了。』——父亲的冲突以『手落在桌沿』收束后，直接跳到总结式叙述，观众没有看到她被排挤的任何具体场面。', suggestion='把旁白拆成一个可演的短场景：井边有人看见她就收声、晒场的歌在她走近时停下，或她端着碗独自坐在门槛上。让代价发生在戏里，而不是发生在解说词里。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：冲突刚起就被一句话化解：她逼问『那我该怎么叫你？』，他以『就叫旅人』回避，她只回『我知道』便收场——双方各退一步，没有对峙升级，情绪是平的。唯一的动作转折只有『灯芯爆了一下』。', suggestion='让这场的对抗更硬一档：她追问人名时触到他真实的身份/伤口（他激烈反应、甚至失态），迫使她付出更大代价才换来沉默——这样结尾那句『她再没有问过他的名字』才是一次有痛感的让步，而不是顺水推舟。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场零阻力：她跪地、捡花瓣、起身、往前走，没有任何外部对抗或内部撕扯被演出来；『那我跟着你走』是对空独白，无人回应，情绪从跪到起几乎是一条直线。', suggestion='给她设置真实阻力：雾中岔路（回村还是往北）、脚伤或体力崩溃、捡起的花瓣被风吹散一次次落空——让『继续走』这个决定必须跨越一个具体障碍才成立，转折才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：冲突止于一句『别说了』，父亲的悔恨与自我欺骗没有正面对撞；转折只是『伸手把花拿起来，带回了家』，幅度很小，且他为这个转身没有付出任何代价。结尾两段以『后来村里人说……』的传闻交代收束，情绪停在转述上。', suggestion='把老奶奶的话设计成刺破他自欺的一击，逼他当场做出不可逆的反应（追问女儿下落、砸花又捡起、当众承认一句），让『带花回家』成为他付出代价后才敢做的动作；结尾的传闻可保留一句，但落地镜头应停在他的行动上。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 35.416
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 116.015
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：被质问方自始至终不做任何反制：「旅人没回答，只是笑」「他还是笑」，到「她手一扬，把整束薰衣草朝他掷了过去……他化作一阵紫色的轻烟，散了」——冲突的每一次升级（逼问→再逼问→动手）都由少女单方面完成，旅人既不防守也不还手，被消灭得毫无摩擦。她最大的情绪爆发点落在了一个不抵抗的对手身上，势均力敌的对抗缺位。', suggestion='给旅人一次反向动作，让冲突有来回：例如他抬手挡住花束、或在消散前反抛一个她答不出的问题（「你肯为我丢掉村子，肯不肯为你自己丢掉我？」），把「掷花」从单方面的处决改成一次必须有人受伤的交换；他被击中后的消散也应带出她的迟疑或悔意，而不是立刻进入平静的低语。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：老奶奶是全知揭示者而非有自身立场的对手，真相由她一次性宣判：「花照的是人心。你怕的不是那个外乡人，是你自己把她推出门的那个晚上。」父亲的防御（「我是为她好」「村里人的嘴……」）只撑了一个回合就被「你女儿的路，你堵不住」击穿，随后直接跳到砸花、跪地当众认罪（「是我把她赶走的」），从质问到崩溃之间缺少拉锯，转折跨度过大、支撑偏薄。', suggestion='让老奶奶先不交答案，改为逼他自己复述那个晚上（「那晚你把碗放在门口，是端给她还是端给屋里的人？」），让他在自我辩护与自知之间反复两三个回合、搬出村妇的具体说法来挡，再由他自己的话撞出崩溃——认罪的分量会重得多。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.884
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 187.892
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

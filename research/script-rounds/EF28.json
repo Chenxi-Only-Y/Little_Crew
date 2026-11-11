@@ -1,0 +1,168 @@
+{
+  "episodeId": "EF28",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：阻力只有一句传闻式禁忌——「村里老人说过，别碰外乡人」，而「她咬了咬嘴唇」就跨过去了。文本还特意写「山坡上只有风，没有别人」，主动排除了外部对抗，救与不救在一行内心犹豫里完成，冲突过软。', suggestion='把禁忌变成迫近的实体压力：远处传来村口的狗叫／有人正往山坡走的脚步声，逼她必须在被看见之前做出选择；或让旅人的伤在她犹豫时恶化，把「不救」的代价实时摆在眼前。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父女对抗被母亲一句「她像你。你当年不也是一个人从山那边走过来的？」当场化解，父亲「没再出声」；少女全程只是「指节发白，没有辩解」，什么也没付出，冲突解决是免费的。', suggestion='让父亲的威胁先兑现一点再被软化——比如他真把药碗摔了、或明令天亮前把人抬出去，迫使少女付出具体代价（连夜转移伤员／被关在门外／失去当晚的住处），母亲的劝解才有落点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母女之间没有对抗：母亲送热水、塞土豆、还主动替她挡闲话（「吃完……你也别去集会了」），实际是同谋。全场唯一阻力是旅人一句梦话「北边……别回头」，那是信息不是冲突，整场平铺。', suggestion='给母亲一个反向立场：她不是来帮忙的，而是来下通牒的——「天亮前你要么送他走，要么我去跟村长说」，让少女在母亲与旅人之间二选一；或者母亲发现紫纹后强行要报给村里，母女正面交锋。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全剧最强的对抗点在一句话内卸掉：父亲「伸手想抢她的包袱，手伸到一半，又停住了」，随后少女磕头就走。父女决裂只停留在台词宣告（「就别认我这个爹」），没有经过任何实际阻拦；「我走，你们还能活」也缺乏因果支撑，代价是说出来的，不是付出来的。', suggestion='让阻拦真正发生：父亲拦在路口、抢下包袱、甚至叫来村民围堵，少女必须以行动挣脱（推开父亲／包袱被扯破东西散一地）才能离开，把「断绝关系」落成一个不可逆的物理动作；同时补足「我走你们才能活」的逻辑（比如留下她家会被追问窝藏外乡人）。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：情绪与局势都是平的：开场「站在原地，手里什么也没有了」直接承接 S05 结尾的失落，结尾「她走进了雾里」只是把同一个状态延长。中间全是静态权衡独白（回去会怎样／不回去会怎样），没有新阻力介入，也没有新的付出。', suggestion='在她决定之前插入一个迫使选择的事件——父亲追来的火把／母亲的哭喊从山下传来／雾中出现折返的活路，让「回头」变成正在发生的诱惑而非回忆；她的决定必须当场放弃一样东西（烧掉包袱、撕掉记号）才算转折。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：上一场她刚因轻信「旅人」被骗（S05），这一场面对来历不明的「雾里隐约有脚步声，在前面引路」却毫不犹豫地跟着走——教训没有转化为迟疑。饥饿脚伤是既有状态，不是本次选择付出的代价，冲突（两条路）也只靠一次内心回想就解决，解决得太便宜。', suggestion='让她对脚步声产生对抗：先怀疑是旅人的残影、试探性地停下或反向走，逼引路者付出暴露的代价（声音变调／布条上的血迹发暗）；或让她为跟随付出可感的损失——丢掉唯一的干粮、磨破的脚渗出血把路染上痕迹，使「选深路」有账可付。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 6,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 41.596
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 118.87
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：母亲两次立下带期限的最后通牒（「天亮前……我自己去」「我明早来」，并强调「我说到做到」），同时发现了「布不会发光」这一超常证据——但下一场直接跳到村口送别，通牒从未到期、从未被执行，发光的布也再没人追问。两处悬念被立起来后凭空消失，母亲这条阻力线在本场结束时就断了。', suggestion='让通牒在 S04 兑现：比如天亮时母亲真的带人来堵门，或由旅人主动离开来替少女「交差」，使期限有到期的戏剧动作；发光的布至少让母亲在 S04 再追问一句并得到一个回避式的回答，把钩子挂到后文。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：「花瓣在半空散开……化作一阵紫色的轻烟」「山路上什么都没有」——本场把超自然对抗一次性打到彻底终结，没有任何残留物。可 S08 又凭空冒出一个雾中脚步声作为威胁，观众无从判断它从哪来、和被驱散的旅人是什么关系，转折变成了重新开局。', suggestion='在 S05 留一线残迹：比如烟散后那截缠伤的布条落在地上没被带走，或旅人最后一句台词时轮廓只淡了一半。让 S08 的布条与脚步声在视觉上有前置呼应，第二次对抗才是第一次的延续而非凭空重启。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：山下的火把是本场唯一的对手，但「山下的火把停在原地，不动了」——阻力在没有发生任何接触的情况下自己退出了画面。少女的决定性动作（烧掉旧衣草鞋面包）是对物品使的，不是对人使的，对峙双方始终没有碰上，冲突靠对手自动熄火解决。', suggestion='让火把不停：比如有两支先头的火把已经翻上山脊，迫使她必须在被拦住之前烧完包袱——火成为她和追者之间真正的物理屏障，烧东西才既是代价也是解法。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：雾中的对手全程不还手：面包被踩碎、她扑过去就「揪住一截布条」，等于对手亲手把关键线索递给她；她给出的检验（放面包、退三步）没有任何风险，成功得毫无阻力。结尾「那你带路吧」是漂亮的情绪反转，但前面没有对抗垫底，反转是靠气氛而非冲突推上去的。', suggestion='让雾里的东西反击她一次：比如面包放下的瞬间她怀里的花束被抽走、或布条被夺回她只抢到半截并因此受伤，最后的「跟你走」就必须是用代价换来的选择——她是在被夺走退路之后主动跟上，而不是对方让了她一步。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 58.529
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 203.442
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：与 S02 同构重复：S02 是父亲说'天亮前送走，不然我喊村长'，S03 又是母亲说'天亮前让他走，否则我明早带人来。我说到做到'——同一句威胁换了个人再说一遍，双方都没有进一步动作，场末少女仍坐在床边'一整夜没动'，局势完全回到原点，冲突在原地打转而非升级。\", suggestion='让母亲的威胁当场兑现一部分：比如她真的动手去揭/夺那块发光布条，与少女发生肢体争夺；或旅人烧中说漏的北边地名被母亲听见并认出，使信息本身成为新的筹码——让这一场付出比 S02 更大的代价，推动局势向前。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：核心质问被一句挡回、对手随即下线：母亲问'那布条呢？为什么夜里发光？'，少女推'你要问，就问他'，旅人答'布条只是布条'，母亲'脸色变了'便再无动作——发光布条这条贯穿全剧的悬念没有得到任何正面交锋，父母的阻挠在真正碰撞前就被绕开，冲突被回避而非被解决。\", suggestion=\"让质问产生后果：母亲上前抢夺布条，与旅人正面拉扯，旅人因此露出破绽（如伤口发光加剧、或他被迫显露某种异常）；即使少女最终仍带他离开，也要让父母方的阻力真实地作用在她身上，而不是靠对方主动说'我走'化解。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：代价付出后即被弃置：少女'烧我回去的路'、留下最后半块面包、'抱着烫伤的手从火边滚下坡'——三重代价很重，但后两场里烫伤只在 S07 被包扎、面包在 S08 被碾碎，'烧掉回路'这一最重的代价此后再未产生任何影响（她没有受困、没有懊悔、没有因此被逼入死角）；同时父亲与村民的追兵在火墙后'骂声被烟吞了'便彻底消失，S07 起再无下文，追捕线无声断裂。\", suggestion='让代价延续：烫伤影响她后续攀爬或握布的动作（在 S07/S08 关键时刻造成实际障碍）；追兵不必退场——可让父亲一方的火把光在雾外持续逼近，与雾中声形成两面夹击，使 S06 的对抗一直压到本集结束。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：本场没有真正的转折：少女'把面包放在石头上，退开三步'是她主动让步，结果'面包上的热气忽然灭了'——对方既没接受也没逼迫，场末'路已经看不见了'只是场景状态描述而非局势变化；相比 S05 的消散、S06 的火墙、S08 的'那你带路吧'，这一场情绪和处境几乎是平的。\", suggestion='让她的让步换来可感的变化：比如雾因面包退开半步、显出一条若隐若现的路（假希望，S08 再收回）；或她放下面包的同时雾中声念出只有她知道的事，使让步反过来暴露她——总之要让场末的她与场首的她处于不同境地。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 70.685
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 126.829
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 50.4（REVISE）；最好的是第 3 轮（50.4 分）"
+}

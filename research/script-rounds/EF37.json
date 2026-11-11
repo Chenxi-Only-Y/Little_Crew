@@ -1,0 +1,103 @@
+{
+  "episodeId": "EF37",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：全场景无外在阻力：'她抬头望了望村子的方向，又低头看他'是唯一一次犹豫，且一句内心活动就翻过去了。之后是纯粹的流程——发现、包扎、拖走，'血从她指缝里渗出来'只提供画面强度，不构成对抗。开篇第一场即平铺直叙。\", suggestion=\"给她一个必须克服的障碍：比如伤口血止不住、布条不够用而天快黑了（时间压力）；或让旅人本能地抗拒、她必须做出'救他/回村求助'的两难选择并当场付代价（撕披肩应是选择的结果，而不是顺手动作）。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：父亲的阻力被第三方瞬间化解：'母亲抢先拉住他的袖子，摇了摇头'——父亲'手僵在半空，最后重重甩下，转身把门推得撞在墙上'离场，少女本人从头到尾'没有低头，也没有辩解'，没有为守住旅人付出任何当场的抗辩或让步。冲突靠母亲撤掉，不是靠人物解决。\", suggestion=\"让少女必须正面接下这一仗：要么她开口顶回去并说出一个具体的交换条件（如'等他能走我就送他走'），要么父亲的施压真的拦住她——药碗被打翻、里屋门被闩上，她得绕过或突破才进得去。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：母亲的阻力是空的：她给出警告'天亮他就得走''你父亲的话难听，可不是假的'，少女'应了一声，含糊得很'，随后母亲'把灯放下，什么也没再说，出去了'。提了条件却不要回应、不要执行，等于没有对抗，整场只剩擦额头的重复动作和气氛。\", suggestion=\"把母亲逼成真正的关卡：让她提出交换（天亮前你得答应我送他走/把药放下），或让她采取动作（端走油灯、收起药碗），迫使少女做出一个明确的、有代价的拒绝，而不是'含糊'过关。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：核心转折的触发不成立：S06 老奶奶设下'这花的香气能让不洁的东西现形。记住'，但本场花并没有'现形'任何东西——她掷花完全凭一瞬的怀疑，机制没有兑现；而'你到底是谁'之前，剧本只给过氛围（S04 含混呓语、S05 态度变冷），没有一个可供'验证'的具体破绽。设定好的道具变成了普通纪念品。\", suggestion=\"让验证真的发生：花瓣触到旅人时出现异状（他没有影子/花瓣穿身而过/S01 那处'深得发黑'的伤口渗出的不是血），'现形'由花来完成，她的怀疑只需点燃导火索；同时回收 S01 血色发黑、S04'过了山就是雪'这些已有伏笔作为她起疑的具体落点。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 25.789
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场没有形成对抗。旅人的异议「你不该为我留下」被一句「已经留下了」当场压回，母亲则是「从门口经过，把她那份晚饭端走了，一句话也没说」——阻力一方全部主动撤退，剩下的只有窗外节庆声与床边静默的氛围反差。台词「外面在过节。/你不去？/去不了/为什么/因为你在这儿」是信息交换而非交锋，观众在这里只得到状态，得不到对抗。', suggestion='把阻力留在场上不撤走：让旅人不但口头反对，还做出具体动作（如自己撑着要下床、把药推开），逼少女必须用更强硬的方式（按住他、摔了药碗）才压制得住；或者让母亲在门口把话说穿——「你爹已经去说亲了，你还要留外乡人在屋里过冬？」把 S03 的禁令升级成新的、更硬的对撞，而不是无声端走一碗饭。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：离别一场本该是本集最硬的对抗，实际却是回避：「我要回去了」→「我跟你走」→「他没有回头，也没有说好」。旅人不拒绝、不接受、不解释，阻力等于零；老奶奶送花、赠言「到时候你就知道了」是纯粹的道具投放和预言，属于助力而非对抗。整场没有人为少女的「跟你走」设置任何障碍，她做出重大决定却没遇到任何代价或阻拦。', suggestion='让旅人正面拒绝她同行，并给出伤人的理由（「你跟来，我走不远」/「我不是你能带回去的人」），把「被留下」的痛先钉在这一场；同时让老奶奶的介入变成对抗而非赠礼——例如老奶奶当面点破旅人的异常，少女为了维护他而与老奶奶争执，这样花束、香气、凉手这些伏笔才是冲突中带出来的，而不是旁白式交付。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 51.311
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

@@ -1,0 +1,163 @@
+{
+  "episodeId": "EF25",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：母亲抛出本场最强阻力「你爹说，留他，就当没你这个闺女」，少女只用「那我去给他熬药」挡回，母亲「站了一会儿，端着空灯走了」——威胁既没有升级，也没有兑现；随后「后半夜，旅人的烧退了」是自己好起来的，不是谁争取来的。最响的一句台词之后，整场一路走平，结尾只剩「她手里还攥着那块湿布」的静态画面。', suggestion='让母亲在退场前落一个可感的动作（端走油灯和药碗、把门闩上、收走被褥），使少女当场付出看得见的代价；或者把退烧改成必须用新的选择换来——药只剩最后一剂、要动用母亲压箱的东西，让本场以少女的行动转折收尾，而不是以病自然好转收尾。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：父亲在 S03 里为留人拍碗按药、压着嗓子说「我说话你听见没有」，到本场面对女儿跟着外乡人走，却只说「走了就别回头……这扇门我给你留着……你自己选」，主动让路；人群只「起了点声音，像风刮过草」，无人阻拦。全场景没有一次真正的对抗，最该硬碰硬的地方直接泄了气。', suggestion='给父亲一次实打实的拦截：攥住包袱、横在门前、或非要少女当众说清跟他走的理由才放行，让她必须挣脱或正面回绝才能迈出村口——那一躬和「没有哭」才是挣来的，代价也才立得住。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：「少女举起花束，朝着他掷了过去」紧跟在「老奶奶的话在她脑子里炸开」之后，中间没有任何停顿、回望或舍不得。她亲手毁掉的正是让她离家的那个伴，这一步选择却是零成本；随后「掌心擦破，膝盖磕出血」是掷出之后摔的意外，属于动作的副作用，不是抉择付出的代价。', suggestion='在掷出前插入一个犹豫的节拍：让她先追问最后一句、先抱紧花束，或让花束与父亲那句「这扇门我给你留着」勾连——她出手的瞬间等于亲手掐断回家的路。把代价放进选择本身，而不是留在选择之后。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 45.859
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 74.819
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：这一场的两处阻力都是空的：旅人说\"我要回去了\"，少女一说\"我跟你走\"，他立刻答应（\"我去村口等你\"，先走了），双方零对抗；父亲的反对只表现为屋里\"砰\"一声落闩，门闩在场外、且对她毫无约束——她随即就自己走到村口去了。冲突起了头却没咬住人，观众看不到任何被阻拦的实感。', suggestion='给旅人一个真正的拒绝动作（比如他不等她回答就走远，或明确要求她留下证据/付出某种交换才肯带她），让门闩产生实际代价（例如闩门把她关在屋里，直到天黑或错过了旅人先行的时辰，才带出S06村口对峙的紧迫），这样S05的阻力才承接到S06。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲的高压（\"凉了就倒了\"）被母亲一拉、父亲一甩袖就自行收场，当场没有付出任何可见的代价；真正的代价写成了旁白概述——\"从那天起，村里再没有她的位置\"，是被告知的结果，不是场内兑现的损失。', suggestion='把代价落到这一场的具体动作上：比如父亲真的把药倒掉/摔碗，逼她当场重新煎药并错过守夜；或让\"村里再没有她的位置\"在本场以一个可视细节兑现（有人当面把东西收回、集会从门口过时无人看她一眼），而不是用一句话交代完。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：S06老奶奶留下明确的规则式伏笔——\"这花的香气能让不洁的东西现形\"（还特意强调手很凉、\"记住\"），但S07的转折并不是靠这个规则发生的：她是把花\"掷了过去\"，旅人随即化烟，香气和\"现形\"的功能一次都没用上。伏笔与转折脱钩，揭秘变成了任意的机械降神。', suggestion='让香气完成转折：例如她把花举到面前、香气升起时旅人的笑容/轮廓开始不对，花是她\"看见真相\"的媒介，掷出只是收束；或者删掉S06里\"香气现形\"这句设定，改为一句更中性的告别赠言，避免埋下不兑现的契诃夫之枪。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 48.115
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 55.917
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：这一场的揭穿是一次无对抗的单向动作：幻影从头到尾没有台词、没有挽留、没有反扑（唯一一句是未写出的“风里压着一句很低的话”），少女一抬手“把花束朝他掷了过去”，对方立刻“被风一扯就淡了”。阻力为零——幻影的消失是香气造成的物理反应，不是两个人之间的交锋。', suggestion='让幻影在瓦解前给出一句有拉力的台词或动作（呼应S05他那句“留下”，此处可反过来要她“跟我走，路就在前面”），并让他在她掷花前伸手抓住她或抓住花束；把结局改成她必须掰开他的手、退后一步，靠自己的选择让他散掉——这样揭穿才是挣来的，而不是触发的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场唯一的阻力是“母亲端着热水站在门口，说完那句话就不进来，也不走”——但“那句话”没有写出，读者/观众无从判断她在执行谁的禁令；S03父亲留下的明确禁令（“重煎。煎了也不许端进去。”）在本场完全失去落点，于是这场夜戏只剩下氛围，没有对抗。', suggestion='写出母亲转达的具体内容（父亲的最后通牒或期限），并加一个险情拍：父亲的脚步声到门口、油灯忽然被点着，逼少女一边换药一边遮掩那道一夜合口的伤口——把阻力落到她必须当场应付的动作上。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：人物表列出“村妇”，但全场景她没有一次出场、一句台词，阻力信息全部来自事后转述（“后来村里人在村口说，再没人见过她”）；最后一场零障碍，主角是毫无阻挡地走进雾里的。', suggestion='让村妇真正到山道上拦她一次——堵路、把那句“晦气”改口或塞给她干粮，作为她离开前最后一道具体障碍；若用不上，就从人物表中删去村妇，别挂名不出场。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 46.123
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 47.27
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.9 分）"
+}
