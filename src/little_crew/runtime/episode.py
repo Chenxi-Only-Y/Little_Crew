@@ -627,6 +627,36 @@ class EpisodeRunner:
             on_progress: Any = None) -> EpisodeResult:
         t0 = time.perf_counter()
 
+        # ---- LLM 探活（2026-11-11）----
+        #
+        # EF31 现场：剧本跑到一半，云端点开始 `10061 拒绝连接`，
+        # 于是一场 11 分钟的剧本白跑、分镜 3 次重试全废、退出码 1。
+        # 开跑前先问一句「你还在吗」：失败重试 3 次（间隔 5 秒），
+        # 仍失败就明确报警 —— 别让人等 10 分钟才看到一个网络错误。
+        try:
+            from little_crew.agent.llm import LlmClient as _LC_probe
+
+            _ok_llm = False
+            for _try_p in range(1, 4):
+                try:
+                    _r_p = _LC_probe(
+                        getattr(self, "script_model", "") or "deepseek-flash",
+                        timeout_s=20).chat("回复 OK")
+                    _ok_llm = bool(getattr(_r_p, "text", _r_p))
+                except Exception as _e_p:                     # noqa: BLE001
+                    _ok_llm = False
+                    print(f"  ⏳ LLM 探活失败（第 {_try_p} 次）：{type(_e_p).__name__}")
+                if _ok_llm:
+                    print(f"  ✅ LLM 探活通过（第 {_try_p} 次）")
+                    break
+                import time as _t_p
+
+                _t_p.sleep(5)
+            if not _ok_llm:
+                print("  ⚠️ LLM 端点不可用 —— 后面的剧本/分镜很可能整段失败")
+        except Exception:                                    # noqa: BLE001
+            pass
+
         # ---- 1) 剧本闭环 ----
         #: `--limit` 的值。白模与渲染都要用它，否则两者看的镜头不一致。
         self._limit = int(limit or 0)
@@ -855,7 +885,13 @@ class EpisodeRunner:
             _impl = (getattr(self.orch, "_impls", {}) or {}).get("storyboard_artist")
             _is_llm = type(_impl).__name__ == "StoryboardArtistLlm"
             if _is_llm:
+                # 并发（2026-11-11）：8 场是 8 次独立云端调用，串行纯属浪费。
+                # `LITTLE_CREW_SB_PARALLEL=0` 可退回串行（对比实验用）。
+                import os as _os_sb
+
+                _par = (_os_sb.environ.get("LITTLE_CREW_SB_PARALLEL") or "1") != "0"
                 _res = _sbs.per_scene(self.orch, script_draft,
+                                      parallel=_par, subjects=tuple(_allowed_ck),
                                       progress=lambda sid, n: print(
                                           f"    分镜 {sid}: {n} 镜"))
                 if not _res["ok"]:

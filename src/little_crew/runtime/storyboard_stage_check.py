@@ -54,6 +54,35 @@ class _Orch:
         self.zero_scenes = set(zero_scenes)
         self.calls = 0
 
+    def invoke_payload(self, rid, cap, payload):
+        """并发路径：返回 (CallResult 替身, 秒)。"""
+        self.calls += 1
+        draft = payload["script.final"]
+        scene = (getattr(draft, "scenes", ()) or [{}])[0]
+        sid = scene.get("scene_id")
+
+        class _R:
+            ok = True
+            error_message = ""
+            error_code = ""
+
+            class output:
+                pass
+
+        r = _R()
+        if sid in self.fail_scenes:
+            r.ok = False
+            r.error_message = "调用失败"
+            r.output = {}
+            return r, 0.01
+        n = 0 if sid in self.zero_scenes else self.per
+
+        class _SL:
+            shots = tuple(_Shot(f"{sid}-{i+1}", sid) for i in range(n))
+
+        r.output = {"shot.list": _SL()}
+        return r, 0.01
+
     def run_stage(self, rid, cap, payload):
         self.calls += 1
         draft = payload["script.final"]
@@ -113,6 +142,31 @@ def main() -> int:
     SS.per_scene(o5, draft)
     check("C2 ★★ 一场一镜也能合并", len(o5.blackboard.v.shots) == 4,
           str(len(o5.blackboard.v.shots)))
+
+
+    print(); print("F. 并发分支（2026-11-11）")
+    _d = _D([{"scene_id": f"S{i:02d}"} for i in range(1, 4)])
+    _serial = _Orch(per=2)
+    _rs = SS.per_scene(_serial, _d, retries=0, parallel=False)
+    _par = _Orch(per=2)
+    _rp = SS.per_scene(_par, _d, retries=0, parallel=True)
+    check("F1 ★★★ 并发与串行结果一致（镜数/场数）",
+          _rp["scenesCovered"] == _rs["scenesCovered"]
+          and len(_rp["shots"]) == len(_rs["shots"]),
+          f'{_rp["scenesCovered"]}/{len(_rp["shots"])} vs {_rs["scenesCovered"]}/{len(_rs["shots"])}')
+    check("F2 ★★★ 并发时每场都产出了（没有被覆盖）",
+          _rp["shotsByScene"] == _rs["shotsByScene"], str(_rp["shotsByScene"]))
+    check("F3 ★★★ 并发路径不读黑板中间态（每场独立调用）",
+          _par.calls == 3 and _par.blackboard.puts == 1,
+          f'calls={_par.calls} puts={_par.blackboard.puts}')
+    _z = SS.per_scene(_Orch(per=2, zero_scenes={"S02"}), _d, retries=0, parallel=True)
+    check("F4 ★★★ 并发下某场 0 镜 -> 整体失败（语义不变）",
+          _z["ok"] is False and any(f["sceneId"] == "S02" for f in _z["failed"]),
+          str(_z.get("reason"))[:80])
+    _one = SS.per_scene(_Orch(per=2), _d, retries=0, parallel=True)
+    check("F5 ★★ 顺序保持（按剧本场次合并）",
+          [s.shot_id.split("-")[0] for s in _one["shots"]] == ["S01", "S01", "S02", "S02", "S03", "S03"],
+          str([s.shot_id for s in _one["shots"]]))
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

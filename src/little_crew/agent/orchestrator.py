@@ -817,6 +817,33 @@ class CrewOrchestrator:
                                 budget or Budget.unlimited(), callee_kind="agent")
         return self.runtime.call_agent(env)
 
+    def invoke_payload(self, agent_id: str, capability: str,
+                       payload: Mapping[str, Any]):
+        """**无黑板副作用**的直调（2026-11-11）。
+
+        为什么需要它：`run_stage` 会把产物写进黑板（同一个键），
+        多场分镜并发时会互相覆盖 —— 那是竞态，不是并行。
+        这里只做能力校验 + 调用，返回 `(CallResult, seconds)`；
+        由调用方在**主线程**统一合并后再写一次黑板。
+
+        并发安全的前提：被调 Agent 不能依赖黑板里的中间状态
+        （分镜师正是这种：输入是 `script.final`，输出是 `shot.list`）。
+        """
+        import time as _t
+
+        spec = self._spec(agent_id)
+        if spec and capability not in spec.capabilities:
+            return (None, 0.0)
+
+        t0 = _t.perf_counter()
+        try:
+            res = self._invoke_as(agent_id, capability, payload, None)
+        except Exception as exc:                              # noqa: BLE001
+            from little_crew.agent.protocol import CallResult
+
+            res = CallResult.fail("F-INVOKE", f"{type(exc).__name__}: {exc}")
+        return (res, _t.perf_counter() - t0)
+
     def _spec(self, agent_id: str) -> AgentSpec | None:
         from little_crew.agent.roster import DEFAULT_ROSTER
 

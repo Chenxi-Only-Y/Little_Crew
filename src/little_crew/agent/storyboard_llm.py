@@ -156,16 +156,20 @@ class StoryboardArtistLlm:
         self.calls += 1
         p = dict(envelope.payload or {})
         # 处置指令（可选）：定向返工注入的"必须这样改"
-        self.rework_hint = tuple(
+        _rework = tuple(
             str(x) for x in (p.get("rework.hint") or ()) if str(x).strip())
+        self.rework_hint = _rework
         # 场景主体白名单（调用方算好传进来；agent 不 import review 层）
-        self.allowed_subjects = tuple(
+        _allowed_from_payload = tuple(
             str(x) for x in (p.get("scene.subjects") or ()) if str(x).strip())
+        self.allowed_subjects = _allowed_from_payload
         draft = _as_draft(p.get("script.final") or p.get("script.draft"))
         if draft is None:
             return CallResult.fail("F-INPUT", "分镜师未收到定稿剧本")
 
-        prompt = self._build_prompt(draft)
+        # 并发安全：本次调用的白名单/处置指令**只走参数**，不改实例状态
+        prompt = self._build_prompt(
+            draft, allowed=_allowed_from_payload, rework_hint=_rework)
         try:
             data = self.client.chat_json(
                 prompt, system=STORYBOARD_SYSTEM,
@@ -241,7 +245,8 @@ class StoryboardArtistLlm:
 
     # ---- 内部 ----------------------------------------------------------
 
-    def _build_prompt(self, draft: Any) -> str:
+    def _build_prompt(self, draft: Any, *, allowed: Any = None,
+                      rework_hint: Any = None) -> str:
         v = LEGAL_VOCAB
         lines = [f"【本集】{getattr(draft, 'episode_id', '')} "
                  f"《{getattr(draft, 'title', '')}》",
@@ -299,7 +304,10 @@ class StoryboardArtistLlm:
         try:
             # **白名单由调用方传入**（`payload["scene.subjects"]`）：
             # agent 属于上层，不能反向 import review（架构守卫会拦）。
-            _allowed = [str(x) for x in (getattr(self, "allowed_subjects", ()) or ())]
+            # 并发安全（2026-11-11）：优先用**本次调用**传入的 allowed，
+            # 没有才退回实例属性（单线程调试用）。
+            _src = allowed if allowed is not None else getattr(self, "allowed_subjects", ())
+            _allowed = [str(x) for x in (_src or ())]
             if _allowed:
                 lines.append("【场景主体白名单 —— **只能出现这些**，不得新增地点/道具】")
                 lines.append("  " + "、".join(_allowed[:24]))
@@ -313,9 +321,11 @@ class StoryboardArtistLlm:
         lines += budget_lines
 
         # ---- 处置指令（只在重切时出现）----
-        if getattr(self, "rework_hint", ()):
+        _hint = (rework_hint if rework_hint is not None
+                 else getattr(self, "rework_hint", ()))
+        if _hint:
             lines.append("【本场必须这样改 —— 上一版被判不合格的具体原因】")
-            lines.extend(f"  · {h}" for h in self.rework_hint)
+            lines.extend(f"  · {h}" for h in _hint)
             lines.append("")
 
         # ---- 美术设定（若给了）----

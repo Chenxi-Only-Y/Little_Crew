@@ -49,7 +49,8 @@ def _scene_id(scene) -> str:
     return str(getattr(scene, "scene_id", "") or "")
 
 
-def per_scene(orch, draft, *, retries: int = 1, progress=None) -> dict:
+def per_scene(orch, draft, *, retries: int = 1, progress=None,
+              parallel: bool = False, subjects=()) -> dict:
     """逐场生成并合并。返回 `{ok, shots, shotsByScene, scenes, scenesCovered, failed, reason}`。"""
     from little_crew.agent.messages import Shot, ShotList
 
@@ -59,37 +60,97 @@ def per_scene(orch, draft, *, retries: int = 1, progress=None) -> dict:
                 "scenes": 0, "scenesCovered": 0, "failed": [],
                 "reason": "剧本没有场次"}
 
-    merged: list[Any] = []
-    by_scene: dict[str, int] = {}
-    failed: list[dict] = []
-    for sc in scenes:
+    def _one(sc):
+        """取单场镜头。返回 (sceneId, shots, error)。"""
         sid = _scene_id(sc)
         got: list[Any] = []
         err = ""
         for attempt in range(1 + max(0, int(retries))):
-            out = orch.run_stage("storyboard_artist", "shot.list",
-                                 {"script.final": _sub_draft(draft, sc)})
-            if not getattr(out, "ok", False):
-                err = str(getattr(out, "error", "")
-                          or getattr(out, "error_message", "") or "分镜失败")[:120]
-                continue
-            val = orch.blackboard.value("shot.list")
-            shots = list(getattr(val, "shots", ()) or ())
-            # 只收这场自己的（agent 可能整稿返回）
+            sub = _sub_draft(draft, sc)
+            # 并发路径：走**无黑板副作用**的直调（黑板同一个键会互相覆盖）
+            if parallel and hasattr(orch, "invoke_payload"):
+                res, _dt = orch.invoke_payload(
+                    "storyboard_artist", "shot.list",
+                    {"script.final": sub, "scene.subjects": tuple(subjects or ())})
+                if res is None or not getattr(res, "ok", False):
+                    err = str(getattr(res, "error_message", "")
+                              or getattr(res, "error_code", "") or "分镜失败")[:120]
+                    continue
+                _out = getattr(res, "output", {}) or {}
+                val = _out.get("shot.list")
+                shots = list(getattr(val, "shots", ()) or ())
+            else:
+                out = orch.run_stage("storyboard_artist", "shot.list",
+                                     {"script.final": sub,
+                                      "scene.subjects": tuple(subjects or ())})
+                if not getattr(out, "ok", False):
+                    err = str(getattr(out, "error", "")
+                              or getattr(out, "error_message", "") or "分镜失败")[:120]
+                    continue
+                val = orch.blackboard.value("shot.list")
+                shots = list(getattr(val, "shots", ()) or ())
             mine = [s for s in shots if _scene_id_of_shot(s) == sid]
             got = mine or shots
             if got:
                 break
             err = "0 镜"
-        if not got:
-            failed.append({"sceneId": sid, "error": err or "0 镜"})
+        return sid, got, err
+
+    merged: list[Any] = []
+    by_scene: dict[str, int] = {}
+    failed: list[dict] = []
+    # 并发（2026-11-11）：8 场分镜是 8 次**独立**的云端调用，串行纯属浪费。
+    # 用线程池（I/O 密集），结果按场次顺序合并；任一场 0 镜 -> 整体失败（语义不变）。
+    if parallel and len(scenes) > 1 and hasattr(orch, "invoke_payload"):
+        from concurrent.futures import ThreadPoolExecutor
+        import os as _os
+
+        _workers = max(1, min(4, int(_os.environ.get("LITTLE_CREW_SB_WORKERS") or 4),
+                              len(scenes)))
+        try:
+            with ThreadPoolExecutor(max_workers=_workers) as ex:
+                results = list(ex.map(_one, scenes))
+        except Exception:                                     # noqa: BLE001
+            results = [_one(sc) for sc in scenes]
+        for sid, got, err in results:
+            if not got:
+                failed.append({"sceneId": sid, "error": err or "0 镜"})
+                if progress:
+                    progress(sid, 0)
+                continue
+            merged.extend(got)
+            by_scene[sid] = len(got)
             if progress:
-                progress(sid, 0)
-            continue
-        merged.extend(got)
-        by_scene[sid] = len(got)
-        if progress:
-            progress(sid, len(got))
+                progress(sid, len(got))
+    else:
+        for sc in scenes:
+            sid = _scene_id(sc)
+            got: list[Any] = []
+            err = ""
+            for attempt in range(1 + max(0, int(retries))):
+                out = orch.run_stage("storyboard_artist", "shot.list",
+                                     {"script.final": _sub_draft(draft, sc)})
+                if not getattr(out, "ok", False):
+                    err = str(getattr(out, "error", "")
+                              or getattr(out, "error_message", "") or "分镜失败")[:120]
+                    continue
+                val = orch.blackboard.value("shot.list")
+                shots = list(getattr(val, "shots", ()) or ())
+                # 只收这场自己的（agent 可能整稿返回）
+                mine = [s for s in shots if _scene_id_of_shot(s) == sid]
+                got = mine or shots
+                if got:
+                    break
+                err = "0 镜"
+            if not got:
+                failed.append({"sceneId": sid, "error": err or "0 镜"})
+                if progress:
+                    progress(sid, 0)
+                continue
+            merged.extend(got)
+            by_scene[sid] = len(got)
+            if progress:
+                progress(sid, len(got))
 
     if failed:
         return {"ok": False, "shots": merged, "shotsByScene": by_scene,
