@@ -165,6 +165,13 @@ def trim_silence(path, out_path, *, threshold: int = 300,
     while hi > lo and abs(a[hi - 1]) < threshold:
         hi -= 1
     if lo >= hi:
+        # ⚠️ **也必须把文件写出来**（2026-11-11 真因）：
+        # 原来这里只返回 ok=True 而不写 out_path，调用方却拿
+        # `trim00.wav` 去 join -> `FileNotFoundError`。
+        # 纯标点/停顿段最容易触发（TTS 出来几乎是静音）。
+        with wave.open(str(out_path), "wb") as out:
+            out.setparams(params)
+            out.writeframes(a.tobytes())
         return {"ok": True, "trimmed": 0.0, "note": "all-silent"}
     pad = int(round(keep * params.framerate))
     lo = max(0, lo - pad)
@@ -187,6 +194,14 @@ def join_wavs(paths, out_path, gaps) -> dict:
     paths = [str(x) for x in (paths or ()) if x]
     if not paths:
         return {"ok": False, "seconds": 0.0, "error": "no-segments"}
+    # ⚠️ **父目录必须先建**（2026-11-11 真因）：
+    # 单段路径走 `synth`，服务端会 `out.parent.mkdir()`；多段路径各段写在临时目录，
+    # 直接 `wave.open(out_path, "wb")` 时 `delivery/voice/` 还不存在 ->
+    # `FileNotFoundError`。这正好解释"第一句（多段）必挂、重跑同一集就好"（上次已建目录）。
+    try:
+        Path(str(out_path)).parent.mkdir(parents=True, exist_ok=True)
+    except Exception:                                         # noqa: BLE001
+        pass
     try:
         with wave.open(paths[0], "rb") as w0:
             params = w0.getparams()
@@ -245,6 +260,11 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
                 s["pause"] = round(max(min_pause, s["pause"] * _scale), 2)
             pl["segments"] = segs
             pl["pauseScaledTo"] = round(max_seconds, 2)
+    # 单段/多段都在这里兜一次（`out_path` 的父目录）
+    try:
+        Path(str(out_path)).parent.mkdir(parents=True, exist_ok=True)
+    except Exception:                                         # noqa: BLE001
+        pass
     _kw = {"voice": voice, "instruction": instruction}
     if seed:
         _kw["seed"] = seed
@@ -277,8 +297,9 @@ def synth_with_pauses(text, out_path, *, synth, voice="", instruction="",
                         "segments": i, "sha256": ""}
             trimmed = sp
             tr = trim_silence(sp, tmpdir / f"trim{i:02d}.wav")
-            if tr.get("ok"):
-                trimmed = tmpdir / f"trim{i:02d}.wav"
+            _trim_p = tmpdir / f"trim{i:02d}.wav"
+            if tr.get("ok") and _trim_p.is_file():
+                trimmed = _trim_p
                 _trimmed_total += float(tr.get("trimmed") or 0)
             parts.append(str(trimmed))
             gaps.append(float(seg.get("pause") or 0.0))

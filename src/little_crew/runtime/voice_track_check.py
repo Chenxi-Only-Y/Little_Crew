@@ -5,7 +5,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-from little_crew.runtime.voice_track import assign_to_shots, build, parse_dialogue
+from little_crew.runtime.voice_track import (
+    assign_to_shots, build, parse_dialogue, synth_with_pauses,
+)
 
 _r = []
 
@@ -101,6 +103,28 @@ def main() -> int:
         check("D3 ★★ 失败率指标为 0（自愈后不算失败）",
               float(rep2["report"].get("failRate") or 0) == 0.0,
               str(rep2["report"].get("failRate")))
+
+
+    print(); print("H. 目录不存在时也要能写（2026-11-11 真因）")
+    with tempfile.TemporaryDirectory() as td2:
+        deep = Path(td2) / "voice" / "nested" / "v.wav"   # 父目录不存在
+        def _fake_ok(text, path, voice="", instruction=""):
+            # 必须写**合法 wav**：join_wavs 用 wave 读段，假字节会报 "not a WAVE file"
+            import wave as _w
+
+            Path(str(path)).parent.mkdir(parents=True, exist_ok=True)
+            with _w.open(str(path), "wb") as w:
+                w.setnchannels(1)
+                w.setsampwidth(2)
+                w.setframerate(24000)
+                w.writeframes(b"\x00\x00" * 4800)
+            return {"ok": True, "seconds": 0.2, "voice": voice,
+                    "instruction": instruction, "error": "", "sha256": "h"}
+        r = synth_with_pauses("喂，你醒着吗？你的腿……", str(deep),
+                              synth=_fake_ok, max_seconds=6.0)
+        check("H1 ★★★ 多段合成会自动建父目录（原来必 FileNotFound）",
+              bool(r.get("ok")) and deep.is_file(),
+              f"ok={r.get('ok')} err={str(r.get('error'))[:80]}")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
