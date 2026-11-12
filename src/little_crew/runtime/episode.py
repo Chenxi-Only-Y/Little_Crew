@@ -3268,7 +3268,26 @@ class EpisodeRunner:
         from little_crew.models.spec import BackendKind
         kind = getattr(backend, "kind", None) if backend is not None else None
         if backend is not None and kind is not BackendKind.COMFYUI:
+            try:
+                from little_crew.runtime.render_policy import (
+                    explain as _explain_policy,
+                    render_workers as _workers_of,
+                )
+
+                _w = _workers_of(backend)
+                print(f"  {_explain_policy(backend)}")
+            except Exception:                                 # noqa: BLE001
+                _w = 1
             jobs = [(self._values(ir), ir["graphId"]) for ir in irs]
+            if _w > 1 and len(jobs) > 1:
+                # 云端才走到这里（本地策略恒为 1）：远端排队，本地只等 I/O
+                from concurrent.futures import ThreadPoolExecutor
+
+                with ThreadPoolExecutor(max_workers=min(_w, len(jobs))) as _ex:
+                    _outs = list(_ex.map(
+                        lambda j: self.renderer.render_http(j[0], backend, job_id=j[1]),
+                        jobs))
+                return {"batch": _outs}
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
 
