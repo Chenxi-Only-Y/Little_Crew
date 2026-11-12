@@ -143,18 +143,75 @@ class Run:
 
 
 class RunRegistry:
-    """任务表。**线程安全** —— 后台线程写，HTTP 线程读。"""
+    """任务表。**线程安全** —— 后台线程写，HTTP 线程读。
 
-    def __init__(self) -> None:
+    **落盘（2026-11-12）**：以前任务表只在内存，服务重启后 runId 全丢 ——
+    客户端拿着旧 runId 来查会得到 404，看起来像"任务没跑过"。
+    现在每次状态变化原子写一份 `runs.json`，启动时加载；
+    重启后仍在 `running` 的任务标 `unknown`（**不可假定成功**，与作业状态机一致）。
+    """
+
+    def __init__(self, state_dir: Any = None) -> None:
         self._lock = threading.Lock()
         self._runs: dict[str, Run] = {}
+        self._path = (Path(str(state_dir)) / "runs.json") if state_dir else None
+        if self._path is not None:
+            self._load()
+
+    # ---- 落盘 ----------------------------------------------------------
+
+    def _load(self) -> None:
+        try:
+            if not self._path or not self._path.is_file():
+                return
+            data = json.loads(self._path.read_text(encoding="utf-8"))
+        except Exception:                                     # noqa: BLE001
+            return
+        for item in data.get("runs") or ():
+            try:
+                r = Run(run_id=str(item["runId"]), kind=str(item.get("kind") or ""),
+                        state=str(item.get("state") or RunState.PENDING),
+                        created_at=float(item.get("createdAt") or 0) or time.time(),
+                        finished_at=float(item.get("finishedAt") or 0),
+                        stage=str(item.get("stage") or ""),
+                        result=item.get("result"),
+                        error=str(item.get("error") or ""))
+            except Exception:                                 # noqa: BLE001
+                continue
+            # 重启前还在跑 -> 无法确定是否跑完（产物可能已落盘）
+            if r.state in (RunState.PENDING, RunState.RUNNING):
+                r.state = RunState.UNKNOWN
+                r.error = r.error or "服务重启，未能确认该任务是否完成"
+            self._runs[r.run_id] = r
+
+    def _save(self) -> None:
+        if self._path is None:
+            return
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            payload = {"kind": "api.runs", "savedAt": time.time(),
+                       "runs": [r.as_dict() for r in self._runs.values()]}
+            tmp = self._path.with_suffix(".json.tmp")
+            tmp.write_text(json.dumps(payload, ensure_ascii=False, default=str),
+                           encoding="utf-8")
+            os.replace(tmp, self._path)
+        except Exception:                                     # noqa: BLE001
+            pass
+
+    # ---- 接口 ----------------------------------------------------------
 
     def create(self, kind: str) -> Run:
         rid = uuid.uuid4().hex[:12]
         r = Run(run_id=rid, kind=kind)
         with self._lock:
             self._runs[rid] = r
+            self._save()
         return r
+
+    def touch(self, run: Run) -> None:
+        """状态变了之后调一下（落盘用；失败不影响主流程）。"""
+        with self._lock:
+            self._save()
 
     def get(self, rid: str) -> Run | None:
         with self._lock:
@@ -176,6 +233,7 @@ class RunRegistry:
         def _wrap() -> None:
             run.state = RunState.RUNNING
             run.emit("开始")
+            self._save()
             try:
                 # ⚠️ **把返回值当作结果** —— 而不是要求调用方在 `fn` 里
                 # 自己 `run.result = ...`。
@@ -190,10 +248,12 @@ class RunRegistry:
                 if run.state is RunState.RUNNING:
                     run.state = RunState.SUCCEEDED
                 run.emit("完成", state=run.state)
+                self._save()
             except Exception as e:                          # noqa: BLE001
                 run.state = RunState.FAILED
                 run.error = f"{type(e).__name__}: {e}"
                 run.emit("失败", error=run.error)
+                self._save()
                 # 栈留在服务端日志，**不进响应**（可能含路径等内部信息）
                 traceback.print_exc()
             finally:
@@ -234,9 +294,67 @@ class _Handlers:
                     "GET /v1/runs/{id}", "GET /v1/runs/{id}/artifacts",
                     "GET /v1/runs/{id}/artifacts/{name}",
                     "GET /v1/runs/{id}/events (SSE)",
-                    "POST /v1/compile", "GET /v1/env",
+                    "POST /v1/compile", "POST /v1/shot", "GET /v1/env",
                     "GET /v1/capabilities", "GET /healthz"],
         }
+
+    def shot(self, body: Mapping[str, Any], *, backend: Any = None,
+             render: bool = False) -> dict[str, Any]:
+        """单镜：**先编译**（IR 出口），`render=true` 时再提交渲染。
+
+        为什么先编译：编译会做校验（提示词为空、缺首帧等）并给出内容哈希；
+        跳过编译直接提交，错误只能在远端报出来（而且没有哈希可审计）。
+        """
+        from little_crew.compiler.exits import compile_ir
+
+        ir = body.get("ir")
+        if not isinstance(ir, Mapping):
+            prompt = str(body.get("prompt") or "").strip()
+            if not prompt:
+                raise ValueError("请求体缺少 `ir` 或 `prompt`")
+            ir = {"irVersion": "little_crew.ir/v1", "graphId": "G-API-SHOT",
+                  "nodes": [
+                      {"id": "p", "kind": "prompt.text", "params": {"text": prompt}},
+                      {"id": "n", "kind": "prompt.negative",
+                       "params": {"text": str(body.get("negativePrompt") or "")}},
+                      {"id": "l", "kind": "latent.empty",
+                       "params": {"width": int(body.get("width") or 768),
+                                  "height": int(body.get("height") or 1024)}},
+                      {"id": "s", "kind": "sample.ksampler",
+                       "params": {"steps": int(body.get("steps") or 8)}}],
+                  "provenance": {"generator": "little_crew.api"}}
+        out = compile_ir(ir, backend, kind="image",
+                         seed=(int(body["seed"]) if body.get("seed") is not None else None))
+        if not out.ok:
+            raise ValueError(f"IR 编译失败：{out.error}")
+        result: dict[str, Any] = {"ok": True, "dryRun": not render,
+                                  "contentHash": out.content_hash,
+                                  "notices": list(out.notices),
+                                  "body": out.body}
+        if not render:
+            return result
+        if backend is None:
+            raise RuntimeError("没有可用的生图后端（local-gen 未就绪？）")
+        from little_crew.runtime.backend_select import make_channel
+        from little_crew.runtime.render import RenderSession
+
+        ch = make_channel(backend, timeout_s=300)
+        ok, why = ch.available()
+        if not ok:
+            raise RuntimeError(f"渲染通道不可用：{why}")
+        values = {"prompt": str(out.params.get("prompt") or ""),
+                  "negative_prompt": str(out.params.get("negative_prompt") or ""),
+                  "width": int(out.params.get("width") or 768),
+                  "height": int(out.params.get("height") or 1024),
+                  "steps": int(out.params.get("steps") or 8),
+                  "seed": int(out.params.get("seed") or 0)}
+        sess = RenderSession(ch, None)
+        o = sess.render_http(values, backend, job_id=str(body.get("shotId") or "api-shot"))
+        result.update({"rendered": bool(getattr(o, "ok", False)),
+                       "failure": str(getattr(o, "failure", "")),
+                       "reason": str(getattr(o, "reason", ""))[:300],
+                       "artifacts": sorted((getattr(o, "artifacts", None) or {}).keys())})
+        return result
 
     def artifacts(self, root: str) -> dict[str, Any]:
         """列交付目录里的文件（名/大小）。**不递归**，防意外遍历。"""
@@ -485,7 +603,12 @@ class ApiServer:
     def __init__(self, *, host: str = "127.0.0.1", port: int = 8787) -> None:
         self.host = host
         self.port = port
-        self.runs = RunRegistry()
+        # 任务表落盘目录（2026-11-12）：默认 `outputs/.api-runs`，
+        # 可用 `LITTLE_CREW_RUNS_DIR` 改。落盘失败不影响服务（只丢重启可见性）。
+        import os as _os_runs
+
+        _rd = str(_os_runs.environ.get("LITTLE_CREW_RUNS_DIR") or "outputs/.api-runs")
+        self.runs = RunRegistry(_rd)
         self.handlers = _Handlers()
         #: `/v1/compile` 的实际编译实现。**可替换** ——
         #:
@@ -516,6 +639,24 @@ class ApiServer:
                                         compile_impl=self._compile_impl)
             # 编译失败 -> 400（**客户端给了编不过的 IR**，不是服务器故障）
             return (200 if out.get("ok") else 400), out
+
+        if method == "POST" and parts == ["v1", "shot"]:
+            try:
+                from little_crew.models.registry import build_default_registry
+                from little_crew.runtime.backend_select import pick_backend
+                from little_crew.models.spec import BackendKind
+
+                spec = build_default_registry().get("z-image-turbo")
+                be = (next((b for b in spec.backends
+                            if b.kind is BackendKind.HTTP), None)
+                      if spec is not None else None)
+            except Exception:                                 # noqa: BLE001
+                be = None
+            try:
+                return 200, self.handlers.shot(
+                    body, backend=be, render=bool(body.get("render")))
+            except ValueError as e:
+                return 400, {"error": str(e)}
 
         if method == "POST" and parts == ["v1", "episode"]:
             # **同步**校验"客户端能自己发现"的错误，再开后台任务：
@@ -614,13 +755,44 @@ class _Handler(BaseHTTPRequestHandler):
 
     # ---- 方法 ----
 
+    def _authorized(self, path: str) -> bool:
+        """可选 token 鉴权（2026-11-12）。
+
+        规则：设了 `LITTLE_CREW_API_TOKEN` 就必须带
+        `Authorization: Bearer <token>`；没设则放行（本机默认）。
+        `/healthz` **永远放行** —— 探活不该要凭据。
+        """
+        import os as _os_auth
+
+        want = str(_os_auth.environ.get("LITTLE_CREW_API_TOKEN") or "")
+        if not want or path.rstrip("/") == "/healthz":
+            return True
+        got = str(self.headers.get("Authorization") or "")
+        if got.lower().startswith("bearer "):
+            got = got[7:].strip()
+        return got == want
+
     def do_GET(self) -> None:                                 # noqa: N802
         path = urlparse(self.path).path
+        if not self._authorized(path):
+            return self._send(401, {"error": "缺少或错误的 Authorization"
+                                             "（需要 Bearer <LITTLE_CREW_API_TOKEN>）"})
         # SSE 单独处理（它是长连接，不是一问一答）
         parts = [p for p in path.split("/") if p]
         if (len(parts) == 4 and parts[:2] == ["v1", "runs"]
                 and parts[3] == "events"):
-            return self._sse(parts[2])
+            _q = urlparse(self.path).query
+            _from = 0
+            try:
+                import urllib.parse as _up
+
+                _from = int((_up.parse_qs(_q).get("from") or ["0"])[0])
+            except Exception:                                 # noqa: BLE001
+                _from = 0
+            _hdr = str(self.headers.get("Last-Event-ID") or "").strip()
+            if _hdr.isdigit():
+                _from = max(_from, int(_hdr))
+            return self._sse(parts[2], _from)
         try:
             status, payload = self.api.route("GET", path, {})
         except Exception as e:                                # noqa: BLE001
@@ -629,6 +801,9 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:                                # noqa: N802
         path = urlparse(self.path).path
+        if not self._authorized(path):
+            return self._send(401, {"error": "缺少或错误的 Authorization"
+                                             "（需要 Bearer <LITTLE_CREW_API_TOKEN>）"})
         try:
             body = self._read_body()
         except ValueError as e:
@@ -641,7 +816,7 @@ class _Handler(BaseHTTPRequestHandler):
             return self._send(500, {"error": f"{type(e).__name__}: {e}"})
         self._send(status, payload)
 
-    def _sse(self, run_id: str) -> None:
+    def _sse(self, run_id: str, start_at: int = 0) -> None:
         """Server-Sent Events 进度流。
 
         **标准库实现**：`text/event-stream` 就是"长连接 + 逐条写文本"。
@@ -662,13 +837,16 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Connection", "keep-alive")
         self.end_headers()
 
-        sent = 0
+        # 断线续传（2026-11-12）：客户端可带 `?from=N` 或 `Last-Event-ID: N`
+        # 从第 N 条事件接着收 —— 否则断一次就得从头重放（长跑里很浪费）。
+        sent = max(0, int(start_at))
         deadline = time.time() + 3600
         try:
             while time.time() < deadline:
                 while sent < len(r.events):
                     msg = json.dumps(r.events[sent], ensure_ascii=False)
-                    self.wfile.write(f"data: {msg}\n\n".encode("utf-8"))
+                    # SSE 的 `id:` 让浏览器能在重连时自动带 Last-Event-ID
+                    self.wfile.write(f"id: {sent + 1}\ndata: {msg}\n\n".encode("utf-8"))
                     self.wfile.flush()
                     sent += 1
                 if r.state in RunState.TERMINAL:

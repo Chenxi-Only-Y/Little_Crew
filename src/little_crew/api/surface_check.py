@@ -69,6 +69,42 @@ def main() -> int:
     st6, unr = srv.route("GET", "/v1/runs/不存在/artifacts", {})
     check("C2 ★★ 未知 runId -> 404（不是 500）", st6 == 404, str(unr)[:50])
 
+    print(); print("F. 单镜接口 /v1/shot（2026-11-12）")
+    st, shot = srv.route("POST", "/v1/shot",
+                         {"prompt": "午后山坡，风吹花穗", "width": 832,
+                          "height": 480, "steps": 8})
+    check("F1 ★★★ 只编译不渲（dryRun=true）且给内容哈希",
+          st == 200 and shot.get("dryRun") is True and bool(shot.get("contentHash")),
+          str(shot)[:70])
+    check("F2 ★★ 编译出的请求体带提示词与尺寸",
+          "午后山坡" in str((shot.get("body") or {}).get("prompt"))
+          and (shot.get("body") or {}).get("width") == 832,
+          str(shot.get("body"))[:70])
+    st2, bad = srv.route("POST", "/v1/shot", {})
+    check("F3 ★★★ 缺 prompt -> 400（不是 500）", st2 == 400, str(bad)[:60])
+
+    print(); print("G. 任务表落盘（重启不丢 runId）")
+    import tempfile as _tf
+
+    from little_crew.api.server import RunRegistry, RunState
+
+    with _tf.TemporaryDirectory() as td:
+        reg = RunRegistry(td)
+        run = reg.create("episode")
+        run.state = RunState.SUCCEEDED
+        reg.touch(run)
+        reg2 = RunRegistry(td)
+        check("G1 ★★★ 重启后仍能查到该 runId",
+              reg2.get(run.run_id) is not None, str(run.run_id))
+        run2 = reg.create("episode")
+        run2.state = RunState.RUNNING
+        reg.touch(run2)
+        reg3 = RunRegistry(td)
+        got = reg3.get(run2.run_id)
+        check("G2 ★★★ 重启前在跑的任务 -> unknown（不假装成功）",
+              got is not None and got.state == RunState.UNKNOWN,
+              str(getattr(got, "state", None)))
+
     print(); print("E. 路由 404")
     st7, nf = srv.route("GET", "/v1/nope", {})
     check("E1 ★★ 未知路径 -> 404 + 明确错误", st7 == 404 and "error" in nf, str(nf)[:60])

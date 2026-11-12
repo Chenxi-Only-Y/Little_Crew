@@ -147,7 +147,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),
     ("L2 一致性描述子", [sys.executable, "-m", "little_crew.review.embed_check"], 51),
     ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 71),
-    ("对外接口面", [sys.executable, "-m", "little_crew.api.surface_check"], 14),
+    ("对外接口面", [sys.executable, "-m", "little_crew.api.surface_check"], 19),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
 
@@ -174,6 +174,12 @@ def main() -> int:
 
     # 测试不写仓库（2026-11-12）：否则每次跑都会改 research/script-rounds/E100.json
     os.environ.setdefault("LITTLE_CREW_RESEARCH_DUMP", "0")
+    # 任务表现在会落盘（api.runs）：测试必须用**独立临时目录**，
+    # 否则上一次跑留下的 runId 会让 `/v1/runs` 初始列表不为空（D10 直接挂）。
+    if not os.environ.get("LITTLE_CREW_RUNS_DIR"):
+        import tempfile
+
+        os.environ["LITTLE_CREW_RUNS_DIR"] = tempfile.mkdtemp(prefix="lc_runs_")
     env = dict(os.environ)
     env["PYTHONPATH"] = str(SRC) + os.pathsep + env.get("PYTHONPATH", "")
     env["PYTHONIOENCODING"] = "utf-8"
