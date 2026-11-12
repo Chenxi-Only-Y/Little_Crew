@@ -76,6 +76,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("人工 Gate", [sys.executable, "-m", "little_crew.runtime.human_gate_check"], 17),
     ("产物清理", [sys.executable, "-m", "little_crew.runtime.prune_artifacts_check"], 21),
     ("进度落盘", [sys.executable, "-m", "little_crew.runtime.progress_check"], 20),
+    ("结构化日志", [sys.executable, "-m", "little_crew.runtime.runlog_check"], 12),
     ("调用树落盘", [sys.executable, "-m", "little_crew.runtime.trace_dump_check"], 12),
     ("场景预算协调器", [sys.executable, "-m", "little_crew.governance.plan_alloc_check"], 38),
     ("处置闭环", [sys.executable, "-m", "little_crew.governance.disposition_check"], 20),

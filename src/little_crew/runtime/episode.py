@@ -585,6 +585,8 @@ class EpisodeRunner:
         self.previs_first: dict[str, Path] = {}
         #: 进度落盘器（首次 `_mark` 时按 workdir 建）
         self.progress: Any = None
+        #: 结构化日志（首次 `_mark` 时按 workdir 建）
+        self.runlog: Any = None
         #: 场景主体冲突（分镜越权引入了剧本没有的场景主体）
         self.scene_conflicts: list[dict] = []
         #: 每镜用到了哪些角色锚点图（`shotId -> [角色名]`）。
@@ -622,6 +624,18 @@ class EpisodeRunner:
         """
         self.stage = stage
         self.trace[stage] = {"t": round(time.time() - self._t0, 1), **info}
+        # 结构化日志（2026-11-12）：与 state.json 同一处落盘，机器可读、可按阶段筛
+        try:
+            if getattr(self, "runlog", None) is None:
+                from little_crew.runtime.runlog import RunLog
+
+                _wd_l = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                self.runlog = RunLog(_wd_l or ".", episode_id=self.episode_id)
+            self.runlog.write("stage", stage=stage,
+                              **{k: v for k, v in info.items()
+                                 if isinstance(v, (str, int, float, bool))})
+        except Exception:                                     # noqa: BLE001
+            pass
         # 取消信号（2026-11-12）：工作目录出现 CANCEL 文件 -> 在当前阶段边界停下。
         # 只**优雅停止**（写半成品报告），不杀进程 —— 杀进程会留下半写的产物。
         try:
