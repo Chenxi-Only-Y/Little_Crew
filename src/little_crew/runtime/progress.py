@@ -129,3 +129,34 @@ def read_state(workdir: Any) -> dict:
         return json.loads(p.read_text(encoding="utf-8"))
     except Exception:                                         # noqa: BLE001
         return {}
+
+# ---------------------------------------------------------------------------
+# 取消信号（2026-11-12）：**优雅停止**，不是 kill
+# ---------------------------------------------------------------------------
+
+#: 取消标记文件名：在 `<workdir>/` 下建这个文件 = 请求停止
+CANCEL_FILE = "CANCEL"
+
+
+def cancel_requested(workdir: Any) -> bool:
+    """工作目录里有没有 `CANCEL` 文件。
+
+    为什么用文件而不是信号：一集跑 20~50 分钟，可能换了终端、甚至换了机器；
+    信号发不到那个进程，但**文件系统是共享的**。
+    语义：看到标记 -> 在当前检查点停下（写半成品报告），不是立刻杀进程。
+    """
+    try:
+        return (Path(str(workdir)) / CANCEL_FILE).is_file()
+    except Exception:                                         # noqa: BLE001
+        return False
+
+
+def request_cancel(workdir: Any, reason: str = "") -> str:
+    """建取消标记（幂等）。返回标记路径；失败返回空串。"""
+    try:
+        p = Path(str(workdir)) / CANCEL_FILE
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(reason or "manual", encoding="utf-8")
+        return str(p)
+    except Exception:                                         # noqa: BLE001
+        return ""

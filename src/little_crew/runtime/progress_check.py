@@ -11,7 +11,9 @@ import tempfile
 import threading
 from pathlib import Path
 
-from little_crew.runtime.progress import Progress, read_state
+from little_crew.runtime.progress import (
+    Progress, cancel_requested, read_state, request_cancel,
+)
 
 _r = []
 
@@ -95,6 +97,44 @@ def main() -> int:
     p4.mark("script")          # 目录不存在但会自动创建；这里主要验证不抛
     p4.finish(ok=True)
     check("F1 ★★★ 不可写路径也不抛异常（观测不该拖垮主流程）", True, "")
+
+    print(); print("G. 取消信号（CANCEL 文件）")
+    with tempfile.TemporaryDirectory() as td5:
+        check("G1 ★★★ 没有标记 -> 不取消", cancel_requested(td5) is False, "")
+        path = request_cancel(td5, "测试取消")
+        check("G2 ★★★ 建标记后 -> 取消为真",
+              bool(path) and cancel_requested(td5) is True, str(path))
+        st7 = (Path(td5) / "CANCEL")
+        check("G3 ★★ 标记里写了原因", st7.is_file() and "测试取消" in st7.read_text(encoding="utf-8"),
+              st7.read_text(encoding="utf-8") if st7.is_file() else "")
+        st7.unlink()
+        check("G4 ★★ 删掉标记 -> 恢复", cancel_requested(td5) is False, "")
+
+    print(); print("H. 接进 _mark（真流程会在阶段边界停下）")
+    import time as _time
+
+    from little_crew.runtime.episode import EpisodeRunner, StopRequested
+
+    with tempfile.TemporaryDirectory() as td6:
+        stub = type("_S", (), {})()
+        stub.stage = ""
+        stub.trace = {}
+        stub._t0 = _time.time()
+        stub._workdir = td6
+        stub.stop_after = ""
+        stub.episode_id = "EF95"
+        stub.progress = None
+        EpisodeRunner._mark(stub, "script")
+        check("H1 ★★★ 没有 CANCEL 时 _mark 正常走", stub.stage == "script", stub.stage)
+        request_cancel(td6, "验证")
+        stopped = False
+        try:
+            EpisodeRunner._mark(stub, "render")
+        except StopRequested:
+            stopped = True
+        check("H2 ★★★ 有 CANCEL 时在阶段边界停下（抛 StopRequested）", stopped, "")
+        check("H3 ★★ 停下前已把进度落盘（能看出停在哪）",
+              (Path(td6) / "state.json").is_file(), "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

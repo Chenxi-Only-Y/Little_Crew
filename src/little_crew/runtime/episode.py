@@ -622,6 +622,18 @@ class EpisodeRunner:
         """
         self.stage = stage
         self.trace[stage] = {"t": round(time.time() - self._t0, 1), **info}
+        # 取消信号（2026-11-12）：工作目录出现 CANCEL 文件 -> 在当前阶段边界停下。
+        # 只**优雅停止**（写半成品报告），不杀进程 —— 杀进程会留下半写的产物。
+        try:
+            from little_crew.runtime.progress import cancel_requested
+
+            _wd_c = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_c and cancel_requested(_wd_c):
+                raise StopRequested("收到取消标记（CANCEL）：在当前阶段停下")
+        except StopRequested:
+            raise
+        except Exception:                                     # noqa: BLE001
+            pass
         # 落盘一份可被外部读取的进度（2026-11-12）：长跑不再只能盯 stdout
         try:
             if getattr(self, "progress", None) is None:
