@@ -74,7 +74,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 17),
     ("断点续跑", [sys.executable, "-m", "little_crew.runtime.stage_checkpoint_check"], 18),
     ("人工 Gate", [sys.executable, "-m", "little_crew.runtime.human_gate_check"], 17),
-    ("产物清理", [sys.executable, "-m", "little_crew.runtime.prune_artifacts_check"], 18),
+    ("产物清理", [sys.executable, "-m", "little_crew.runtime.prune_artifacts_check"], 21),
     ("场景预算协调器", [sys.executable, "-m", "little_crew.governance.plan_alloc_check"], 38),
     ("处置闭环", [sys.executable, "-m", "little_crew.governance.disposition_check"], 20),
     ("provider 指纹", [sys.executable, "-m", "little_crew.governance.provider_fingerprint_check"], 14),

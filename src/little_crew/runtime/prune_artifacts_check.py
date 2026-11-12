@@ -139,6 +139,31 @@ def main() -> int:
         check("G6 ★★ 清理记录落盘（可追溯）",
               (base / "E4" / "delivery" / "pruned_artifacts.json").is_file(), "")
 
+    print(); print("F. 阈值触发（--auto：没超就什么都不做）")
+    with _tf.TemporaryDirectory() as td4:
+        base2 = _pathlib.Path(td4) / "outputs"
+        base2.mkdir()
+        _mk(base2, "A1", 5.0)
+        _mk(base2, "A2", 5.0)
+        # 阈值调到很大 -> 跳过
+        info = PA.auto_prune(base2, max_gb=99.0, keep_recent=0, min_age_days=0)
+        check("F1 ★★★ 没超阈值 -> skipped 且不动文件",
+              info.get("skipped") is True
+              and (base2 / "A1" / "delivery" / "mix.wav").is_file(), str(info)[:80])
+        # 阈值调到 0 -> 触发
+        info2 = PA.auto_prune(base2, max_gb=0.0, keep_recent=0, min_age_days=0,
+                              apply_deletes=False)
+        check("F2 ★★★ 超阈值 -> 出计划（dry-run 不删）",
+              info2.get("skipped") is False
+              and (info2.get("fleet") or {}).get("episodes", 0) >= 1
+              and (base2 / "A1" / "delivery" / "mix.wav").is_file(), str(info2)[:80])
+        info3 = PA.auto_prune(base2, max_gb=0.0, keep_recent=0, min_age_days=0,
+                              apply_deletes=True)
+        check("F3 ★★★ apply_deletes 才真删，且成片保留",
+              not (base2 / "A1" / "delivery" / "mix.wav").is_file()
+              and (base2 / "A1" / "delivery" / "episode.mp4").is_file(),
+              str(info3.get("result"))[:80])
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

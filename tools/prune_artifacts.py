@@ -240,6 +240,46 @@ def fleet_apply(outputs: Path, fleet: dict) -> dict:
             "freedBytes": freed}
 
 
+def outputs_size_bytes(root: Path) -> int:
+    """目录总大小（只算文件）。"""
+    total = 0
+    for f in root.rglob("*"):
+        try:
+            if f.is_file():
+                total += f.stat().st_size
+        except OSError:
+            pass
+    return total
+
+
+def auto_prune(outputs: Path, *, max_gb: float = 2.0, keep_recent: int = 3,
+               keep_names: Iterable[str] = (), min_age_days: float = 1.0,
+               apply_deletes: bool = False) -> dict:
+    """超过阈值才清理；没超就什么都不做。
+
+    为什么用"阈值"而不是每次都清：清空缓存会让下一次整集渲染全部实算
+    （一集多花 6~8 分钟）。纪律是只在占盘过大时清，且保留最近 N 集。
+    """
+    size = outputs_size_bytes(outputs)
+    limit = int(float(max_gb) * 1024 ** 3)
+    if size <= limit:
+        return {"kind": "prune.auto", "skipped": True,
+                "bytes": size, "limit": limit,
+                "reason": f"占盘 {size/1024**3:.2f} GB <= 阈值 {max_gb} GB，不清理",
+                "fleet": None}
+    fleet = fleet_plan(outputs, keep_recent=keep_recent,
+                       keep_names=keep_names, min_age_days=min_age_days,
+                       deep=True)
+    out = {"kind": "prune.auto", "skipped": False, "bytes": size,
+           "limit": limit,
+           "reason": f"占盘 {size/1024**3:.2f} GB > 阈值 {max_gb} GB，执行深度清理",
+           "fleet": {"episodes": len(fleet["episodes"]),
+                     "count": fleet["count"], "bytes": fleet["bytes"]}}
+    if apply_deletes:
+        out["result"] = fleet_apply(outputs, fleet)
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="清理一集的大体积产物（先记后删）")
     ap.add_argument("workdir", nargs="?", default="",
@@ -250,12 +290,40 @@ def main(argv=None) -> int:
     ap.add_argument("--outputs", default="outputs", help="--all 时的根目录")
     ap.add_argument("--keep-recent", type=int, default=3, help="保留最近几集不动")
     ap.add_argument("--keep", default="", help="逗号分隔的集名，永不清理")
+    ap.add_argument("--auto", action="store_true",
+                    help="按阈值自动清理（超过 --max-gb 才执行，否则什么都不做）")
+    ap.add_argument("--max-gb", type=float, default=2.0,
+                    help="--auto 的阈值（GB，默认 2.0）")
     ap.add_argument("--deep", action="store_true",
                     help="深度清理：删 wav/中间 mp4/cache/build，保 json+srt+成片+checkpoint")
     ap.add_argument("--min-age-days", type=float, default=1.0,
                     help="少于这么多天的目录不动（默认 1 天）")
     args = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")               # type: ignore[attr-defined]
+    if args.auto:
+        outputs = Path(args.outputs)
+        if not outputs.is_dir():
+            print(f"  目录不存在：{outputs}")
+            return 2
+        keep_names = [x.strip() for x in str(args.keep or "").split(",") if x.strip()]
+        info = auto_prune(outputs, max_gb=args.max_gb,
+                          keep_recent=args.keep_recent, keep_names=keep_names,
+                          min_age_days=args.min_age_days,
+                          apply_deletes=bool(args.yes))
+        print(f"  {info['reason']}")
+        if info.get("skipped"):
+            return 0
+        fl = info.get("fleet") or {}
+        print(f"  计划：{fl.get('episodes')} 集 · {fl.get('count')} 个产物 · "
+              f"{fl.get('bytes', 0)/1024/1024:.0f} MB")
+        if not args.yes:
+            print("  这是 dry-run；加 --yes 才删")
+            return 0
+        res = info.get("result") or {}
+        print(f"  已删 {res.get('removed')} 个（失败 {res.get('failed')}）· "
+              f"释放 {res.get('freedBytes', 0)/1024/1024:.0f} MB")
+        return 0 if res.get("ok", True) else 1
+
     if args.all:
         outputs = Path(args.outputs)
         if not outputs.is_dir():
