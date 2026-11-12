@@ -459,8 +459,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.llm:
         print("  编剧：规则桩（确定性）")
+    # 预算（2026-11-12）：从环境变量读；一个都没设就是 unlimited（行为不变）。
+    #   LITTLE_CREW_BUDGET_WALL_MS / _STEPS / _TOKENS / _CNY
+    from little_crew.agent.budget import BudgetLedger as _Ledger
+
+    _ledger = _Ledger.from_env()
+    if not _ledger.unlimited():
+        print(f"  预算：{_ledger.limits}（超限会返回 F-BUDGET 并中止该步）")
     orch = CrewOrchestrator(
         max_rounds=3,
+        budget=_ledger.limits,
         model_families={"screenwriter": "deepseek", "storyboard_artist": "deepseek",
                         "dramaturge": "mimo", "story_editor": "glm",
                         "review_board": "qwen"})

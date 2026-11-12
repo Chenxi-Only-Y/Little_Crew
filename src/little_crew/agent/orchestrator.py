@@ -658,6 +658,32 @@ _REVIEW_FEEDBACK_KEY: dict[str, str] = {
 }
 
 
+def _usage_of(res: Any) -> tuple[int, float, bool]:
+    """从 `CallResult` 里取**提供方回报**的用量；取不到就 (0, 0.0, False)。
+
+    ⚠️ **不做估算**：拿字符数推算 token 会把"没见过账单"伪装成"算过账"。
+    本机模型大多不回 usage —— 那就老实记 0，并让 `usageReported` 说明这一点。
+    """
+    if res is None:
+        return 0, 0.0, False
+    for src in (getattr(res, "evidence", None), getattr(res, "output", None)):
+        if not isinstance(src, Mapping):
+            continue
+        u = src.get("usage") if isinstance(src, Mapping) else None
+        if not isinstance(u, Mapping):
+            continue
+        try:
+            tokens = int(u.get("total_tokens") or u.get("tokens") or 0)
+        except (TypeError, ValueError):
+            tokens = 0
+        try:
+            cny = float(u.get("cny") or u.get("cost_cny") or 0.0)
+        except (TypeError, ValueError):
+            cny = 0.0
+        return max(0, tokens), max(0.0, cny), True
+    return 0, 0.0, False
+
+
 class CrewOrchestrator:
     """把剧组职位串成协作闭环。
 
@@ -675,6 +701,7 @@ class CrewOrchestrator:
         max_rounds: int = 3,
         phase: str = "draft",
         model_families: Mapping[str, str] | None = None,
+        budget: Budget | None = None,
     ) -> None:
         self.registry = registry or build_registry()
         self.blackboard = blackboard or Blackboard()
@@ -689,6 +716,10 @@ class CrewOrchestrator:
         self._ownership: dict[str, str] = {}
         #: 最近一次审查产生的阶段留痕（供 run_script_cycle 汇总）
         self._last_outcomes: tuple[StageOutcome, ...] = ()
+        #: 预算账本（2026-11-12）：不传就是 unlimited，行为与之前一致
+        from little_crew.agent.budget import BudgetLedger
+
+        self.ledger = BudgetLedger(limits=budget or Budget.unlimited())
 
     # ---- 绑定实现 ------------------------------------------------------
 
@@ -811,11 +842,38 @@ class CrewOrchestrator:
     def _invoke_as(self, agent_id: str, capability: str,
                    payload: Mapping[str, Any], budget: Budget | None) -> CallResult:
         """以指定职位的身份发起调用（绕过能力解析，直接落到该职位）。"""
+        import time as _t
+
         from little_crew.agent.protocol import CallEnvelope
 
+        # ⚠️ 预算收口（2026-11-12）：**所有**职位调用都从这里过
+        # （run_stage / invoke_payload / 并发审查），所以记账只写这一处。
+        # 事前只能拦"步数"与"已知的 tokens/cny"；wall_ms 是事后按实测扣 ——
+        # 单次调用可能超出剩余额度，这一点写在 budget.py 的边界里。
+        ok, why = self.ledger.reserve(steps=1)
+        if not ok:
+            from little_crew.agent.protocol import CallResult
+
+            self.ledger.refuse(why, agent_id=agent_id, capability=capability)
+            # 必须**看得见**：否则表现是"分镜 0 镜 / 某阶段莫名没产出"，
+            # 而真因藏在账本里 —— 那正是"把异常吞掉"的另一种形态。
+            n = self.ledger.refused
+            print(f"  ⛔ 预算中止（第 {n} 次）：{agent_id}·{capability} —— {why}")
+            return CallResult.fail("F-BUDGET", why)
+
         env = CallEnvelope.root(agent_id, capability, payload,
-                                budget or Budget.unlimited(), callee_kind="agent")
-        return self.runtime.call_agent(env)
+                                budget or self.ledger.remaining(),
+                                callee_kind="agent")
+        t0 = _t.perf_counter()
+        res = None
+        try:
+            res = self.runtime.call_agent(env)
+        finally:
+            tokens, cny, reported = _usage_of(res)
+            self.ledger.settle(wall_ms=int((_t.perf_counter() - t0) * 1000),
+                               tokens=tokens, cny=cny,
+                               usage_reported=reported)
+        return res
 
     def invoke_payload(self, agent_id: str, capability: str,
                        payload: Mapping[str, Any]):
