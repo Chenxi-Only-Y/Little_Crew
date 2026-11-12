@@ -1,0 +1,42 @@
+{
+  "episodeId": "BUD5",
+  "rounds": [
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 1,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "审核者 dramaturge 执行失败：步数预算用尽（已用 2/2，本次需要 1）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 27.634
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": false,
+            "produced": [],
+            "error": "步数预算用尽（已用 2/2，本次需要 1）",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "审核者 dramaturge 执行失败：步数预算用尽（已用 2/2，本次需要 1）"
+}

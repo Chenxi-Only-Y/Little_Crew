@@ -1,0 +1,79 @@
+{
+  "episodeId": "BUD3",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：全场几乎没有阻力：'她一勺一勺把药喂进去，大半顺着他的嘴角流下来，她就用布巾擦，擦完再喂'——少女与旅人完全合作，动作是重复的护理流程；唯一的外部压力（村口集会的鼓声）只被'她的手停了一下，然后继续拧布巾'轻轻带过，双方立场无对抗，场面偏平。\", suggestion=\"给这一夜安一个具体的、要她付代价的阻力：比如母亲或村民深夜来敲门催她去集会/来抬人，她必须在'暴露旅人'和'放弃救治'之间当场选择；或者让旅人伤势恶化，她手里只有不够用的药，逼出一个有损失的决定。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：S03父亲立下的赌注是'明天的集会，你要是还端着这碗药，你就别去'，S04里鼓声响起、她确实没去——但集会上村里人的审判、她缺席的后果从未呈现。到S05冲突直接跳到'你走出这个村口，就别再叫我爹'，被声明的代价一直没有被收取，阻力被绕过去了。\", suggestion=\"把集会的后果接上：S05开场可改为她离村时正撞上散会的人群（或父亲从集会回来，带着全村的决定），让'村里人怎么看你'这句S03的核心威胁在村口兑现一次，再让她掰开父亲的手——离村的代价才真正落地。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem=\"S08：结尾场三方完全一致、无人对抗：'别等了' '她要是回来，进不了村，我在这儿'——父亲口中'进不了村'暗示的村规阻力只被一句台词说出，从未被任何行动检验；母亲、老奶奶、父亲的情绪线没有交锋，全场是静态的陈述与和解。\", suggestion=\"让那句'进不了村'经受一次真实测试：如外村人/族老路过要赶走他的矮凳与干花，或母亲第一次把三副碗筷中的一副收走、与父亲爆发唯一一次争吵——用一次小对抗收束，父亲最后'往路上又望了一眼'的坚持才有分量。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 34.376
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.ESCALATE",
+      "total": 0.0,
+      "asDict": {
+        "round": 2,
+        "verdict": "ESCALATE",
+        "total": 0.0,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 0,
+        "invalidatedReason": "编剧阶段失败：步数预算用尽（已用 3/2，本次需要 1）",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": false,
+            "produced": [],
+            "error": "步数预算用尽（已用 3/2，本次需要 1）",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "第 2 轮编剧阶段失败：步数预算用尽（已用 3/2，本次需要 1）"
+}

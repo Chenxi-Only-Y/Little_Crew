@@ -1,0 +1,54 @@
+{
+  "episodeId": "BUD4",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：整场没有活的对抗：少女唯一的阻力是记忆（“父亲的最后一句话还横在那里”），而回村那条路只被“又看看来时的路”一句带过，从未真正拉扯她。于是“那我就自己走”是在零阻力下做出的决定，缺少被考验的瞬间。', suggestion='给回程一次实质的拉力再让她跨过去——例如雾里传来村里的钟声/母亲的唤声，或花瓣一度朝南、她必须亲手把它们重新摆向北；让“留下”具体地出现一瞬，她的选择才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：岔路口本该是全剧最后的对抗，却一句就化解了：“别再用烟骗我。”旅人立刻答“我没有骗你”，声音贴耳而来，对手毫无抵抗地配合到底（“在你脚下”“直到你不想走了”），没有任何反向施压。', suggestion='让声音在此处提出条件或制造分歧：它拒绝回答、诱她走回村那条路、或要求她丢下包里的东西才肯现身；对抗至少要有一个来回，她最后的选择才是“争来的”。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 28.23
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 68.7）"
+}
