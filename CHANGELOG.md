@@ -57,6 +57,45 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.225] — 2026-11-12（名册重排：质检员进 · 摄影指导出 · 名册仍 19）
+
+### 新增职位：质检员（`qc_inspector`，VLM）
+
+- 职责：**逐镜抽检画面、判「崩没崩」、下返工指令**（真实 QC 也是打回单，不自己上手重画）
+- 产物 `qc.report`（findings + actions）；`run()` 读 actions 执行定向重渲
+- **为什么值得做成职位**：此前视觉闸由代码直调 `LlmClient`，
+  24 次 VLM 调用**不进预算账本、不进调用树、无跨族检查**；
+  走 `run_stage` 后自动进账/进 span/走授权
+- 实现放 `review/qc_inspector.py`（它要调 `vision_review`；放 `agent/` 会形成反向依赖）
+
+### 删除职位：摄影指导（`cinematographer`）
+
+- 它是 `shot.image` 的唯一产出者，而**出图是渲染通道执行**，不是职位判断
+- `shot.image` 改登记为 **L3 工具**（`ToolSpec`），并新增
+  `roster.CODE_OUTPUTS = {"shot.image"}` / `CODE_CONSUMED = {"previs.layouts"}`，
+  让依赖闭合与孤儿检查都能过
+- 导演不再"消费 `shot.image` 这个能力"（L1 不许直调 L3）
+
+### 补齐一个老缺口：**重画后复验**
+
+`vision_rework.verified` 一直是空数组 —— 重画可能还是崩的，但没人知道。
+现在复验被重画的那几镜（≤4 镜），仍崩的记录在案、**不再自动重画**。
+
+### 口径
+
+```
+名册 19 · 有实现 19 · 真跑 14 · 有实现未接 5（角色设计师/合成剪辑/场记/剪辑师/合规官）
+「未实现」的职位：0
+```
+
+### 测试
+
+`review/qc_inspector_check` 14 项 · `runtime/vision_rework_check` 18 项（+词表对齐）
+`tests/test_agent_collab` 49 项（职务名、允许代码产出）
+全量 **2503/2490 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-alpha.224] — 2026-11-12（后端收口：API 完整化 · 运维 CLI · 打包）
 
 ### API 完整化
