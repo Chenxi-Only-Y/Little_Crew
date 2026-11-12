@@ -88,6 +88,10 @@ def main() -> int:
     check("A8 ★★★ 云端模板（size 拼字符串）也能编译",
           oc.ok and oc.body.get("size") == "832x480", str(oc.body)[:70])
 
+    _nb = compile_ir(_img_ir(), None, kind="image")
+    check("A9 ★★★ 没有 backend 也能编译（通道自己填模板的路径）",
+          _nb.ok and _nb.body.get("prompt"), str(_nb.error)[:60])
+
     print(); print("B. 音频出口")
     t = compile_ir(_tts_ir(), None, kind="tts")
     check("B1 ★★★ 台词与音色进请求体",

@@ -3965,15 +3965,42 @@ class EpisodeRunner:
 
         用**实例上**的步数与种子，而不是写死的常量 ——
         否则调用方改了 `engine_steps` 却不生效，而参数不生效比报错更难发现。
+
+        ⚠️ 2026-11-12：这里**改走 IR 出口编译器**（`compiler/exits.py`）。
+        以前是按节点 id 硬取字段（`n_prompt`/`n_neg`/`n_latent`）——
+        那等于"HTTP 路径不经过编译"，节点改名或 IR 结构一变就静默取空，
+        而且编译器的 notices（控制图/IPAdapter 不被支持）根本传不出来。
+        现在：能编译就用编译结果；编译不了退回旧取值并**打印原因**。
         """
         def param(nid: str, key: str) -> Any:
             return next(n for n in ir["nodes"] if n["id"] == nid)["params"][key]
 
-        return {"prompt": param("n_prompt", "text"),
-                "negative_prompt": param("n_neg", "text"),
-                "width": param("n_latent", "width"),
-                "height": param("n_latent", "height"),
-                "steps": self.engine_steps, "seed": self.engine_seed}
+        _fallback = {"prompt": param("n_prompt", "text"),
+                     "negative_prompt": param("n_neg", "text"),
+                     "width": param("n_latent", "width"),
+                     "height": param("n_latent", "height"),
+                     "steps": self.engine_steps, "seed": self.engine_seed}
+        try:
+            from little_crew.compiler.exits import compile_ir
+
+            out = compile_ir(ir, None, kind="image", seed=self.engine_seed)
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ IR 出口编译异常（退回旧取值）：{type(exc).__name__}: {exc}")
+            return _fallback
+        if not out.ok:
+            print(f"  ⚠️ IR 出口编译失败（退回旧取值）：{out.error}")
+            return _fallback
+        # 只回旧的那 6 个键：多带键会改变幂等哈希，让已有缓存全部失效
+        values = {k: out.params[k] for k in
+                  ("prompt", "negative_prompt", "width", "height")}
+        values["steps"] = self.engine_steps
+        values["seed"] = self.engine_seed
+        # notices 只提示一次（一集 40 镜会刷屏）
+        for note in out.notices:
+            if note not in getattr(self, "_exit_notes_shown", set()):
+                self._exit_notes_shown = getattr(self, "_exit_notes_shown", set()) | {note}
+                print(f"  ℹ️ IR 出口：{note}")
+        return values
 
     #: 供调用方覆盖的种子（实例级）
     def with_seed(self, seed: int) -> "EpisodeRunner":

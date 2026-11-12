@@ -131,7 +131,8 @@ class HttpImageCompiler:
                   "seed": _seed, "cfg": float(sampler.get("cfg") or 4.0),
                   "sampler": str(sampler.get("sampler") or "euler"),
                   "scheduler": str(sampler.get("scheduler") or "simple")}
-        body, err = _fill(backend, values)
+        # 没有 backend（比如只取参数供通道填模板）时，**用参数本身当请求体**
+        body, err = _fill(backend, values, default_body=values)
         if err:
             return CompileOutput(False, self.kind, error=err, notices=notices)
         return CompileOutput(True, self.kind, body=body,
