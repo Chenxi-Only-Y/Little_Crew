@@ -36,7 +36,15 @@ import json
 from pathlib import Path
 
 #: 阶段顺序（与 `episode.run()` 的注释编号一致）
-STAGES = ("script", "storyboard", "render", "voice", "mix", "final")
+#: `previs`（白模预演）加在 storyboard 与 render 之间（2026-11-12）：
+#: 以前预演产物不进 checkpoint，续跑时**白模要重新跑一遍**（每镜 3~5 秒）。
+STAGES = ("script", "storyboard", "previs", "render", "voice", "mix", "final")
+
+#: **可选**阶段：缺失不算"前置不全"。
+#: `previs`（白模预演）是 2026-11-12 才进 checkpoint 的 ——
+#: 老工作目录里没有它，若当成必需前置，续跑会被**无故拒绝**。
+#: 缺它只是"白模要重新跑"，不是"不能续"。
+OPTIONAL_STAGES = ("previs",)
 
 _FILE = "checkpoint/stages.json"
 
@@ -91,7 +99,7 @@ def check(workdir, from_stage: str, *, inputs: dict | None = None) -> dict:
         return {"ok": False, "reason": "没有 checkpoint（这次跑完才会生成）",
                 "reuse": [], "recompute": list(STAGES)}
     i = STAGES.index(from_stage)
-    need = [s for s in STAGES[:i]]
+    need = [s for s in STAGES[:i] if s not in OPTIONAL_STAGES]
     miss = [s for s in need if not (stages.get(s) or {}).get("done")]
     if miss:
         return {"ok": False,
@@ -107,7 +115,10 @@ def check(workdir, from_stage: str, *, inputs: dict | None = None) -> dict:
                         "reason": f"输入不一致（{k}: 上次 {old[k]!r} vs 本次 {v!r}）—— "
                                   f"重放会把别人的产物当成这次的",
                         "reuse": [], "recompute": list(STAGES)}
-    return {"ok": True, "reason": "可以续跑", "reuse": need,
+    # 复用清单 = 该阶段之前**已完成**的全部阶段（含可选阶段 previs）。
+    # `need` 只用来判"缺不缺必需前置"；拿它当复用清单会把 previs 漏报。
+    reuse = [s for s in STAGES[:i] if (stages.get(s) or {}).get("done")]
+    return {"ok": True, "reason": "可以续跑", "reuse": reuse,
             "recompute": list(STAGES[i:]), "stages": stages}
 
 

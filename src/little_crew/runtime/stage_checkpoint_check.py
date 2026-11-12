@@ -105,6 +105,20 @@ def main() -> int:
                                "description": "她走。"}]},
                    "shot.list") is not None, "")
 
+    print(); print("E. previs 是可选阶段（2026-11-12）")
+    with tempfile.TemporaryDirectory() as td3:
+        wd3 = Path(td3)
+        SC.save(wd3, "script", {"draft": {"scenes": []}}, meta={"episodeId": "EP9"})
+        SC.save(wd3, "storyboard", {"shotList": []}, meta={"episodeId": "EP9"})
+        # 故意**不写** previs：模拟老工作目录
+        r = SC.check(wd3, "render", inputs={"episodeId": "EP9"})
+        check("E1 ★★★ 没有 previs 的旧 checkpoint 仍可续跑（不被无故拒绝）",
+              r["ok"], r.get("reason", ""))
+        SC.save(wd3, "previs", {"firsts": {}}, meta={"episodeId": "EP9", "shots": 0})
+        r2 = SC.check(wd3, "render", inputs={"episodeId": "EP9"})
+        check("E2 ★★ 有 previs 时计入复用清单",
+              r2["ok"] and "previs" in r2["reuse"], str(r2["reuse"]))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

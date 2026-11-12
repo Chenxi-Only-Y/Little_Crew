@@ -1380,7 +1380,40 @@ class EpisodeRunner:
         sched_info = self._run_line_producer()
         self._mark("line_producer")
         self._mark("previs")
-        previs_info = self._run_previs(picked)
+        # ---- 预演：续跑优先复用 checkpoint（2026-11-12）----
+        # 以前预演产物不进 checkpoint，续跑要把每镜白模重跑一遍（3~5 秒/镜）。
+        # 现在：checkpoint 里有 `previs.firsts` 且文件都还在 -> 直接复用。
+        _pv_ck = (getattr(self, "resume_data", None) or {}).get("previs") or {}
+        _pv_firsts = dict(_pv_ck.get("firsts") or {})
+        _pv_ok = {k: v for k, v in _pv_firsts.items()
+                  if str(v) and __import__("pathlib").Path(str(v)).is_file()}
+        if _pv_ok:
+            from pathlib import Path as _P
+
+            self.previs_first = {k: _P(str(v)) for k, v in _pv_ok.items()}
+            previs_info = {"ok": True, "resumed": True,
+                           "shots": len(self.previs_first),
+                           "reason": "从 checkpoint 复用（未重跑白模）"}
+            print(f"  ↩ 预演：从 checkpoint 复用 {len(self.previs_first)} 镜"
+                  f"（未重跑 Blender）")
+        else:
+            previs_info = self._run_previs(picked)
+
+        # 落盘预演产物（供下次续跑复用）
+        try:
+            from little_crew.runtime import stage_checkpoint as _sc_pv
+
+            _wd_pv = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_pv and getattr(self, "previs_first", None):
+                _sc_pv.save(_wd_pv, "previs",
+                            {"firsts": {str(k): str(v)
+                                        for k, v in self.previs_first.items()},
+                             "resolution": list(self.previs_resolution)},
+                            meta={"episodeId": self.episode_id,
+                                  "shots": len(self.previs_first),
+                                  "resumed": bool(previs_info.get("resumed"))})
+        except Exception:                                     # noqa: BLE001
+            pass
         self._mark("previs_done")
 
         # ⚠️ **桥接必须在白模预演之后**（2026-10-22 修）。
