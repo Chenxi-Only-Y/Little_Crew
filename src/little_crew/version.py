@@ -49,14 +49,18 @@ PROJECT_SLUG = "little-crew"
 PACKAGE_NAME = "little_crew"
 
 #: 人类可读的版本号。**发行流程只改这一处。**
-VERSION = "0.4.0-alpha.219"
+VERSION = "0.4.0-beta.1"
 
 #: 版本阶段。用于运行时行为分支（如 alpha 阶段打印更激进的告警）
-VERSION_STAGE = "alpha"
+#:
+#: 2026-11-12 由 alpha 提升为 beta：CHANGELOG 的 beta 判据是
+#: 「能跑通一集漫剧 + 接口冻结」，两条都已满足（20 集/85% 交付；
+#: `/v1/*` 与 IR/编译规则版本已冻结）。仍差 rc 的「全量实验矩阵 + 文档齐备」。
+VERSION_STAGE = "beta"
 
 #: PEP 440 规范化后的版本。规范用连字符（alpha.1），
 #: 而 Python 打包体系要求用点（a1）；两者指向同一版本。
-PEP440_VERSION = "0.4.0a219"
+PEP440_VERSION = "0.4.0b1"
 
 #: 兼容惯例：与本模块 VERSION 保持同步
 __version__ = VERSION
