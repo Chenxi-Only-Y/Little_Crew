@@ -525,7 +525,15 @@ class _Handlers:
         runner.engine_steps = steps
         runner.engine_seed = seed
         runner.verify_artifacts = gate
-        runner.assemble_video = False       # API 默认只出图（视频慢）
+        # 视频/配音/白模（2026-11-12）：以前这三个开关在 API 里**写死**，
+        # 客户端没法选；现在按请求体来，默认与以前一致（只出图、不配音）。
+        # ⚠️ 白模（previs）只在 ComfyUI 通道有意义 —— API 走 HTTP 通道，
+        # 因此 `whiteModel` 传了也只记录到 emit 里，不做静默忽略。
+        runner.assemble_video = bool(body.get("video", False))
+        runner.voice_enabled = bool(body.get("voice", False))
+        _wm = bool(body.get("whiteModel", False))
+        if _wm:
+            run.emit("提示", note="whiteModel 仅 ComfyUI 通道生效；API 走 HTTP 通道，本次忽略")
 
         run.emit("剧本与分镜")
         res = runner.run(source, limit=limit,

@@ -57,6 +57,42 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.224] — 2026-11-12（后端收口：API 完整化 · 运维 CLI · 打包）
+
+### API 完整化
+
+- **`POST /v1/shot`**：单镜。**先过 IR 出口编译**（校验 + 内容哈希），
+  `render=true` 才提交（走 local-gen HTTP + `RenderSession.render_http`）；缺参数 -> 400
+- **任务表落盘**：`runs.json`（默认 `outputs/.api-runs`，`LITTLE_CREW_RUNS_DIR` 可改）；
+  重启后仍能查到旧 runId；重启前在跑的标 **`unknown`**（不假定成功）
+- **可选鉴权**：设 `LITTLE_CREW_API_TOKEN` 后必须 `Authorization: Bearer <token>`；
+  `/healthz` 永远放行
+- **SSE 断线续传**：事件带 `id:`；`?from=N` 或 `Last-Event-ID` 接着收
+- **`/v1/episode` 参数**：`video` / `voice` 可开（以前写死只出图）；
+  `whiteModel` 在 HTTP 通道无意义 —— **记一条提示，不静默忽略**
+
+### 运维 CLI
+
+- **`doctor`**：ComfyUI/TTS 探活 · LLM key · 模型矩阵 · 磁盘 · ffmpeg；有阻塞项退出码 2
+  （**坑**：第一版只查 `os.environ`，把"能跑"报成"一个 key 都没有" —— key 在 `config/.env`，
+  必须走 `config.env_value()`）
+- **`library`**：65 集一览（交付 / 镜数 / 覆盖 / 成片 / 墙钟 / 脚本裁定），`--failed`/`--json`
+- **`report <workdir>`**：生成单集报告页（组件此前只在测试里被调用过）
+
+### 打包
+
+- `Dockerfile`（**只装平台本体**，ComfyUI/TTS/权重是外部服务）+ `.dockerignore`
+- `Makefile` + `make.ps1`（Windows；含 `services` 一键起停、`stop` 释放显存）
+- 两个 Windows 坑：**无 BOM 的中文 `.ps1` 在 PowerShell 5.1 解析失败**；
+  `-File` 下工作目录是调用者目录（脚本开头 `Set-Location $PSScriptRoot`）
+- 存储守卫按规矩拦了 4 个新根条目 -> 已在白名单与 `STRUCTURE.md §1` 登记（29 条）
+
+### 测试
+
+`api/surface_check` 19 · `cli/ops_check` 16 · 全量 **2465/2452 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-alpha.223] — 2026-11-12（渲染并发策略：**本地串行 · 云端可开**）
 
 ### 实测（`tools/render_ab.py`）
