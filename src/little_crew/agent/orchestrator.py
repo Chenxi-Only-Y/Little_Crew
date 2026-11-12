@@ -991,13 +991,13 @@ class CrewOrchestrator:
         """
         from concurrent.futures import ThreadPoolExecutor
 
-        def _one(rid):
+        from little_crew.agent.scheduler import Task as SchedulerTask
+
+        def _one_from_result(rid, res):
+            """把一条 `CallResult` 解析成 `ReviewFeedback`（并发/串行共用）。"""
             spec = self._spec(rid)
-            if spec is None or rid not in self._impls:
-                raise RuntimeError(f"审核者 {rid} 未注册或未绑定实现")
-            cap = next(iter(spec.capabilities), "")
+            cap = next(iter(spec.capabilities), "") if spec else ""
             key = _REVIEW_FEEDBACK_KEY.get(rid) or f"{cap}.feedback"
-            res = self._invoke_as(rid, cap, payload, None)
             if res is None or not getattr(res, "ok", False):
                 raise RuntimeError(
                     str(getattr(res, "error_message", "")
@@ -1014,9 +1014,31 @@ class CrewOrchestrator:
                 raise RuntimeError(f"审核者 {rid} 未产出可解析的审查意见")
             return fb
 
+        def _one(rid):
+            spec = self._spec(rid)
+            if spec is None or rid not in self._impls:
+                raise RuntimeError(f"审核者 {rid} 未注册或未绑定实现")
+            cap = next(iter(spec.capabilities), "")
+            return _one_from_result(rid, self._invoke_as(rid, cap, payload, None))
+
+        # 并发交给**协议层调度器**（2026-11-12）：
+        # 以前这里自己开线程池，于是"并发"在三个地方各写一份（分镜/双审/…），
+        # 每份都要自己处理预算与失败语义。统一走 Scheduler 之后：
+        # 依赖分层、失败隔离、预算收口都只有一处实现。
         try:
-            with ThreadPoolExecutor(max_workers=len(rids)) as ex:
-                reviews = list(ex.map(_one, rids))
+            from little_crew.agent.scheduler import Scheduler
+
+            _tasks = [SchedulerTask(tid, str(r), next(iter(self._spec(r).capabilities), ""))
+                      for r in rids]
+            _res = Scheduler(self, max_workers=len(rids)).run(_tasks)
+            reviews = []
+            for r in rids:
+                _r = _res.get(str(r))
+                if _r is None or not getattr(_r, "ok", False):
+                    raise RuntimeError(
+                        str(getattr(_r, "error_message", "")
+                            or getattr(_r, "error_code", "") or "审核失败"))
+                reviews.append(_one_from_result(str(r), _r))
         except Exception:                                     # noqa: BLE001
             return None
         outs = [StageOutcome(stage=artifact_key, agent_id=str(r), ok=True)
