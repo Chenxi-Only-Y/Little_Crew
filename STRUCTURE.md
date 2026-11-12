@@ -76,6 +76,10 @@ Little_Crew/
 ├── pyproject.toml                【依赖与工具配置】不接受其他同类文件
 ├── .gitignore
 ├── .gitattributes             【换行符策略】文本一律 LF，二进制显式声明
+├── Dockerfile                 【打包】只装平台本体（ComfyUI/TTS/权重在外部）
+├── .dockerignore              【打包】与 Dockerfile 同源：别把产物打进去
+├── Makefile                   【任务入口】doctor/test/episode/lib/report/prune
+├── make.ps1                   【任务入口】同上（Windows，含 services/stop）
 └── LICENSE
 ```
 
@@ -93,7 +97,7 @@ Little_Crew/
 
 | 守卫 | 检查什么 |
 |---|---|
-| `storage_main()` | ① 项目根只能有白名单里的条目（18 个，含 `LICENSE`）<br>② `outputs/` 下不得留 `*_nowm` 这类对照实验中间物<br>③ `research/` 里不得有自己的 Python 包（第三方快照 `src-*/` 豁免） |
+| `storage_main()` | ① 项目根只能有白名单里的条目（29 个条目，含 `LICENSE` 与 4 个打包/任务入口文件）<br>② `outputs/` 下不得留 `*_nowm` 这类对照实验中间物<br>③ `research/` 里不得有自己的 Python 包（第三方快照 `src-*/` 豁免） |
 
 同一文件里既有**依赖方向守卫**（R1–R3），又有**存储规范守卫** ——
 两者的共同点是：**它们检查的不是功能，而是项目本身是否还在正轨上。**

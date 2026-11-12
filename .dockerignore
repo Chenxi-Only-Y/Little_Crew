@@ -1,0 +1,20 @@
+# 构建上下文裁剪（2026-11-12）
+# 平台本体只需要 src/ + pyproject + tools；其余是产物、存档与本地环境。
+.git
+.gitignore
+.venv
+.venv/**
+.idea
+outputs
+outputs/**
+research
+research/**
+docs
+logs
+*.mp4
+*.wav
+*.png
+__pycache__
+**/__pycache__
+*.pyc
+.DS_Store

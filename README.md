@@ -67,6 +67,34 @@ python tests\run_all.py
 python tests\test_e2e_comfy.py
 ```
 
+### 运维速查（2026-11-12 新增）
+
+Windows 上用 `make.ps1`（与 `Makefile` 一一对应）：
+
+```powershell
+.\make.ps1 services      # 一键起 ComfyUI(8188) + TTS(8110)，等 20 秒跑自检
+.\make.ps1 doctor        # 环境自检：服务/key/模型矩阵/磁盘/ffmpeg；有阻塞项退出码 2
+.\make.ps1 test          # 全量测试 + 架构守卫
+.\make.ps1 episode -Ep EF40   # 跑一集
+.\make.ps1 lib           # 列出跑过的每一集（交付/镜数/时长/墙钟）
+.\make.ps1 report -Ep EF40    # 生成该集报告页（输出绝对路径）
+.\make.ps1 prune         # outputs 超过 2GB 才深度清理（没超不动）
+.\make.ps1 stop          # 停服务并释放显存
+```
+
+容器里只跑**平台本体**（不含 ComfyUI/TTS/权重），外部服务用环境变量指过去：
+
+```bash
+docker build -t little-crew:dev .
+docker run --rm -p 8787:8787 \
+  -e COMFYUI_ENDPOINT=http://host.docker.internal:8188 \
+  -e BREEZE_TTS_ENDPOINT=http://host.docker.internal:8110 \
+  -v "$PWD/outputs:/app/outputs" little-crew:dev
+```
+
+API 可选鉴权：设 `LITTLE_CREW_API_TOKEN` 后必须带 `Authorization: Bearer <token>`
+（`/healthz` 免鉴权）。任务表落盘在 `outputs/.api-runs/runs.json`，重启不丢 runId。
+
 覆盖「编译 → 提交 → WS 进度 → 回收 → 产物校验 → 对账」六段链路（18 项）。
 **无 ComfyUI 时自动跳过**，不会在他人机器上造成假失败。
 

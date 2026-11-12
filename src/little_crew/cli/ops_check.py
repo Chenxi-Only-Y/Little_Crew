@@ -91,6 +91,23 @@ def main() -> int:
         check("C3 ★★ 是完整 HTML（有 <html> 与 </html>）",
               "<html" in html.lower() and "</html>" in html.lower(), "")
 
+    print(); print("D. 打包与任务入口（2026-11-12）")
+    root = Path(__file__).resolve().parents[3]
+    check("D1 ★★★ Dockerfile 存在", (root / "Dockerfile").is_file(), "")
+    check("D2 ★★★ Dockerfile 声明了 CMD（能直接起服务）",
+          "CMD" in (root / "Dockerfile").read_text(encoding="utf-8")
+          if (root / "Dockerfile").is_file() else False, "")
+    mf = root / "Makefile"
+    mk = mf.read_text(encoding="utf-8") if mf.is_file() else ""
+    check("D3 ★★★ Makefile 有 doctor/test/episode/lib/report 目标",
+          all(f"\n{t}:" in mk for t in ("doctor", "test", "episode", "lib", "report")),
+          str([t for t in ("doctor", "test", "episode", "lib", "report") if f"\n{t}:" not in mk]))
+    check("D4 ★★ make.ps1 存在且带 Set-Location（相对路径可解析）",
+          (root / "make.ps1").is_file()
+          and "Set-Location" in (root / "make.ps1").read_text(encoding="utf-8"), "")
+    check("D5 ★★ .dockerignore 存在（别把 outputs/research 打进镜像）",
+          (root / ".dockerignore").is_file(), "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

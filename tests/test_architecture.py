@@ -433,6 +433,11 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     # 而那是**假警报**，假警报会训练人忽略守卫，比没有守卫更糟。
     ".venv", ".idea", ".vscode", ".git",
     ".pytest_cache", ".ruff_cache", ".mypy_cache",
+    # 打包与任务入口（2026-11-12）：
+    # `Dockerfile` 只装平台本体（ComfyUI/TTS/权重在外部，用环境变量指过去）；
+    # `Makefile` / `make.ps1` 是同一组任务的两种写法（Windows 上用后者）。
+    # `.dockerignore` 必须跟 Dockerfile 同源 —— 否则会把 outputs/research 打进镜像。
+    "Dockerfile", ".dockerignore", "Makefile", "make.ps1",
 })
 
 #: 一次性脚本的命名特征 —— 出现在项目里即为违规。
