@@ -662,6 +662,31 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:                                        # noqa: BLE001
         pass
 
+    # 调用树 + 预算落盘（2026-11-12）：span 只在内存，崩溃即丢
+    try:
+        from little_crew.runtime.trace_dump import dump as _trace_dump
+
+        _spans = []
+        try:
+            _rt = getattr(orch, "runtime", None)
+            _spans = _rt.spans() if hasattr(_rt, "spans") else []
+        except Exception:                                    # noqa: BLE001
+            _spans = []
+        _ledger = {}
+        try:
+            _ledger = orch.ledger.as_dict()
+        except Exception:                                    # noqa: BLE001
+            _ledger = {}
+        _tp = _trace_dump(work, episode_id=args.episode_id,
+                          ok=bool(getattr(res, "ok", False)),
+                          stages=getattr(runner, "trace", {}) or {},
+                          spans=_spans, budget=_ledger,
+                          reason=str(getattr(res, "reason", "") or ""))
+        if _tp:
+            print(f"  调用树：{len(_spans)} 条 span -> {_tp}")
+    except Exception:                                        # noqa: BLE001
+        pass
+
     # 剧本与分镜的中间结果
     black = orch.snapshot()["blackboard"]
     cycle_rounds = res.script_rounds
