@@ -1,0 +1,166 @@
+{
+  "episodeId": "EF40",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：父亲的对抗来得最猛（'猛地拍桌''甩开她的手''以后谁家还敢娶你'），却只被少女一句'爹，您年轻的时候，没在外头走过路？'就化解——原文：'父亲张了张嘴，没说出话。'激烈冲突被一句反问瞬间卸掉，父亲既没同意也没再阻拦，问题被搁置而非解决，少女为此没有付出任何代价。\", suggestion=\"让父亲的反对真正落地并索取代价：例如他摔门而去、当夜就把里屋的门锁上，或撂下'出了这个门就别认我'的话；少女的说服要么失败（代价先行），要么成功但要她答应一个条件（如天亮前必须把人送走），让这场对抗留下痕迹。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：本场明确宣告了代价——'不去集会，往后村里的事你就插不上话，人家会说你……'，但这个代价在此后再未兑现：S05 她收拾包袱跟旅人走时，村里人毫无反应；S06 老奶奶和人群反而来送行、赠花。声明的代价凭空消失，等于没付。\", suggestion='让代价在后文可见：S05/S06 里加入村民的冷眼、她被排除在送行人群之外、或家中无人出来送她；也可以让老奶奶的赠花发生在她已被村里人议论、孤立的语境下，使 S04 的牺牲有回声。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem=\"S05：旅人唯一的抵抗是'眉头皱起来''张了张嘴，忽然又停住，最后只摇了摇头'，结尾还'替她扶正了包袱的结'——抵抗过软，等于默许。少女'我跟你走'的决定没有遇到真实阻力，这一场基本是平的。\", suggestion=\"给旅人一个具体的、可执行的拒绝：明确说出目的地的危险（或他此行的某种目的），并真的迈步先走、把她甩在身后；甚至用'你跟我走，村里人就更说不清'来反制她，让少女必须付出更大决心（如烧掉自己的铺盖、留下字条）才能成行。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：老奶奶只是赠花并留下谜语（'到时候你就知道了'），人群'有人摇头，有人叹气'，旅人在后面催促'我们该走了'——没有任何一方出面阻拦或反对她离开。整场是信息投喂加氛围渲染，缺少对抗。\", suggestion=\"把送行变成一次真正的对峙：让老奶奶或某个村民直接开口拦人/质问她（如'这姑娘怕是中了不洁的东西'），甚至有人伸手拉她的包袱；少女必须挣脱、顶着议论走出村口，这样花束的赠予才是在阻力中获得的，而非白送。\")"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 47.715
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 66.044
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：开篇的核心阻力是“村里人最忌讳来路不明的人”，但少女的内心拉扯只用两个动作交代完——“她退了半步……她又退了一步”，紧接着就是“然后她回去了”。忌讳的重量没有真正拦住她，冲突在一个转折词里就被消解，等于没有对手。', suggestion='让忌讳产生一次实际阻碍：例如她转身走了又停下，听见远处村里的狗叫/人声而折返；或她已经走远，因他一句含混的呓语、一声濒死的喘而回头。把“回去”变成一个有代价的决定，而不是叙述者的顺转。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场没有在场的对抗者。父亲不在，母亲是同盟，唯一的“坏消息”——“你爹昨夜就去了祠堂，除了你的名”——是被母亲口头转述的，属报告而非戏剧。阻力最大的事件发生在舞台之外，本场实际是平的。', suggestion='把除名的代价变成眼前可感的障碍：母亲送药时欲言又止、被门外经过的村民喝问而仓促离开；或让她带来一个必须当场抉择的动作（药只剩最后一副、有人在院外盯着）。让少女在场为这个代价付一次反应，而不是说一句“我知道”。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：旅人给出明确阻力——“留下”，说完“真的转身就走，一步没停”；但少女的应对只是一句“那你别回头”，对方立刻“脚步，慢了半拍”。她烧被子、留钥匙的代价付在冲突之前，真正对峙的这一刻她什么都没付出，冲突被一个半拍的动作廉价化解。', suggestion='把代价挪到对峙之中：让她追上去后仍被拒绝、必须先交出一样东西（把包袱里的口粮塞给他、或明说烧被子的事）才换来他停步；或者让他真的走远、她必须在原地做出更狠的选择才挽回。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：村妇拽包袱是本场唯一的正面对抗，解决却靠新人物出场——“‘手放开。’老奶奶从人群里走出来……整条村道却静了”。少女自己的抗争只有“肩膀一挺，硬生生挣脱”，主要阻力由一个从天而降的角色一句话清场，属外部代解。', suggestion='让少女自己完成这次翻转：例如她当众把包袱打开、主动交出那束花或说出被除名的事，用自曝换取围观者的退散；老奶奶可以随后出现，但只作补礼与点题（薰衣草），不作解围。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：“我烧了被子，被除了名，连回头看一眼的人都没有了”——这场的全部代价都是前场已付完的旧账，本场是清算而非支付。他化烟散去之后，她失去的是一个已经不存在的东西，空了的手没有再被割一刀。', suggestion='让代价在本场新增一笔：例如掷出花束前必须先交还/毁掉唯一还能证明这段路的东西（母亲的水碗、写着“别等我”的字条），或让她为这一掷当场付出身体上的代价。使“手里空了”是刚刚才空的，而不是早就空的。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 38.069
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 100.946
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：阻力在一句自陈后瞬间消失：村妇本已「一把攥住她肩上的包袱带子」，少女说完「你们还要什么？」，原文即写「攥着带子的手松了。村妇往后退了半步……围观的人也跟着散了」。整场对抗只靠独白解除，没有任何人回嘴、拖延或动手，少女在本场也没有付出新的代价（被撕扯、被推搡、丢下某物都没有），等于零成本脱身。', suggestion='让阻力至少再撑一拍：村妇不松手、要夺包袱或掀开包袱皮验「赃」，逼少女用一个当场的损失（比如被扯散包袱、当众挨一下、被迫交出木梳）换众人退开；老奶奶的薰衣草应是这场硬碰硬之后才给，而不是安抚奖品。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：代价被连说两遍、当场贬值。S05 刚让少女算过一次账（「一副被子烧了给他煎药……我爹昨夜在祠堂除了我的名」），S06 她对旅人又把同一份清单原样重述（「被子我烧了，就为给他煎药；我爹除了我的名；我连头都没回一次」）。同一个代价出场两次，第二次不再疼，反而像台词在替观众复述。', suggestion='S06 删掉重复的账，改用本场独有的新代价推进：例如她此刻才说出口的、S05 说不出口的东西（她已经回不去的具体证据、她烧掉的不止是被子、或她为追他付出的当下损失——被甩开时摔破的膝盖、被甩掉的包袱），让每次算账都加码而不是复读。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：高潮没有对手戏：少女问「你到底是谁？」，原文是「旅人没有回答」；随后她自己砸碗、自己掷花，「旅人化作一阵紫色的轻烟」——全段唯一的阻力是她自己的犹豫，旅人既不阻拦也不还手，核心揭示是她单方面动作触发的，不是挣来的。', suggestion='给旅人一个反制动作，让揭示必须过一道坎：他抢先一步按住或夺走水碗（逼她连他的手一起砸）、他承认身份却拒绝跟她走、或他以「你砸了它就真的没有回头路了」作为最后通牒，让她在有对峙的情况下做出选择，再让花束生效。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 50.533
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 192.255
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.9（REVISE）；最好的是第 3 轮（59.9 分）"
+}
