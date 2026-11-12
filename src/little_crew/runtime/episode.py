@@ -2421,6 +2421,12 @@ class EpisodeRunner:
                     (_outv / "vision_review.json").write_text(
                         _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
                         encoding="utf-8")
+                    # 质检员的产物也落盘（2026-11-12）：职位产物只进黑板的话，
+                    # 跑完就没了 —— 报告/审计/复现都拿不到。
+                    if isinstance(_vrres, dict) and _vrres.get("kind") == "qc.report":
+                        (_outv / "qc.report.json").write_text(
+                            _jv2.dumps(_vrres, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
                 _bad = sum(1 for f in _vrres["findings"] if f["severity"] == "error")
                 if not _vrres.get("reviewedCount"):
                     # ⚠️ 0 镜可判 != 没有崩镜（2026-11-11 EF27）：
