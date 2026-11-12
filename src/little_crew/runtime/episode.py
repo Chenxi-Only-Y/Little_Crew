@@ -2379,13 +2379,42 @@ class EpisodeRunner:
                     _hit = list(Path(str(_wdv)).rglob(_nm)) if (_wdv and _nm) else []
                     if _hit:
                         _imgs[_s4.shot_id] = str(_hit[0])
-                _vrres = _vr.review(
-                    picked, _imgs,
-                    # 视觉调用单次 45s（默认 120s）：12 镜 × 2 次尝试最坏拖半小时
-                    # （EF29 实测视觉闸单独占 13 分钟）。构造器传，chat_image 没有该参数。
-                    client=_LC(getattr(self, "vision_model", "") or "deepseek-flash",
-                               timeout_s=45),
-                    max_shots=int(getattr(self, "vision_max_shots", 12)))
+                _vrres = None
+                # ---- 优先走**职位**（2026-11-12）----
+                # 以前这里直接 `new LlmClient()` 调模型：24 次调用**不进预算账本、
+                # 不进调用树、没有跨族检查**。现在先问编排器有没有 `qc_inspector`；
+                # 绑了就按职位调（自动进账/进 span），没绑才退回直调。
+                try:
+                    if "qc_inspector" in (getattr(self.orch, "_impls", {}) or {}):
+                        _qc_payload = {
+                            "shot.image": dict(_imgs),
+                            "descriptions": {str(getattr(_s9, "shot_id", "")):
+                                             str(getattr(_s9, "description", ""))
+                                             for _s9 in picked},
+                        }
+                        _qc_out = self.orch.run_stage("qc_inspector", "shot.qc",
+                                                      _qc_payload)
+                        if getattr(_qc_out, "ok", False):
+                            _rep = self.orch.blackboard.value("qc.report")
+                            if isinstance(_rep, dict):
+                                _vrres = _rep
+                            else:
+                                _res_o = getattr(_qc_out, "result", None)
+                                _vrres = ((getattr(_res_o, "output", None) or {})
+                                          .get("qc.report"))
+                        if _vrres is None:
+                            print("  ⚠️ 质检员未产出 qc.report，退回直调视觉闸")
+                except Exception as _e_qc:                        # noqa: BLE001
+                    print(f"  ⚠️ 质检员调用失败，退回直调：{type(_e_qc).__name__}: {_e_qc}")
+                    _vrres = None
+                if _vrres is None:
+                    _vrres = _vr.review(
+                        picked, _imgs,
+                        # 视觉调用单次 45s（默认 120s）：12 镜 × 2 次尝试最坏拖半小时
+                        # （EF29 实测视觉闸单独占 13 分钟）。构造器传，chat_image 没有该参数。
+                        client=_LC(getattr(self, "vision_model", "") or "deepseek-flash",
+                                   timeout_s=45),
+                        max_shots=int(getattr(self, "vision_max_shots", 12)))
                 if _wdv:
                     (_outv := Path(str(_wdv)) / "delivery").mkdir(
                         parents=True, exist_ok=True)
@@ -2472,6 +2501,50 @@ class EpisodeRunner:
                                                "kind": _tg.get("kind", ""),
                                                "reason": _tg.get("reason", "")})
                     print(f"  ↻ 重画 {_sid}（attempt {_att}）")
+                # ---- 重画后**复验**（2026-11-12）----
+                # 缺这一步时 `verified` 永远是空：重画可能还是崩的，但没人知道。
+                # 只复验被重画的那几镜（最多 4 镜，成本可控）；复验失败**不阻断**。
+                try:
+                    _re_shots = []
+                    _re_imgs = {}
+                    for _rr in _log["rerendered"]:
+                        _sid_r = str(_rr.get("shotId") or "")
+                        _names_r = _rr.get("artifacts") or []
+                        if not _sid_r or not _names_r:
+                            continue
+                        _hit_r = list(Path(str(_wd_vr)).rglob(_names_r[0])) if _wd_vr else []
+                        if not _hit_r:
+                            continue
+                        _re_imgs[_sid_r] = str(_hit_r[0])
+                        _re_shots.append(type("_S", (), {
+                            "shot_id": _sid_r,
+                            "description": next((str(getattr(s, "description", "") or "")
+                                                 for s in picked
+                                                 if getattr(s, "shot_id", "") == _sid_r), "")})())
+                    if _re_images := _re_imgs:
+                        from little_crew.agent.llm import LlmClient as _LC2
+
+                        _rv = _vr.review(_re_shots, _re_images,
+                                         client=_LC2(getattr(self, "vision_model", "")
+                                                     or "deepseek-flash", timeout_s=45),
+                                         max_shots=len(_re_imgs))
+                        _still_bad = {str(f.get("shotId")) for f in (_rv.get("findings") or ())
+                                      if f.get("severity") == "error"}
+                        for _rr in _log["rerendered"]:
+                            _sid_r = str(_rr.get("shotId") or "")
+                            _log["verified"].append({
+                                "shotId": _sid_r,
+                                "ok": bool(_rv.get("reviewedCount")) and _sid_r not in _still_bad,
+                                "reviewed": int(_rv.get("reviewedCount") or 0),
+                                "stillBad": _sid_r in _still_bad,
+                            })
+                        _ok_n = sum(1 for v in _log["verified"] if v["ok"])
+                        print(f"  ✓ 重画复验：{_ok_n}/{len(_log['verified'])} 镜通过"
+                              + ("" if _ok_n == len(_log["verified"])
+                                 else "（仍崩的镜已记录，不再自动重画）"))
+                except Exception as _e_rv:                          # noqa: BLE001
+                    print(f"  ⚠️ 重画复验未运行：{type(_e_rv).__name__}: {_e_rv}")
+
                 self._vision_rework = _log
                 if _wd_vr and _log["rerendered"]:
                     try:

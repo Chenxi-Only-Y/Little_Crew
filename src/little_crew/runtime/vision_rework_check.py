@@ -92,6 +92,13 @@ def main() -> int:
     check("C7 ★★ 有上限（不无限重试）",
           len(VRW.run([{"shotId": "S1", "kind": "vision.blank"}], {"S1": _ir("S1")},
                       lambda irs: {"batch": []}, max_attempts=2)["failed"]) == 2, "")
+    print(); print("F. 与质检员的词表对齐（2026-11-12）")
+    from little_crew.review import qc_inspector as _qc
+
+    check("F1 ★★★ 执行侧 RERENDER_KINDS == 质检员侧（漂移即失败）",
+          tuple(VRW.RERENDER_KINDS) == tuple(_qc.RERENDER_KINDS),
+          f"vr={VRW.RERENDER_KINDS} qc={_qc.RERENDER_KINDS}")
+
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

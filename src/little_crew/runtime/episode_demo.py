@@ -472,6 +472,24 @@ def main(argv: list[str] | None = None) -> int:
         model_families={"screenwriter": "deepseek", "storyboard_artist": "deepseek",
                         "dramaturge": "mimo", "story_editor": "glm",
                         "review_board": "qwen"})
+    # 质检员（2026-11-12）：看图判崩没崩，产物 `qc.report` 由 run() 消费。
+    # 实现放在 `review/qc_inspector.py`（它要调 vision_review；放 agent/ 会反向依赖）。
+    try:
+        from little_crew.review.qc_inspector import QcInspector as _QC
+
+        _qc_client = None
+        if args.llm:
+            _qc_client = LlmClient(getattr(args, "llm_model", "") or "deepseek-flash",
+                                   timeout_s=45)
+            print(f"  质检员：**真实视觉模型**（{_qc_client.model_id}）")
+        else:
+            print("  质检员：未绑（没有 LLM 客户端，视觉闸退回直调）")
+        if _qc_client is not None:
+            stubs["qc_inspector"] = _QC(client=_qc_client,
+                                        max_shots=int(getattr(args, "vision_shots", 12) or 12))
+    except Exception as _e_qc0:                                # noqa: BLE001
+        print(f"  ⚠️ 质检员装配失败：{type(_e_qc0).__name__}: {_e_qc0}")
+
     orch.bind_many(stubs)
 
     # ---------- 装配渲染 ----------

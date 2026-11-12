@@ -101,9 +101,9 @@ def main() -> int:
     expected_crew = {
         "导演", "编剧", "剧本顾问", "文学策划",
         "美术指导", "角色设计师", "场记",
-        "分镜师", "白模预演师", "摄影指导", "灯光师", "摄影师",
+        "分镜师", "白模预演师", "灯光师", "摄影师",
         "对白剪辑", "作曲", "剪辑师", "合成剪辑",
-        "制片主任", "版权与合规", "审片",
+        "制片主任", "版权与合规", "审片", "质检员",
     }
     check("A5 职位名与真实剧组职务一致", crew_titles == expected_crew,
           f"缺 {sorted(expected_crew - crew_titles)}；多 {sorted(crew_titles - expected_crew)}")
@@ -113,8 +113,14 @@ def main() -> int:
     empty = [d for d, v in by_dept.items() if not v]
     check("A6 八个部门均有职位", empty == [], f"空部门: {empty}")
 
-    # 依赖闭合：每个 requires 都有产出者（外部输入除外）
-    produced = {p for s in DEFAULT_ROSTER for p in s.produces}
+    # 依赖闭合：每个 requires 都有产出者（外部输入 + **代码产出**除外）
+    #
+    # `CODE_OUTPUTS` = 由代码（渲染通道）产出、而非任何职位交付的产物。
+    # 2026-11-12 删掉「摄影指导」后，`shot.image` 就属于这一类 ——
+    # 出图是通道执行，不是职位的判断（见 roster.CODE_OUTPUTS 的说明）。
+    from little_crew.agent.roster import CODE_OUTPUTS as _CODE_OUT
+
+    produced = {p for s in DEFAULT_ROSTER for p in s.produces} | set(_CODE_OUT)
     dangling = [(s.crew_title, r) for s in DEFAULT_ROSTER for r in s.requires
                 if r not in produced and r != "source.novel"]
     check("A7 依赖闭合（无悬空 requires）", dangling == [], str(dangling[:3]))

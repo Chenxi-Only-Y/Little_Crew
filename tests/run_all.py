@@ -37,6 +37,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("IR 出口（三模态×双通道）", [sys.executable, "-m", "little_crew.compiler.exits_check"], 19),
     ("模型授权门禁", [sys.executable, "-m", "little_crew.governance.test_license"], 33),
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
+    ("质检员", [sys.executable, "-m", "little_crew.review.qc_inspector_check"], 14),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 60),
     # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，
@@ -71,7 +72,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("音乐床决策", [sys.executable, "-m", "little_crew.runtime.music_stage_check"], 14),
     ("逐场分镜", [sys.executable, "-m", "little_crew.runtime.storyboard_stage_check"], 13),
     ("场景主体修复", [sys.executable, "-m", "little_crew.runtime.subject_repair_check"], 16),
-    ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 17),
+    ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 18),
     ("断点续跑", [sys.executable, "-m", "little_crew.runtime.stage_checkpoint_check"], 18),
     ("人工 Gate", [sys.executable, "-m", "little_crew.runtime.human_gate_check"], 17),
     ("产物清理", [sys.executable, "-m", "little_crew.runtime.prune_artifacts_check"], 21),

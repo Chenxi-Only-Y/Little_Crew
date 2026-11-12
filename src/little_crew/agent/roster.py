@@ -260,14 +260,7 @@ def _specs() -> list[AgentSpec]:
             # "asset.ready" 这种标记无人产出，属于把编排概念误当数据依赖。
             requires=("script.final", "character.anchor_set", "scene.library",
                       "shot.list", "shot.image", "shot.video"),
-            consumes=(
-                "script.draft", "script.revise", "script.critique", "style.guard",
-                "character.design", "scene.design", "continuity.check",
-                "shot.list", "pacing.plan", "production.schedule",
-                "shot.image", "shot.video", "shot.voice", "shot.music",
-                "episode.assemble", "review.board", "compliance.check",
-                "lighting.plan",
-            ),
+            consumes=("script.draft", "script.revise", "script.critique", "style.guard", "character.design", "scene.design", "continuity.check", "shot.list", "pacing.plan", "production.schedule", "shot.video", "shot.voice", "shot.music", "episode.assemble", "review.board", "compliance.check", "lighting.plan"),
             task_profile="script.structured",
             prompt_template="crew.director.v1",
             max_reasoning_steps=8,
@@ -434,31 +427,6 @@ def _specs() -> list[AgentSpec]:
                    "且降分辨率无效（瓶颈是注意力序列长度）。"),
         ),
         AgentSpec(
-            agent_id="cinematographer",
-            crew_title="摄影指导",
-            crew_title_en="Cinematographer (DoP)",
-            department=Department.CAMERA,
-            stage=Stage.RENDER,
-            execution=ExecutionKind.IMAGE_GEN,
-            capabilities=("shot.image",),
-            produces=("shot.image",),
-            # **`requires` 里必须有 `previs.layouts`**（2026-10-19 加）：
-            # 出图时把白模首帧当 ControlNet 控制图
-            # （`EpisodeRunner._control_frame_for` 优先取 `previs_first`）。
-            #
-            # 注意：孤儿产出判定看的是 **`requires`** 不是 `consumes` ——
-            # `consumes` 的语义是「允许调用的下游能力」，与"需要这个输入"无关。
-            requires=("shot.list", "lighting.plan", "previs.layouts"),
-            # ⚠️ 技术质检**不是能力而是工具**（确定性规则判定，无需模型决策）。
-            #    早期版本把它写成 consumes=("review.tech") —— 那会让路由找不到实现者。
-            tools=("qc.tech_check",),
-            task_profile="shot.image.final",
-            prompt_template="crew.cinematographer.v1",
-            max_reasoning_steps=2,
-            real_world_duty="构图、景别、镜头运动、画面质感",
-            notes="逐镜出图。本机实测 30~32 秒/张（Z-Image 4bit）。",
-        ),
-        AgentSpec(
             agent_id="gaffer",
             crew_title="灯光师",
             crew_title_en="Gaffer",
@@ -619,10 +587,37 @@ def _specs() -> list[AgentSpec]:
             notes=("QC-5 五维品控：完整性 25 / 一致性 40 / 品质感 25 / "
                    "可执行性 / 合规性。**跨模型族盲读**，且不得由生成方自任。"),
         ),
+        AgentSpec(
+            agent_id="qc_inspector",
+            crew_title="质检员",
+            crew_title_en="QC Inspector",
+            department=Department.REVIEW,
+            stage=Stage.GATE,
+            # **看图**判定，所以是 VLM；文本 LLM 做不了这件事（2026-11-12）
+            execution=ExecutionKind.VLM,
+            capabilities=("shot.qc",),
+            produces=("qc.report",),
+            # 只看图，不看剧本：它判的是"这张图崩没崩"，不是"这段文字好不好"
+            requires=("shot.image",),
+            task_profile="review.vlm_blind",
+            prompt_template="crew.qc_inspector.v1",
+            max_reasoning_steps=1,
+            real_world_duty="逐镜抽检画面质量，判「崩没崩」，并下返工指令",
+            notes=("**只判 + 下指令，不负责重画**：真实 QC 也是打回单，不是自己上手重做。"
+                   "产物 `qc.report` 由 `run()` 读取后执行定向重渲（`vision_rework`）。"
+                   "抽样默认 12 镜（成本可控），0 镜可判时**必须记为「等于没审」**。"),
+        ),
     ]
 
 
-#: 18 个剧组职位（模块级常量，便于直接 import）。
+#: **代码产出**的产物（不是任何职位交付的）：`shot.image` 由渲染通道产出。
+#: 2026-11-12 删掉「摄影指导」后，这条是"出图不是职位判断"的显式记录。
+CODE_OUTPUTS: frozenset = frozenset({"shot.image"})
+
+#: 由**代码**消费的产物：渲染通道取 `previs.layouts` 当控制图。
+CODE_CONSUMED: frozenset = frozenset({"previs.layouts"})
+
+#: 19 个剧组职位（模块级常量，便于直接 import）。
 DEFAULT_ROSTER: tuple[AgentSpec, ...] = tuple(_specs())
 
 
@@ -684,6 +679,20 @@ def _exec_tools() -> list[ToolSpec]:
             idempotent=True,
             est_ms=10,
             # 由 Agent 降级而来：核对归属标注与部署地区授权
+        ),
+        ToolSpec(
+            name="shot.image",
+            input_schema={"type": "object", "required": ["ir"]},
+            output_schema={"type": "object"},
+            side_effect=SideEffect.EXTERNAL,
+            idempotent=True,
+            idempotency_key_field="idempotencyKey",
+            est_ms=21_000,
+            requires_gpu=True,
+            # **2026-11-12 从「摄影指导」降级而来**：出图是通道执行
+            # （`runtime/render.py`），不是某个职位的判断。
+            # 删掉那个职位后，`shot.image` 作为**代码能力**留在这里，
+            # 这样 `director.consumes` 仍能解析，而名册里不再有"摄影指导"。
         ),
         ToolSpec(
             name="ffmpeg.assemble",
@@ -785,21 +794,27 @@ def validate_roster(roster: Sequence[AgentSpec] = DEFAULT_ROSTER) -> list[str]:
 
     #: 外部输入（来自用户/上游系统，不必由任何职位产出）
     external_inputs = {"source.novel"}
+    #: 代码产出/消费的产物（模块级常量，见 `CODE_OUTPUTS` / `CODE_CONSUMED`）
+    code_outputs = set(CODE_OUTPUTS)
 
     for s in roster:
         for r in s.requires:
-            if r not in produced and r not in external_inputs:
+            if r not in produced and r not in external_inputs and r not in code_outputs:
                 problems.append(
                     f"「{s.crew_title}」需要 {r!r}，但无任何职位交付它")
 
     #: 终态交付物与**档案类产物**无需下游消费者。
     #: 前者是项目产出，后者是留档（美术 bible、角色设定表、场记单、交付证据链）——
     #: 真实剧组里这些本来就是给人查的，不是流水线的中间件。
+    #: 由**代码**消费的产物 —— 孤儿检查放行（消费者不是职位）
+    code_consumed = set(CODE_CONSUMED)
+
     terminal_outputs = {
         "episode.master",       # 成片
         "delivery.evidence",    # 交付证据链
         "compliance.report",    # 合规报告（留档）
         "continuity.report",    # 场记报告（留档）
+        "qc.report",            # 质检报告：由 run() 读取并执行重画（代码消费）
         "continuity.sheet",     # 场记单（真实剧组的现场记录，本就是档案）
         "art.bible",            # 美术 bible（档案）
         "character.sheet",      # 角色设定表（档案，供人查阅）
@@ -815,7 +830,7 @@ def validate_roster(roster: Sequence[AgentSpec] = DEFAULT_ROSTER) -> list[str]:
             required.update(s.consumes)
 
     for p in sorted(produced):
-        if p not in required and p not in terminal_outputs:
+        if p not in required and p not in terminal_outputs and p not in code_consumed:
             problems.append(f"产物 {p!r} 无人消费（孤儿产出，白算）")
 
     # 5) consumes / tools 可解析
