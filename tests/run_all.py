@@ -171,6 +171,9 @@ def main() -> int:
         pass
 
     import os
+
+    # 测试不写仓库（2026-11-12）：否则每次跑都会改 research/script-rounds/E100.json
+    os.environ.setdefault("LITTLE_CREW_RESEARCH_DUMP", "0")
     env = dict(os.environ)
     env["PYTHONPATH"] = str(SRC) + os.pathsep + env.get("PYTHONPATH", "")
     env["PYTHONIOENCODING"] = "utf-8"

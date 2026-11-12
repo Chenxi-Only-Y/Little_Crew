@@ -746,6 +746,13 @@ class EpisodeRunner:
                 # 而实验记录不能跟着被删 —— 上一次清理就把 E3 的 7 对样本删掉了，
                 # 导致汇总结果从 +2.81 翻成 -2.08，差点当成「结论翻转」。
                 try:
+                    # 测试与自检不该往仓库里写实验记录（2026-11-12）：
+                    # 每次跑 `tests/run_all.py` 都会把 E100.json 改一遍（CLI 自检的集号），
+                    # 于是工作区永远"脏一个文件"。`LITTLE_CREW_RESEARCH_DUMP=0` 可关。
+                    import os as _os_rd
+
+                    if str(_os_rd.environ.get("LITTLE_CREW_RESEARCH_DUMP", "1")) == "0":
+                        raise RuntimeError("research 落盘已关闭（LITTLE_CREW_RESEARCH_DUMP=0）")
                     _repo = Path(__file__).resolve().parents[3]
                     _dst = _repo / "research" / "script-rounds"
                     _dst.mkdir(parents=True, exist_ok=True)
@@ -753,7 +760,8 @@ class EpisodeRunner:
                         (_out / "script.rounds.json").read_text(encoding="utf-8"),
                         encoding="utf-8")
                 except Exception as _e2:                     # noqa: BLE001
-                    print(f"  ⚠️ 实验记录未备份到 research/：{type(_e2).__name__}: {_e2}")
+                    if "已关闭" not in str(_e2):
+                        print(f"  ⚠️ 实验记录未备份到 research/：{type(_e2).__name__}: {_e2}")
                 print(f"  剧本轮次已落盘：{len(_rounds)} 轮"
                       f" -> delivery/ 与 research/script-rounds/")
         except Exception as _e:                              # noqa: BLE001
