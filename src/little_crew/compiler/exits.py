@@ -23,6 +23,18 @@
 
 不在这里提交请求、也不读网络：**只做翻译**。
 提交仍由通道层（`runtime/channels/*`）负责 —— 职责不混。
+
+## 接线现状（2026-11-12 核实，别把"有编译器"当成"已经走编译器"）
+
+| 出口 | 链路里用上了吗 | 说明 |
+|---|---|---|
+| 图片 | ✅ 用上了 | `EpisodeRunner._values()` 走 `compile_ir(kind="image")`；失败退回旧取值并打印原因 |
+| 音频 | ❌ 还没接 | 本地 TTS 的字段是固定的（`/v1/audio/speech`），`tts_breeze.synth` 直调即可；<br>接进来的价值要等**云端 TTS**（不同 `body_template`）才体现 |
+| 视频 | ❌ 还没接 | `h3_video.video_values()` 是**按后端模板占位符**构造的；<br>硬塞一份 IR 只为过编译器属于过度设计 |
+
+**所以"三个出口"目前的准确说法是**：
+接口层（IR -> 请求体）三个都实现并有测试；**链路里真正走编译的只有图片那条**。
+要接音频/视频，接线点分别在 `voice_track.build()` 与 `h3_video.video_values()`。
 """
 from __future__ import annotations
 
