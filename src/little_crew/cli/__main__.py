@@ -153,6 +153,19 @@ def build_parser() -> argparse.ArgumentParser:
     ft.add_argument("--out", default="outputs/fetched")
     ft.add_argument("--server", default="http://127.0.0.1:8787")
 
+    # ---- doctor / library / report（2026-11-12）----
+    dr = sub.add_parser("doctor", help="环境自检（服务/key/模型/磁盘/ffmpeg）")
+    dr.add_argument("--json", action="store_true")
+
+    lb = sub.add_parser("library", help="列出跑过的每一集")
+    lb.add_argument("--outputs", default="", help="outputs 目录（默认 outputs）")
+    lb.add_argument("--failed", action="store_true", help="只看未交付的")
+    lb.add_argument("--json", action="store_true")
+
+    rp = sub.add_parser("report", help="生成某一集的报告页")
+    rp.add_argument("workdir", help="这一集的目录（如 outputs/_EF38）")
+    rp.add_argument("--title", default="", help="标题（默认取集信息）")
+
     return p
 
 
@@ -184,6 +197,9 @@ def main(argv: list[str] | None = None) -> int:
         "submit": commands.cmd_submit,
         "status": commands.cmd_status,
         "fetch": commands.cmd_fetch,
+        "doctor": commands.cmd_doctor,
+        "library": commands.cmd_library,
+        "report": commands.cmd_report,
     }.get(args.command)
     if handler is None:                                 # pragma: no cover
         print(f"未知命令：{args.command}", file=sys.stderr)

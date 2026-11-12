@@ -625,3 +625,42 @@ def cmd_fetch(args: Any) -> int:
         print(f"    ✓ {name}  {len(data)/1024:.1f} KB")
     print(f"  已下载 {got}/{len(files)} 个 -> {out}")
     return 0 if got == len(files) else 1
+
+def cmd_doctor(args: Any) -> int:
+    from little_crew.cli import doctor as _doc
+
+    return _doc.main((["--json"] if getattr(args, "json", False) else []))
+
+
+def cmd_library(args: Any) -> int:
+    from little_crew.cli import library as _lib
+
+    argv = []
+    if getattr(args, "outputs", ""):
+        argv += ["--outputs", str(args.outputs)]
+    if getattr(args, "failed", False):
+        argv += ["--failed"]
+    if getattr(args, "json", False):
+        argv += ["--json"]
+    return _lib.main(argv)
+
+
+def cmd_report(args: Any) -> int:
+    """生成某一集的报告页（`report_html.build_report`）并打印路径。
+
+    为什么要这个命令：报告页组件早就写了，但**只在测试里被调用过** ——
+    真跑完一集不会有任何页面。这里把"生成"变成一个显式动作，
+    后续接进主流程时只需在收尾处调同一个函数。
+    """
+    from pathlib import Path
+
+    from little_crew.runtime.report_html import build_report
+
+    wd = Path(str(args.workdir))
+    if not (wd / "delivery").is_dir():
+        print(f"  没有 delivery/：{wd}（这一集可能还没跑完）")
+        return 2
+    page = build_report(wd, title=str(getattr(args, "title", "") or "")).resolve()
+    print(f"  报告页：{page}")
+    print(f"  用浏览器打开：file:///{str(page).replace(chr(92), '/')}")
+    return 0
