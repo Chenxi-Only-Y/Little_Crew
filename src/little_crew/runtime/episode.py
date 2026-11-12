@@ -583,6 +583,8 @@ class EpisodeRunner:
                  checkpoint: Any = None) -> None:
         # **每实例**一份，避免不同 episode 之间串控制图。
         self.previs_first: dict[str, Path] = {}
+        #: 进度落盘器（首次 `_mark` 时按 workdir 建）
+        self.progress: Any = None
         #: 场景主体冲突（分镜越权引入了剧本没有的场景主体）
         self.scene_conflicts: list[dict] = []
         #: 每镜用到了哪些角色锚点图（`shotId -> [角色名]`）。
@@ -620,6 +622,17 @@ class EpisodeRunner:
         """
         self.stage = stage
         self.trace[stage] = {"t": round(time.time() - self._t0, 1), **info}
+        # 落盘一份可被外部读取的进度（2026-11-12）：长跑不再只能盯 stdout
+        try:
+            if getattr(self, "progress", None) is None:
+                from little_crew.runtime.progress import Progress
+
+                _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                self.progress = Progress(_wd or ".", episode_id=self.episode_id)
+            self.progress.mark(stage, **{k: v for k, v in info.items()
+                                         if isinstance(v, (str, int, float, bool))})
+        except Exception:                                     # noqa: BLE001
+            pass
         if self.stop_after and stage == self.stop_after:
             raise StopRequested(f"停在「{stage}」（--stop-after）")
 

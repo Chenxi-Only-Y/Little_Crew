@@ -628,6 +628,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"    {pth}")
         print(f"    {summary_line(pth)}")
         print("    续跑：用同一个 --workdir 再跑（已算的不重算）")
+        try:
+            if getattr(runner, "progress", None) is not None:
+                runner.progress.finish(ok=False, error=f"中断：{exc}")
+        except Exception:                                    # noqa: BLE001
+            pass
         return 0
     except Exception as exc:                                # noqa: BLE001
         from little_crew.runtime.partial_report import write_partial
@@ -642,8 +647,20 @@ def main(argv: list[str] | None = None) -> int:
             started_at=getattr(runner, "_t0", None),
         )
         print(f"  ❌ 出错（{type(exc).__name__}），半成品报告：{pth}")
+        try:
+            if getattr(runner, "progress", None) is not None:
+                runner.progress.finish(ok=False, error=f"{type(exc).__name__}: {exc}")
+        except Exception:                                    # noqa: BLE001
+            pass
         raise
     wall = time.perf_counter() - t0
+    # 进度终态：正常结束（成功/失败都写，便于外部区分"跑完"与"卡住"）
+    try:
+        if getattr(runner, "progress", None) is not None:
+            runner.progress.finish(ok=bool(getattr(res, "ok", False)),
+                                   error=str(getattr(res, "reason", "") or ""))
+    except Exception:                                        # noqa: BLE001
+        pass
 
     # 剧本与分镜的中间结果
     black = orch.snapshot()["blackboard"]
