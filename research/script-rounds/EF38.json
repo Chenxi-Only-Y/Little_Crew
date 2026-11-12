@@ -1,0 +1,153 @@
+{
+  "episodeId": "EF38",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全场没有真正的对抗。唯一的阻力只是一句陈述——“那是所有人都会看见的一条路”，但整场既没有人出现，也没有外力阻拦；从发现、包扎到背起，救人过程是一条直线的操作流程，观众从头到尾没有看到她为“不被看见”付出过一次具体的周折。', suggestion='让威胁落地：在包扎或背起他时安排一次近身险情（远处羊铃/人影逼近，她被迫把他拖回岩石阴影里），或让伤口反复崩开、血止不住，把“必须马上带走”的时间压力变成可感的阻力，而不是一句旁白式的预告。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：转折靠交代完成。父亲的惩罚“从今天起，集会你别去了”与她的回应“好。她说得很轻，脚步没停”在同一口气里抵消，冲突在最高点被一个字化解；场末又用叙述句“代价是在那之后，她再没有回过村子里的集会”替观众总结代价，情绪没有落点。', suggestion='让惩罚当场咬人：她仍要出门（拿起要带的东西/走向门口）被拦下，或让母亲的沉默在动作里显出代价。删掉末尾那句总结，只留“窗外集会的声音远远传来，她没有起身”，让画面独立承担转折。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：代价缺失。父亲“你再说一遍”对“那我也走”是全场最强的对抗升级，结果收在“父亲把门带上，很轻，一点声音都没有”——双方谁也没有付出任何具体代价，僵局无声收场。她的反抗在这场里既没有换来什么，也没有让她失去什么。', suggestion='给这次对峙标价：父亲临走时带走灯油/药/门钥匙，或她为这一夜守候必须在第二天付出具体代价；即使把兑现推迟到S05，本场也要先留下一道可见的伤口，否则“很轻的关门”只是氛围，不是代价。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：预设的对抗没有兑现。前三场反复铺设的“你留他，村里人怎么看你”“那是所有人都会看见的一条路”，到她真正走上村口时被场外化解：人群“散开一条缝”，老奶奶赠花，父亲喊着指路——没有任何人阻拦或质询，积累的恐惧没有对手。', suggestion='让村口发生一次真正的拦截（有人挡在路中、有人要验她身后的人），再由老奶奶的赠花与母亲昨夜的奔走化解；这样赠花和父亲喊话仍是转折，S01–S03的恐惧也有了落点。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 46.714
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 48.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：父亲最锋利的一击“披肩呢？”你撕给谁了？”，被母亲“拉住袖子摇了摇”就化解了——原文写“那只手很快松开了”，冲突在最高点被一个手势卸掉，父亲没有再逼一步，也没有为这次退让付出任何东西，阻力等于免费撤回。', suggestion='让母亲的阻拦本身有代价（比如父亲甩开她的手、或迁怒于她），或者让父亲的追问落到实处：他翻出撕掉的披肩、断掉的药钱，逼少女当场做一个选择。阻力必须留下痕迹，否则下一场的夺篮、踩花会显得是凭空升级。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：父亲下了最后通牒“天亮之前他必须走”，并且收走了灯油、最后一包药和钥匙，门“关上，很轻”——但这条威胁在本场和后续场次里从未兑现：S05 里少女背着包袱出门，没有锁门的阻碍，也没有父亲在黎明出现来赶人。倒计时立起来了，从没有人按下计时器。', suggestion='让通牒在本场就咬人：天亮前门被锁、或父亲真的回来撵人，迫使少女当夜必须把旅人转移或另找药；至少在 S05 开头补一个她撬锁/躲过父亲的回合，把 S04 收走的钥匙和油变成实际障碍。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：全场唯一的阻力是旅人一句“你连我是谁都不知道”，一句话就被“走错了，我自己回来”打发了；而 S03 里父亲曾守在门口夺篮、S04 里收钥匙设死线，到这一场她“身上只有一个小包袱”径直走出院门，父母连影子都没有——上两场建立的对抗凭空消失。', suggestion='在村口或院门口补一次正面拦截（父亲/母亲/锁着的门），让她付出离家的实际代价再走；同时给旅人的拒绝加码——他越是劝退，她越要付出什么才跟得上，这样 S06 的盘查才有地基。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：扁担这一关是靠母亲翻旧账（“鸡蛋昨天全进了你家锅里”）和父亲隔空喊话拆掉的，少女那句“我担保”自始至终没有被追问、没有兑现，两位主角一行代价未付；老奶奶更是“这时从人群里走出来”凭空登场，直接把关键道具薰衣草塞给她。', suggestion='让担保被收走：比如她必须留下竹篮/花或当众答应某件事作押，代价落在主角身上；老奶奶提前埋一两笔（S01 采花时她曾给过一句嘱咐、或 S03 窗台晾花是她教的），道具出场就不算空降。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：最后一场没有任何对抗：岔路摆在面前，她用一句自言自语“我不寻他”就做完了选择，“一条向下，绕回村子，锣声还没有散”这个本可以拉扯她的选项也只被看了一眼；整场是雾景加独白，阻力为零。', suggestion='给岔路设置真实的拉力与代价：比如雾中传来羊铃/锣声逼她必须立刻转向、或向北的路被雾吞掉必须折返，让她在两条路之间被迫放弃一样东西（断穗、或回头的可能）再做出决定。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 48.9,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 6,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 56.296
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 67.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：少女撬锁拿药与母亲的正面冲突没有交锋就结束了：母亲只说了一句「你撬坏了锁扣，明天他一看就知道」，随后「看了她一会儿，转身走了」，还主动交代「煎的时候少放水。药渣别扔在明处」。阻力一句话撤除，母女之间本可有的对抗（母亲要护自己的救命药 vs 少女要救外乡人）完全落空。', suggestion='让母亲的阻拦至少持续一个回合——比如她伸手按住药包，或要求一个条件（答应什么才放手），少女付出某种承诺或硬抢，母亲才退。把「转身走了」从免费让步改成一次有代价的成全。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：村人的阻拦没有被解决，只是被绕过了：村人明确质疑「一个篮子？」，扁担「没放下」，人群还发出「很难听」的笑；随后老奶奶接过篮子，场景就结束。到 S07 两人已走在山路上，拦路的扁担和村人的同意都凭空消失——冲突是靠换场消掉的，不是靠戏消掉的。', suggestion='给村人一个明确的松动动作：要么让扁担落下（老奶奶的话 + 篮子换来放行），要么让村人提出更狠的条件、少女再付一次代价才通过。总之让 S06 自己关掉这个冲突，而不是留给 S07 开场默认已通过。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 67.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 60.64
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 67.9）"
+}

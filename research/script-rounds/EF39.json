@@ -1,0 +1,156 @@
+{
+  "episodeId": "EF39",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：父亲说\"站住。明日的集会，你不许去。\"她停了一下：\"我不去。\"——这句是本场的立场支点，却语义两歧：她是屈从父亲不参加集会，还是顶撞\"我偏不去（听你的）\"？上下文只靠\"她站着，没有低头\"勉强暗示反抗，观众在此处必然卡壳。', suggestion='把她的回答改成方向明确的一句，例如\"我不去，也不许你动他\"，或删掉父亲这条禁令、改为\"集会上你要当众划清界限\"，让她的拒绝有清晰的对抗对象。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场无阻力：她换布条、他烧着说胡话、她守夜到天亮，全是顺叙的照料与问答（\"水……\"\"你把话说清楚\"他不答）。本集最长的静场，冲突维度空转；唯一的信息爆点\"昨天还翻着肉的伤口，已经结了一层薄薄的痂。太快了。\"只被四个字带过，她没有任何反应、追问或决定，异常被浪费。', suggestion='给这一场塞进一个对抗：要么她试图撬开他的嘴（他越拒绝，她越逼近，直到逼出\"北边……对不起\"并让她起疑），要么让\"伤口好得太快\"直接触发她的恐惧与选择——是继续留他，还是此刻就送客，把异常变成一个要付代价的决定。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：S03 立下的最大阻力——父亲\"你今日走进那间屋，往后就别再喊我\"——在离场时被无声化解：\"父亲站在最边上，什么也没说，转身回了院子\"。她离家的代价被老奶奶送花、众人围观的温情场面冲淡，决裂没有清算就翻篇了。', suggestion='让父亲的反对在村口兑现一次：他拦路、或当众说一句断绝的话，她跨过去再走；也可以删掉送花的暖意，用父亲摔门代替，让\"我跟你走\"这一句真正花掉东西。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：转折的因果链断裂：她\"忽然停下\"问\"你到底是谁？\"——从 S05 的笑着抱花到此刻起疑，中间没有任何触发；他\"没有回答，只是笑\"，她便\"手比脑子快\"掷出花束。老奶奶\"这花的香气能让不洁的东西现形。记住。\"这条明摆着的引线，她一个字都没想起。', suggestion='在她停步前加一个可感知的疑点（例如他踩过的草不弯、或他又说\"我不该停\"），并让她摸到胸前那束薰衣草、想起老奶奶的话，再掷——把 S05 的伏笔接进 S06 的动作里。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：代价被情绪跳过：幻象消散后她立刻完成领悟（\"我送走的不是你，是那个不敢走的我。\"），且\"她没有哭\"直接升华上路。S03 与父亲决裂、S05 抛下整个村子的重量，在她这里一次都没有结算，失去\"旅人\"几乎零成本。', suggestion='让她先为\"他\"崩溃一次（捡花瓣、攥碎、喊不出来），再在废墟里捡到那株带湿泥的薰衣草完成转向；把\"没有哭\"挪到更后面，作为她消化完代价之后的结果，而不是跳过代价的姿态。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 40.148
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem=\"S01：场末的僵局没有闭环就被切走：'她试着拖他，拖不动，只能跪在那儿，把竹篮挪到他头边'——冲突停在'拖不动'上，而 S02 开头他已经在里屋床上了。把人弄回家这一最费力、最有戏的一步被完全省略，观众会觉得转折是靠跳接硬造的。\", suggestion=\"要么在本场内补一个最小阻力的解决方式（她喊人、用竹竿拖、天黑后父亲/母亲撞见并搭手——后者还能给 S02 的父子冲突埋钩子），要么让 S02 开场用一句台词补回这段路（'你怎么把他弄进来的？'）。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem=\"S03：代价全靠旁白交代，没有落在戏上：'此后村里的集会她一次也没去过；起先有人来问，后来没人问了，再后来，人们开始绕着这户人家走。'——被孤立是本集对少女最重的一笔支出，却是一段概述，观众看不到任何一次具体的'绕着走'。另外时间交代打架：父亲说'明日的集会'，下文却是'那一夜的集会，她家的位置空着'。\", suggestion=\"把孤立外化成至少一个短场面或一个有动作的镜头（例如她在井边打水，原本说笑的人收声走开；或空着的集会席位一个接一个被占满）。同时统一集会的时间指称，避免'明日/那一夜'混淆。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem=\"S04：冲突的威胁悬空，转折缺一个触发点：她放话'再不说，天亮我就把你送出村口'，但天亮时她不但没送，反而'给他备了一袋干粮，放在门口'——从'驱逐'到'喂养'的反转中间没有任何事件推动，观众看不出她为什么改主意。同时旅人'脸朝里昏了过去'让审问中断，'你在躲谁'这条冲突线当场停摆，再没接上。\", suggestion=\"补一个决定性的动作细节触发反转：例如天亮时她推开门，看见他自己挪到了门槛上、却在替她挡风（说明他若要走早走了），或干粮袋被推回到她门外。并让'北边…对不起'在本场被追问出半句实质内容，别把这条线整个拖到 S05 之后才收。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem=\"S06：对手零抵抗，交锋只有一个回合：她质问'你到底是谁'，他'没有回答。他只是笑'，她一掷花束，他'化作一阵紫色的轻烟…连影子一起走了'——没有任何阻拦、反扑、求情或讨价还价，最贵的一场对决是单方面完成的。真相也是被台词直给的：'我就是你想远行的心啊'，是说破的，不是被逼出来的。\", suggestion=\"给他至少一次反击或拖延：他可以伸手挡花、可以先一步说出她心里的话来堵她、可以反问'你要我留下，还是你要我消失'——让她必须在两者间选一次，代价才成立。'我就是你想远行的心'改成她自己从他的破绽里认出来（比如他始终不敢踩她的脚印），比他自报身份更有力。\")",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem=\"S07：全场没有外部阻力，只有情绪余波：'没有人答''哭得像被折断的树枝'——她在跟空气对抗，没有对手、没有阻碍、没有需要她做选择的难处。转折（找到那株带泥的薰衣草）是'掌心被什么硌了一下'的纯偶然，不是她争取来的。\", suggestion=\"给这场塞进一个真实的阻力：比如她起身要追，却发现雾里那条路已经找不到他走过的痕迹（草全都弹回去了，连'不倒的草'这条线索也一并抹掉），她必须决定要不要凭一株花继续走——把'捡到花'从偶然变成选择，S08 的出发才付了代价。\")"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 5,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 52.612
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 49.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S01', shot='', line=0, asset=''), problem='S01：全剧的枢纽决定——要不要收留一个外乡人——在这一场只用一句话就解决了：父亲说「放下他」，少女回「爹，他会死」，父亲随即「弯下腰，一言不发地把人背了起来，走得比她还快」。反对意见零成本撤回，没有交换、没有条件、没有僵持，而 S02 里父亲的责问（「从山坡到这儿，三里地，你一个人？」）因此像是事后追加的，失去了前因。', suggestion='让父亲的阻拦在这一场留下摩擦：他可以坚持到天亮、可以要求先报给村里/先问清来路，或以一个条件换这次背人（少女必须答应某件事）。这样 S02 的压嗓子和 S03 集会上他「背比平时弯」的孤立才有来源，救人的代价也从第一场开始累积。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：全场三拍同向下行：井台收声→挑水回家→集会席子「往这边挪了半尺，再挪半尺，最后铺满了」，父亲独坐最边上——情绪一路走低，没有任何反向事件或意外。收尾「把第二天要用的药，多抓了一味」是表态不是转折，且语义两可（更谨慎？更豁出去？），情绪没有落点。', suggestion='在集会段插入一个变向动作：有人替她家说了半句话又被压回去、或父亲主动做了某件事（起身/离席/把席子挪回来）打破单向孤立；同时把「多抓一味」写实成一个明确的决定——这味药是给她自己的，还是给他的，让观众读出她付出了什么、转向了哪边。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：出走是零阻力的。旅人的劝阻「那边没有花，也没有井，没有集会，没有人替你说一句话」被她一句玩笑「那我就带花去」当场弹开；老奶奶的警告也只换来她一句反问。两个障碍都在一句话内消失，没有任何人或事真正挡住她，也没有任何说服的过程。', suggestion='把其中一道警告变成实际障碍：旅人明确拒绝带她走并给出理由、或父亲/村人堵在村口、或老奶奶要求她先答应一个条件才给花。她必须付出、说服或硬闯才能成行，「我跟你走」这句才重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：戳破真相是无偿的：她掷出花束、紫烟散尽，得到的是一次完整的顿悟（「你就是我想走的那颗心」），而这份代价在下一场景第一拍就被退还——S08 「碎石间躺着一株薰衣草。完整的，带着泥，根须上还沾着湿土」，她捡起来别在衣襟上；路是她自己走出来的，决心也是她自己的，失去的旅人本来就不真实。解决冲突没从她手里拿走任何真实世界的东西。', suggestion='为这次「看见」标一个不可退还的价格：例如她必须替他做完他不敢做的选择、亲口说出「你消失」才换到真相；或让她当场失去确凿的一样（整束花、回头的路、回村的可能），并且这个损失在 S08 不被补回，而是被她带在身上。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 49.65,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 82.017
+          },
+          {
+            "stage": "script.draft",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "script.draft",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 49.6（REVISE）；最好的是第 1 轮（49.6 分）"
+}
