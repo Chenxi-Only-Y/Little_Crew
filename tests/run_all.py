@@ -125,6 +125,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("灯光师", [sys.executable, "-m", "little_crew.agent.gaffer_llm_check"], 30),
     ("镜头→IR 桥接", [sys.executable, "-m", "little_crew.agent.ir_bridge_check"], 65),
     ("渲染编排", [sys.executable, "-m", "little_crew.runtime.render_check"], 60),
+    ("HTTP 通道端到端", [sys.executable, "-m", "little_crew.runtime.channels.http_e2e_check"], 11),
     ("渲染并发策略", [sys.executable, "-m", "little_crew.runtime.render_policy_check"], 16),
     ("缓存感知渲染", [sys.executable, "-m", "little_crew.runtime.cached_render_check"], 66),
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
