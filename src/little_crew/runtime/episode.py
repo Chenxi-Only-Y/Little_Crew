@@ -648,6 +648,472 @@ class EpisodeRunner:
         if self.stop_after and stage == self.stop_after:
             raise StopRequested(f"停在「{stage}」（--stop-after）")
 
+    def _run_human_gate(self, ok: bool, reason: str, *, manifest, failed) -> tuple:
+        """人工 Gate：要不要问人、问了怎么改判。返回 `(ok, reason, hg)`。
+
+        为什么抽出来：这段 25 行、且**只碰"判决"不碰产物**。
+        判据很硬（只有 reject 能改判；approve 不能把失败变成功；skip 什么都不做），
+        留在 `run()` 里时很容易被当成"打印装饰"。
+        """
+        _hg = None
+        _ok, _reason = ok, reason
+        if getattr(self, "human_gate_enabled", False):
+            try:
+                import json as _jh
+
+                from little_crew.runtime import human_gate as _hgm
+
+                _verrs = sum(
+                    1 for f in ((getattr(self, "_vision_review", None) or {})
+                                .get("findings") or ())
+                    if f.get("severity") == "error")
+                _sum = _hgm.summarize(
+                    manifest.shot_count, manifest.total_seconds,
+                    pending=len(failed), vision_errors=_verrs, gate_ok=bool(_ok))
+                _res_hg = _hgm.decide(
+                    auto=str(getattr(self, "gate_auto", "") or ""), summary=_sum)
+                _hg = _hgm.as_record(_res_hg, shots=manifest.shot_count,
+                                     seconds=manifest.total_seconds)
+                print(f"  人工确认：{_hg['decision']}"
+                      f"（{'人已看过' if _hg['reviewed'] else '未问人'}）")
+                # 改判规则抽成纯函数（human_gate.apply），可单测：
+                # **只有 reject 改判**；approve 不能把失败变成功、skip 不做任何事
+                _ok, _reason = _hgm.apply(_ok, _reason, _hg)
+            except Exception as _e_hg:                       # noqa: BLE001
+                print(f"  ⚠️ 人工 Gate 未运行：{type(_e_hg).__name__}: {_e_hg}")
+        else:
+            # 没开也要能回答"这集有没有人看过"
+            _hg = {"kind": "human.gate", "decision": "skip", "reviewed": False,
+                   "approved": False, "assisted": False, "by": "disabled",
+                   "reason": "未开启人工 Gate（--human-gate 可开）",
+                   "interactive": False, "shots": manifest.shot_count,
+                   "seconds": round(manifest.total_seconds, 1)}
+        return _ok, _reason, _hg
+
+    def _dump_script_rounds(self, cycle) -> None:
+        """把剧本闭环逐轮落盘（`delivery/` + `research/script-rounds/`）。
+
+        为什么单独成方法：这段 62 行只做"记录"，块外一个变量都不用；
+        写坏了也不该影响出片（所以整段 try/except 吞异常并打印）。
+        """
+        try:
+            import json as _json
+
+            _rounds = []
+            for _r in (getattr(cycle, "rounds", None) or ()):
+                _item = {"verdict": str(getattr(_r, "verdict", ""))}
+                for _k in ("total", "score", "blocker", "advisory",
+                           "scenesWithIssues", "round"):
+                    _v = getattr(_r, _k, None)
+                    if _v is not None and not callable(_v):
+                        _item[_k] = _v if isinstance(_v, (int, float, str)) else str(_v)
+                # 退回原因：把可能承载文本的属性都试一遍
+                for _k in ("issues", "notes", "reasons", "advice", "detail", "feedback"):
+                    _v = getattr(_r, _k, None)
+                    if _v:
+                        _item[_k] = _json.loads(_json.dumps(_v, ensure_ascii=False, default=str))
+                if hasattr(_r, "as_dict"):
+                    try:
+                        _item["asDict"] = _r.as_dict()
+                    except Exception:                        # noqa: BLE001
+                        pass
+                _rounds.append(_item)
+            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd and _rounds:
+                _out = Path(str(_wd)) / "delivery"
+                _out.mkdir(parents=True, exist_ok=True)
+                (_out / "script.rounds.json").write_text(
+                    _json.dumps({"episodeId": self.episode_id,
+                                 "rounds": _rounds,
+                                 "accepted": bool(getattr(cycle, "accepted", False)),
+                                 "reason": str(getattr(cycle, "reason", ""))[:400]},
+                                ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+                # provider 指纹（2026-11-06）：**这个点每集都会经过** ——
+                # 剧本阶段的模型调用已经发生，先记下来。
+                # （scene_quota 那个点只在分镜成功后才到，会被 0 镜挡掉。）
+                try:
+                    from little_crew.governance.provider_fingerprint import (
+                        summary as _pfs0)
+
+                    (_out / "provider_fingerprint.json").write_text(
+                        _json.dumps(_pfs0(), ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                except Exception:                       # noqa: BLE001
+                    pass
+
+                # ⚠️ **必须双写**（2026-11-03）：`outputs/` 是会定期清理的目录，
+                # 而实验记录不能跟着被删 —— 上一次清理就把 E3 的 7 对样本删掉了，
+                # 导致汇总结果从 +2.81 翻成 -2.08，差点当成「结论翻转」。
+                try:
+                    _repo = Path(__file__).resolve().parents[3]
+                    _dst = _repo / "research" / "script-rounds"
+                    _dst.mkdir(parents=True, exist_ok=True)
+                    (_dst / f"{self.episode_id}.json").write_text(
+                        (_out / "script.rounds.json").read_text(encoding="utf-8"),
+                        encoding="utf-8")
+                except Exception as _e2:                     # noqa: BLE001
+                    print(f"  ⚠️ 实验记录未备份到 research/：{type(_e2).__name__}: {_e2}")
+                print(f"  剧本轮次已落盘：{len(_rounds)} 轮"
+                      f" -> delivery/ 与 research/script-rounds/")
+        except Exception as _e:                              # noqa: BLE001
+            print(f"  ⚠️ 剧本轮次未落盘：{type(_e).__name__}: {_e}")
+
+
+    def _audit_scene_quota(self) -> None:
+        """镜头配额对账 + 再分配处置（**附加产物，不参与门禁**）。
+
+        抽出来的理由：这段 80 行只读黑板、只写 `delivery/*.json`，
+        块内变量在块外一个都不用；留在 `run()` 里会把"分镜检查"和"越权检查"隔开。
+        异常一律吞掉 —— 对账失败不该把一集跑挂。
+        """
+        try:
+            from little_crew.governance.plan_alloc import audit as _qa
+            from little_crew.governance.plan_alloc import quotas_for as _qf
+
+            _plan0 = None
+            for _k0 in ("episode.plan", "director.plan"):
+                try:
+                    _c0 = self.orch.blackboard.value(_k0)
+                except Exception:                          # noqa: BLE001
+                    _c0 = None
+                if isinstance(_c0, dict):
+                    _in0 = _c0.get("plan") if isinstance(_c0.get("plan"), dict) else _c0
+                    if isinstance(_in0, dict) and _in0.get("scenes"):
+                        _plan0 = _in0
+                        break
+            _q = _qf(_plan0, getattr(script_draft, "scenes", ()) or ())
+            _q["audit"] = _qa(_q, shots)
+            _wdq = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wdq:
+                import json as _jq
+
+                (_outq := Path(str(_wdq)) / "delivery").mkdir(
+                    parents=True, exist_ok=True)
+                (_outq / "scene_quota.json").write_text(
+                    _jq.dumps(_q, ensure_ascii=False, indent=2), encoding="utf-8")
+            _au = _q["audit"]
+            print(f"  配额遵守：{_au['compliantScenes']}/{_au['sceneCount']} 场"
+                  f"（{_au['complianceRate']*100:.0f}%）· 越界 {len(_au['findings'])} 条")
+
+            # ---- 处置闭环（P3，2026-11-06）----
+            #
+            # 审计只说"哪场超了"；**处置说"怎么改"**。
+            # 有了它，定向返工才不是"再抽一次"，而是"带着改法重切"。
+            try:
+                from little_crew.governance import disposition as _dp
+
+                _disp = _dp.plan(_au["findings"], _q)
+                _q["disposition"] = _disp
+                if _wdq:
+                    (_outq / "scene_disposition.json").write_text(
+                        _jq.dumps(_disp, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                if _disp["sceneCount"]:
+                    print(f"  处置：{_disp['sceneCount']} 场需要改"
+                          f"（{', '.join(x['sceneId'] for x in _disp['scenes'])}）")
+
+                # ---- 一轮时长再分配（P4，2026-11-06）----
+                # 把有余量的场借给超时的场。**只允许一轮** —— 反复借会震荡。
+                try:
+                    from little_crew.governance.plan_alloc import (
+                        redistribute as _rd)
+
+                    _rr = _rd(_q, _q["audit"], round_no=1, max_rounds=1)
+                    _q["redistribution"] = _rr
+                    if _rr["applied"]:
+                        _mv = ", ".join(m["from"] + "→" + m["to"]
+                                        for m in _rr["moves"][:3])
+                        print(f"  再分配：借出 {_rr['totalMoved']:.1f}s（{_mv}）")
+                    if _wdq:
+                        (_outq / "scene_quota.json").write_text(
+                            _jq.dumps(_q, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+
+                    # provider 指纹（2026-11-06）：此刻剧本/导演/分镜的模型调用
+                    # 都已发生 —— 先把已发生的记下来，避免"只在完整跑才有"。
+                    try:
+                        from little_crew.governance.provider_fingerprint import (
+                            summary as _pfs)
+
+                        (_outq / "provider_fingerprint.json").write_text(
+                            _jq.dumps(_pfs(), ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+                    except Exception:                       # noqa: BLE001
+                        pass
+                except Exception as _e_rd:                 # noqa: BLE001
+                    print(f"  ⚠️ 再分配未运行：{type(_e_rd).__name__}: {_e_rd}")
+            except Exception as _e_dp:                      # noqa: BLE001
+                print(f"  ⚠️ 处置未生成：{type(_e_dp).__name__}: {_e_dp}")
+        except Exception as _e_q:                          # noqa: BLE001
+            print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
+
+
+    def _check_interface_defects(self, picked) -> None:
+        """接口缺陷检查：落 `delivery/interface_defects.json`（**附加产物，不参与门禁**）。
+
+        为什么抽出来：这段 191 行、只做"检查 + 落盘"，块内变量在块外一个都不用；
+        留在 `run()` 里像一道墙，把"渲染"和"合成"隔开，读的人会以为它俩是一段。
+        异常一律吞掉 —— 它是审计附加物，不该把一集跑挂。
+        """
+        try:
+            from little_crew.review import interface_defects as _idef
+
+            _plan = None
+            try:
+                # ⚠️ 真实键是 `episode.plan`（2026-11-05 查出来的）。
+                # 原来读 `director.plan` —— 那个键没人写，于是预算偏差**永不触发**，
+                # 而检查器看上去"有这一项"。保留旧键作兼容回退。
+                _plan = None
+                _plan_key = ""
+                for _k in ("episode.plan", "director.plan", "episode.direct"):
+                    try:
+                        _cand = self.orch.blackboard.value(_k)
+                    except Exception:                          # noqa: BLE001
+                        _cand = None
+                    # 黑板里可能是**包装过的**：`{"ok": bool, "plan": {...}}`
+                    # （见本文件里 episode.plan 的说明）。两种都要认。
+                    if isinstance(_cand, dict):
+                        _inner = _cand.get("plan") if isinstance(_cand.get("plan"), dict) else _cand
+                        if isinstance(_inner, dict) and _inner.get("scenes"):
+                            _plan = _inner
+                            _plan_key = _k
+                            break
+            except Exception:                                  # noqa: BLE001
+                _plan = None
+            if not isinstance(_plan, dict):
+                _plan = None
+            # ---- 成片整体审（`review_board`）—— 2026-11-08 首次接上 ----
+            #
+            # 为什么显式传 reviewers：`_REVIEWERS_BY_ARTIFACT["shot.list"]` 配的是
+            # `dramaturge`（它只审 `script.draft`），走默认映射**必然失败**；
+            # 而 `review_board` 的 CRITIC_CHECKS 声明的产物正是 `shot.list`。
+            # 也就是说：**这个审查职位一直存在，却从来没有被调用过。**
+            #
+            # 纪律：**没审 != 通过** —— 没绑定/失败都要写进产物。
+            _rb = {"kind": "shotlist.review", "reviewed": False,
+                   "reviewers": [], "blockers": 0, "why": "", "defects": []}
+            try:
+                _impls = getattr(self.orch, "_impls", {}) or {}
+                if "review_board" in _impls:
+                    try:
+                        _sl = self.orch.blackboard.value("shot.list")
+                    except Exception:                          # noqa: BLE001
+                        _sl = None
+                    _revs, _why = self.orch.review_artifact(
+                        "shot.list", generator_id="storyboard_artist",
+                        payload={"shot.list": _sl if _sl is not None else list(picked)},
+                        reviewers=("review_board",))
+                    _rb["reviewers"] = ["review_board"]
+                    if _why:
+                        _rb["why"] = str(_why)[:200]
+                    else:
+                        _rb["reviewed"] = True
+                        _txt = " ".join(
+                            str(x) for _f in (_revs or ())
+                            for x in (getattr(_f, "issues", ()) or ()))
+                        import re as _re_rb
+
+                        for _m in _re_rb.finditer(r"S\d{2}", _txt):
+                            _rb["defects"].append({
+                                "sceneId": _m.group(0), "kind": "review.blocker",
+                                "severity": "error", "reason": _txt[:160]})
+                        _rb["blockers"] = len(_rb["defects"])
+                    # 措辞必须区分三态：有意见 / 通过 / **未审**
+                    _state = ("有意见" if _rb["blockers"]
+                              else ("通过" if _rb["reviewed"] else "未审"))
+                    print(f"  成片整体审：{_state}（{_rb['blockers']} 条）"
+                          + (f" · {_rb['why']}" if _rb["why"] else ""))
+                else:
+                    _rb["why"] = "review_board 未绑定（本次未审）"
+            except Exception as _e_rb:                          # noqa: BLE001
+                _rb["why"] = f"{type(_e_rb).__name__}: {_e_rb}"[:200]
+            _wd_rb = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_rb:
+                try:
+                    (_o_rb := Path(str(_wd_rb)) / "delivery").mkdir(
+                        parents=True, exist_ok=True)
+                    import json as _j_rb
+
+                    (_o_rb / "shotlist_review.json").write_text(
+                        _j_rb.dumps(_rb, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+                except Exception:                              # noqa: BLE001
+                    pass
+
+            _payload = _idef.collect(
+                scene_conflicts=self.scene_conflicts,
+                shots=picked,
+                limit_s=8.0,
+                plan=_plan,
+                episode_id=self.episode_id,
+                budget_shots=shots,
+            )
+            _payload.setdefault("inputs", {})["planKeyHit"] = _plan_key
+            if _rb.get("defects"):        # 整体审的意见并进缺陷清单，让定向返工接住
+                _payload.setdefault("defects", []).extend(_rb["defects"])
+            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd:
+                # ---- 定向返工（§3.10.2 第二层执行，2026-11-04）----
+                #
+                # 有 error 级缺陷时，只重跑受影响的那几场（默认最多 3 场），
+                # 再整场替换回镜头表 —— 不做整篇重抽。
+                # ⚠️ 关了开关就退回"只记录不重做"：`LITTLE_CREW_REWORK=0`
+                try:
+                    import os as _os
+
+                    from little_crew.runtime import rework as _rw2
+                    from little_crew.runtime import rework_pipeline as _rwp
+
+                    _on = (_os.environ.get("LITTLE_CREW_REWORK") or "1") != "0"
+                    _want = bool(_on and _rw2.should_rework(_payload.get("defects")))
+                    if not _want:
+                        # **无论有没有重做，都写一条结论** ——
+                        # 否则 `reworkRun` 缺失会被误读成"没接上"（真跑时踩过）。
+                        _payload["reworkRun"] = {
+                            "ok": True, "skipped": True,
+                            "reason": ("开关关闭" if not _on else "无需重做"),
+                        }
+                    if _want:
+                        _res = _rwp.rework_targets(
+                            run_stage=self.orch.run_stage,
+                            draft=script_draft,
+                            defects=_payload.get("defects") or [],
+                            shots=picked,
+                            max_scenes=3,
+                            get_shots=lambda: self.orch.blackboard.value("shot.list"),
+                            put_back=lambda sl: self.orch.blackboard.put(
+                                "shot.list", sl, owner="storyboard_artist"),
+                        )
+                        _payload["reworkRun"] = {
+                            "ok": bool(_res.get("ok")),
+                            "reworked": _res.get("reworked") or [],
+                            "failed": _res.get("failed") or [],
+                            "addedShots": _res.get("addedShots", 0),
+                            "reason": _res.get("reason", ""),
+                        }
+                        if _res.get("ok"):
+                            picked = tuple(_res["shots"])
+                            shots = picked
+                            print(f"  ↻ {_res.get('reason')}")
+                            # ---- 重做后**必须复验**（2026-11-05 真跑发现）----
+                            #
+                            # 原来重做完不复验：`self.scene_conflicts` 还是重做前那份，
+                            # 于是打印「场景越权否决交付」—— **重做了却按旧结论判**。
+                            # 这里用同一个判据重扫一遍合并后的镜头：
+                            #   干净了 -> 清掉 error；还在 -> 保留（并说明是复验结果）
+                            try:
+                                from little_crew.review.scene_subject import (
+                                    check_scene_subject as _csc,
+                                    subjects_in as _s_in,
+                                )
+
+                                # 就地取一份，别依赖别的**方法**的局部量：
+                                # `_script_text` 原来只存在于 `_check_scene_subjects` 里，
+                                # 抽出方法后 run() 没有它 -> NameError ->
+                                # 复验整段被 except 吞掉（EF24 只能靠修复块复算兜住）。
+                                _script_text = str(script_draft or "")
+                                _allowed = set(_s_in(_script_text))
+                                _fresh = []
+                                for _sh in picked:
+                                    _r2 = _csc(_script_text, _sh.description,
+                                               allowed=_allowed)
+                                    _fresh.append({"shotId": _sh.shot_id, **_r2})
+                                self.scene_conflicts = _fresh
+                                _err2 = [c for c in _fresh
+                                         if c.get("severity") == "error"]
+                                # ⚠️ 复验也必须更新 `scene_veto`：
+                                # 它是 CLI 门禁唯一读的标志，2.8 时置过 True，
+                                # 只清 conflicts 不清它 → 重做完照样否决（EF20）。
+                                self.scene_veto = bool(_err2)
+                                print(f"  复验：越权 {len(_err2)} 镜"
+                                      + ("（已修好）" if not _err2 else "（仍在）"))
+                            except Exception as _e2:               # noqa: BLE001
+                                print(f"  ⚠️ 重做后未能复验："
+                                      f"{type(_e2).__name__}: {_e2}")
+                        elif _res.get("reason"):
+                            print(f"  ⚠️ 定向返工未生效：{_res.get('reason')}")
+                except Exception as _e:                        # noqa: BLE001
+                    print(f"  ⚠️ 定向返工未运行：{type(_e).__name__}: {_e}")
+
+                # §3.10.2 第二层：把缺陷换成「只重做哪几处」的计划
+                try:
+                    from little_crew.runtime import rework as _rw
+
+                    _payload["reworkPlan"] = _rw.plan(_payload.get("defects") or [])
+                except Exception:                          # noqa: BLE001
+                    pass
+                _dst = _idef.write(_wd, _payload)
+                print(f"  接口缺陷 {_payload['total']} 条 -> {_dst.name}")
+        except Exception as _e:                                # noqa: BLE001
+            print(f"  ⚠️ 接口缺陷清单未生成：{type(_e).__name__}: {_e}")
+
+
+    def _compare_ir_hashes(self, picked, irs) -> None:
+        """IR 指纹：存每镜内容哈希，并在续跑时对比打印"哪一镜变了"。
+
+        为什么单独成方法：这段有 57 行、且**纯诊断**（不影响产物）。
+        留在 `run()` 里时，它把"渲染主流程"切成了两段，读的人容易跳过；
+        抽出来以后 `run()` 只剩"取 IR -> 渲染"两步。
+        异常一律吞掉 —— 诊断失败不该影响出片。
+        """
+        try:
+            from little_crew.ir.canonical import content_hash as _ch
+
+            _irh = {str(s.shot_id): _ch(ir) for s, ir in zip(picked, irs)}
+            self._ir_hashes_now = _irh
+            _old = (getattr(self, "resume_data", None) or {}).get("irHashes") or {}
+            _old_json = (getattr(self, "resume_data", None) or {}).get("irJson") or {}
+            _self_json = {}
+            try:
+                import json as _j_ir
+
+                _wd_ir2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_ir2:
+                    (Path(str(_wd_ir2)) / "_ir_current.json").write_text(
+                        _j_ir.dumps({str(s.shot_id): ir
+                                     for s, ir in zip(picked, irs)},
+                                    ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+            except Exception:                            # noqa: BLE001
+                pass
+            try:
+                from little_crew.runtime import stage_checkpoint as _sc_ir
+
+                _wd_ir = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_ir:
+                    _self_json = {str(s.shot_id): ir for s, ir in zip(picked, irs)}
+            except Exception:                            # noqa: BLE001
+                pass
+            if _old:
+                _same = sum(1 for k, v in _irh.items() if _old.get(k) == v)
+                print(f"  IR 对比：{_same}/{len(_irh)} 镜哈希相同"
+                      + ("（应命中缓存）" if _same == len(_irh) else "（**不同 → 必重渲**）"))
+                _diff = [k for k, v in _irh.items() if _old.get(k) and _old.get(k) != v]
+                if _diff:
+                    print(f"    首个不同: {_diff[0]}")
+                    # 字段级 diff：只存哈希时说不出"哪不同"
+                    try:
+                        _old_ir = (_old_json.get(_diff[0]) or {})
+                        _new_ir = (_self_json.get(_diff[0]) or {})
+                        _paths = []
+
+                        def _walk(a, b, path=""):
+                            if len(_paths) >= 6:
+                                return
+                            if isinstance(a, dict) and isinstance(b, dict):
+                                for k in set(a) | set(b):
+                                    _walk(a.get(k), b.get(k), f"{path}.{k}" if path else k)
+                            elif a != b:
+                                _paths.append((path, str(a)[:40], str(b)[:40]))
+
+                        _walk(_old_ir, _new_ir)
+                        for _p, _a, _b in _paths:
+                            print(f"      {_p}: {_a} -> {_b}")
+                    except Exception:                        # noqa: BLE001
+                        pass
+        except Exception:                                    # noqa: BLE001
+            pass
     def run(self, source: str, *, limit: int | None = None,
             on_progress: Any = None) -> EpisodeResult:
         t0 = time.perf_counter()
@@ -736,68 +1202,7 @@ class EpisodeRunner:
         # 这里把每轮的 verdict / 分数 / 可用的 issues 文本尽量 dump 出来。
         # **用 getattr 防御式取**：不同 critic 的字段名不一定一致，
         # 取不到就留空，**绝不因为"记录"而让主流程失败**。
-        try:
-            import json as _json
-
-            _rounds = []
-            for _r in (getattr(cycle, "rounds", None) or ()):
-                _item = {"verdict": str(getattr(_r, "verdict", ""))}
-                for _k in ("total", "score", "blocker", "advisory",
-                           "scenesWithIssues", "round"):
-                    _v = getattr(_r, _k, None)
-                    if _v is not None and not callable(_v):
-                        _item[_k] = _v if isinstance(_v, (int, float, str)) else str(_v)
-                # 退回原因：把可能承载文本的属性都试一遍
-                for _k in ("issues", "notes", "reasons", "advice", "detail", "feedback"):
-                    _v = getattr(_r, _k, None)
-                    if _v:
-                        _item[_k] = _json.loads(_json.dumps(_v, ensure_ascii=False, default=str))
-                if hasattr(_r, "as_dict"):
-                    try:
-                        _item["asDict"] = _r.as_dict()
-                    except Exception:                        # noqa: BLE001
-                        pass
-                _rounds.append(_item)
-            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd and _rounds:
-                _out = Path(str(_wd)) / "delivery"
-                _out.mkdir(parents=True, exist_ok=True)
-                (_out / "script.rounds.json").write_text(
-                    _json.dumps({"episodeId": self.episode_id,
-                                 "rounds": _rounds,
-                                 "accepted": bool(getattr(cycle, "accepted", False)),
-                                 "reason": str(getattr(cycle, "reason", ""))[:400]},
-                                ensure_ascii=False, indent=2, default=str),
-                    encoding="utf-8")
-                # provider 指纹（2026-11-06）：**这个点每集都会经过** ——
-                # 剧本阶段的模型调用已经发生，先记下来。
-                # （scene_quota 那个点只在分镜成功后才到，会被 0 镜挡掉。）
-                try:
-                    from little_crew.governance.provider_fingerprint import (
-                        summary as _pfs0)
-
-                    (_out / "provider_fingerprint.json").write_text(
-                        _json.dumps(_pfs0(), ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-                except Exception:                       # noqa: BLE001
-                    pass
-
-                # ⚠️ **必须双写**（2026-11-03）：`outputs/` 是会定期清理的目录，
-                # 而实验记录不能跟着被删 —— 上一次清理就把 E3 的 7 对样本删掉了，
-                # 导致汇总结果从 +2.81 翻成 -2.08，差点当成「结论翻转」。
-                try:
-                    _repo = Path(__file__).resolve().parents[3]
-                    _dst = _repo / "research" / "script-rounds"
-                    _dst.mkdir(parents=True, exist_ok=True)
-                    (_dst / f"{self.episode_id}.json").write_text(
-                        (_out / "script.rounds.json").read_text(encoding="utf-8"),
-                        encoding="utf-8")
-                except Exception as _e2:                     # noqa: BLE001
-                    print(f"  ⚠️ 实验记录未备份到 research/：{type(_e2).__name__}: {_e2}")
-                print(f"  剧本轮次已落盘：{len(_rounds)} 轮"
-                      f" -> delivery/ 与 research/script-rounds/")
-        except Exception as _e:                              # noqa: BLE001
-            print(f"  ⚠️ 剧本轮次未落盘：{type(_e).__name__}: {_e}")
+        self._dump_script_rounds(cycle)
         if not cycle.accepted and not self.force_accept_script:
             return EpisodeResult(
                 episode_id=self.episode_id, ok=False,
@@ -1040,86 +1445,7 @@ class EpisodeRunner:
         # 配额是**事前**的约束，这里是**事后**的对账：
         # 分镜到底有没有落在 [min,max]、有没有超场时长。
         # 落 delivery/scene_quota.json —— 既不参与门禁，也不假装通过。
-        try:
-            from little_crew.governance.plan_alloc import audit as _qa
-            from little_crew.governance.plan_alloc import quotas_for as _qf
-
-            _plan0 = None
-            for _k0 in ("episode.plan", "director.plan"):
-                try:
-                    _c0 = self.orch.blackboard.value(_k0)
-                except Exception:                          # noqa: BLE001
-                    _c0 = None
-                if isinstance(_c0, dict):
-                    _in0 = _c0.get("plan") if isinstance(_c0.get("plan"), dict) else _c0
-                    if isinstance(_in0, dict) and _in0.get("scenes"):
-                        _plan0 = _in0
-                        break
-            _q = _qf(_plan0, getattr(script_draft, "scenes", ()) or ())
-            _q["audit"] = _qa(_q, shots)
-            _wdq = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wdq:
-                import json as _jq
-
-                (_outq := Path(str(_wdq)) / "delivery").mkdir(
-                    parents=True, exist_ok=True)
-                (_outq / "scene_quota.json").write_text(
-                    _jq.dumps(_q, ensure_ascii=False, indent=2), encoding="utf-8")
-            _au = _q["audit"]
-            print(f"  配额遵守：{_au['compliantScenes']}/{_au['sceneCount']} 场"
-                  f"（{_au['complianceRate']*100:.0f}%）· 越界 {len(_au['findings'])} 条")
-
-            # ---- 处置闭环（P3，2026-11-06）----
-            #
-            # 审计只说"哪场超了"；**处置说"怎么改"**。
-            # 有了它，定向返工才不是"再抽一次"，而是"带着改法重切"。
-            try:
-                from little_crew.governance import disposition as _dp
-
-                _disp = _dp.plan(_au["findings"], _q)
-                _q["disposition"] = _disp
-                if _wdq:
-                    (_outq / "scene_disposition.json").write_text(
-                        _jq.dumps(_disp, ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-                if _disp["sceneCount"]:
-                    print(f"  处置：{_disp['sceneCount']} 场需要改"
-                          f"（{', '.join(x['sceneId'] for x in _disp['scenes'])}）")
-
-                # ---- 一轮时长再分配（P4，2026-11-06）----
-                # 把有余量的场借给超时的场。**只允许一轮** —— 反复借会震荡。
-                try:
-                    from little_crew.governance.plan_alloc import (
-                        redistribute as _rd)
-
-                    _rr = _rd(_q, _q["audit"], round_no=1, max_rounds=1)
-                    _q["redistribution"] = _rr
-                    if _rr["applied"]:
-                        _mv = ", ".join(m["from"] + "→" + m["to"]
-                                        for m in _rr["moves"][:3])
-                        print(f"  再分配：借出 {_rr['totalMoved']:.1f}s（{_mv}）")
-                    if _wdq:
-                        (_outq / "scene_quota.json").write_text(
-                            _jq.dumps(_q, ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-
-                    # provider 指纹（2026-11-06）：此刻剧本/导演/分镜的模型调用
-                    # 都已发生 —— 先把已发生的记下来，避免"只在完整跑才有"。
-                    try:
-                        from little_crew.governance.provider_fingerprint import (
-                            summary as _pfs)
-
-                        (_outq / "provider_fingerprint.json").write_text(
-                            _jq.dumps(_pfs(), ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-                    except Exception:                       # noqa: BLE001
-                        pass
-                except Exception as _e_rd:                 # noqa: BLE001
-                    print(f"  ⚠️ 再分配未运行：{type(_e_rd).__name__}: {_e_rd}")
-            except Exception as _e_dp:                      # noqa: BLE001
-                print(f"  ⚠️ 处置未生成：{type(_e_dp).__name__}: {_e_dp}")
-        except Exception as _e_q:                          # noqa: BLE001
-            print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
+        self._audit_scene_quota()
 
         self._check_scene_subjects(picked, script_draft)
 
@@ -1129,197 +1455,7 @@ class EpisodeRunner:
         # 这里把三类「单元之间的接口」信号格式化成可定位的缺陷，
         # 落 delivery/interface_defects.json，供定向返工与证据链使用。
         # **它是附加产物，不参与门禁判决。**
-        try:
-            from little_crew.review import interface_defects as _idef
-
-            _plan = None
-            try:
-                # ⚠️ 真实键是 `episode.plan`（2026-11-05 查出来的）。
-                # 原来读 `director.plan` —— 那个键没人写，于是预算偏差**永不触发**，
-                # 而检查器看上去"有这一项"。保留旧键作兼容回退。
-                _plan = None
-                _plan_key = ""
-                for _k in ("episode.plan", "director.plan", "episode.direct"):
-                    try:
-                        _cand = self.orch.blackboard.value(_k)
-                    except Exception:                          # noqa: BLE001
-                        _cand = None
-                    # 黑板里可能是**包装过的**：`{"ok": bool, "plan": {...}}`
-                    # （见本文件里 episode.plan 的说明）。两种都要认。
-                    if isinstance(_cand, dict):
-                        _inner = _cand.get("plan") if isinstance(_cand.get("plan"), dict) else _cand
-                        if isinstance(_inner, dict) and _inner.get("scenes"):
-                            _plan = _inner
-                            _plan_key = _k
-                            break
-            except Exception:                                  # noqa: BLE001
-                _plan = None
-            if not isinstance(_plan, dict):
-                _plan = None
-            # ---- 成片整体审（`review_board`）—— 2026-11-08 首次接上 ----
-            #
-            # 为什么显式传 reviewers：`_REVIEWERS_BY_ARTIFACT["shot.list"]` 配的是
-            # `dramaturge`（它只审 `script.draft`），走默认映射**必然失败**；
-            # 而 `review_board` 的 CRITIC_CHECKS 声明的产物正是 `shot.list`。
-            # 也就是说：**这个审查职位一直存在，却从来没有被调用过。**
-            #
-            # 纪律：**没审 != 通过** —— 没绑定/失败都要写进产物。
-            _rb = {"kind": "shotlist.review", "reviewed": False,
-                   "reviewers": [], "blockers": 0, "why": "", "defects": []}
-            try:
-                _impls = getattr(self.orch, "_impls", {}) or {}
-                if "review_board" in _impls:
-                    try:
-                        _sl = self.orch.blackboard.value("shot.list")
-                    except Exception:                          # noqa: BLE001
-                        _sl = None
-                    _revs, _why = self.orch.review_artifact(
-                        "shot.list", generator_id="storyboard_artist",
-                        payload={"shot.list": _sl if _sl is not None else list(picked)},
-                        reviewers=("review_board",))
-                    _rb["reviewers"] = ["review_board"]
-                    if _why:
-                        _rb["why"] = str(_why)[:200]
-                    else:
-                        _rb["reviewed"] = True
-                        _txt = " ".join(
-                            str(x) for _f in (_revs or ())
-                            for x in (getattr(_f, "issues", ()) or ()))
-                        import re as _re_rb
-
-                        for _m in _re_rb.finditer(r"S\d{2}", _txt):
-                            _rb["defects"].append({
-                                "sceneId": _m.group(0), "kind": "review.blocker",
-                                "severity": "error", "reason": _txt[:160]})
-                        _rb["blockers"] = len(_rb["defects"])
-                    # 措辞必须区分三态：有意见 / 通过 / **未审**
-                    _state = ("有意见" if _rb["blockers"]
-                              else ("通过" if _rb["reviewed"] else "未审"))
-                    print(f"  成片整体审：{_state}（{_rb['blockers']} 条）"
-                          + (f" · {_rb['why']}" if _rb["why"] else ""))
-                else:
-                    _rb["why"] = "review_board 未绑定（本次未审）"
-            except Exception as _e_rb:                          # noqa: BLE001
-                _rb["why"] = f"{type(_e_rb).__name__}: {_e_rb}"[:200]
-            _wd_rb = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd_rb:
-                try:
-                    (_o_rb := Path(str(_wd_rb)) / "delivery").mkdir(
-                        parents=True, exist_ok=True)
-                    import json as _j_rb
-
-                    (_o_rb / "shotlist_review.json").write_text(
-                        _j_rb.dumps(_rb, ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-                except Exception:                              # noqa: BLE001
-                    pass
-
-            _payload = _idef.collect(
-                scene_conflicts=self.scene_conflicts,
-                shots=picked,
-                limit_s=8.0,
-                plan=_plan,
-                episode_id=self.episode_id,
-                budget_shots=shots,
-            )
-            _payload.setdefault("inputs", {})["planKeyHit"] = _plan_key
-            if _rb.get("defects"):        # 整体审的意见并进缺陷清单，让定向返工接住
-                _payload.setdefault("defects", []).extend(_rb["defects"])
-            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-            if _wd:
-                # ---- 定向返工（§3.10.2 第二层执行，2026-11-04）----
-                #
-                # 有 error 级缺陷时，只重跑受影响的那几场（默认最多 3 场），
-                # 再整场替换回镜头表 —— 不做整篇重抽。
-                # ⚠️ 关了开关就退回"只记录不重做"：`LITTLE_CREW_REWORK=0`
-                try:
-                    import os as _os
-
-                    from little_crew.runtime import rework as _rw2
-                    from little_crew.runtime import rework_pipeline as _rwp
-
-                    _on = (_os.environ.get("LITTLE_CREW_REWORK") or "1") != "0"
-                    _want = bool(_on and _rw2.should_rework(_payload.get("defects")))
-                    if not _want:
-                        # **无论有没有重做，都写一条结论** ——
-                        # 否则 `reworkRun` 缺失会被误读成"没接上"（真跑时踩过）。
-                        _payload["reworkRun"] = {
-                            "ok": True, "skipped": True,
-                            "reason": ("开关关闭" if not _on else "无需重做"),
-                        }
-                    if _want:
-                        _res = _rwp.rework_targets(
-                            run_stage=self.orch.run_stage,
-                            draft=script_draft,
-                            defects=_payload.get("defects") or [],
-                            shots=picked,
-                            max_scenes=3,
-                            get_shots=lambda: self.orch.blackboard.value("shot.list"),
-                            put_back=lambda sl: self.orch.blackboard.put(
-                                "shot.list", sl, owner="storyboard_artist"),
-                        )
-                        _payload["reworkRun"] = {
-                            "ok": bool(_res.get("ok")),
-                            "reworked": _res.get("reworked") or [],
-                            "failed": _res.get("failed") or [],
-                            "addedShots": _res.get("addedShots", 0),
-                            "reason": _res.get("reason", ""),
-                        }
-                        if _res.get("ok"):
-                            picked = tuple(_res["shots"])
-                            shots = picked
-                            print(f"  ↻ {_res.get('reason')}")
-                            # ---- 重做后**必须复验**（2026-11-05 真跑发现）----
-                            #
-                            # 原来重做完不复验：`self.scene_conflicts` 还是重做前那份，
-                            # 于是打印「场景越权否决交付」—— **重做了却按旧结论判**。
-                            # 这里用同一个判据重扫一遍合并后的镜头：
-                            #   干净了 -> 清掉 error；还在 -> 保留（并说明是复验结果）
-                            try:
-                                from little_crew.review.scene_subject import (
-                                    check_scene_subject as _csc,
-                                    subjects_in as _s_in,
-                                )
-
-                                # 就地取一份，别依赖别的**方法**的局部量：
-                                # `_script_text` 原来只存在于 `_check_scene_subjects` 里，
-                                # 抽出方法后 run() 没有它 -> NameError ->
-                                # 复验整段被 except 吞掉（EF24 只能靠修复块复算兜住）。
-                                _script_text = str(script_draft or "")
-                                _allowed = set(_s_in(_script_text))
-                                _fresh = []
-                                for _sh in picked:
-                                    _r2 = _csc(_script_text, _sh.description,
-                                               allowed=_allowed)
-                                    _fresh.append({"shotId": _sh.shot_id, **_r2})
-                                self.scene_conflicts = _fresh
-                                _err2 = [c for c in _fresh
-                                         if c.get("severity") == "error"]
-                                # ⚠️ 复验也必须更新 `scene_veto`：
-                                # 它是 CLI 门禁唯一读的标志，2.8 时置过 True，
-                                # 只清 conflicts 不清它 → 重做完照样否决（EF20）。
-                                self.scene_veto = bool(_err2)
-                                print(f"  复验：越权 {len(_err2)} 镜"
-                                      + ("（已修好）" if not _err2 else "（仍在）"))
-                            except Exception as _e2:               # noqa: BLE001
-                                print(f"  ⚠️ 重做后未能复验："
-                                      f"{type(_e2).__name__}: {_e2}")
-                        elif _res.get("reason"):
-                            print(f"  ⚠️ 定向返工未生效：{_res.get('reason')}")
-                except Exception as _e:                        # noqa: BLE001
-                    print(f"  ⚠️ 定向返工未运行：{type(_e).__name__}: {_e}")
-
-                # §3.10.2 第二层：把缺陷换成「只重做哪几处」的计划
-                try:
-                    from little_crew.runtime import rework as _rw
-
-                    _payload["reworkPlan"] = _rw.plan(_payload.get("defects") or [])
-                except Exception:                          # noqa: BLE001
-                    pass
-                _dst = _idef.write(_wd, _payload)
-                print(f"  接口缺陷 {_payload['total']} 条 -> {_dst.name}")
-        except Exception as _e:                                # noqa: BLE001
-            print(f"  ⚠️ 接口缺陷清单未生成：{type(_e).__name__}: {_e}")
+        self._check_interface_defects(picked)
 
         if self.scene_conflicts:
             # **按严重度分开报**：越权新增 = 协作冲突（该退）；丢场景 = 特写的常态（不该退）
@@ -1483,63 +1619,7 @@ class EpisodeRunner:
         # 缓存键 = IR 内容哈希。续跑若 IR 变了，缓存必 miss。
         # 这里把每镜哈希存进 checkpoint，并在续跑时**对比打印** ——
         # 否则只能看到"命中 0"，看不出是"哪个字段变了"。
-        try:
-            from little_crew.ir.canonical import content_hash as _ch
-
-            _irh = {str(s.shot_id): _ch(ir) for s, ir in zip(picked, irs)}
-            self._ir_hashes_now = _irh
-            _old = (getattr(self, "resume_data", None) or {}).get("irHashes") or {}
-            _old_json = (getattr(self, "resume_data", None) or {}).get("irJson") or {}
-            _self_json = {}
-            try:
-                import json as _j_ir
-
-                _wd_ir2 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                if _wd_ir2:
-                    (Path(str(_wd_ir2)) / "_ir_current.json").write_text(
-                        _j_ir.dumps({str(s.shot_id): ir
-                                     for s, ir in zip(picked, irs)},
-                                    ensure_ascii=False, indent=2),
-                        encoding="utf-8")
-            except Exception:                            # noqa: BLE001
-                pass
-            try:
-                from little_crew.runtime import stage_checkpoint as _sc_ir
-
-                _wd_ir = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
-                if _wd_ir:
-                    _self_json = {str(s.shot_id): ir for s, ir in zip(picked, irs)}
-            except Exception:                            # noqa: BLE001
-                pass
-            if _old:
-                _same = sum(1 for k, v in _irh.items() if _old.get(k) == v)
-                print(f"  IR 对比：{_same}/{len(_irh)} 镜哈希相同"
-                      + ("（应命中缓存）" if _same == len(_irh) else "（**不同 → 必重渲**）"))
-                _diff = [k for k, v in _irh.items() if _old.get(k) and _old.get(k) != v]
-                if _diff:
-                    print(f"    首个不同: {_diff[0]}")
-                    # 字段级 diff：只存哈希时说不出"哪不同"
-                    try:
-                        _old_ir = (_old_json.get(_diff[0]) or {})
-                        _new_ir = (_self_json.get(_diff[0]) or {})
-                        _paths = []
-
-                        def _walk(a, b, path=""):
-                            if len(_paths) >= 6:
-                                return
-                            if isinstance(a, dict) and isinstance(b, dict):
-                                for k in set(a) | set(b):
-                                    _walk(a.get(k), b.get(k), f"{path}.{k}" if path else k)
-                            elif a != b:
-                                _paths.append((path, str(a)[:40], str(b)[:40]))
-
-                        _walk(_old_ir, _new_ir)
-                        for _p, _a, _b in _paths:
-                            print(f"      {_p}: {_a} -> {_b}")
-                    except Exception:                        # noqa: BLE001
-                        pass
-        except Exception:                                    # noqa: BLE001
-            pass
+        self._compare_ir_hashes(picked, irs)
         _prompts = self._prompts_seen
         if limit is not None:
             irs = irs[:planned]
@@ -1766,38 +1846,7 @@ class EpisodeRunner:
         # 这一屏是**给人看的**，不是给机器看的：
         # 人点认可 -> humanReviewed=True；驳回 -> 本集不算通过（assisted=True）；
         # 没问人（关掉/非交互）-> skip，**绝不等于通过**。
-        _hg = None
-        if getattr(self, "human_gate_enabled", False):
-            try:
-                import json as _jh
-
-                from little_crew.runtime import human_gate as _hgm
-
-                _verrs = sum(
-                    1 for f in ((getattr(self, "_vision_review", None) or {})
-                                .get("findings") or ())
-                    if f.get("severity") == "error")
-                _sum = _hgm.summarize(
-                    manifest.shot_count, manifest.total_seconds,
-                    pending=len(failed), vision_errors=_verrs, gate_ok=bool(ok))
-                _res_hg = _hgm.decide(
-                    auto=str(getattr(self, "gate_auto", "") or ""), summary=_sum)
-                _hg = _hgm.as_record(_res_hg, shots=manifest.shot_count,
-                                     seconds=manifest.total_seconds)
-                print(f"  人工确认：{_hg['decision']}"
-                      f"（{'人已看过' if _hg['reviewed'] else '未问人'}）")
-                # 改判规则抽成纯函数（human_gate.apply），可单测：
-                # **只有 reject 改判**；approve 不能把失败变成功、skip 不做任何事
-                ok, reason = _hgm.apply(ok, reason, _hg)
-            except Exception as _e_hg:                       # noqa: BLE001
-                print(f"  ⚠️ 人工 Gate 未运行：{type(_e_hg).__name__}: {_e_hg}")
-        else:
-            # 没开也要能回答"这集有没有人看过"
-            _hg = {"kind": "human.gate", "decision": "skip", "reviewed": False,
-                   "approved": False, "assisted": False, "by": "disabled",
-                   "reason": "未开启人工 Gate（--human-gate 可开）",
-                   "interactive": False, "shots": manifest.shot_count,
-                   "seconds": round(manifest.total_seconds, 1)}
+        ok, reason, _hg = self._run_human_gate(ok, reason, manifest=manifest, failed=failed)
         self._human_gate = _hg
         try:
             import json as _jh2
