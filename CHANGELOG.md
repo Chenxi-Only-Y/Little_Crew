@@ -70,6 +70,15 @@ git config http.sslBackend openssl
 - `EpisodeRunner._values` 改走出口编译器：HTTP 渲染路径从此**经过编译**（失败退回旧取值并打印原因，
   notices 去重只提示一次）
 
+### 新增：预算记账 + 超限中止（R3 从形状变约束）
+
+- `agent/budget.py`：`BudgetLedger`（`reserve()` 原子预占 · `settle()` 结算 ·
+  `from_env()` 环境变量 · `as_dict()` 快照），接进唯一收口 `_invoke_as`
+- 超限返回 `F-BUDGET` + **可见提示**；默认 unlimited（不传预算行为不变）
+- **并发 bug（真机踩到）**：`allows()`+`charge()` 两次加锁，双审并发时预算 2 步用掉 3 步
+  （"已用 3/2"）；改 `reserve()` 后严格 **2/2**
+- `budget_check` 21 项（含 20 线程抢 10 步 -> 正好 10 个通过）
+
 ### 修正（措辞与实现对齐，都是"能验的"）
 
 - 策划书 §3.5：`Budget.can_afford/minus` 已实现，但**编排器尚未记账**（默认 `unlimited()`、不扣减、不中止）
