@@ -81,7 +81,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("处置闭环", [sys.executable, "-m", "little_crew.governance.disposition_check"], 20),
     ("provider 指纹", [sys.executable, "-m", "little_crew.governance.provider_fingerprint_check"], 14),
     ("配音规则", [sys.executable, "-m", "little_crew.review.voice_cast_check"], 19),
-    ("配音轨", [sys.executable, "-m", "little_crew.runtime.voice_track_check"], 17),
+    ("配音轨", [sys.executable, "-m", "little_crew.runtime.voice_track_check"], 19),
     ("对白编辑", [sys.executable, "-m", "little_crew.governance.dialogue_editor_check"], 19),
     ("混流", [sys.executable, "-m", "little_crew.runtime.mixdown_check"], 12),
     ("音乐床", [sys.executable, "-m", "little_crew.runtime.music_bed_check"], 14),
@@ -127,7 +127,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("渲染检查点与续跑", [sys.executable, "-m", "little_crew.runtime.checkpoint_check"], 54),
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。
-    ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 28),
+    ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 31),
     # 顾问批评家的守卫：**取不到可审正文 -> error，不是 PASS**。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签（之前撞过两次）。
     ("顾问批评家守卫", [sys.executable, "-m", "little_crew.runtime.advisory_check"], 10),

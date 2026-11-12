@@ -374,15 +374,49 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             # 同一句话在跑挂之后**手动重调就成功** —— 说明是后端瞬时不可用，
             # 2 次不够；再加异常包裹（FileNotFound 之类也要算一次失败，
             # 不能让它直接炸掉整句）。
+            # ---- 走 IR 音频出口编译（2026-11-12）----
+            # 以前这句话的参数是**直接拼**的（text/voice/instruction 三个变量），
+            # 于是"配音"完全在 IR 之外：不进哈希链、不可复现、也没有 notices。
+            # 现在先编译一份最小 IR（`audio.tts` 节点），用编译结果当入参，
+            # 并把 contentHash 记进 utterance —— 失败则退回原参数（不阻断配音）。
+            _exit_hash = ""
+            _tts_params = {"text": ln["text"], "voice": str(spec.get("voice") or ""),
+                           "instruction": _ins}
+            try:
+                from little_crew.compiler.exits import compile_ir as _compile_ir
+
+                _tts_ir = {
+                    "irVersion": "little_crew.ir/v1",
+                    "graphId": f"G-TTS-{ln.get('shotId') or n}",
+                    "nodes": [{"id": "n_tts", "kind": "audio.tts",
+                               "params": {"text": ln["text"],
+                                          "voice": str(spec.get("voice") or ""),
+                                          "instruction": _ins}}],
+                    "provenance": {"shotId": str(ln.get("shotId") or ""),
+                                   "character": who},
+                }
+                _tts_out = _compile_ir(_tts_ir, None, kind="tts")
+                if _tts_out.ok:
+                    _tts_params.update({
+                        "text": str(_tts_out.params.get("input") or ln["text"]),
+                        "voice": str(_tts_out.params.get("voice") or ""),
+                        "instruction": str(_tts_out.params.get("instruction") or ""),
+                    })
+                    _exit_hash = _tts_out.content_hash
+                    if _tts_out.notices:
+                        print(f"  ℹ️ 配音出口：{_tts_out.notices[0]}")
+            except Exception:                                 # noqa: BLE001
+                pass
+
             import time as _time
 
             _attempts = 3
             for _att in range(1, _attempts + 1):
                 try:
                     r = synth_with_pauses(
-                        ln["text"], wav, synth=synth,
-                        voice=str(spec.get("voice") or ""),
-                        instruction=_ins,
+                        _tts_params["text"], wav, synth=synth,
+                        voice=_tts_params["voice"],
+                        instruction=_tts_params["instruction"],
                         seed=int(spec.get("seed") or 0) or None,
                         max_seconds=float(ln.get("shotSeconds") or 0))
                 except Exception as _e_att:                   # noqa: BLE001
@@ -426,6 +460,8 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
             #: 只在行里留痕不够，要能进报告才能发现"后端在抖动"
             "retried": int(r.get("retried") or 0),
             "attempts": int(r.get("attempts") or 1),
+            #: 音频出口编译的内容哈希（进得了证据链；空 = 退回直调）
+            "exitHash": _exit_hash,
             "align": a,
         })
     ok_rows = [{"shotId": x["shotId"], "character": x["character"],

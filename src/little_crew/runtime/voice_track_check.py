@@ -126,6 +126,18 @@ def main() -> int:
               bool(r.get("ok")) and deep.is_file(),
               f"ok={r.get('ok')} err={str(r.get('error'))[:80]}")
 
+    print(); print("I. 走 IR 音频出口（2026-11-12）")
+    with tempfile.TemporaryDirectory() as td3:
+        rep = build([{"character": "少女", "text": "喂，你醒着吗？", "sceneId": "S01",
+                      "shotSeconds": 6.0}], [_Shot("SH9", "S01", 6.0)],
+                    synth=fake_synth, cast_map={"少女": {"voice": "girl"}},
+                    out_dir=str(td3))
+        u = rep["utterances"][0]
+        check("I1 ★★★ 配音行带 exitHash（进得了证据链）",
+              bool(u.get("exitHash")), str(u.get("exitHash"))[:24])
+        check("I2 ★★ 音色仍来自 cast_map（编译没改语义）", u.get("voice") == "girl",
+              u.get("voice"))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

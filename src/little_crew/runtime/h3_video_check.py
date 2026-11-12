@@ -288,6 +288,19 @@ def main() -> int:
     _template_matches_values()
 
     print()
+    print(); print("F. 视频出口编译（2026-11-12）")
+    from little_crew.runtime.h3_video import VideoShot, video_exit
+
+    _sh = VideoShot(shot_id="SHV1", prompt="风吹过山坡", image_path="outputs/a.png")
+    _ex = video_exit(_sh, seconds=5.0)
+    check("F1 ★★★ 正常镜头能编译出内容哈希",
+          bool(_ex.get("ok")) and bool(_ex.get("hash")), str(_ex)[:80])
+    check("F2 ★★ 有首帧 -> mode=i2v", _ex.get("mode") == "i2v", str(_ex.get("mode")))
+    _ex2 = video_exit(VideoShot(shot_id="SHV2", prompt="", image_path="outputs/a.png"),
+                      seconds=5.0)
+    check("F3 ★★★ 空提示词 -> 编译失败（校验生效，不靠后端报错）",
+          not _ex2.get("ok"), str(_ex2.get("error"))[:60])
+
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
         print(f" [{'v' if ok else 'X'}] {name}")

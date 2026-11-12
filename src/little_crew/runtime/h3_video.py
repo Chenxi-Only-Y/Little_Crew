@@ -114,6 +114,46 @@ def video_values(shot: VideoShot, *, seconds: float = DEFAULT_SECONDS,
     }
 
 
+def video_ir(shot: VideoShot, *, seconds: float = DEFAULT_SECONDS) -> dict[str, Any]:
+    """把一镜视频请求**表达成统一 IR**（2026-11-12）。
+
+    为什么要这一步：`video_values()` 是"按后端模板占位符"构造参数的，
+    本身没有经过 IR —— 于是视频请求不进哈希链、也不受出口编译器的校验
+    （提示词为空、缺首帧这类问题只能等后端报错）。
+    这里补一份最小 IR：`prompt.text` + `image.file` + `provenance.durationSec`。
+    """
+    return {
+        "irVersion": "little_crew.ir/v1",
+        "graphId": f"G-VID-{shot.shot_id}",
+        "scope": "shot",
+        "nodes": [
+            {"id": "n_prompt", "kind": "prompt.text",
+             "params": {"text": str(shot.prompt or "")}},
+            {"id": "n_frame", "kind": "image.file",
+             "params": {"path": str(shot.image_path)}},
+            {"id": "n_latent", "kind": "latent.empty",
+             "params": {"width": int(shot.width), "height": int(shot.height)}},
+        ],
+        "edges": [],
+        "provenance": {"shotId": shot.shot_id, "durationSec": float(seconds),
+                       "generator": "little_crew.runtime.h3_video"},
+    }
+
+
+def video_exit(shot: VideoShot, *, seconds: float = DEFAULT_SECONDS) -> dict[str, Any]:
+    """编译视频 IR（失败返回 `{"ok": False, ...}`，**不抛**）。"""
+    try:
+        from little_crew.compiler.exits import compile_ir
+
+        out = compile_ir(video_ir(shot, seconds=seconds), None, kind="video")
+    except Exception as exc:                                  # noqa: BLE001
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}", "hash": ""}
+    return {"ok": bool(out.ok), "error": out.error,
+            "hash": out.content_hash if out.ok else "",
+            "mode": (out.params or {}).get("mode", ""),
+            "notices": list(out.notices)}
+
+
 def render_videos(renderer: Any, backend: Any, shots: Sequence[VideoShot], *,
                   seconds: float = DEFAULT_SECONDS, steps: int = DEFAULT_STEPS,
                   seed_base: int = 0,
@@ -126,6 +166,9 @@ def render_videos(renderer: Any, backend: Any, shots: Sequence[VideoShot], *,
     ok: dict[str, bytes] = {}
     failures: list[dict] = []
     for i, shot in enumerate(shots):
+        # 先过一遍视频出口编译：校验（提示词/首帧）+ 内容哈希（进证据链）。
+        # 编译失败**不阻断**（本条路径仍可用模板直调），但要留痕。
+        _exit = video_exit(shot, seconds=seconds)
         values = video_values(shot, seconds=seconds, steps=steps,
                               seed=seed_base + i)
         if on_progress is not None:
@@ -133,8 +176,21 @@ def render_videos(renderer: Any, backend: Any, shots: Sequence[VideoShot], *,
                 on_progress(shot.shot_id, i, len(shots))
             except Exception:                                 # noqa: BLE001
                 pass
+        # `provenance` 只有真渲染器（RenderSession/CachingRenderer）支持；
+        # 测试替身往往只收 (values, backend, job_id) —— 按签名探测，别硬塞。
+        _extra = {}
         try:
-            out = renderer.render_http(values, backend, job_id=shot.shot_id)
+            import inspect as _insp
+
+            _params = _insp.signature(renderer.render_http).parameters
+            if "provenance" in _params:
+                _extra["provenance"] = {"irHash": _exit.get("hash", ""),
+                                        "exitOk": bool(_exit.get("ok")),
+                                        "exitError": _exit.get("error", "")}
+        except Exception:                                     # noqa: BLE001
+            pass
+        try:
+            out = renderer.render_http(values, backend, job_id=shot.shot_id, **_extra)
         except Exception as e:                                # noqa: BLE001
             failures.append({"shotId": shot.shot_id,
                              "failure": type(e).__name__,
