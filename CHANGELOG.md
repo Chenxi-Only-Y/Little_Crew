@@ -57,6 +57,64 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-alpha.221] — 2026-11-12（IR **出口编译**：三模态 × 本地/云端双通道 · 措辞校准）
+
+### 新增
+
+- **IR 出口编译器族** `compiler/exits.py`：`HttpImageCompiler` / `TtsCompiler` / `VideoCompiler`，
+  把 IR 编译成**目标请求体**（不再是"模板直填"），产物带 `contentHash` 与 `notices`。
+  · 缺关键字段 → 明确失败；IR 有而出口做不到的（控制图/IPAdapter/LoRA）→ 写 notices，不静默丢
+  · 没给 seed 时**从 IR 内容派生**：同一份 IR 重跑复现同一张图
+- 注册表补两格，**3 模态 × 2 通道矩阵成立**：
+  `breeze-tts-local`（本地 8110）· `image-cloud`（OpenAI 兼容，未真跑，需 `IMAGE_API_KEY`）
+- `EpisodeRunner._values` 改走出口编译器：HTTP 渲染路径从此**经过编译**（失败退回旧取值并打印原因，
+  notices 去重只提示一次）
+
+### 修正（措辞与实现对齐，都是"能验的"）
+
+- 策划书 §3.5：`Budget.can_afford/minus` 已实现，但**编排器尚未记账**（默认 `unlimited()`、不扣减、不中止）
+  —— 原文"预算只减不增"改为事实陈述；真正代码强制的是 **R4 深度上限**
+- 策划书 §3.5：**有界推理循环**目前只有 `human_gate` 在用，编剧/分镜仍是单次调用
+- 策划书 §3.6：**ComfyUI 仍是唯一的节点图出口**；跨后端等价性（E2）**未做对照实验**
+- 设计文档 C1：**"双向映射"未实现** —— 代码里没有 graph→IR 反向编译器（已核实）
+
+### 测试
+
+`exits_check` 19 项（含"每个模态必须同时有本地与云端通道"3 项）·
+`episode_check` 87 · `render_check` 60 · 全量 **2351/2338 + 架构守卫 PASS**
+
+---
+
+## [0.4.0-alpha.220] — 2026-11-11（整集稳定性：响度 · 视觉闸 · 续跑 · **配音根因** · GC · 对外接口）
+
+### 修复（都带真机证据）
+
+- **配音"第一句必挂"根因**：多段合成时 `join_wavs` 往 `delivery/voice/` 直写而**父目录没人建**
+  → `FileNotFoundError`；另有"全静音段 `trim_silence` 返回 ok 却不写文件"。
+  修后 EF37：**43 句 · 失败 0**（修前隔一集挂一次）
+- **响度两遍（EBU R128）**：单遍欠冲 -18.9 → 先扫后归，实测 **-16.0 ~ -16.7 LUFS**（±1 LU 达标）
+- **视觉闸 `errors` 是计数不是列表**：`len(int)` 抛 `TypeError` 让整段视觉闸不跑；改 `int()` 并整体兜底
+- **视觉闸超时预算**：`LlmClient(timeout_s=45)`（原 12 镜 × 2 × 120s，EF29 占 13 分钟）
+- **IR 逐镜复用**：原前置条件 `len(cached)==len(picked)` 会退化成全量重桥；
+  改逐镜判断后 EF27 断网现场：**命中 36 / 实算 6 · 节省 406.9s**，覆盖补齐 42/42
+- **空剧本先重试**（3 次、退避 3 秒）再判失败；守卫原因带重试次数
+- **LLM 开跑探活**（3 次 / 5s）；**TTS 暖机 + 3 次重试 + 异常堆栈**
+
+### 新增
+
+- **剧本双审并发**（剧评人 + 文风编辑）：并发调用后**在主线程按序补写黑板**
+  （键/归属/依赖/别名与 `run_stage` 一致）—— 不补写会让失效传播静默失效（`orchestrator_check` I2/I3 抓到过）
+- **对外接口**：`GET /v1/capabilities` · `GET /v1/runs/{id}/artifacts[/{name}]`（含路径穿越防护）
+  · `_send` 支持二进制；CLI 新增 `serve` / `submit` / `status` / `fetch`
+- **按集深度清理** `tools/prune_artifacts.py --all --deep`：`outputs` **3.02 GB → 1.08 GB（释放 1988 MB）**，
+  保 json/srt/成片/checkpoint，删前先落 `pruned_artifacts.json`
+
+### 数据
+
+整集真跑 **18 次 · 交付 16 · 交付率 89%**（镜数均值 39.9 · 时长 215.8s · 墙钟 1372s）
+
+---
+
 ## [0.4.0-alpha.219] — 2026-11-10（策划书结构债第三轮：**§六重编号 · §5.10 主题分组 · 数字时间锚**）
 
 ### ① §六 的 `4.x` 编号彻底统一为 `6.x`
