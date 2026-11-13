@@ -35,6 +35,30 @@
             ],
             "chinese_text_score": 0.85
           }
+        },
+        {
+          "id": "gpt-image-2.5-sunburst",
+          "task": "image.t2i",
+          "size": "1536x1024",
+          "capability": {
+            "max_resolution": [
+              2048,
+              2048
+            ],
+            "chinese_text_score": 0.85
+          }
+        },
+        {
+          "id": "gpt-image-2",
+          "task": "image.t2i",
+          "size": "1536x1024",
+          "capability": {
+            "max_resolution": [
+              2048,
+              2048
+            ],
+            "chinese_text_score": 0.8
+          }
         }
       ],
       "notes": "OpenAI 兼容中转；1536x1024 横版，适合角色设定板（左侧留白/文字栏）。仅角色设计师可用。",
