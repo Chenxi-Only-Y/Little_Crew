@@ -132,6 +132,57 @@ class LLMReply:
 
 
 # ==========================================================================
+# 用量账本（2026-11-13，B2 成本测算）
+# ==========================================================================
+#
+# 为什么要有它：成本表不能靠"估"。厂商返回的 `usage` 里就有 token 用量，
+# 但此前只在 `LLMReply.usage` 上停了一下就丢了 —— 于是"这一集花了多少钱"
+# 只能拍脑袋。这里按进程累计，供 `delivery/token_usage.json` 落盘。
+_USAGE_LOG: list[dict] = []
+
+
+def note_usage(model: str, usage: Mapping[str, Any], kind: str = "llm") -> None:
+    """记一次调用的 token 用量（**只记数字，不记 prompt 明文**）。"""
+    if not isinstance(usage, Mapping):
+        return
+    try:
+        _USAGE_LOG.append({
+            "model": str(model or ""),
+            "kind": str(kind or "llm"),
+            "input": int(usage.get("prompt_tokens") or usage.get("input_tokens") or 0),
+            "output": int(usage.get("completion_tokens") or usage.get("output_tokens") or 0),
+            "cached": int(usage.get("prompt_cache_hit_tokens")
+                          or usage.get("cached_tokens") or 0),
+        })
+    except Exception:                                         # noqa: BLE001
+        pass
+
+
+def usage_totals() -> dict:
+    """按模型汇总本进程的 token 用量（给成本报告用）。"""
+    from collections import Counter
+
+    per: dict[str, dict] = {}
+    for row in _USAGE_LOG:
+        k = row["model"] or "?"
+        d = per.setdefault(k, {"calls": 0, "input": 0, "output": 0,
+                               "cached": 0, "kinds": Counter()})
+        d["calls"] += 1
+        d["input"] += row["input"]
+        d["output"] += row["output"]
+        d["cached"] += row["cached"]
+        d["kinds"][row["kind"]] += 1
+    return {"kind": "token.usage", "models": per,
+            "totalCalls": len(_USAGE_LOG),
+            "totalInput": sum(r["input"] for r in _USAGE_LOG),
+            "totalOutput": sum(r["output"] for r in _USAGE_LOG)}
+
+
+def reset_usage() -> None:
+    _USAGE_LOG.clear()
+
+
+# ==========================================================================
 # 模型与密钥
 # ==========================================================================
 
@@ -387,6 +438,8 @@ class LlmClient:
         url = backend.endpoint.rstrip("/") + backend.path
         reply = self._post_with_retry(url, body, timeout_s or self.timeout_s)
         self.calls += 1
+        note_usage(self.model_id, getattr(reply, "usage", {}) or {},
+                   "llm.json" if json_mode else "llm")
 
         # ---- provider 指纹（2026-11-06，§4.6.6 第 22 条）----
         #
@@ -472,6 +525,8 @@ class LlmClient:
         if temperature is not None:
             body["temperature"] = float(temperature)
         reply = self._post_with_retry(url, body, self.timeout_s)
+        note_usage(self.model_id, getattr(reply, "usage", {}) or {},
+                   f"vision:{what}")
         try:
             from little_crew.governance.provider_fingerprint import note_reply
 

@@ -414,6 +414,17 @@ def write_delivery(
         pass
     if result is not None:
         _dump("run.report.json", result)
+    # ---- token 用量（2026-11-13，B2 成本测算）----
+    # 厂商返回的 usage 此前拿到就丢了 -> "这一集多少钱"只能估。
+    # 落盘一份原始 token 数，价格由 tools/cost_report.py 按账单单价换算。
+    try:
+        from little_crew.agent.llm import usage_totals as _ut
+
+        _u = _ut()
+        if int(_u.get("totalCalls") or 0) > 0:
+            _dump("token_usage.json", _u)
+    except Exception:                                       # noqa: BLE001
+        pass
     # ---- 视觉闸 / 重渲 结论进证据（2026-11-08）----
     # 缺席也要写：**"这集没审"和"这集审过且通过"必须能区分**。
     try:

@@ -1,0 +1,93 @@
+{
+  "prices": {
+    "GLM-5.3-flash": {
+      "in": 0.8,
+      "out": 2.8,
+      "in_cached": 0.23
+    },
+    "deepseek-flash": {
+      "in": 1.0,
+      "out": 4.0,
+      "in_cached": 0.04
+    },
+    "mimo-v2.6-flash": {
+      "in": 1.0,
+      "out": 2.0,
+      "in_cached": 0.02
+    }
+  },
+  "rows": [
+    {
+      "label": "编剧（代表性题面）",
+      "models": {
+        "deepseek-flash": {
+          "calls": 1,
+          "input": 538,
+          "output": 2155,
+          "cached": 0,
+          "kinds": {
+            "llm": 1
+          }
+        }
+      },
+      "calls": 1,
+      "input": 538,
+      "output": 2155,
+      "cny": 0.00916
+    },
+    {
+      "label": "分镜（8 镜）",
+      "models": {
+        "deepseek-flash": {
+          "calls": 1,
+          "input": 118,
+          "output": 2190,
+          "cached": 0,
+          "kinds": {
+            "llm": 1
+          }
+        }
+      },
+      "calls": 1,
+      "input": 118,
+      "output": 2190,
+      "cny": 0.00888
+    },
+    {
+      "label": "看图质检",
+      "models": {
+        "mimo-v2.6-flash": {
+          "calls": 1,
+          "input": 437,
+          "output": 87,
+          "cached": 0,
+          "kinds": {
+            "vision:成本测量": 1
+          }
+        }
+      },
+      "calls": 1,
+      "input": 437,
+      "output": 87,
+      "cny": 0.00061
+    },
+    {
+      "label": "封面选帧（2x2 拼图）",
+      "models": {
+        "mimo-v2.6-flash": {
+          "calls": 1,
+          "input": 1110,
+          "output": 1200,
+          "cached": 0,
+          "kinds": {
+            "vision:封面选帧": 1
+          }
+        }
+      },
+      "calls": 1,
+      "input": 1110,
+      "output": 1200,
+      "cny": 0.00351
+    }
+  ]
+}
