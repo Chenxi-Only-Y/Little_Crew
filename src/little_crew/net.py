@@ -135,3 +135,37 @@ def download(url: str, dest: Any, *, timeout: float | None = 120) -> int:
             fh.write(chunk)
             n += len(chunk)
     return n
+
+
+def post_multipart(url: str, fields: dict[str, str], files: dict[str, tuple[str, bytes]],
+                   *, headers: dict[str, str] | None = None,
+                   timeout: float | None = 300) -> bytes:
+    """POST `multipart/form-data`（零第三方依赖，手写边界）。
+
+    `files` 形如 `{"image": ("ref.png", b"...")}`。
+    为什么放在根模块 `net.py`：**review 与 runtime 两层都需要发图**
+    （封面设计师生成要走图生图；渲染通道也要），而两层之间不允许互相依赖。
+    """
+    import uuid
+
+    boundary = "----dsh" + uuid.uuid4().hex
+
+    def _part(name: str, value: str) -> bytes:
+        return (f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"'
+                f'\r\n\r\n{value}\r\n').encode("utf-8")
+
+    body = b""
+    for k, v in (fields or {}).items():
+        body += _part(str(k), str(v))
+    for name, (filename, data) in (files or {}).items():
+        hdr = (f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"; '
+               f'filename="{filename}"\r\nContent-Type: application/octet-stream'
+               f'\r\n\r\n').encode("utf-8")
+        body += hdr + data + b"\r\n"
+    body += f"--{boundary}--\r\n".encode("utf-8")
+
+    hdrs = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+    hdrs.update(headers or {})
+    req = urllib.request.Request(url, data=body, method="POST", headers=hdrs)
+    with urlopen(req, timeout=timeout) as resp:              # noqa: S310
+        return resp.read()

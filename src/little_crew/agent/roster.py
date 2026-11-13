@@ -588,6 +588,27 @@ def _specs() -> list[AgentSpec]:
                    "可执行性 / 合规性。**跨模型族盲读**，且不得由生成方自任。"),
         ),
         AgentSpec(
+            agent_id="cover_designer",
+            crew_title="封面设计师",
+            crew_title_en="Cover Designer",
+            department=Department.REVIEW,
+            stage=Stage.GATE,
+            # **必须看图**：哪张能当门面是纯视觉判断（主体完整/未切头/无崩坏）
+            execution=ExecutionKind.VLM,
+            capabilities=("cover.select", "cover.generate"),
+            produces=("cover.image",),
+            requires=("shot.image",),
+            task_profile="review.vlm_blind",
+            prompt_template="crew.key_art.v1",
+            max_reasoning_steps=1,
+            real_world_duty="产出封面主视觉：可从成片选帧，也可用角色/美术设定生成新封面",
+            notes=("**双模式**：①`select` 从成片选帧（拼图一次判断：候选等距抽样 8 张 → "
+                   "ffmpeg 拼 2×4 → VLM 一次选格 → 复制**原分辨率**那张）；"
+                   "②`generate` 以**角色设定图 + 美术/剧情设定**为输入做图生图，产出海报感封面。"
+                   "默认 select（可追溯）；generate 会引入新内容，需显式开。"
+                   "宁可不出封面（模型回「不选」）也不选有硬伤的一张。"),
+        ),
+        AgentSpec(
             agent_id="qc_inspector",
             crew_title="质检员",
             crew_title_en="QC Inspector",
@@ -617,7 +638,7 @@ CODE_OUTPUTS: frozenset = frozenset({"shot.image"})
 #: 由**代码**消费的产物：渲染通道取 `previs.layouts` 当控制图。
 CODE_CONSUMED: frozenset = frozenset({"previs.layouts"})
 
-#: 19 个剧组职位（模块级常量，便于直接 import）。
+#: 20 个剧组职位（模块级常量，便于直接 import）。
 DEFAULT_ROSTER: tuple[AgentSpec, ...] = tuple(_specs())
 
 
@@ -815,6 +836,7 @@ def validate_roster(roster: Sequence[AgentSpec] = DEFAULT_ROSTER) -> list[str]:
         "compliance.report",    # 合规报告（留档）
         "continuity.report",    # 场记报告（留档）
         "qc.report",            # 质检报告：由 run() 读取并执行重画（代码消费）
+        "cover.image",          # 封面：交付物（报告页/答辩使用）
         "continuity.sheet",     # 场记单（真实剧组的现场记录，本就是档案）
         "art.bible",            # 美术 bible（档案）
         "character.sheet",      # 角色设定表（档案，供人查阅）

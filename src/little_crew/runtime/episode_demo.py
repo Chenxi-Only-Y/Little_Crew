@@ -166,6 +166,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="一次最多画几个角色（默认 6）")
     ap.add_argument("--char-sheet-qc-strict", action="store_true",
                     help="质检重复 2 次取 fail 并集（更严但耗时×2）")
+    ap.add_argument("--cover", action="store_true",
+                    help="生成封面（默认从成片选帧；--cover-mode generate 则用图生图生成）")
+    ap.add_argument("--cover-mode", default="select", choices=["select", "generate"],
+                    help="封面模式：select=从成片选帧 / generate=用角色设定图生成")
     ap.add_argument("--char-sheet-qc", action="store_true",
                     help="用 VLM 对设定板逐条判质检表（12 条，不通过/未确认会记录）")
     ap.add_argument("--char-sheet-refine", action="store_true",
@@ -588,6 +592,9 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
+    runner.cover_enabled = bool(getattr(args, "cover", False))
+    runner.cover_mode = str(getattr(args, "cover_mode", "select") or "select")
+    runner.title = str(getattr(args, "title", "") or "")
     runner.character_sheet_qc_strict = bool(getattr(args, "char_sheet_qc_strict", False))
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)

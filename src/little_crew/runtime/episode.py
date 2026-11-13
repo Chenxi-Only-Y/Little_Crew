@@ -570,6 +570,14 @@ class StopRequested(Exception):
     """主动停下（`--stop-after`）。**不是错误** —— 是"按要求停在这里"。"""
 
 
+def _cover_enabled() -> bool:
+    """封面设计师是否启用（环境变量开关；默认关）。"""
+    import os as _os
+
+    return str(_os.environ.get("LITTLE_CREW_COVER") or "").strip() in (
+        "1", "true", "yes", "on")
+
+
 def _cs_enabled() -> bool:
     """角色图集是否启用（环境变量开关；默认关 —— 按张计费）。"""
     from little_crew.runtime.character_sheets import enabled_by_env
@@ -1782,6 +1790,8 @@ class EpisodeRunner:
         self._stage_voice(picked, shots, script_draft, per_shot_artifacts)
 
         self._stage_vision(picked, irs, per_shot_artifacts, artifacts)
+        # 封面设计师（2026-11-13）：选帧 或 生成（默认选帧）
+        self._run_cover(picked, per_shot_artifacts)
 
         self._stage_final(picked, per_shot_artifacts)
 
@@ -2573,6 +2583,57 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
+    def _run_cover(self, picked, per_shot_artifacts):
+        """封面设计师：从成片选帧，或用角色/美术设定生成新封面（2026-11-13）。
+
+        **默认关**（选帧 1 次 VLM ≈ 20~30s；生成 1 次图生图 ≈ 30~50s）。
+        失败不阻断整集：封面是交付物但不是成片依赖。
+        """
+        self._cover_report = {"enabled": False}
+        if not (getattr(self, "cover_enabled", False) or _cover_enabled()):
+            return
+        self._cover_report["enabled"] = True
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            self._cover_report["error"] = "没有 workdir"
+            return
+        try:
+            from little_crew.review import cover_designer as _cd
+
+            out = Path(str(wd)) / "delivery"
+            # 候选：每镜的第一张产物（路径解析与视觉闸同一套）
+            imgs = {}
+            for s in picked:
+                nm = (per_shot_artifacts.get(getattr(s, "shot_id", "")) or [""])[0]
+                hit = list(Path(str(wd)).rglob(nm)) if nm else []
+                if hit:
+                    imgs[str(getattr(s, "shot_id", ""))] = str(hit[0])
+            mode = str(getattr(self, "cover_mode", "select") or "select").lower()
+            refs = []
+            if mode == "generate":
+                # 参考图：优先精修版角色设定图
+                adir = Path(str(wd)) / "assets" / "characters"
+                if adir.is_dir():
+                    for sub in sorted(adir.iterdir()):
+                        for name in ("sheet_refined.png", "sheet.png"):
+                            f = sub / name
+                            if f.is_file():
+                                refs.append(str(f))
+                                break
+            report = _cd.build_cover(refs, imgs, out, mode=mode,
+                                     title=str(getattr(self, "title", "") or ""),
+                                     character=str(getattr(self, "cover_character", "") or ""),
+                                     story=str(getattr(self, "title", "") or ""),
+                                     style=str(getattr(self, "character_sheet_style", "") or ""))
+            self._cover_report = {"enabled": True, **report}
+            print(f"  封面设计师（{mode}）：{_cd.summarize(report)}")
+            (out / "cover.json").write_text(
+                __import__("json").dumps(self._cover_report, ensure_ascii=False,
+                                         indent=2, default=str), encoding="utf-8")
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 封面设计师未运行：{type(exc).__name__}: {exc}")
+            self._cover_report["error"] = f"{type(exc).__name__}: {exc}"
 
     def _run_character_sheets(self, script_draft):
         """角色设计师（图像半）：文字角色表 -> 锚点图集（2026-11-13）。
