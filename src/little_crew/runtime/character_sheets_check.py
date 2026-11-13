@@ -215,6 +215,49 @@ def main() -> int:
     check("A24 ★★ cute 档皮肤要求「轻微磨皮但保留极细纹理」（不是无毛孔）",
           "保留极细纹理" in pc and "哑光瓷肌" not in pc, "")
 
+    print(); print("E. 保图微调（refine，2026-11-13）")
+    with tempfile.TemporaryDirectory() as td5:
+        base = _Painter(limit=1)
+        rep_no = base.paint(_lib(1), Path(td5))
+        check("E1 ★★★ 默认不精修（按张计费，默认关）",
+              rep_no.get("refine") is False and not rep_no.get("refined"), "")
+        calls = {"n": 0}
+
+        def fake_refiner(src: str) -> dict:
+            calls["n"] += 1
+            out = Path(src).with_name("sheet_refined.png")
+            out.write_bytes(PNG)
+            return {"ok": True, "out": str(out), "model": "gpt-image-2.6-sunburst",
+                    "seconds": 46.3}
+
+        rep_yes = _Painter(limit=1).paint(_lib(1), Path(td5) / "r", refine=True,
+                                          refiner=fake_refiner)
+        check("E2 ★★★ refine=True 会调用精修并记录产物",
+              calls["n"] == 1 and len(rep_yes.get("refined") or []) == 1,
+              str(rep_yes.get("refined"))[:80])
+        item = (rep_yes.get("painted") or [{}])[0]
+        check("E3 ★★★ 精修结果带 file/model/sha256（可追溯）",
+              bool(item.get("refined", {}).get("file"))
+              and item["refined"].get("model") == "gpt-image-2.6-sunburst"
+              and len(str(item["refined"].get("sha256"))) == 16, str(item.get("refined"))[:80])
+
+        def bad_refiner(src: str) -> dict:
+            return {"ok": False, "error": "模拟上游 502"}
+
+        rep_bad = _Painter(limit=1).paint(_lib(1), Path(td5) / "b", refine=True,
+                                          refiner=bad_refiner)
+        check("E4 ★★★ 精修失败只记录、不抛（不拖垮整集）",
+              len(rep_bad.get("refineFailed") or []) == 1
+              and len(rep_bad.get("painted") or []) == 1, str(rep_bad.get("refineFailed"))[:80])
+
+    from little_crew.runtime import sudorelay_edits as SE
+
+    check("E5 ★★ 精修默认模型是 2.6（早期 502 记录已过期）",
+          SE.DEFAULT_EDIT_MODEL == "gpt-image-2.6-sunburst", SE.DEFAULT_EDIT_MODEL)
+    check("E6 ★★ 微调提示词写明「不改设计」且只修三类",
+          ("不改变任何设计" in SE.REFINE_PROMPT
+           and all(k in SE.REFINE_PROMPT for k in ("手部", "鞋型", "发丝"))), "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

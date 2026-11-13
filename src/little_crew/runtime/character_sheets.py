@@ -78,13 +78,25 @@ class CharacterSheetPainter:
 
     def paint(self, sheets: Any, out_dir: str | Path, *,
               style: str = "", proportion: str = "adult",
+              refine: bool = False, refiner: Any = None,
               qc_extra: bool = True) -> dict[str, Any]:
         """把角色表画成图集。**返回报告，从不抛**（除配置性错误外都记进报告）。"""
         out = Path(str(out_dir))
         out.mkdir(parents=True, exist_ok=True)
         report: dict[str, Any] = {"kind": "character.sheets", "model": self.model_id,
                                   "outDir": str(out), "painted": [], "failed": [],
-                                  "skipped": [], "limit": self.limit}
+                                  "skipped": [], "limit": self.limit,
+                                  "refine": bool(refine), "refined": [],
+                                  "refineFailed": []}
+        # 保图微调（2026-11-13）：生成后立刻用 2.6 的 /images/edits 修细节。
+        # 默认关；失败只记录，不影响整集（与"图集不阻断"同一纪律）。
+        if refine and refiner is None:
+            try:
+                from little_crew.runtime.sudorelay_edits import refine_sheet as refiner
+            except Exception as exc:                          # noqa: BLE001
+                report["refineFailed"].append(
+                    {"reason": f"精修通道不可用：{type(exc).__name__}: {exc}"})
+                refine = False
         all_sheets = list(getattr(sheets, "sheets", ()) or ())
         if self.limit and len(all_sheets) > self.limit:
             report["skipped"] = [str(getattr(s, "character_id", ""))
@@ -136,8 +148,27 @@ class CharacterSheetPainter:
             }
             (d / "sheet.json").write_text(
                 json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-            report["painted"].append({"id": cid, "name": name,
-                                      "file": str(img), "sha256": meta["sha256"][:16]})
+            item = {"id": cid, "name": name, "file": str(img),
+                    "sha256": meta["sha256"][:16]}
+            if refine and refiner is not None:
+                try:
+                    rr = refiner(str(img))
+                except Exception as exc:                      # noqa: BLE001
+                    rr = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+                if rr.get("ok"):
+                    refined_path = Path(str(rr.get("out") or ""))
+                    item["refined"] = {"file": str(refined_path),
+                                       "model": rr.get("model", ""),
+                                       "seconds": rr.get("seconds"),
+                                       "sha256": hashlib.sha256(
+                                           refined_path.read_bytes()).hexdigest()[:16]
+                                       if refined_path.is_file() else ""}
+                    report["refined"].append(item["refined"])
+                    print(f"  ✨ 精修 {cid}（{rr.get('model')} · {rr.get('seconds')}s）")
+                else:
+                    report["refineFailed"].append(
+                        {"id": cid, "error": str(rr.get("error"))[:160]})
+            report["painted"].append(item)
         report["count"] = len(report["painted"])
         report["ok"] = not report["failed"]
         return report

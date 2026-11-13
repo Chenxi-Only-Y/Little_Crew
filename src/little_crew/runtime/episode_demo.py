@@ -164,6 +164,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="生成角色设定图集（按张计费；默认关）")
     ap.add_argument("--char-sheet-limit", type=int, default=6,
                     help="一次最多画几个角色（默认 6）")
+    ap.add_argument("--char-sheet-refine", action="store_true",
+                    help="生成后用 2.6 图生图做保图微调（只修细节，不改人物）")
     ap.add_argument("--char-sheet-proportion", default="adult",
                     choices=["adult", "cute"],
                     help="脸型比例：adult=标准成人 / cute=幼态（中庭短、眼大、脸圆）")
@@ -580,6 +582,7 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheets_limit = int(getattr(args, "char_sheet_limit", 6) or 6)
     runner.character_sheet_style = str(getattr(args, "char_sheet_style", "") or "")
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
+    runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)
     runner.forge_voices = bool(args.voice) and not args.no_forge_voices

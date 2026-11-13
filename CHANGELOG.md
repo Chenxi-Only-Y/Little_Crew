@@ -57,6 +57,44 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.13] — 2026-11-13（**角色设计师接入保图微调**）
+
+### 新增 `--char-sheet-refine`
+
+角色设定板生成完，**自动再过一遍 2.6 的 `/images/edits`** 做保图微调：
+
+```
+生成（文生图 2.6）→ sheet.png
+        ↓  refine=True
+保图微调（图生图 2.6）→ sheet_refined.png
+```
+
+- **只修细节**：手部与手指数量、鞋型结构、发丝走向、布料纹理、四视图一致性
+- **不改设计**：人物 / 脸型五官 / 发型 / 妆容 / 服饰结构与配色 / 布局 / 背景 全部保留
+- **默认关**（按张计费）；失败只记 `refineFailed`，**不拖垮整集**
+- `sheet_refined.png` 与 `{file, model, seconds, sha256}` 一起写进报告（可追溯）
+
+### 能力收进 `src/runtime/sudorelay_edits.py`
+
+之前图生图只在 `tools/` 里（脚本层）。现在：
+- `runtime/sudorelay_edits.py`：`edit_image()` / `refine_sheet()` / `REFINE_PROMPT`
+- 零第三方依赖（手写 multipart），默认模型 **2.6**（早期 502 记录已过期，实测可用）
+- 角色设计师 `CharacterSheetPainter.paint(refine=True, refiner=...)` 走注入，**测试可替换**
+
+### 真机验证
+
+```
+角色「沈雾」：生成 → 精修（46.3s）→ outputs/_refinetest/.../sheet_refined.png
+报告：painted=1 · refined=1 · refineFailed=0
+```
+
+### 测试
+
+`runtime/character_sheets_check` **44 项**（+E1~E6：默认关 / 调用与记录 / sha256 / 失败不抛 / 默认 2.6 / 提示词边界），
+全量 **2577/2564 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.12] — 2026-11-13（角色设定板：**图生图路线确认 + 4 张通过**）
 
 ### 用户确认通过 4 张（全部来自**图生图**，不是纯文生图）
