@@ -57,6 +57,68 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.3] — 2026-11-13（**第三方供应商 · 自定义模型 API 模式**）
+
+### 新增：配置驱动的第三方供应商
+
+内置模型目录原来写死在 `registry.py`，加一家供应商就要改代码。现在：
+
+```
+config/providers.custom.json   （入库；只写凭据「变量名」，不写值）
+   ↓  models/custom_providers.py
+ModelSpec 列表  →  注册表（与内置模型无差别）
+```
+
+- **内置供应商目录**（`models/providers_builtin.py`，9 家）：zai / dashscope /
+  deepseek / moonshot / xiaomi / openai / anthropic / google / local-gen
+  → 选供应商后 `baseUrl / 协议 / 凭据变量` 自动继承
+- **协议预设**：`openai.images` / `openai.chat` / `anthropic.messages` / `gemini.generate`
+  → 决定请求路径、请求体、响应取值；写错直接报错，不猜
+- **CLI**：`little-crew provider vendors | list | test <id> | add --json`
+  （`test` 只查配置/凭据/端点，**不生成、不花钱**；`add` 先校验后写，非法不落盘）
+- **doctor** 多一行"自定义供应商"（含 key 是否在、用途限定）
+
+### 新增：用途限定（代码强制，不是文档约定）
+
+`Backend.allowed_agents` + `runtime/backend_guard.py`：
+主链路渲染请求一个"只给角色设计师用"的云端通道 → **直接拒绝**。
+理由：接云端生图最容易出的不是技术故障，而是**误用**（一集 40 镜成本失控 +
+画面一致性从"本地同一底模"变成"每次远端漂移"）。
+
+### 新增：统一的 HTTP/TLS 取数入口 `net.py`
+
+真机踩到的三件事，都收在这一处：
+
+| 现象 | 根因 | 处置 |
+|---|---|---|
+| `CERTIFICATE_VERIFY_FAILED` | 智谱证书链**缺中间证书**；浏览器靠 AIA 补全，Python 不会 | TLS 失败重试一次；供应商可显式声明 `insecureTls`（只对该家生效） |
+| 云端图像**永远 401** | `HttpChannel` 从来没读过 `backend.api_key_env` | 留空即从 `config/.env` 读（= 界面上的「留空使用环境认证」） |
+| 云端**每次提交都失败** | 提交前探活把"根路径 401/404"判成不可用 | 只对**本地服务**探活，云端交给真实请求 |
+
+### 新增：响应形态与请求头
+
+- `responseB64Path`：有的接口 `url` 为空、图片在 `b64_json` 里（实测 Sudorelay）
+  → 解码落成本地文件，下游按普通路径处理
+- `userAgent`：有的网关拒绝默认 Python UA（Sudorelay 403/1010）→ 按供应商声明
+
+### 真机验证（2026-11-13）
+
+| 通道 | 模型 | 结果 |
+|---|---|---|
+| 智谱 | `cogview-3-flash` | ✅ 8.3s / 1024×1024，**带「AI生成」水印** |
+| 智谱 | `cogview-4-250304` | ✅ 8.5s，**仍带水印** |
+| **Sudorelay** | **`gpt-image-2.6-sunburst`** | ✅ **34.9s / 1672×941 / 无水印**；角色设定板三视图一致性良好（供角色设计师使用） |
+
+全链路走的是平台代码：`http_job`（模板填充）→ `HttpChannel.submit/collect` → 产物落盘。
+
+### 测试
+
+`runtime/custom_providers_check` **30 项**（解析/坏条目/冲突不覆盖/用途限定/凭据从环境读/
+TLS 声明/base64 落盘），`tests/test_model_routing` 60 项（A7 允许自定义授权、R1c 用本地端点）。
+全量 **2533/2520 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.2] — 2026-11-13（**删除未实现的创新点 C2（Transformer）**）
 
 ### 删除

@@ -24,7 +24,11 @@ R3（对账）需要持久化，本类只做进程内记录；持久化由 ``run
 
 from __future__ import annotations
 
+from little_crew import net as _net
+
 import json
+import os
+from pathlib import Path
 import re
 import time
 import urllib.error
@@ -123,7 +127,13 @@ class HttpChannel:
         if backend.kind is not BackendKind.HTTP:
             raise ValueError(f"HttpChannel 只接受 HTTP 通道，收到 {backend.kind.value!r}")
         self.backend = backend
-        self.api_key = api_key
+        # **留空就从环境认证**（2026-11-13）——
+        # 对接自定义供应商时发现：通道从来没读过 `backend.api_key_env`，
+        # 于是任何云端图像/视频后端都必然 401（"声明了但走不通"）。
+        # 语义与界面一致：「留空使用环境认证（XXX_API_KEY）」。
+        # ⚠️ 默认值是 `""`（不是 None）：最早写成 `if api_key is not None`，
+        # 于是**永远走不到环境认证** —— 云端后端一直 401，还看不出来为什么。
+        self.api_key = api_key or _key_from_env(backend) or ""
         self.timeout_s = timeout_s
         self.poll_interval_s = poll_interval_s
         self.max_polls = max_polls
@@ -196,7 +206,7 @@ class HttpChannel:
         for probe in ("/health", "/"):
             try:
                 req = urllib.request.Request(base + probe, method="GET")
-                with urllib.request.urlopen(req, timeout=5):
+                with _net.urlopen(req, timeout=5):
                     return True, ""
             except urllib.error.HTTPError:
                 # 有 HTTP 响应即说明服务在（4xx/5xx 也算「活着」）
@@ -239,7 +249,15 @@ class HttpChannel:
             return rec.handle
 
         # ---- 环境检查放在建账**之前**：不可用就别落账 ----
-        ok, why = self.available()
+        #
+        # ⚠️ **只对本地服务探活**（2026-11-13）：云端 API 的根路径通常返回
+        # 401/404（"活着但没权限"），探活会把它连同 TLS 抖动一起判成"不可用" ——
+        # 实测智谱图像接口因此**每次提交都失败**，日志看着像服务下线。
+        # 云端可用性交给**真实请求**去证明（错了会返回结构化错误）。
+        ok, why = True, ""
+        if _is_local(self.backend.endpoint) or str(
+                os.environ.get("LITTLE_CREW_PROBE_CLOUD", "")).strip():
+            ok, why = self.available()
         if not ok:
             handle = JobHandle(job_id=job.job_id, channel_id="",
                                status=JobStatus.FAILED)
@@ -475,6 +493,10 @@ class HttpChannel:
                      timeout: int | None = None) -> dict[str, Any]:
         data = None
         headers = {"Accept": "application/json"}
+        # 供应商声明的 UA（有的网关会拒绝默认 Python UA —— 实测 Sudorelay 403/1010）
+        _ua = str(getattr(self.backend, "user_agent", "") or "")
+        if _ua:
+            headers["User-Agent"] = _ua
         if body is not None:
             data = json.dumps(body, ensure_ascii=False).encode("utf-8")
             headers["Content-Type"] = "application/json"
@@ -483,7 +505,10 @@ class HttpChannel:
 
         req = urllib.request.Request(url, data=data, headers=headers, method=method)
         try:
-            with urllib.request.urlopen(req, timeout=timeout or self.timeout_s) as resp:
+            with _net.urlopen(
+                req, timeout=timeout or self.timeout_s,
+                insecure=bool(getattr(self.backend, "insecure_tls", False)),
+            ) as resp:
                 payload = resp.read().decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             payload = ""
@@ -519,9 +544,38 @@ class HttpChannel:
             return {"_value": obj}
         return obj
 
+    def _materialize_b64(self, b64: str) -> str:
+        """把内联 base64 图片写成临时文件，返回本地路径（失败返回空串）。"""
+        import base64
+        import tempfile
+
+        try:
+            raw = base64.b64decode(b64, validate=False)
+        except Exception as exc:                              # noqa: BLE001
+            self._last_b64_error = f"base64 解码失败: {type(exc).__name__}"
+            return ""
+        ext = ".png" if raw[:8] == b"\x89PNG\r\n\x1a\n" else (
+            ".jpg" if raw[:2] == b"\xff\xd8" else ".bin")
+        base = str(os.environ.get("LITTLE_CREW_INLINE_DIR") or "").strip()
+        out_dir = Path(base) if base else Path(tempfile.gettempdir()) / "little-crew-inline"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        import hashlib
+
+        name = hashlib.sha256(raw).hexdigest()[:16] + ext
+        path = out_dir / name
+        if not path.is_file():
+            path.write_bytes(raw)
+        return str(path.resolve())
+
     def _absorb_sync_result(self, handle: JobHandle, raw: Mapping[str, Any]) -> None:
         """从响应里抽出产物引用。"""
         val = extract_path(raw, self.backend.response_path)
+        # 有的接口 `url` 为空、把图片放在 `b64_json` 里（实测 Sudorelay）——
+        # 直接解码落成文件，下游（缓存/门禁）按本地路径处理。
+        if (val is None or val == "") and getattr(self.backend, "response_b64_path", ""):
+            b64 = extract_path(raw, self.backend.response_b64_path)
+            if isinstance(b64, str) and b64.strip():
+                val = self._materialize_b64(b64)
         if val is None:
             handle.status = JobStatus.FAILED
             handle.error = ChannelError(
@@ -593,6 +647,20 @@ def _artifact_kind(backend: Any, uri: str) -> str:
         if low.endswith(suffix):
             return kind
     return declared or "image"
+
+
+def _key_from_env(backend: Any) -> str | None:
+    """按 `backend.api_key_env` 从 `config/.env` 读凭据（读不到返回 None）。"""
+    name = str(getattr(backend, "api_key_env", "") or "").strip()
+    if not name:
+        return None
+    try:
+        from little_crew.config import env_value
+
+        v = str(env_value(name, "") or "").strip()
+        return v or None
+    except Exception:                                         # noqa: BLE001
+        return None
 
 
 def _is_local(endpoint: str) -> bool:

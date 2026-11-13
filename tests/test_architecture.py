@@ -84,6 +84,10 @@ ROOT_LEVEL_EXEMPT: frozenset[str] = frozenset({
     # 又豁免"必须在子目录里"这条形式要求** ——
     # 它只有几十行，为它建一个目录只会多一层无意义的嵌套。
     "config.py",      # 已登记为层 "config"
+    # `net.py`：**跨层共用的 HTTP/TLS 策略**（agent / compiler / runtime / cli 都要发请求）。
+    # 不登记为层，因为它没有"层"的语义，只是标准库 syslib 的一层薄封装；
+    # 放进 config 会误导后人以为它是配置。豁免只是为了满足"必须在子目录里"的形式要求。
+    "net.py",
 })
 
 #: 允许的跨层依赖白名单：(源层, 目标层)

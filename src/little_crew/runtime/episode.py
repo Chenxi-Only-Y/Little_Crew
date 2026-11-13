@@ -3359,6 +3359,19 @@ class EpisodeRunner:
         缓存、检查点、失败分类全部复用。
         """
         backend = self.engine_backend()
+        # 用途守卫（2026-11-13）：主链路渲染**不允许**走"专属某职位"的云端通道
+        # （如只给角色设计师用的云端生图）。这里抛错比"悄悄用了"好一万倍。
+        try:
+            from little_crew.runtime.backend_guard import assert_allowed
+
+            if backend is not None:
+                assert_allowed(backend, "render", what="主链路渲染")
+        except Exception as _e_bg:                            # noqa: BLE001
+            from little_crew.runtime.backend_guard import BackendNotAllowed
+
+            if isinstance(_e_bg, BackendNotAllowed):
+                raise
+            raise
         # **按后端种类分流**（2026-10-22 修）。
         #
         # 原来只判 `backend is not None` —— 而 ComfyUI 的后端**也非 None**，

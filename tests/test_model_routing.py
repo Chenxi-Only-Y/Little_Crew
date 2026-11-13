@@ -134,10 +134,15 @@ def main() -> int:
 
     # 每个模型的 license_id 必须能在授权目录中查到，否则门禁会全部拒绝
     from little_crew.governance.license import LICENSE_CATALOG
-    unregistered = sorted({s.license_id for s in reg.all() if s.license_id}
-                          - set(LICENSE_CATALOG))
-    check("A7 所有 license_id 均已在授权目录登记", unregistered == [],
-          f"未登记: {unregistered}")
+    # 自定义供应商（config/providers.custom.json）的授权记录不可能在内置目录里 ——
+    # 它们的处置是"未核实 -> 默认拦下 -> 显式接受风险才放行"，见 models/custom_providers.py
+    from little_crew.models.custom_providers import load_custom_providers as _load_cp
+    _custom_ids = {s.license_id for s in _load_cp()[0] if s.license_id}
+    unregistered = sorted(
+        {s.license_id for s in reg.all() if s.license_id}
+        - set(LICENSE_CATALOG) - _custom_ids)
+    check("A7 所有 license_id 均已在授权目录或自定义供应商中登记",
+          unregistered == [], f"未登记: {unregistered}")
 
     # ---- 端点解析：环境变量优先于内置默认 ----
     #
@@ -465,7 +470,14 @@ def main() -> int:
           f"requests={ch_ok.requests}")
 
     # 确定没被受理 -> 允许重发（幂等键不许被毒化）
-    ch_down = _StubHttp(be_cloud, ok=False)
+    #
+    # ⚠️ 用**本地端点**：2026-11-13 起云端后端不再预先探活
+    # （根路径 401 会被误判"不可用"），所以"探活失败"这条语义只在本地成立。
+    be_local_for_r1c = Backend(kind=BackendKind.HTTP,
+                               endpoint="http://127.0.0.1:9",
+                               path="/v1/images/generations",
+                               response_path="data.0.url")
+    ch_down = _StubHttp(be_local_for_r1c, ok=False)
     d1 = ch_down.submit(job)
     d2 = ch_down.submit(job)
     check("R1c ★★ 服务不可用**不毒化**幂等键：下次提交会真的重发",

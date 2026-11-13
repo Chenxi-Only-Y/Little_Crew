@@ -36,6 +36,8 @@
 
 from __future__ import annotations
 
+from little_crew import net as _net
+
 import hashlib
 import json
 import time
@@ -194,8 +196,13 @@ def artifact_fetcher_for(channel: Any, timeout_s: int = 120) -> Callable[[Any], 
         uri = str(getattr(ref, "uri", "") or "")
         if not uri:
             raise ValueError("产物引用缺少 uri")
+        # 本地文件（内联 base64 落盘后的路径）-> 直接读
+        from pathlib import Path as _P
+
+        if not uri.startswith(("http://", "https://", "/")) and _P(uri).is_file():
+            return _P(uri).read_bytes()
         url = uri if uri.startswith(("http://", "https://")) else endpoint + uri
-        with urllib.request.urlopen(url, timeout=timeout_s) as resp:
+        with _net.urlopen(url, timeout=timeout_s) as resp:
             return resp.read()
 
     return fetch

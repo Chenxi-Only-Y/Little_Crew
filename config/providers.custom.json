@@ -1,0 +1,89 @@
+{
+  "version": 2,
+  "_readme": [
+    "第三方供应商 · 自定义模型 API（2026-11-13）—— 形态对齐界面：供应商 + 协议 + 模型目录。",
+    "vendor：内置供应商 id（zai / dashscope / deepseek / moonshot / xiaomi / openai / anthropic / google / local-gen），",
+    "        选中后 baseUrl / protocol / apiKeyEnv 可省略（自动继承）。",
+    "protocol：openai.images / openai.chat / anthropic.messages / gemini.generate（决定路径+请求体+响应取值）。",
+    "密钥：只写环境变量名（apiKeyEnv），值放 config/.env。界面上那句「留空使用环境认证」就是它。",
+    "allowedAgents：用途限定（代码强制）。主链路渲染不允许走这里。",
+    "license.verified=false：默认被授权门禁拦下；要试需显式 LITTLE_CREW_ALLOW_UNVERIFIED=1。"
+  ],
+  "providers": [
+    {
+      "id": "sudorelay-image",
+      "displayName": "Sudorelay gpt-image-2.6（角色设定板）",
+      "vendor": "sudorelay",
+      "apiKeyEnv": "SUDORELAY_API_KEY",
+      "allowedAgents": [
+        "character_designer"
+      ],
+      "license": {
+        "id": "openai-gpt-image",
+        "commercialUse": true,
+        "verified": false
+      },
+      "models": [
+        {
+          "id": "gpt-image-2.6-sunburst",
+          "task": "image.t2i",
+          "size": "1536x1024",
+          "capability": {
+            "max_resolution": [
+              2048,
+              2048
+            ],
+            "chinese_text_score": 0.85
+          }
+        }
+      ],
+      "notes": "OpenAI 兼容中转；1536x1024 横版，适合角色设定板（左侧留白/文字栏）。仅角色设计师可用。",
+      "userAgent": "OpenAI/Python 1.0",
+      "responseB64Path": "data.0.b64_json"
+    },
+    {
+      "id": "zai-image",
+      "displayName": "智谱 CogView（角色定妆图）",
+      "vendor": "zai",
+      "apiKeyEnv": "GLM_API_KEY",
+      "allowedAgents": [
+        "character_designer"
+      ],
+      "license": {
+        "id": "zhipu-cogview",
+        "commercialUse": true,
+        "verified": false
+      },
+      "models": [
+        {
+          "id": "cogview-4-250304",
+          "task": "image.t2i",
+          "size": "1024x1024",
+          "capability": {
+            "max_resolution": [
+              2048,
+              2048
+            ],
+            "chinese_text_score": 0.8
+          },
+          "notes": "付费档，无水印（待实测确认）"
+        },
+        {
+          "id": "cogview-3-flash",
+          "task": "image.t2i",
+          "size": "1024x1024",
+          "capability": {
+            "max_resolution": [
+              1440,
+              1440
+            ],
+            "chinese_text_score": 0.6
+          },
+          "notes": "免费档，**带「AI生成」水印** —— 只作脚手架，不进交付"
+        }
+      ],
+      "notes": "仅用于角色定妆图（三视图）。主链路渲染禁止走这里。 ⚠️ 该厂商证书链缺中间证书（Python 侧间歇性校验失败），故按供应商声明 insecureTls；只对它生效。",
+      "insecureTls": true
+    }
+  ]
+}

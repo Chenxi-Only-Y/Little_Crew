@@ -16,6 +16,8 @@
 """
 from __future__ import annotations
 
+from little_crew import net as _net
+
 import json
 import os
 import urllib.request
@@ -202,7 +204,7 @@ class CloudChannel(Channel):
         req = urllib.request.Request(endpoint, data=data, headers=headers,
                                      method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=300) as r:
+            with _net.urlopen(req, timeout=300) as r:
                 payload = json.loads(r.read().decode("utf-8", "replace"))
         except Exception as e:                                # noqa: BLE001
             return {"ok": False, "error": f"{type(e).__name__}: {e}"}
@@ -216,7 +218,7 @@ class CloudChannel(Channel):
         out = Path(str(request.get("path") or ""))
         if url and out.name:
             try:
-                with urllib.request.urlopen(url, timeout=300) as r2:
+                with _net.urlopen(url, timeout=300) as r2:
                     out.parent.mkdir(parents=True, exist_ok=True)
                     out.write_bytes(r2.read())
             except Exception as e:                            # noqa: BLE001
