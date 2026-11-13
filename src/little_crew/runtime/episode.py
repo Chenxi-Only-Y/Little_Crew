@@ -2608,7 +2608,9 @@ class EpisodeRunner:
                                      "") or "") or None,
                 limit=int(getattr(self, "character_sheets_limit", 6) or 6))
             out = (Path(str(wd)) / "assets" / "characters") if wd else Path("assets/characters")
-            report = painter.paint(lib.sheets, out)
+            report = painter.paint(
+                lib.sheets, out,
+                style=str(getattr(self, "character_sheet_style", "") or ""))
             self._character_sheets = {"enabled": True, **report}
             _n_ok = len(report.get("painted") or ())
             _n_bad = len(report.get("failed") or ())

@@ -1,0 +1,245 @@
+r"""角色设定板题面：**按四视图模板组装**（2026-11-13）。
+
+模板来源：`D:\AI\ds.12\通用版-任意角色四视图模板.md` 与
+`四视图角色设定智能体-系统提示词模板.md`（用户提供的两份工程化模板）。
+
+## 为什么单独一个模块
+
+- 题面是**产物质量的主要变量**，必须能单独改、单独测、单独 A/B；
+- 它不碰"文字半"（`agent/character_sheet` 的封闭选项外观）——
+  文字半保证**可复现**，本模块负责**把可复现的字段讲清楚**。
+
+## 组装顺序（模板 §三，固定不改）
+
+```
+身份基准 → 布局 → 脸型骨相 → 五官 → 皮肤 → 发型 → 首饰
+       → 服饰(上衣/下装/鞋) → 身材 → 灯光质感 → 负面词
+```
+
+## 两条纪律（模板里写死的）
+
+1 **只写看得见的东西**：结构、比例、位置、材质、光向；
+   不写"好看/高级/精致"这类无信息形容词（模板原话）。
+2 **负面词每次带齐**：换脸 / 裁切 / 文字水印 / 娃娃脸磨皮塑料 四组，不许省略。
+
+## 槽位来源
+
+| 槽 | 来源 |
+|---|---|
+| 身份、发型、上衣、配色、标记 | **文字半**（`CharacterSheet.appearance`，封闭选项，可复现） |
+| 脸型骨相、眼型、眉鼻唇、皮肤、下装、鞋、首饰 | 由 `character_id` 的哈希**确定性派生**（同一角色永远同一套） |
+| 画风、灯光 | 参数传入（默认「高精度 3D 半写实国漫」+ 灰棚柔光） |
+"""
+
+from __future__ import annotations
+
+import hashlib
+from typing import Any, Mapping
+
+#: 通用骨架：构图 + 一致性句（模板 §一，一个字都别随便删）
+_LAYOUT = (
+    "【布局】横向 16:9 宽幅，干净的浅灰影棚背景，背景与地面自然衔接，无道具。"
+    "左侧约占四成半为同一角色的大幅正面头肩特写：完整露出头部轮廓、面部、耳饰、脖颈与锁骨，"
+    "头顶保留少量空间，不裁发顶/帽饰/角；角色正对镜头，头部端正，双眼平视，无歪头。"
+    "右侧依次并列正面全身、严格侧面全身、背面全身三个视图，三者等高、脚底齐平，"
+    "从头顶（含发饰/帽饰/角）到鞋底完整入画，不裁鞋子；站姿自然，双臂放松垂于体侧，无手势。"
+    "四个视图必须属于同一角色：脸型、五官、肤色、发型、服装结构、配饰完全一致。"
+)
+
+#: 灯光与质感（同一份骨架，多角色摆一起才像同一套设定集）
+_LIGHTING = (
+    "【灯光质感】大面积柔光自正前上方照射，辅以极轻轮廓光；脚下仅有浅淡接触阴影；"
+    "低饱和、克制配色；清晰细腻，材质细节可辨（织物纹理、金属高光、皮革哑光、发丝层次）；"
+    "皮肤用次表面散射与局部肤色微差，高光克制；无文字、无水印、无标签、无边框、无信息栏。"
+)
+
+#: 负面词四组（模板要求每次都带齐）
+NEGATIVE_GROUPS: dict[str, str] = {
+    "换脸": "同一张脸被替换、四视图不是同一人、发型不一致、服装结构漂移",
+    "裁切": "裁发顶、裁耳朵、裁脚、裁鞋底、半身截断、画面出血",
+    "文字水印": "任何文字、水印、标签、边框、信息栏、色卡、日期戳",
+    "畸形质感": "娃娃脸、婴儿肥、磨皮塑料肌、过度对称、多余手指、肢体粘连、解剖错误",
+}
+
+#: 派生槽的封闭选项（确定性：由 character_id 哈希选，同一角色永不变）
+_FACES = (
+    "窄长鹅蛋脸偏方，脸宽约 0.66 脸长；颧骨平缓但骨点清楚，下颌收窄、下颌角略方；下巴小巧略平",
+    "偏方的长脸，脸宽约 0.72 脸长；颧骨外露、下颌角清晰有力、下巴宽而短；眉骨略突出",
+    "窄长脸，脸宽约 0.62 脸长；面颊薄贴骨、颧弓内收；下巴尖圆、下颌线柔和",
+    "略带圆润的鹅蛋脸，脸宽约 0.70 脸长；颧骨柔和、下颌圆润、下巴短而圆",
+)
+_EYES = (
+    "偏长杏眼，眼裂中等，眼尾微扬；虹膜{eye_color}；眼神平静克制",
+    "狭长眼，眼裂偏小，眼尾平直；虹膜{eye_color}；眼神锐利冷静",
+    "圆杏眼，眼裂偏大，眼尾微垂；虹膜{eye_color}；眼神温软",
+    "凤眼，眼裂中等偏小，眼尾上挑；虹膜{eye_color}；眼神疏离",
+)
+_BROWS = (
+    "眉为野生眉，眉峰清晰、眉尾自然收；鼻梁直挺、鼻头小巧；唇薄、唇峰清晰、唇色豆沙，自然闭合",
+    "眉为细直眉，眉尾利落；鼻梁高直、鼻头略窄；唇偏薄、唇色偏灰，自然闭合",
+    "眉为柔和弯眉，眉尾下垂；鼻梁微塌、鼻头圆润；唇偏厚、唇色浅豆沙",
+)
+_SKINS = (
+    "冷白瓷肌带极淡粉调，弱毛孔不磨皮，鼻梁与颧骨有极淡自然红",
+    "冷调麦色，可见细腻纹理与极淡风霜感，毛孔真实不夸张，不磨皮",
+    "偏暖的白瓷肌，面颊有柔和血色，弱毛孔、不上高光",
+)
+_JEWELRY = (
+    "左耳一枚细银环，右耳一枚小耳钉",
+    "耳饰为一对细银流苏，垂至下颌线",
+    "左耳三枚细银环，右耳一枚素银耳骨夹",
+    "耳饰为银色细链垂坠，末端一枚小星芒",
+)
+_BOTTOMS = (
+    "同色系高腰阔腿长裤，腰线清晰，裤脚自然垂落",
+    "同色系长裙，裙摆至脚踝，褶皱自然，外罩薄纱层",
+    "束脚长裤，膝下缠灰白布绑腿，裤脚略收",
+)
+_SHOES = (
+    "黑色圆头厚底皮鞋，鞋面哑光",
+    "黑色薄底短靴，鞋头微翘",
+    "米白绣花布鞋，鞋面有极淡的墨竹绣样",
+)
+_BUILDS = (
+    "身形修长挺拔，肩背平直，腰细腿长，比例匀称",
+    "身形高挑，肩线利落，腰细，腿长比例好",
+    "身形匀称，肩线柔和，腰线清楚，体态自然",
+)
+
+#: 画风默认值（模板 §二 槽 2）
+DEFAULT_STYLE = "高精度 3D 半写实国漫角色四视图角色设定图，CG 建模质感"
+
+
+def _h(seed: str) -> int:
+    return int(hashlib.sha256(seed.encode("utf-8")).hexdigest()[:8], 16)
+
+
+def _pick(options: tuple[str, ...], seed: str, salt: str) -> str:
+    return options[_h(f"{seed}|{salt}") % len(options)]
+
+
+def _grab(app: Mapping[str, Any], *keys: str) -> list[str]:
+    """从外观字段里按顺序取非空值（字段名中文/英文都试一遍）。"""
+    out = []
+    for k in keys:
+        cands = (k,) + tuple(_ALIASES.get(k, ()))
+        for c in cands:
+            v = app.get(c)
+            if v and str(v) not in out:
+                out.append(str(v))
+                break
+    return out
+
+
+#: 中文槽位名 → 文字半的字段名（**两种命名都认**）
+#:
+#: 文字半的封闭选项字段是 `hair_style / hair_color / eye_color / outfit /
+#: outfit_accent / signature / build / age_band / gender`；
+#: 但手工写的角色卡常用 `hair / outfit / palette / mark`。
+#: 早期只认前者，后果是"手工卡里的发型被丢掉、题面退化成随机发型"（实测踩到）。
+_ALIASES = {
+    "发型": ("hair_style", "hair"),
+    "发色": ("hair_color",),
+    "瞳色": ("eye_color",),
+    "服装": ("outfit",),
+    "服装点缀": ("outfit_accent",),
+    "标记": ("signature", "mark"),
+    "细节": ("mark",),
+    "身形": ("build",),
+    "年龄": ("age_band",),
+    "性别": ("gender",),
+    "配色": ("palette",),
+}
+
+
+def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
+    """把一个角色的外观字段填进模板的 12 个槽（确定性派生）。"""
+    app = getattr(sheet, "appearance", {}) or {}
+    if not isinstance(app, Mapping):
+        app = {}
+    cid = str(getattr(sheet, "character_id", "") or "CHAR")
+    name = str(getattr(sheet, "name", "") or "角色")
+
+    gender = (app.get("gender") or app.get("性别") or "女性")
+    age = (app.get("age_band") or app.get("年龄") or "青年")
+    identity = f"{age}{gender}，{name}"
+
+    hair_bits = _grab(app, "发色") + _grab(app, "发型")
+    hair = "，".join(hair_bits) if hair_bits else _pick(
+        ("墨黑长发，高马尾", "深栗棕长卷发，中分", "银灰短发，两侧剃短"), cid, "hair")
+    eye_color = (app.get("eye_color") or app.get("瞳色") or "灰棕")
+    top_bits = _grab(app, "服装")
+    accent = _grab(app, "服装点缀")
+    top = "，".join(top_bits + accent) if top_bits else _pick(
+        ("青灰交领窄袖短打，棉麻质感", "灰紫细罗纹露肩短上衣", "炭灰战术背心"), cid, "top")
+    sig = _grab(app, "标记") + _grab(app, "signature")
+    build = (app.get("build") or app.get("身形") or _pick(_BUILDS, cid, "build"))
+
+    palette = (app.get("palette") or app.get("配色") or "")
+    return {
+        "配色": str(palette),
+        "身份": identity,
+        "画风": style or DEFAULT_STYLE,
+        "脸型骨相": _pick(_FACES, cid, "face"),
+        "眼睛": _pick(_EYES, cid, "eyes").format(eye_color=eye_color),
+        "眉鼻唇": _pick(_BROWS, cid, "brows"),
+        "皮肤": _pick(_SKINS, cid, "skin"),
+        "发型": hair,
+        "细节": "，".join(sig),
+        "首饰": _pick(_JEWELRY, cid, "jewelry"),
+        "上衣": top,
+        "下装": _pick(_BOTTOMS, cid, "bottom"),
+        "鞋": _pick(_SHOES, cid, "shoes"),
+        "身材": build,
+        "场景光": "浅灰影棚、正前上方大面积柔光、极轻轮廓光、低饱和冷灰",
+    }
+
+
+def negative_words() -> str:
+    """负面词（四组全带，模板硬性要求）。"""
+    return "【负面词】不要：" + "；".join(NEGATIVE_GROUPS.values()) + "。"
+
+
+def build_prompt(sheet: Any, *, style: str = "") -> str:
+    """按模板 §三 的顺序组装完整题面。"""
+    s = slots_for(sheet, style=style)
+    return (
+        f"{s['画风']}。\n"
+        f"【身份基准】{s['身份']}，{s['脸型骨相']}。\n"
+        f"{_LAYOUT}\n"
+        f"【五官】眼睛 {s['眼睛']}；眉鼻唇 {s['眉鼻唇']}。\n"
+        f"【皮肤】{s['皮肤']}。\n"
+        f"【发型】{s['发型']}。\n"
+        f"【首饰】{s['首饰']}。\n"
+        f"【服饰】上衣：{s['上衣']}。下装：{s['下装']}。鞋：{s['鞋']}。"
+        + (f"配色：{s['配色']}。" if s.get("配色") else "")
+        + (f"细节：{s['细节']}（必须画出来）。" if s.get("细节") else "")
+        + "\n"
+        f"【身材】{s['身材']}。\n"
+        f"{_LIGHTING}\n"
+        f"【场景光】{s['场景光']}。\n"
+        f"{negative_words()}"
+    )
+
+
+#: 质检表（模板 §六）。生成模型不保证成立，**必须看到成图再下结论**。
+QC_CHECKLIST: tuple[str, ...] = (
+    "四个视图都在，无人被裁切（头顶/鞋底/手指）",
+    "左特写占比约 45%，右侧三视图等高、脚底齐平",
+    "正面/侧面/背面朝向正确（侧面是真侧面，背面是真背面）",
+    "同一张脸、同一套发型、同一套服装结构、同一副耳饰",
+    "上衣领口/肩带/露肩侧/抽绳位置前后一致",
+    "裤腰高度、腰带扣、结构片方向、垂带长度一致",
+    "鞋型与鞋底厚度一致",
+    "无文字、无水印、无信息栏残留",
+    "背景干净、无杂物、接触阴影自然",
+    "解剖可信（手指数量、肩颈连接、脚踝方向）",
+)
+
+
+def manifest_extra(sheet: Any, *, style: str = "") -> dict[str, Any]:
+    """给 `sheet.json` 的附加信息：槽位快照 + 质检表（供人工/后续 VLM 复核）。"""
+    return {"slots": slots_for(sheet, style=style),
+            "negativeGroups": list(NEGATIVE_GROUPS),
+            "qcChecklist": list(QC_CHECKLIST),
+            "notVerified": "四视图一致性需**看成品**判断；本清单未自动核验"}

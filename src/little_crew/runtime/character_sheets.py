@@ -43,17 +43,8 @@ DEFAULT_SIZE = "1536x1024"
 #: 一次最多画几个角色（成本闸门；0 = 不限制）
 DEFAULT_LIMIT = 6
 
-#: 供应商要求声明UA时用的默认值（Sudorelay 会拒默认 Python UA）
-_STYLE = ("角色设定板，横版：左侧约 35% 为同一角色的面部特写，右侧为该角色 FRONT / SIDE / BACK "
-          "三个完整全身视图；三视图同高、头顶与鞋底对齐；侧面为真侧面、背面为真背面；"
-          "不裁脚、不裁发梢；服装、发型、配饰、鞋子在四个视图中完全一致。")
-
-_QUALITY = ("风格：水墨淡彩写实向，光线柔和；背景中性 18% 灰，布局干净克制；"
-            "画面内不要任何文字与水印。")
-
-
 def _appearance_text(sheet: Any) -> str:
-    """把角色外观描述压成一句题面（只取已有字段，不编造）。"""
+    """把角色外观字段压成一句（只取已有字段，不编造）。"""
     app = getattr(sheet, "appearance", None)
     if isinstance(app, Mapping):
         parts = [f"{k}：{v}" for k, v in app.items() if v]
@@ -62,12 +53,14 @@ def _appearance_text(sheet: Any) -> str:
 
 
 def build_prompt(sheet: Any, *, style: str = "") -> str:
-    """单个角色的设定板题面。"""
-    name = str(getattr(sheet, "name", "") or "角色")
-    cid = str(getattr(sheet, "character_id", "") or "")
-    return (f"角色：{name}（ID {cid}）。\n"
-            f"外观设定：{_appearance_text(sheet)}\n"
-            f"{style or _STYLE}\n{_QUALITY}")
+    """单个角色的设定板题面 —— **按四视图模板组装**（见 `character_sheet_prompt`）。
+
+    模板来源是两份工程化文档（通用骨架 + 12 槽变量卡 + 负面词四组 + 质检表）。
+    这里只做委托：模板本体在 `runtime/character_sheet_prompt.py`，便于单独 A/B。
+    """
+    from little_crew.runtime.character_sheet_prompt import build_prompt as _bp
+
+    return _bp(sheet, style=style)
 
 
 class CharacterSheetPainter:
@@ -82,7 +75,7 @@ class CharacterSheetPainter:
     # ---- 主入口 -------------------------------------------------------
 
     def paint(self, sheets: Any, out_dir: str | Path, *,
-              style: str = "") -> dict[str, Any]:
+              style: str = "", qc_extra: bool = True) -> dict[str, Any]:
         """把角色表画成图集。**返回报告，从不抛**（除配置性错误外都记进报告）。"""
         out = Path(str(out_dir))
         out.mkdir(parents=True, exist_ok=True)
@@ -122,8 +115,12 @@ class CharacterSheetPainter:
             d.mkdir(parents=True, exist_ok=True)
             img = d / f"sheet{ext}"
             img.write_bytes(data)
+            from little_crew.runtime.character_sheet_prompt import manifest_extra
+
             meta = {
                 "kind": "character.sheet.image",
+                **({'template': manifest_extra(sheet, style=style)}
+                   if qc_extra else {}),
                 "characterId": cid, "name": name,
                 "model": self.model_id, "size": self.size,
                 "prompt": prompt,

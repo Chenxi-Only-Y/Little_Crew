@@ -80,8 +80,9 @@ def main() -> int:
     check("A1 ★★★ 题面含角色名", "角色1" in prompt, prompt[:40])
     check("A2 ★★★ 题面含外观设定（只取已有字段）",
           "发型1" in prompt and "服装1" in prompt, prompt[:80])
-    check("A3 ★★ 题面要求三视图 + 不裁脚 + 无水印",
-          all(k in prompt for k in ("FRONT", "SIDE", "BACK", "不裁脚", "水印")), "")
+    check("A3 ★★★ 题面按四视图模板：构图/一致性句/负面词齐全",
+          all(k in prompt for k in ("左侧约占四成半", "四个视图必须属于同一角色",
+                                    "严格侧面", "背面全身", "【负面词】")), "")
     check("A4 ★★ 外观缺失时不编造（空串也不崩）",
           isinstance(cs.build_prompt(type("X", (), {"name": "无名", "character_id": "x",
                                                     "appearance": {}})()), str), "")
@@ -127,6 +128,25 @@ def main() -> int:
         check("D2 ★★ 环境变量可开", cs.enabled_by_env() is True, "")
     finally:
         os.environ.pop("LITTLE_CREW_CHAR_SHEETS", None)
+
+    print(); print("A2b. 模板结构（用户提供的四视图模板）")
+    from little_crew.runtime.character_sheet_prompt import (
+        NEGATIVE_GROUPS, QC_CHECKLIST, build_prompt as _bp, slots_for,
+    )
+
+    check("A5 ★★★ 12 槽位有值（含配色/细节不丢）",
+          len(slots_for(lib.sheets[0])) >= 12, str(len(slots_for(lib.sheets[0]))))
+    check("A6 ★★★ 负面词四组齐全",
+          len(NEGATIVE_GROUPS) == 4 and all(NEGATIVE_GROUPS.values()), "")
+    check("A7 ★★★ 质检表 10 条（模板 §六）", len(QC_CHECKLIST) == 10, str(len(QC_CHECKLIST)))
+    p_ok = _bp(lib.sheets[0])
+    check("A8 ★★★ 同一角色两次组装**完全一致**（确定性）",
+          p_ok == _bp(lib.sheets[0]), "")
+    check("A9 ★★ 手工卡字段不被丢（hair/outfit/palette/mark 都进题面）",
+          all(k in _bp(type("S", (), {"name": "x", "character_id": "x1",
+                                      "appearance": {"hair": "双环髻", "outfit": "青衣",
+                                                     "palette": "月白", "mark": "袖口暗纹"}})())
+              for k in ("双环髻", "青衣", "月白", "袖口暗纹")), "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
