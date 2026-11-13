@@ -57,6 +57,45 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.4] — 2026-11-13（**角色设计师上线：文字半 + 图像半**）
+
+### 为什么这个职位现在能做了
+
+之前不接的理由是「没有身份一致性手段」—— 那说的是**成片里的脸**。
+现在接的是**参考图集**：Sudorelay `gpt-image-2.6` 实测能按外观设定画出
+「左面部特写 + 右 FRONT/SIDE/BACK 三视图」且四视图一致（1672×941、**无水印**）。
+它仍然是参考图，**不声称成片更像**（身份度量仍需 ArcFace/CLIP）。
+
+### 三段职责划清
+
+| 段 | 位置 | 产出 |
+|---|---|---|
+| 文字半 | `agent/character_sheet.CharacterDesignerRules`（已有） | `character.sheet`：封闭选项外观，可复现 |
+| **图像半** | **`runtime/character_sheets.CharacterSheetPainter`（新）** | `assets/characters/<cid>/sheet.png` + `sheet.json` |
+| 编排 | `EpisodeRunner._run_character_sheets`（新） | 决定是否跑/跑几个/失败怎么记 |
+
+`sheet.json` 必留三样：**题面原文**（可复现）、**图片 sha256**（可追溯）、
+**授权裁决原文**（"能不能商用"有据可查）。
+
+### 纪律
+
+- **默认关**（按张计费）：`--char-sheets` 或 `LITTLE_CREW_CHAR_SHEETS=1` 才跑
+- **失败不阻断**：图集是辅助资料，不进成片依赖链；失败逐条留痕
+- **用途限定**：只允许 `character_designer` 调用该云端通道（代码强制）
+- **不冒充已验证**：`sheet.json` 里写明「与成片是否同一张脸需要身份度量，未做」
+
+### 真机验证
+
+测试集 2 角色（阿蘅 / 老陶）：**2/2 成功**，阿蘅设定板与外观字段逐项对上
+（双环髻银簪、青灰交领长裙、银线腰带、袖口竹叶暗纹）。
+
+### 测试
+
+`runtime/character_sheets_check` **14 项**（题面/限量/失败不抛/sheet.json/默认关），
+全量 **2547/2534 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.3] — 2026-11-13（**第三方供应商 · 自定义模型 API 模式**）
 
 ### 新增：配置驱动的第三方供应商

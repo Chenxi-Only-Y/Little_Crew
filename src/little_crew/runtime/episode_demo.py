@@ -160,6 +160,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="渲染后用视觉模型逐镜判「崩没崩」（默认开）")
     ap.add_argument("--no-vision-review", action="store_true",
                     help="关闭视觉闸（赶时间/省调用时用，产物会标「未审」）")
+    ap.add_argument("--char-sheets", action="store_true",
+                    help="生成角色设定图集（按张计费；默认关）")
+    ap.add_argument("--char-sheet-limit", type=int, default=6,
+                    help="一次最多画几个角色（默认 6）")
     ap.add_argument("--no-forge-voices", action="store_true",
                     help="不自动为缺音色的角色造音色（默认会造）")
     ap.add_argument("--voice", action="store_true",
@@ -566,6 +570,9 @@ def main(argv: list[str] | None = None) -> int:
     runner.human_gate_enabled = bool(args.human_gate)
     runner.gate_auto = str(getattr(args, 'gate_auto', '') or '')
     runner.vision_review_enabled = bool(args.vision_review) and not bool(args.no_vision_review)
+
+    runner.character_sheets_enabled = bool(getattr(args, "char_sheets", False))
+    runner.character_sheets_limit = int(getattr(args, "char_sheet_limit", 6) or 6)
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)
     runner.forge_voices = bool(args.voice) and not args.no_forge_voices

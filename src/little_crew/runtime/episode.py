@@ -570,6 +570,13 @@ class StopRequested(Exception):
     """主动停下（`--stop-after`）。**不是错误** —— 是"按要求停在这里"。"""
 
 
+def _cs_enabled() -> bool:
+    """角色图集是否启用（环境变量开关；默认关 —— 按张计费）。"""
+    from little_crew.runtime.character_sheets import enabled_by_env
+
+    return enabled_by_env()
+
+
 class EpisodeRunner:
     """把一集从头跑到尾。
 
@@ -1268,6 +1275,9 @@ class EpisodeRunner:
         director_info = self._run_director(script_draft)
         # 美术指导：定空间与材质（在灯光之前 —— 先有"东西"，再谈"光怎么打"）
         art_info = self._run_designer(script_draft)
+        # 角色设计师·图像半（2026-11-13）：把文字角色表画成锚点图集。
+        # **默认关闭**（按张计费）；失败不阻断整集，只留痕。
+        self._run_character_sheets(script_draft)
         self._mark("art")
         # 灯光师在导演之后（参考基调）、分镜之前（光要进画面描述）
         lighting_info = self._run_gaffer(script_draft)
@@ -2563,6 +2573,61 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
+    def _run_character_sheets(self, script_draft):
+        """角色设计师（图像半）：文字角色表 -> 锚点图集（2026-11-13）。
+
+        三段职责分得很清：
+        - **文字半**（`CharacterDesignerRules`）定外观（封闭选项，可复现）；
+        - **图像半**（`CharacterSheetPainter`）把它画出来（按张计费，默认关）；
+        - **本方法**只负责"要不要跑、跑几个、结果写哪、失败怎么记"。
+
+        纪律：
+        - 默认 **关**（`--char-sheets` 或 `LITTLE_CREW_CHAR_SHEETS=1` 才开）；
+        - 失败**不阻断**（图集是辅助资料，不是成片依赖）；
+        - 0 个角色/0 张图都要**明确打印**，不能静默当成功。
+        """
+        self._character_sheets = {"enabled": False, "painted": 0}
+        if not (getattr(self, "character_sheets_enabled", False)
+                or _cs_enabled()):
+            return
+        self._character_sheets["enabled"] = True
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        try:
+            from little_crew.agent.character_sheet import CharacterDesignerRules
+            from little_crew.runtime.character_sheets import CharacterSheetPainter
+
+            rules = CharacterDesignerRules()
+            lib = rules.design(script_draft, episode_id=self.episode_id)
+            if not lib.sheets:
+                print("  ⚠️ 角色设计师：剧本里没有识别出角色，未出图集")
+                self._character_sheets["reason"] = "no-characters"
+                return
+            painter = CharacterSheetPainter(
+                model_id=str(getattr(self, "character_sheet_model",
+                                     "") or "") or None,
+                limit=int(getattr(self, "character_sheets_limit", 6) or 6))
+            out = (Path(str(wd)) / "assets" / "characters") if wd else Path("assets/characters")
+            report = painter.paint(lib.sheets, out)
+            self._character_sheets = {"enabled": True, **report}
+            _n_ok = len(report.get("painted") or ())
+            _n_bad = len(report.get("failed") or ())
+            print(f"  角色设计师：画 {_n_ok}/{len(lib.sheets)} 个角色"
+                  f"（{report.get('model')}）"
+                  + (f" · ⚠️ 失败 {_n_bad}" if _n_bad else ""))
+            for item in (report.get("failed") or ())[:3]:
+                print(f"    ⚠️ {item.get('name') or item.get('id') or '?'}："
+                      f"{str(item.get('reason'))[:100]}")
+            if wd:
+                (_d := Path(str(wd)) / "delivery").mkdir(parents=True, exist_ok=True)
+                (_d / "character_sheets.json").write_text(
+                    __import__("json").dumps(self._character_sheets,
+                                             ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+        except Exception as exc:                              # noqa: BLE001
+            # 不阻断：图集失败不影响成片；但必须留痕（否则就是静默失败）
+            print(f"  ⚠️ 角色设计师未运行：{type(exc).__name__}: {exc}")
+            self._character_sheets["error"] = f"{type(exc).__name__}: {exc}"
 
     def _check_scene_subjects(self, picked, script_draft):
         """场景主体对账：分镜有没有引入剧本没授权的场景（2026-11-10 抽出）。
