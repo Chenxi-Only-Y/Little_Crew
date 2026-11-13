@@ -2622,7 +2622,10 @@ class EpisodeRunner:
                                 refs.append(str(f))
                                 break
             report = _cd.build_cover(refs, imgs, out, mode=mode,
-                                     title=str(getattr(self, "title", "") or ""),
+                                     title=str(getattr(self, "cover_title", "")
+                                                or getattr(self, "title", "") or ""),
+                                     title_mode=str(getattr(self, "cover_title_mode",
+                                                           "overlay") or "overlay"),
                                      character=str(getattr(self, "cover_character", "") or ""),
                                      story=str(getattr(self, "title", "") or ""),
                                      style=str(getattr(self, "character_sheet_style", "") or ""))

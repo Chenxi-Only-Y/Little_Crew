@@ -168,6 +168,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="质检重复 2 次取 fail 并集（更严但耗时×2）")
     ap.add_argument("--cover", action="store_true",
                     help="生成封面（默认从成片选帧；--cover-mode generate 则用图生图生成）")
+    ap.add_argument("--cover-title", default="",
+                    help="封面标题（默认用 --title）；overlay 由 ffmpeg 叠加，draw 让模型直接写")
+    ap.add_argument("--cover-title-mode", default="overlay",
+                    choices=["overlay", "draw", "none"],
+                    help="标题方式：overlay=后期叠字（推荐，字形可控）/ draw=模型画 / none=不加")
     ap.add_argument("--cover-mode", default="select", choices=["select", "generate"],
                     help="封面模式：select=从成片选帧 / generate=用角色设定图生成")
     ap.add_argument("--char-sheet-qc", action="store_true",
@@ -594,6 +599,8 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
     runner.cover_enabled = bool(getattr(args, "cover", False))
     runner.cover_mode = str(getattr(args, "cover_mode", "select") or "select")
+    runner.cover_title = str(getattr(args, "cover_title", "") or "")
+    runner.cover_title_mode = str(getattr(args, "cover_title_mode", "overlay") or "overlay")
     runner.title = str(getattr(args, "title", "") or "")
     runner.character_sheet_qc_strict = bool(getattr(args, "char_sheet_qc_strict", False))
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))

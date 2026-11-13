@@ -255,7 +255,7 @@ def select_cover(images: Mapping[str, str], out_dir: str | Path, *,
     """选封面：粗筛 → 拼图 → 一次判断 → 复制原图。返回报告（`ok/failed`）。"""
     out = Path(str(out_dir))
     out.mkdir(parents=True, exist_ok=True)
-    report: dict[str, Any] = {"kind": "cover.select", "title": title,
+    report: dict[str, Any] = {"kind": "cover.select", "episodeTitle": title,
                               "candidates": [], "dropped": [], "ok": False}
     valid, dropped = prefilter(images, limit=max_candidates)
     report["dropped"] = dropped
@@ -294,8 +294,16 @@ def select_cover(images: Mapping[str, str], out_dir: str | Path, *,
 
 def summarize(report: Mapping[str, Any]) -> str:
     if report.get("ok"):
-        return ("封面已选：" + str(report.get("shotId")) +
-                (f"（{report.get('reason')}）" if report.get("reason") else ""))
+        mode = report.get("mode", "select")
+        what = ("封面已生成" if mode == "generate"
+                else "封面已选：" + str(report.get("shotId")))
+        t = report.get("title") or {}
+        extra = []
+        if report.get("reason"):
+            extra.append(str(report["reason"]))
+        if isinstance(t, Mapping) and t.get("ok"):
+            extra.append(f"标题「{t.get('title')}」已叠加（{t.get('size')}px）")
+        return what + ("：" + "；".join(extra) if extra else "")
     return f"未出封面：{report.get('error', '未知原因')}"
 
 # ==========================================================================
@@ -313,15 +321,152 @@ _COVER_PROMPT = (
     "{story}"
     "{style}"
     "构图：角色位于画面右侧三分之二处，半身或七分身，视线看向镜头略偏；"
-    "左侧留出干净留白用于放标题与字幕条（**本次不写任何文字**）。"
+    "左侧留出干净留白用于放标题。{title_directive}"
     "氛围：柔和主光 + 轻轮廓光，背景可加极淡的环境层次，整体低饱和、高级感。"
-    "画质：高精度 3D 半写实国漫 CG 质感，清晰锐利，无文字、无水印、无边框。"
-    "禁止：改变角色长相、增加其他人物、裁切头部、文字与日期戳。"
+    "画质：高精度 3D 半写实国漫 CG 质感，清晰锐利，无水印、无边框。"
+    "禁止：改变角色长相、增加其他人物、裁切头部、日期戳与多余小字。"
 )
+
+
+#: 各平台常见中文字体文件名（按优先级）
+_FONT_NAMES = (
+    "msyhbd.ttc", "msyh.ttc", "simhei.ttf", "simkai.ttf", "msyhbd.ttf",
+    "NotoSansCJK-Bold.ttc", "NotoSansCJKsc-Bold.otf", "NotoSansCJK-Regular.ttc",
+    "NotoSansSC-Bold.otf", "PingFang.ttc", "Hiragino Sans GB.ttc",
+    "SourceHanSansSC-Bold.otf", "wqy-zenhei.ttc", "DroidSansFallbackFull.ttf",
+)
+
+#: 标题模式
+TITLE_MODES = ("overlay", "draw", "none")
+
+
+def font_dirs() -> list[Path]:
+    """系统字体目录（**跨平台**，每个人机器上都有其中之一）。
+
+    为什么要探测而不是写死路径：写死 `C:/Windows/Fonts/...` 只在 Windows 上活，
+    而本项目要求"换机器不改代码"。顺序：显式环境变量 > 用户字体目录 > 系统目录。
+    """
+    import os as _os
+
+    out: list[Path] = []
+    env = str(_os.environ.get("LITTLE_CREW_COVER_FONT_DIR") or "").strip()
+    if env:
+        out.append(Path(env))
+    home = Path.home()
+    out += [
+        home / "AppData" / "Local" / "Microsoft" / "Windows" / "Fonts",  # Windows 用户字体
+        Path("C:/Windows/Fonts"),
+        home / "Library" / "Fonts",                                      # macOS
+        Path("/usr/share/fonts"), Path("/usr/local/share/fonts"),        # Linux
+    ]
+    seen, uniq = set(), []
+    for d in out:
+        if d.is_dir() and str(d) not in seen:
+            seen.add(str(d))
+            uniq.append(d)
+    return uniq
+
+
+def find_font() -> str:
+    """找一个可用的中文字体文件；都找不到返回空串（调用方降级）。
+
+    也支持显式指定：`LITTLE_CREW_COVER_FONT=<字体文件路径>`。
+    """
+    import os as _os
+
+    env = str(_os.environ.get("LITTLE_CREW_COVER_FONT") or "").strip()
+    if env and Path(env).is_file():
+        return str(Path(env))
+    names = [n.lower() for n in _FONT_NAMES]
+    # 先按"已知文件名"找
+    for d in font_dirs():
+        try:
+            for f in d.rglob("*"):
+                if f.is_file() and f.name.lower() in names:
+                    return str(f)
+        except Exception:                                     # noqa: BLE001
+            continue
+    # 再按"名字里含中文字体关键字"兜底
+    keys = ("msyh", "simhei", "simkai", "notosanscjk", "notosanssc",
+            "pingfang", "sourcehansans", "wqy", "droid")
+    for d in font_dirs():
+        try:
+            for f in d.rglob("*"):
+                if f.is_file() and any(k in f.name.lower() for k in keys):
+                    return str(f)
+        except Exception:                                     # noqa: BLE001
+            continue
+    return ""
+
+
+def _escape_drawtext(s: str) -> str:
+    """drawtext 的文本转义（冒号/单引号/反斜杠/百分号）。"""
+    return (str(s).replace("\\", "\\\\").replace("'", "\u2019")
+            .replace(":", "\\:").replace("%", "\\%").replace(",", "\\,"))
+
+
+def add_title(cover_path: str | Path, title: str, out_path: str | Path | None = None,
+              *, font: str = "", size: int = 0, color: str = "white",
+              position: str = "left") -> dict:
+    """在封面上**叠加标题**（ffmpeg drawtext）。返回 `{ok, out, font, size}`。
+
+    为什么后合成而不是让模型写：**中文文字渲染不稳定**（尤其长标题会糊/错字）；
+    ffmpeg 叠字是确定性的，位置/字号/描边都可控、可复现，且不污染 AI 出的画面。
+    """
+    src = Path(str(cover_path))
+    if not src.is_file():
+        return {"ok": False, "error": f"封面不存在：{src}"}
+    text = str(title or "").strip()
+    if not text:
+        return {"ok": False, "error": "标题为空"}
+    font_file = font or find_font()
+    if not font_file:
+        return {"ok": False, "error": "找不到中文字体（可用 LITTLE_CREW_COVER_FONT 指定）"}
+    dst = Path(str(out_path)) if out_path else src.with_name("cover_titled.png")
+    # 字号：默认按画面宽度 1/14（短标题大、长标题自动缩一点）
+    if size <= 0:
+        size = 0
+    probe = subprocess.run(
+        [r"D:\AI\FFmpeg\bin\ffprobe.exe", "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=width", "-of", "csv=p=0", str(src)],
+        capture_output=True, text=True, check=False)
+    try:
+        width = int((probe.stdout or "0").strip().splitlines()[0])
+    except Exception:                                         # noqa: BLE001
+        width = 1280
+    if size <= 0:
+        base = max(28, width // 14)
+        size = base if len(text) <= 8 else max(28, int(base * 8 / len(text)))
+    if position == "center":
+        x, y = "(w-text_w)/2", "(h-text_h)/2"
+    elif position == "bottom":
+        x, y = "(w-text_w)/2", "h-text_h-h/10"
+    else:  # left
+        x, y = "w*0.06", "h*0.45"
+    esc = _escape_drawtext(text)
+    # ⚠️ ffmpeg 的 drawtext 里 **fontfile 用正斜杠**：Windows 反斜杠会被当成转义，
+    # 实测报 "No option name near '\Windows\Fonts\...'"。
+    # 还要把盘符后的冒号转义（`C\:/Windows/...`）—— 冒号在 filtergraph 里是参数分隔符
+    font_av = str(font_file).replace("\\", "/").replace(":", "\\:")
+    vf = (f"drawtext=fontfile='{font_av}':text='{esc}':fontsize={size}:"
+          f"fontcolor={color}:x={x}:y={y}:"
+          f"shadowcolor=black@0.6:shadowx=2:shadowy=2:borderw=2:bordercolor=black@0.35")
+    cmd = [r"D:\AI\FFmpeg\bin\ffmpeg.exe", "-y", "-hide_banner", "-loglevel", "error",
+           "-i", str(src), "-vf", vf, "-frames:v", "1", str(dst)]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=60)
+    except subprocess.CalledProcessError as exc:              # noqa: PERF203
+        err = (exc.stderr or b"").decode("utf-8", errors="replace")[:200]
+        return {"ok": False, "error": f"叠标题失败：{err}"}
+    except Exception as exc:                                  # noqa: BLE001
+        return {"ok": False, "error": f"叠标题失败：{type(exc).__name__}: {exc}"}
+    return {"ok": dst.is_file(), "out": str(dst), "font": font_file,
+            "size": size, "title": text}
 
 
 def generate_cover(ref_images: Iterable[str | Path], out_dir: str | Path, *,
                    character: str = "", story: str = "", style: str = "",
+                   title: str = "", title_mode: str = "overlay",
                    model: str = DEFAULT_GEN_MODEL,
                    size: str = "1536x1024") -> dict:
     """用**图生图**生成一张封面。返回报告（`ok/out/model/seconds/error`）。**不抛**。"""
@@ -346,7 +491,11 @@ def generate_cover(ref_images: Iterable[str | Path], out_dir: str | Path, *,
     prompt = (_COVER_PROMPT
               .replace("{character}", (f"角色设定：{character}。" if character else ""))
               .replace("{story}", (f"故事氛围：{story}。" if story else ""))
-              .replace("{style}", (f"视觉风格：{style}。" if style else "")))
+              .replace("{style}", (f"视觉风格：{style}。" if style else ""))
+              .replace("{title_directive}",
+                       (f"画面左侧留白处**直接写上标题「{title}」**（白色粗体、加黑色描边），"
+                        f"文字必须清晰正确、不糊不改字。" if str(title_mode) == "draw" and title
+                        else "左侧留白处**不要写任何文字**（标题稍后由后期叠加，保证字形正确）。")))
     data = ref.read_bytes()
     ctype = "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
     fields = {"model": model, "prompt": prompt, "size": size, "n": "1"}
@@ -385,13 +534,45 @@ def generate_cover(ref_images: Iterable[str | Path], out_dir: str | Path, *,
 def build_cover(ref_images: Iterable[str | Path], shot_images: Mapping[str, str],
                 out_dir: str | Path, *, mode: str = "select", client: Any = None,
                 title: str = "", character: str = "", story: str = "",
-                style: str = "", max_candidates: int = DEFAULT_MAX_CANDIDATES) -> dict:
+                style: str = "", title_mode: str = "overlay",
+                max_candidates: int = DEFAULT_MAX_CANDIDATES) -> dict:
     """统一入口：`mode="select"` 选帧 / `mode="generate"` 生成。"""
+    tmode = str(title_mode or "overlay").lower()
+    if tmode not in TITLE_MODES:
+        tmode = "overlay"
     if str(mode).lower() == "generate":
         rep = generate_cover(ref_images, out_dir, character=character,
-                             story=story, style=style)
+                             story=story, style=style, title=title,
+                             title_mode=tmode)
     else:
         rep = select_cover(shot_images, out_dir, client=client, title=title,
                            max_candidates=max_candidates)
     rep["mode"] = str(mode).lower()
+    rep["titleMode"] = tmode
+    # 后合成标题：默认覆盖 cover.png（留 cover_raw.png 备查），draw 模式不重复叠字
+    if rep.get("ok") and title and tmode == "overlay":
+        base = Path(str(rep.get("cover") or rep.get("out") or ""))
+        final = Path(str(out_dir)) / "cover.png"
+        if base.is_file():
+            # ⚠️ 选帧模式下 cover.png 就是源文件：ffmpeg 不允许输出与输入同路径。
+            # 先把它改名为 cover_raw.png，叠字结果再写回 cover.png（失败则还原）。
+            raw = base
+            if base.resolve() == final.resolve():
+                raw = Path(str(out_dir)) / "cover_raw.png"
+                try:
+                    base.replace(raw)
+                except Exception:                             # noqa: BLE001
+                    raw = base
+            titled = add_title(raw, title, out_path=final)
+            rep["title"] = titled
+            if titled.get("ok"):
+                rep["cover"] = str(final)
+                rep["coverRaw"] = str(raw)
+            else:
+                # 叠字失败：保留原封面（不因为标题丢了封面）
+                if raw.resolve() != final.resolve() and not final.is_file():
+                    try:
+                        raw.replace(final)
+                    except Exception:                         # noqa: BLE001
+                        pass
     return rep

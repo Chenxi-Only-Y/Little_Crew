@@ -57,6 +57,50 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.17] — 2026-11-13（**封面支持标题**：后合成叠字）
+
+### 封面现在可以带标题了
+
+用户指出"封面不应该可以加标题吗" —— 加。做法是**后合成**（ffmpeg drawtext），
+不是让模型画中文：
+
+| 方式 | 结果 | 结论 |
+|---|---|---|
+| 让图像模型直接写中文 | 长标题易糊/错字/漏字 | ❌ 不可控 |
+| **ffmpeg 叠字（默认）** | 字形 100% 正确、位置/字号/描边可控、可复现 | ✅ |
+
+### 三种标题模式
+
+| `--cover-title-mode` | 行为 |
+|---|---|
+| **`overlay`（默认）** | 生成/选帧得到干净底图 → ffmpeg 叠加标题（白色粗体 + 黑色描边/投影） |
+| `draw` | 让生图模型直接把标题画进画面（适合纯装饰风格） |
+| `none` | 不加标题 |
+
+字号自适应：画面宽度 1/14 起，**标题超过 8 字自动缩小**（长标题不溢出）。
+
+### 字体：**调用本地字体库**（不写死路径）
+
+- 顺序：`LITTLE_CREW_COVER_FONT`（显式）→ 用户字体目录 → 系统目录
+- 覆盖 Windows（`%LOCALAPPDATA%\Microsoft\Windows\Fonts`、`C:/Windows/Fonts`）、
+  macOS（`~/Library/Fonts`）、Linux（`/usr/share/fonts`）
+- 候选名单：微软雅黑 / 黑体 / 楷体 / Noto Sans CJK / 苹方 / 文泉驿 / Droid
+- **换机器不用改代码**（这正是"本地字体库"的意思）
+
+### 修的两个坑
+
+1 `drawtext` 的 `fontfile` 在 Windows 上**必须把盘符冒号转义**（`C\:/Windows/...`），
+   否则报 `No option name near '/Windows/Fonts/...'`（实测踩到）
+2 选帧模式下 `cover.png` 既是输入又是输出 → ffmpeg 拒绝；
+   改为先改名为 `cover_raw.png`，叠字写入 `cover.png`（失败自动还原，**不因标题丢封面**）
+
+### 测试
+
+`review/cover_designer_check` **21 项**（+字体可发现/叠字生效/长标题缩字号/none 不加/overlay 自动叠），
+全量 **2620/2607 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.16] — 2026-11-13（**新增职位：封面设计师（双模式）**）
 
 ### 为什么加

@@ -147,6 +147,35 @@ def main() -> int:
         check("E2 ★★ mode=generate 走生成", rep_g2.get("mode") == "generate",
               str(rep_g2.get("mode")))
 
+    print(); print("F. 标题（后合成叠字 / 模型画 / 不加）")
+    with tempfile.TemporaryDirectory() as td2:
+        d2 = Path(td2)
+        base = d2 / "base.png"
+        _mk_image(base)
+        titled = CD.add_title(base, "小剧组 · 第一集")
+        check("F1 ★★★ 中文字体可发现（跨平台探测）", bool(CD.find_font()), CD.find_font())
+        check("F2 ★★★ 叠标题成功且字号按画面自适应",
+              titled.get("ok") and int(titled.get("size") or 0) > 0,
+              str(titled.get("error")))
+        check("F3 ★★★ 叠字后文件确实变了（不是空操作）",
+              Path(str(titled.get("out") or "")).is_file()
+              and Path(str(titled["out"])).read_bytes() != base.read_bytes(), "")
+        long_title = CD.add_title(base, "第一集：那年夏天的最后一个黄昏", out_path=d2 / "t2.png")
+        check("F4 ★★ 长标题自动缩小字号",
+              long_title.get("ok") and long_title["size"] < titled["size"],
+              f"{long_title.get('size')} vs {titled.get('size')}")
+        r_none = CD.build_cover([], {"S0": str(base)}, d2 / "n", mode="select",
+                                client=_Client({"pick": 1}), title="第一集",
+                                title_mode="none")
+        check("F5 ★★★ title_mode=none 不叠字",
+              r_none.get("titleMode") == "none" and not r_none.get("title"), "")
+        r_ov = CD.build_cover([], {"S0": str(base)}, d2 / "o", mode="select",
+                              client=_Client({"pick": 1}), title="第一集",
+                              title_mode="overlay")
+        check("F6 ★★★ title_mode=overlay 自动叠字并记录",
+              isinstance(r_ov.get("title"), dict) and r_ov["title"].get("ok"),
+              str(r_ov.get("title"))[:80])
+
     n = sum(1 for _, ok_, _ in _r if ok_)
     print()
     for name, ok_, detail in _r:
