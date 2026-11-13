@@ -62,6 +62,26 @@ _PROPORTION_LOCK = (
     "中庭 : 下庭 ≈ 1 : 1；下巴圆润，长度不超过鼻底到上唇距离的 1.5 倍。"
 )
 
+#: **幼态比例锁**（2026-11-13 第二轮）：市场上"好看"的脸不是标准成人比例。
+#:
+#: 对照用户提供的成品图后量出三条硬差异：
+#:   脸宽:脸长 0.80（我们锁 0.74）· 中庭≈下庭且都偏短（我们 1:1 标准）· 眼裂=脸宽 1/4（我们 1/5）
+#: 加上"厚齐刘海盖额 + 几乎无硬阴影 + 偏磨皮"，才是那种"人偶感"。
+#: 所以比例锁要做成**两档**：adult（标准）/ cute（幼态），而不是只有一档。
+_PROPORTION_CUTE = (
+    "【比例锁·幼态版（优先于以上所有形容词）】"
+    "脸宽 : 脸长 = 0.78~0.82，脸型偏短偏圆，**不要成人比例的长脸**。"
+    "头部纵向三分（发际线到下巴）**不等分**：上庭 0.36、中庭（眉心到鼻底）0.32、下庭（鼻底到下巴）0.32 —— "
+    "**中庭短、下巴短是幼态感的关键**。"
+    "眼睛位于头部高度 42%~45%；单眼裂宽度 = 脸宽 1/4；两眼间距 = 0.9 眼宽。"
+    "鼻梁短：鼻底位于头部高度 58%~62%，鼻头小而圆。"
+    "唇：唇宽 = 脸宽 0.28，唇珠明显、上唇薄、人中短。"
+    "下巴长度 ≤ 下庭的 0.55，下巴圆润收短，不尖长。"
+    "特写：头高约占画面高度 85%~90%（镜头更近，脸部信息更满）。"
+    "光照：大面积柔光、几乎无硬阴影，整体对比略低；皮肤瓷白通透、轻微磨皮但保留极细纹理。"
+)
+
+
 #: 灯光与质感（同一份骨架，多角色摆一起才像同一套设定集）
 _LIGHTING = (
     "【灯光质感】大面积柔光自正前上方照射，辅以极轻轮廓光；脚下仅有浅淡接触阴影；"
@@ -75,6 +95,9 @@ NEGATIVE_GROUPS: dict[str, str] = {
     "裁切": "裁发顶、裁耳朵、裁脚、裁鞋底、半身截断、画面出血",
     "文字水印": "任何文字、水印、标签、边框、信息栏、色卡、日期戳",
     "畸形质感": "娃娃脸、婴儿肥、磨皮塑料肌、过度对称、多余手指、肢体粘连、解剖错误",
+    # 幼态档专属：这套审美的失败模式正好相反（不是马脸，而是"成熟感/长中庭"）
+    "成熟感": "成人比例的长脸、长中庭、长下巴、尖下巴、成熟御姐感、明显法令纹、"
+             "眼裂过窄、眼距过宽、五官散开",
     # 比例崩坏：这是实测最容易被模型带偏的一类（"窄长 V 脸" -> 马脸 + 高眼位）
     "比例崩坏": "长脸、马脸、中庭过长、眼位过高、三庭比例失衡、额头过窄、"
                "下巴过长过尖、面部纵向拉伸、脖颈过长",
@@ -207,6 +230,27 @@ STYLE_PRESETS: dict[str, dict[str, str]] = {
     },
 }
 
+#: 比例档位：adult = 标准成人（三庭等分）；cute = 幼态（中庭/下庭短、眼大、脸圆）
+PROPORTION_PROFILES: dict[str, str] = {
+    "adult": _PROPORTION_LOCK,
+    "cute": _PROPORTION_CUTE,
+}
+
+_PROPORTION_ALIASES = {
+    "成人": "adult", "标准": "adult", "standard": "adult",
+    "幼态": "cute", "娃娃": "cute", "idol": "cute", "网红": "cute", "少女": "cute",
+}
+
+
+def resolve_proportion(name: str) -> tuple[str, str]:
+    """返回 `(档位名, 比例锁文本)`；未知 -> adult。"""
+    key = str(name or "").strip().lower()
+    key = _PROPORTION_ALIASES.get(key, key)
+    if key not in PROPORTION_PROFILES:
+        key = "adult"
+    return key, PROPORTION_PROFILES[key]
+
+
 #: 用户常用简称 -> 预设键
 _STYLE_ALIASES = {
     "3d": "3d-guoman", "国漫": "3d-guoman", "默认": "3d-guoman",
@@ -280,7 +324,8 @@ _ALIASES = {
 }
 
 
-def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
+def slots_for(sheet: Any, *, style: str = "",
+              proportion: str = "adult") -> dict[str, str]:
     """把一个角色的外观字段填进模板的 12 个槽（确定性派生）。"""
     app = getattr(sheet, "appearance", {}) or {}
     if not isinstance(app, Mapping):
@@ -305,10 +350,13 @@ def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
 
     palette = (app.get("palette") or app.get("配色") or "")
     style_preset = resolve_style(style) if style else resolve_style("3d-guoman")
+    _pkey, _ptxt = resolve_proportion(proportion)
     return {
         "配色": str(palette),
         "身份": identity,
         "画风": style_preset["prefix"],
+        "比例档": _pkey,
+        "比例锁": _ptxt,
         "风格描述": style_preset["look"],
         "风格光照": style_preset["lighting"],
         "风格负面": style_preset["negative"],
@@ -330,22 +378,26 @@ def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
     }
 
 
-def negative_words(*, style_negative: str = "") -> str:
-    """负面词（模板四组 + 面部崩坏 + 当前风格的专属否定项）。"""
-    groups = list(NEGATIVE_GROUPS.values())
+def negative_words(*, style_negative: str = "", proportion: str = "adult") -> str:
+    """负面词（模板四组 + 面部崩坏 + 风格专属 + 比例档专属）。"""
+    groups = [v for k, v in NEGATIVE_GROUPS.items()
+              if not (proportion == "cute" and k == "比例崩坏")]
+    if proportion == "cute":
+        groups.append(NEGATIVE_GROUPS["成熟感"])
     if style_negative:
         groups.append(style_negative)
     return "【负面词】不要：" + "；".join(groups) + "。"
 
 
-def build_prompt(sheet: Any, *, style: str = "") -> str:
+def build_prompt(sheet: Any, *, style: str = "",
+                 proportion: str = "adult") -> str:
     """按模板 §三 的顺序组装完整题面。"""
-    s = slots_for(sheet, style=style)
+    s = slots_for(sheet, style=style, proportion=proportion)
     return (
         f"{s['画风']}。风格要点：{s['风格描述']}。\n"
         f"【身份基准】{s['身份']}，{s['脸型骨相']}。\n"
         f"{_LAYOUT}\n"
-        f"{_PROPORTION_LOCK}\n"
+        f"{s['比例锁']}\n"
         f"【面部细节·最高优先级】面部占画面信息密度的大头，必须精细：\n"
         f"  眼睛 {s['眼睛']}。\n"
         f"  眉鼻唇 {s['眉鼻唇']}。\n"
@@ -361,7 +413,8 @@ def build_prompt(sheet: Any, *, style: str = "") -> str:
         f"【灯光质感】{s['风格光照']}；脚下仅有浅淡接触阴影；低饱和、克制配色；"
         f"材质细节可辨；无文字、无水印、无标签、无边框、无信息栏。\n"
         f"【场景光】{s['场景光']}。\n"
-        f"{negative_words(style_negative=s.get('风格负面', ''))}"
+        f"{negative_words(style_negative=s.get('风格负面', ''),
+                          proportion=s.get('比例档', 'adult'))}"
     )
 
 
@@ -384,7 +437,7 @@ QC_CHECKLIST: tuple[str, ...] = (
 
 def manifest_extra(sheet: Any, *, style: str = "") -> dict[str, Any]:
     """给 `sheet.json` 的附加信息：槽位快照 + 质检表（供人工/后续 VLM 复核）。"""
-    return {"slots": slots_for(sheet, style=style),
+    return {"slots": slots_for(sheet, style=style, proportion="adult"),
             "negativeGroups": list(NEGATIVE_GROUPS),
             "qcChecklist": list(QC_CHECKLIST),
             "notVerified": "四视图一致性需**看成品**判断；本清单未自动核验"}

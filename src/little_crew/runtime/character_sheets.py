@@ -52,15 +52,17 @@ def _appearance_text(sheet: Any) -> str:
     return str(app or "")
 
 
-def build_prompt(sheet: Any, *, style: str = "") -> str:
+def build_prompt(sheet: Any, *, style: str = "",
+                 proportion: str = "adult") -> str:
     """单个角色的设定板题面 —— **按四视图模板组装**（见 `character_sheet_prompt`）。
 
-    模板来源是两份工程化文档（通用骨架 + 12 槽变量卡 + 负面词四组 + 质检表）。
+    模板来源是两份工程化文档（通用骨架 + 12 槽变量卡 + 负面词四组 + 质检表），
+    比例档 `proportion`：`adult`（标准成人）/ `cute`（幼态）。
     这里只做委托：模板本体在 `runtime/character_sheet_prompt.py`，便于单独 A/B。
     """
     from little_crew.runtime.character_sheet_prompt import build_prompt as _bp
 
-    return _bp(sheet, style=style)
+    return _bp(sheet, style=style, proportion=proportion)
 
 
 class CharacterSheetPainter:
@@ -75,7 +77,8 @@ class CharacterSheetPainter:
     # ---- 主入口 -------------------------------------------------------
 
     def paint(self, sheets: Any, out_dir: str | Path, *,
-              style: str = "", qc_extra: bool = True) -> dict[str, Any]:
+              style: str = "", proportion: str = "adult",
+              qc_extra: bool = True) -> dict[str, Any]:
         """把角色表画成图集。**返回报告，从不抛**（除配置性错误外都记进报告）。"""
         out = Path(str(out_dir))
         out.mkdir(parents=True, exist_ok=True)
@@ -101,7 +104,7 @@ class CharacterSheetPainter:
             if not cid:
                 report["failed"].append({"name": name, "reason": "缺少 character_id"})
                 continue
-            prompt = build_prompt(sheet, style=style)
+            prompt = build_prompt(sheet, style=style, proportion=proportion)
             try:
                 art = self._render_one(spec, backend, channel, prompt,
                                        idempotency_key=f"charsheet:{cid}")
@@ -115,12 +118,13 @@ class CharacterSheetPainter:
             d.mkdir(parents=True, exist_ok=True)
             img = d / f"sheet{ext}"
             img.write_bytes(data)
-            from little_crew.runtime.character_sheet_prompt import manifest_extra
+            from little_crew.runtime.character_sheet_prompt import manifest_extra, resolve_proportion
 
             meta = {
                 "kind": "character.sheet.image",
                 **({'template': manifest_extra(sheet, style=style)}
                    if qc_extra else {}),
+                "proportion": resolve_proportion(proportion)[0],
                 "characterId": cid, "name": name,
                 "model": self.model_id, "size": self.size,
                 "prompt": prompt,

@@ -191,6 +191,23 @@ def main() -> int:
     check("A18 ★★ 脸宽比不再是 0.6x 的窄长脸（硬指标 0.72~0.75）",
           "0.6" not in pl.split("【比例锁")[0].split("脸宽约")[-1][:6], "")
 
+    print(); print("A2f. 比例档 adult / cute")
+    from little_crew.runtime.character_sheet_prompt import (
+        PROPORTION_PROFILES, build_prompt as _bp5, resolve_proportion,
+    )
+
+    check("A19 ★★★ 两个比例档都存在且文本非空",
+          set(PROPORTION_PROFILES) == {"adult", "cute"}
+          and all(PROPORTION_PROFILES.values()), "")
+    pa = _bp5(lib.sheets[0], proportion="adult")
+    pc = _bp5(lib.sheets[0], proportion="cute")
+    check("A20 ★★★ cute 档：脸更短(0.78~0.82)/中庭短/眼位 42%~45%/眼裂 1/4",
+          all(k in pc for k in ("0.78~0.82", "0.32", "42%~45%", "1/4")), "")
+    check("A21 ★★★ cute 档负面词换成「成熟感」组（不再用「比例崩坏」）",
+          "成熟御姐感" in pc and "马脸" not in pc, "")
+    check("A22 ★★ 未知比例档退回 adult（不崩）",
+          resolve_proportion("xxx")[0] == "adult", "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

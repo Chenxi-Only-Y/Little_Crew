@@ -164,6 +164,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="生成角色设定图集（按张计费；默认关）")
     ap.add_argument("--char-sheet-limit", type=int, default=6,
                     help="一次最多画几个角色（默认 6）")
+    ap.add_argument("--char-sheet-proportion", default="adult",
+                    choices=["adult", "cute"],
+                    help="脸型比例：adult=标准成人 / cute=幼态（中庭短、眼大、脸圆）")
     ap.add_argument("--char-sheet-style", default="",
                     help="设定板画风：3d-guoman（默认）/ 2.5d-film / painting-cg / stylized-real / nextgen-game，也可直接填画风")
     ap.add_argument("--no-forge-voices", action="store_true",
@@ -576,6 +579,7 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheets_enabled = bool(getattr(args, "char_sheets", False))
     runner.character_sheets_limit = int(getattr(args, "char_sheet_limit", 6) or 6)
     runner.character_sheet_style = str(getattr(args, "char_sheet_style", "") or "")
+    runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))
     runner.voice_debug = bool(args.voice)
     runner.forge_voices = bool(args.voice) and not args.no_forge_voices
