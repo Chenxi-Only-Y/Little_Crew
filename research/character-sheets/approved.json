@@ -1,0 +1,64 @@
+{
+  "kind": "character.sheets.approved",
+  "episodeHint": "现代甜酷少女 · 灰紫露肩针织+黑阔腿裤",
+  "selected": [
+    {
+      "tag": "A1_ref_better",
+      "file": "outputs/_usertest/approved/A1_ref_better.png",
+      "sha256": "bbfad269ea81ade653801a72dfdea59bcf6f6ebbfec0e4ecdb9e12a05af58619",
+      "pipeline": "img2img(edits)",
+      "model": "2.5",
+      "msec": "39.8s",
+      "promptFile": "outputs/_usertest/user_prompt_3.txt",
+      "note": "图生图：用户提供的「更好那版」参考图（1535px）+ 长提示词（1700字）",
+      "approvedBy": "user",
+      "approvedAt": "2026-11-13"
+    },
+    {
+      "tag": "A2_ref_purple",
+      "file": "outputs/_usertest/approved/A2_ref_purple.png",
+      "sha256": "fdd912ddfbb8a6bc4269c8ba60ba09fb43427d7adc6ee7f281e5ff7fb6326644",
+      "pipeline": "img2img(edits)",
+      "model": "2.5",
+      "msec": "39.4s",
+      "promptFile": "outputs/_usertest/user_prompt_3.txt",
+      "note": "图生图：参考图=灰紫露肩+黑阔腿裤（958px）+ 长提示词",
+      "approvedBy": "user",
+      "approvedAt": "2026-11-13"
+    },
+    {
+      "tag": "A3_ref_school",
+      "file": "outputs/_usertest/approved/A3_ref_school.png",
+      "sha256": "0acc2494faa95f06891825f33abe2335bb466d125dd9ae03156ba57f69f7f191",
+      "pipeline": "img2img(edits)",
+      "model": "2.5",
+      "msec": "41.9s",
+      "promptFile": "outputs/_usertest/user_prompt_3.txt",
+      "note": "图生图：参考图=藏蓝开衫+灰百褶裙（958px）+ 长提示词",
+      "approvedBy": "user",
+      "approvedAt": "2026-11-13"
+    },
+    {
+      "tag": "A4_ref_y2k",
+      "file": "outputs/_usertest/approved/A4_ref_y2k.png",
+      "sha256": "d91ce5cc74142114b301a9d5e5f524b4f678d38fa4ca4637225f494a9a4fdaaf",
+      "pipeline": "img2img(edits)",
+      "model": "2.5",
+      "msec": "51.4s",
+      "promptFile": "outputs/_usertest/user_prompt_3.txt",
+      "note": "图生图：参考图=豹纹吊带+军绿工装裤（958px）+ 长提示词",
+      "approvedBy": "user",
+      "approvedAt": "2026-11-13"
+    }
+  ],
+  "whyThese": [
+    "4 张全部走 **图生图（edits）**，不是纯文生图 —— 参考图带来了更稳的面部质感",
+    "共同点：面部受参考图约束，服装结构由长提示词确定（两者不打架）",
+    "差异：A1 的参考图分辨率最高（1535px），身份继承最完整"
+  ],
+  "rejected": {
+    "cute_v2": "眼裂1/3+特写90~95%+无毛孔，三旋钮同时过头 -> 娃娃脸（用户判定不行）",
+    "longPromptOnly": "纯文生图 5 次一致性尚可，但面部精致度依赖运气",
+    "longPrompt+lowResRef": "长提示词会压过参考图（本次实测：4 张低分辨率参考图影响很小）"
+  }
+}
