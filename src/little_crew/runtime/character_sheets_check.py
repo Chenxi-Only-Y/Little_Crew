@@ -136,9 +136,10 @@ def main() -> int:
 
     check("A5 ★★★ 12 槽位有值（含配色/细节不丢）",
           len(slots_for(lib.sheets[0])) >= 12, str(len(slots_for(lib.sheets[0]))))
-    check("A6 ★★★ 负面词四组齐全",
-          len(NEGATIVE_GROUPS) == 4 and all(NEGATIVE_GROUPS.values()), "")
-    check("A7 ★★★ 质检表 10 条（模板 §六）", len(QC_CHECKLIST) == 10, str(len(QC_CHECKLIST)))
+    check("A6 ★★★ 负面词至少模板四组、且非空（另加「面部崩坏」组）",
+          len(NEGATIVE_GROUPS) >= 4 and all(NEGATIVE_GROUPS.values()), "")
+    check("A7 ★★★ 质检表 ≥10 条（模板 §六 + 面部 2 条）",
+          len(QC_CHECKLIST) >= 10, str(len(QC_CHECKLIST)))
     p_ok = _bp(lib.sheets[0])
     check("A8 ★★★ 同一角色两次组装**完全一致**（确定性）",
           p_ok == _bp(lib.sheets[0]), "")
@@ -147,6 +148,17 @@ def main() -> int:
                                       "appearance": {"hair": "双环髻", "outfit": "青衣",
                                                      "palette": "月白", "mark": "袖口暗纹"}})())
               for k in ("双环髻", "青衣", "月白", "袖口暗纹")), "")
+
+    print(); print("A2c. 面部细节（参考图 2026-11-13 的重点）")
+    from little_crew.runtime.character_sheet_prompt import build_prompt as _bp2
+
+    pf = _bp2(lib.sheets[0])
+    check("A10 ★★★ 题面有「面部细节·最高优先级」块", "面部细节" in pf and "最高优先级" in pf, "")
+    check("A11 ★★★ 面部要素齐全（眼/眉鼻唇/妆容/皮肤/发丝空气感）",
+          all(k in pf for k in ("眼", "卧蚕", "睫毛", "腮红", "唇", "皮肤", "空气感")), "")
+    check("A12 ★★★ 负面词含「面部崩坏」组（小眼睛/呆滞/油光等）",
+          "面部崩坏" in NEGATIVE_GROUPS
+          and all(k in NEGATIVE_GROUPS["面部崩坏"] for k in ("小眼睛", "呆滞", "油光")), "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
