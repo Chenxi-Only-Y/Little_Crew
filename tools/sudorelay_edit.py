@@ -2,7 +2,11 @@
 
 为什么单独写：`HttpChannel` 只发 JSON。图生图要 `multipart/form-data` 上传参考图，
 而本项目不允许引入 requests —— 所以手写 multipart。字段按模板文档：
-`model / prompt / size / n / image`；2.6 的 edits 目前 502，图生图一律用 2.5。
+`model / prompt / size / n / image`。
+
+⚠️ **历史记录已过期**（2026-11-13 实测）：早期文档说"2.6 的 edits 返回 502"，因此一律用 2.5。
+现在 **2.6 的 edits 可用**（8 张实测 32~44s，且细节保持更好：百褶裙褶、菱格纹、鞋子结构）。
+所以默认模型改为 2.6；2.5 保留为对照/回退。
 """
 
 from __future__ import annotations

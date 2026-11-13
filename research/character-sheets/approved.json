@@ -60,5 +60,56 @@
     "cute_v2": "眼裂1/3+特写90~95%+无毛孔，三旋钮同时过头 -> 娃娃脸（用户判定不行）",
     "longPromptOnly": "纯文生图 5 次一致性尚可，但面部精致度依赖运气",
     "longPrompt+lowResRef": "长提示词会压过参考图（本次实测：4 张低分辨率参考图影响很小）"
-  }
+  },
+  "refined26": [
+    {
+      "file": "outputs/_usertest/approved/refined26/r1_brown_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r1_brown.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r2_purple_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r2_purple.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r3_stripe_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r3_stripe.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r4_y2k_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r4_y2k.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r5_school_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r5_school.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r6_bluebow_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r6_bluebow.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r7_argyle_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r7_argyle.png.jpg"
+    },
+    {
+      "file": "outputs/_usertest/approved/refined26/r8_stripe2_refined26.png",
+      "model": "gpt-image-2.6-sunburst",
+      "pipeline": "img2img(edits) 保图微调（仅修手/鞋/发丝/布料/四视图一致）",
+      "source": "outputs/_usertest/refs8/r8_stripe2.png.jpg"
+    }
+  ],
+  "editsNote": "2.6 的 /images/edits 现在可用（早期文档的 502 记录已过期）；2.6 在细节保持上优于 2.5（百褶裙、菱格纹、鞋结构）"
 }
