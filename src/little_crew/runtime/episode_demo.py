@@ -166,6 +166,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="一次最多画几个角色（默认 6）")
     ap.add_argument("--char-sheet-qc-strict", action="store_true",
                     help="质检重复 2 次取 fail 并集（更严但耗时×2）")
+    ap.add_argument("--cloud-shots", type=int, default=0,
+                    help="混合渲染：最多几镜走云端图生图（0=全本地；缺锚点会现生设定图）")
+    ap.add_argument("--cloud-model", default="",
+                    help="云端关键镜模型（默认 gpt-image-2.6-sunburst）")
     ap.add_argument("--cover", action="store_true",
                     help="生成封面（默认从成片选帧；--cover-mode generate 则用图生图生成）")
     ap.add_argument("--cover-title", default="",
@@ -606,6 +610,8 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
+    runner.cloud_max_shots = int(getattr(args, "cloud_shots", 0) or 0)
+    runner.cloud_model = str(getattr(args, "cloud_model", "") or "")
     runner.cover_enabled = bool(getattr(args, "cover", False))
     runner.cover_mode = str(getattr(args, "cover_mode", "select") or "select")
     runner.cover_title = str(getattr(args, "cover_title", "") or "")

@@ -1791,6 +1791,8 @@ class EpisodeRunner:
         self._stage_voice(picked, shots, script_draft, per_shot_artifacts)
 
         self._stage_vision(picked, irs, per_shot_artifacts, artifacts)
+        # 混合渲染（方案 C）：关键镜换云端版；缺锚点就现生（画风一致）
+        self._run_cloud_shots(picked, per_shot_artifacts, script_draft)
         # 封面设计师（2026-11-13）：选帧 或 生成（默认选帧）
         self._run_cover(picked, per_shot_artifacts)
 
@@ -3541,6 +3543,106 @@ class EpisodeRunner:
                 return {"batch": _outs}
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
+
+    def _run_cloud_shots(self, picked, per_shot_artifacts, script_draft=None):
+        """混合渲染（方案 C，2026-11-13）：关键镜走云端图生图，**角色用现有库锚点**。
+
+        三条约定（用户明确要求）：
+        1 **没有的锚点就现生**：镜头里出现但库里没有的角色 -> 用角色设计师现生成设定图
+        2 **画风一致**：现生的设定图与关键镜都用同一个 `character_sheet_style`
+        3 **云端并行**：远端请求并行（`workers`，默认 4）；失败逐条记录、不阻断
+
+        - 默认关（`cloud_max_shots=0`）
+        - **只替换不删除**：本地版仍在，可比对/回退
+        """
+        self._cloud_shots = {"enabled": False}
+        limit = int(getattr(self, "cloud_max_shots", 0) or 0)
+        if limit <= 0:
+            return
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            return
+        wd = Path(str(wd))
+        style = str(getattr(self, "character_sheet_style", "") or "")
+        try:
+            from little_crew.runtime import cloud_policy as _cp
+            from little_crew.runtime import cloud_render as _cr
+
+            rows = _cp.plan(picked, max_cloud=limit)
+            if not rows:
+                self._cloud_shots = {"enabled": True, "planned": [],
+                                     "note": "无关键镜需要上云端"}
+                print("  混合渲染：无关键镜需要上云端（全部保留本地）")
+                return
+
+            # ---- 1) 现有库锚点 + 缺失角色现生（同一画风）----
+            # 锚点：先 workdir，再退到**仓库角色库**（跨集复用；用户要求"角色用现有库里的"）
+            anchors = _cr.load_anchors(wd)
+            repo_anchors = _cr.load_anchors(Path(__file__).resolve().parents[3])
+            for cid, pth in repo_anchors.items():
+                anchors.setdefault(cid, pth)
+            shot_by_id = {str(getattr(s, "shot_id", "")): s for s in picked}
+            need_names: list[str] = []
+            for r in rows:
+                shot = shot_by_id.get(str(r.get("shotId") or ""))
+                for nm in (getattr(shot, "characters", ()) or ()) if shot else ():
+                    if not _cr._anchor_for([nm], anchors) and str(nm) not in need_names:
+                        need_names.append(str(nm))
+            born: list[dict] = []
+            if need_names:
+                print(f"  混合渲染：库里缺 {len(need_names)} 个角色锚点 -> 现生"
+                      f"（画风：{style or '默认 3D 半国漫'}）")
+                try:
+                    from little_crew.agent.character_sheet import CharacterDesignerRules
+                    from little_crew.runtime.character_sheets import CharacterSheetPainter
+
+                    lib = CharacterDesignerRules().design(
+                        script_draft if script_draft is not None else "",
+                        episode_id=str(getattr(self, "episode_id", "")))
+                    want = set(need_names)
+                    subset = [s for s in lib.sheets
+                              if str(getattr(s, "name", "")) in want
+                              or str(getattr(s, "character_id", "")) in want]
+                    if subset:
+                        rep = CharacterSheetPainter(limit=len(subset)).paint(
+                            subset, wd / "assets" / "characters", style=style)
+                        born = rep.get("painted") or []
+                        anchors = _cr.load_anchors(wd)
+                        print(f"  混合渲染：现生 {len(born)} 张设定图"
+                              + (f" · 失败 {len(rep.get('failed') or [])}"
+                                 if rep.get("failed") else ""))
+                except Exception as exc:                      # noqa: BLE001
+                    print(f"  ⚠️ 现生角色设定失败（继续用无锚点模式）："
+                          f"{type(exc).__name__}: {exc}")
+
+            # ---- 2) 云端渲染（并行）----
+            print(f"  混合渲染：{_cp.summarize(rows)}（锚点 {len(anchors)} 个 · 并行）")
+            res = _cr.render_plan(picked, rows, anchors,
+                                  wd / "assets" / "cloud_shots",
+                                  model=str(getattr(self, "cloud_model", "") or "")
+                                  or _cr.DEFAULT_MODEL,
+                                  extra=(f"画风统一为：{style}" if style else ""))
+            self._cloud_shots = {
+                "enabled": True, "planned": rows, "anchors": sorted(anchors),
+                "generatedAnchors": born, "max": limit,
+                "rendered": res.get("rendered"), "failed": res.get("failed"),
+                "workers": res.get("workers"), "seconds": res.get("seconds"),
+                "records": res.get("records"),
+            }
+            for rec in res.get("records") or ():
+                if rec.get("ok"):
+                    sid = str(rec.get("shotId") or "")
+                    per_shot_artifacts[sid] = [Path(str(rec["out"])).name]
+            (_d := wd / "delivery").mkdir(parents=True, exist_ok=True)
+            (_d / "cloud_shots.json").write_text(
+                __import__("json").dumps(self._cloud_shots, ensure_ascii=False,
+                                         indent=2, default=str), encoding="utf-8")
+            print(f"  混合渲染：云端完成 {res.get('rendered')}/{len(rows)} 镜"
+                  f" · {res.get('seconds')}s（并行 {res.get('workers')}）"
+                  + (f" · ⚠️ 失败 {res.get('failed')}" if res.get("failed") else ""))
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 混合渲染未运行：{type(exc).__name__}: {exc}")
+            self._cloud_shots["error"] = f"{type(exc).__name__}: {exc}"
 
     def _run_post_production(self, picked, *, engine: str = "") -> dict:
         """后期统筹：产出 `post.plan`（字幕/转场/BGM/音轨策略/响度）。

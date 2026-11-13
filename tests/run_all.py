@@ -41,6 +41,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("设定板质检", [sys.executable, "-m", "little_crew.review.sheet_qc_check"], 19),
     ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 21),
     ("后期统筹", [sys.executable, "-m", "little_crew.runtime.post_production_check"], 14),
+    ("混合渲染", [sys.executable, "-m", "little_crew.runtime.cloud_shots_check"], 13),
     ("自定义供应商", [sys.executable, "-m", "little_crew.runtime.custom_providers_check"], 30),
     ("角色设定图", [sys.executable, "-m", "little_crew.runtime.character_sheets_check"], 47),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),

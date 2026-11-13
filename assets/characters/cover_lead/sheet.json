@@ -1,0 +1,13 @@
+{
+  "kind": "character.sheet.image",
+  "characterId": "cover_lead",
+  "name": "封面主角",
+  "source": "outputs/_usertest/approved/A1_ref_better.png",
+  "note": "用户指定：沿用刚做封面用的那张人物图；作为封面与关键镜云端渲染的身份锚点。",
+  "model": "gpt-image-2.6-sunburst",
+  "approvedBy": "user",
+  "approvedAt": "2026-11-13",
+  "style": "高精度 3D 半写实国漫 CG",
+  "appearance": "年轻女性，深棕黑长卷发+空气刘海，冷调瓷白肌，灰棕瞳，灰紫细罗纹不对称露肩短上衣，炭黑高腰阔腿长裤，银色星芒垂坠耳饰",
+  "notVerified": "与成片是否同一张脸需要身份度量，未做"
+}
