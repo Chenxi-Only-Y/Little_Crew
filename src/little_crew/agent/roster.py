@@ -260,7 +260,7 @@ def _specs() -> list[AgentSpec]:
             # "asset.ready" 这种标记无人产出，属于把编排概念误当数据依赖。
             requires=("script.final", "character.anchor_set", "scene.library",
                       "shot.list", "shot.image", "shot.video"),
-            consumes=("script.draft", "script.revise", "script.critique", "style.guard", "character.design", "scene.design", "continuity.check", "shot.list", "pacing.plan", "production.schedule", "shot.video", "shot.voice", "shot.music", "episode.assemble", "review.board", "compliance.check", "lighting.plan"),
+            consumes=("script.draft", "script.revise", "script.critique", "style.guard", "character.design", "scene.design", "continuity.check", "shot.list", "production.schedule", "shot.video", "shot.voice", "shot.music", "review.board", "compliance.check", "lighting.plan"),
             task_profile="script.structured",
             prompt_template="crew.director.v1",
             max_reasoning_steps=8,
@@ -329,7 +329,7 @@ def _specs() -> list[AgentSpec]:
             crew_title_en="Production Designer",
             department=Department.ART,
             stage=Stage.ASSET,
-            execution=ExecutionKind.IMAGE_GEN,
+            execution=ExecutionKind.TEXT_LLM,
             capabilities=("scene.design",),
             produces=("scene.library", "art.bible"),
             requires=("script.final",),
@@ -363,7 +363,7 @@ def _specs() -> list[AgentSpec]:
             crew_title_en="Continuity Supervisor",
             department=Department.ART,
             stage=Stage.GATE,
-            execution=ExecutionKind.VLM,
+            execution=ExecutionKind.TEXT_LLM,
             capabilities=("continuity.check",),
             produces=("continuity.report", "continuity.sheet"),
             requires=("character.anchor_set", "shot.image"),
@@ -418,7 +418,6 @@ def _specs() -> list[AgentSpec]:
             capabilities=("shot.list",),
             produces=("shot.list", "shot.breakdown"),
             requires=("script.final", "character.anchor_set", "scene.library"),
-            consumes=("pacing.plan",),
             task_profile="script.structured",
             prompt_template="crew.storyboard_artist.v1",
             max_reasoning_steps=4,
@@ -498,41 +497,24 @@ def _specs() -> list[AgentSpec]:
 
         # ================= 剪辑组（2 人）=================
         AgentSpec(
-            agent_id="pacing_editor",
-            crew_title="剪辑师",
-            crew_title_en="Film Editor",
-            department=Department.EDITORIAL,
-            stage=Stage.GATE,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("pacing.plan",),
-            produces=("pacing.plan", "pacing.report"),
-            requires=("shot.list",),
-            task_profile="script.structured",
-            prompt_template="crew.pacing_editor.v1",
-            max_reasoning_steps=3,
-            real_world_duty="控制节奏、镜头长短、转场方式",
-            notes=("在分镜阶段介入（定节奏计划），而非等素材出来才剪 —— "
-                   "真实剧组里剪辑师也从筹备期就参与。"),
-        ),
-        AgentSpec(
-            agent_id="assembly_editor",
-            crew_title="合成剪辑",
-            crew_title_en="Online Editor",
+            agent_id="post_production",
+            crew_title="后期统筹",
+            crew_title_en="Post-Production Supervisor",
             department=Department.EDITORIAL,
             stage=Stage.ASSEMBLE,
+            # **不调模型**：字幕/转场/特效/BGM/音轨策略都是**确定性规则**，
+            # 执行交给 ffmpeg；职位只负责"定方案 + 出计划"。
             execution=ExecutionKind.ASSEMBLY,
-            capabilities=("episode.assemble",),
-            produces=("episode.master", "delivery.evidence"),
-            requires=("shot.video", "shot.voice", "shot.music"),
-            # 纯确定性工具 —— 不调模型
-            tools=("ffmpeg.assemble", "gate.assert"),
-            task_profile="",
-            max_reasoning_steps=2,
-            real_world_duty="套底、调色、混音、输出母版",
-            notes=("**不调模型** —— 全部是确定性工具。这也是为什么它只需 2 步推理预算。"),
+            capabilities=("post.plan",),
+            produces=("post.plan",),
+            requires=("shot.list", "script.final"),
+            max_reasoning_steps=1,
+            real_world_duty="后期统筹：字幕/转场/特效/BGM/音轨策略，产出后期计划",
+            notes=("**合并了原「剪辑师」与「合成剪辑」**：节奏判断并入本职位（但它不出分数），",
+                   "拼接/混流/字幕烧录仍由 ffmpeg 执行。",
+                   "音轨策略二选一：`native`（视频模型自带音轨，H3 FL2VA）| `tts+bgm`（静帧路径）。",
+                   "判据可数：字幕条数/时长、响度下限、BGM 增益、转场类型与数量。"),
         ),
-
-        # ================= 制片组（2 人）=================
         AgentSpec(
             agent_id="line_producer",
             crew_title="制片主任",
@@ -576,14 +558,14 @@ def _specs() -> list[AgentSpec]:
             crew_title_en="Review Board",
             department=Department.REVIEW,
             stage=Stage.GATE,
-            execution=ExecutionKind.VLM,
+            execution=ExecutionKind.TEXT_LLM,
             capabilities=("review.board",),
             produces=("review.verdict",),
             requires=("shot.image", "shot.video"),
             task_profile="review.vlm_blind",
             prompt_template="crew.review_board.v1",
             max_reasoning_steps=3,
-            real_world_duty="成片审查：艺术质量与观众感受",
+            real_world_duty="成片审查：艺术质量与观众感受（审文本镜头表；看图由质检员承担）",
             notes=("QC-5 五维品控：完整性 25 / 一致性 40 / 品质感 25 / "
                    "可执行性 / 合规性。**跨模型族盲读**，且不得由生成方自任。"),
         ),
@@ -633,12 +615,16 @@ def _specs() -> list[AgentSpec]:
 
 #: **代码产出**的产物（不是任何职位交付的）：`shot.image` 由渲染通道产出。
 #: 2026-11-12 删掉「摄影指导」后，这条是"出图不是职位判断"的显式记录。
-CODE_OUTPUTS: frozenset = frozenset({"shot.image"})
+CODE_OUTPUTS: frozenset = frozenset({
+    "shot.image",          # 渲染通道出图
+    "episode.master",      # 成片：由 runtime 的成片阶段（ffmpeg）产出
+    "delivery.evidence",   # 交付证据链：由 runtime 的交付阶段产出
+})
 
 #: 由**代码**消费的产物：渲染通道取 `previs.layouts` 当控制图。
-CODE_CONSUMED: frozenset = frozenset({"previs.layouts"})
+CODE_CONSUMED: frozenset = frozenset({"previs.layouts", "post.plan"})
 
-#: 20 个剧组职位（模块级常量，便于直接 import）。
+#: 19 个剧组职位（模块级常量，便于直接 import）。
 DEFAULT_ROSTER: tuple[AgentSpec, ...] = tuple(_specs())
 
 
@@ -884,7 +870,6 @@ def validate_roster(roster: Sequence[AgentSpec] = DEFAULT_ROSTER) -> list[str]:
         "style.guard": ("script.draft",),
         "continuity.check": ("shot.image", "character.anchor_set"),
         "review.board": ("shot.image", "shot.video"),
-        "pacing.plan": ("shot.list",),
     }
     for s in roster:
         for cap in s.capabilities:

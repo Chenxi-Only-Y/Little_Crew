@@ -4,7 +4,7 @@
 
 | 类别 | 守什么 |
 |---|---|
-| 覆盖面 | A 类 5 个职位都能构造；**非审查职位必须被拒绝** |
+| 覆盖面 | A 类 4 个职位都能构造；**非审查职位必须被拒绝** |
 | 提示词 | 三条检查项真的进了提示词；只审本职位那一块 |
 | 规整 | 空问题 -> 空数组（**不编问题**）；缺 problem 的意见被丢；越界场次被丢 |
 | ★ `BLOCKER` | **`blocker` 无 suggestion 时必须降级** —— 否则整轮作废 |
@@ -75,9 +75,9 @@ TEXT = "第一场：内景。少女独自坐在屋里，窗外的雨下了一整
 def _coverage() -> None:
     print()
     print("A. 覆盖面")
-    check("A1 A 类 5 个职位", len(CRITIC_CHECKS) == 5, str(list(CRITIC_CHECKS)))
+    check("A1 A 类 4 个职位", len(CRITIC_CHECKS) == 4, str(list(CRITIC_CHECKS)))
     crew = build_critic_crew()
-    check("A2 build_critic_crew() 全量构造", len(crew) == 5, str(len(crew)))
+    check("A2 build_critic_crew() 全量构造", len(crew) == 4, str(len(crew)))
     try:
         CriticLlm("director")
         check("A3 ★ 非审查职位被拒绝（B 类产物是结构化计划，不该混进来）", False)
@@ -235,7 +235,7 @@ def _call_path() -> None:
     check("D10 ★★ 5 个批评家的产出键都在名册 produces 里", not stray,
           str(stray[:2]))
 
-    # 与编排器的读取侧对齐：`_REVIEW_FEEDBACK_KEY` 必须覆盖这 5 个职位，
+    # 与编排器的读取侧对齐：`_REVIEW_FEEDBACK_KEY` 必须覆盖这 4 个职位，
     # 否则 `review_artifact` 会去一个没人写的键上取值。
     from little_crew.agent.orchestrator import _REVIEW_FEEDBACK_KEY
     uncovered = [a for a in CRITIC_CHECKS if a not in _REVIEW_FEEDBACK_KEY]

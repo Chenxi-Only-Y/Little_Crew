@@ -44,7 +44,7 @@ def check(name: str, cond: bool, detail: str = "") -> None:
 
 
 class _WithCritics:
-    advisory_critics = ("pacing_editor", "continuity_supervisor")
+    advisory_critics = ("continuity_supervisor",)
 
 
 class _NoCritics:
@@ -57,19 +57,19 @@ def _guards() -> None:
 
     got = EpisodeRunner._run_advisory(_WithCritics(), object())
     check("K1 ★ 不是 ScriptDraft -> 显式 error（不是 PASS）",
-          len(got) == 2 and all(a["verdict"] == "error" for a in got),
+          len(got) == 1 and all(a["verdict"] == "error" for a in got),
           str([(a["position"], a["verdict"]) for a in got]))
     check("K2 理由点明「未审查，不算通过」",
           all("未审查" in (a.get("reason") or "") for a in got),
           str([a.get("reason") for a in got]))
-    check("K3 每个顾问都有一条记录（不静默丢位置）", len(got) == 2)
+    check("K3 每个顾问都有一条记录（不静默丢位置）", len(got) == 1)
 
     # 没有场次的 ScriptDraft 也不算可审
     empty = ScriptDraft(frm="screenwriter", to="dramaturge",
                         episode_id="E1", title="T", scenes=(), revision=1)
     got2 = EpisodeRunner._run_advisory(_WithCritics(), empty)
     check("K4 ★ 空场次的 ScriptDraft -> 也是 error（不算通过）",
-          len(got2) == 2 and all(a["verdict"] == "error" for a in got2),
+          len(got2) == 1 and all(a["verdict"] == "error" for a in got2),
           str([a["verdict"] for a in got2]))
 
     check("K5 不配顾问 -> 空结果（不调用任何模型）",

@@ -653,7 +653,6 @@ _REVIEW_FEEDBACK_KEY: dict[str, str] = {
     "story_editor": "style.guard",
     "continuity_supervisor": "continuity.report",
     "compliance_officer": "compliance.report",
-    "pacing_editor": "pacing.plan",
     "review_board": "review.verdict",
 }
 

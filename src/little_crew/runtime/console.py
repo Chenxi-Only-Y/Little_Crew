@@ -241,7 +241,7 @@ def _artifacts_for(agent: str, workdir: Path,
             f = resolve_artifact(workdir, arts[0])
             if f is not None:
                 out.append((str(s.get("shotId") or ""), f))
-    elif agent == "assembly_editor":
+    elif agent == "post_production":
         m = workdir / "delivery" / "episode.master.mp4"
         if m.is_file():
             out.append(("成片", m))

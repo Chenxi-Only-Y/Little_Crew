@@ -3,7 +3,7 @@
 ## 为什么需要"通用"而不是每个职位写一遍
 
 名册里 A 类有 5 个：`continuity_supervisor` / `compliance_officer` /
-`pacing_editor` / `review_board` / `story_editor`。
+`review_board` / `story_editor`。
 
 它们的**输出契约完全相同** —— 都是 `ReviewFeedback`（意见 + 严重度 + 返工指令）。
 差异只在"**盯什么**"：
@@ -13,7 +13,7 @@
 | `story_editor` | 文风、用词、句式是否统一（`style.guard`） |
 | `continuity_supervisor` | 跨场人物/物件/时间是否连贯（`continuity.report`） |
 | `compliance_officer` | 授权、敏感内容、标注（`compliance.report`） |
-| `pacing_editor` | 节奏、信息密度（`pacing.report`） |
+
 | `review_board` | 成片整体是否达标（`review.verdict`） |
 
 所以：**一个类 + 一份"盯什么"的清单**，比复制五遍可靠得多 ——
@@ -84,16 +84,6 @@ CRITIC_CHECKS: dict[str, dict[str, Any]] = {
             "是否含未成年人不当内容、暴力细节过度描写",
             "是否使用了真实人物/真实商标的名字",
             "是否含地域/民族/性别歧视性表述",
-        ),
-    },
-    "pacing_editor": {
-        "capability": "pacing.plan",
-        "artifact": "script.draft",
-        "focus": "节奏",
-        "checks": (
-            "是否有连续的场次都在交代信息而没有推进（说明性冗余）",
-            "高潮前是否有足够的铺垫（转折不能凭空出现）",
-            "结尾是否收得住（不能戛然而止或拖尾）",
         ),
     },
     "review_board": {

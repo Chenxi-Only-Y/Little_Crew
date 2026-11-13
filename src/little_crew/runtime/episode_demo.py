@@ -373,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
     # 所以换它**真的会影响裁定** —— 不是摆设。
     #
     # 另外 4 个批评家（`continuity_supervisor` / `compliance_officer` /
-    # `pacing_editor` / `review_board`）**已实现但还没有对应的审查阶段**：
+    # `review_board`）**已实现但还没有对应的审查阶段**：
     # `shot.image` 的审片流程目前不在这一集的流水线里。所以这里只换
     # `story_editor`，其余保持未绑定 —— **不假装它们在工作**。
     if args.llm_critics:
@@ -448,6 +448,15 @@ def main(argv: list[str] | None = None) -> int:
             print("  对白编辑：dialogue_editor 已绑定（确定性，不调模型）")
         except Exception as _e_de:                              # noqa: BLE001
             print(f"  ⚠️ dialogue_editor 绑定失败：{type(_e_de).__name__}: {_e_de}")
+
+    # ---- 后期统筹（`post_production`，2026-11-13 合并原剪辑师+合成剪辑）----
+    try:
+        from little_crew.runtime.post_production import PostProduction as _PostProd
+
+        stubs["post_production"] = _PostProd()
+        print("  后期统筹：post_production 已绑定（确定性，不调模型）")
+    except Exception as _e_pp:                                # noqa: BLE001
+        print(f"  ⚠️ 后期统筹装配失败：{type(_e_pp).__name__}: {_e_pp}")
 
     # ---- 成片整体审（`review_board`，2026-11-08 首次绑定）----
     # 它声明的产物是 `shot.list`（不是 shot.image）—— 审的是"整集节奏/覆盖/偷懒"。
@@ -634,7 +643,7 @@ def main(argv: list[str] | None = None) -> int:
     # 顾问批评家：**不进裁定**，只产意见（见 EpisodeRunner.advisory_critics）
     if args.llm_advisory and args.llm:
         runner.advisory_critics = ("continuity_supervisor",
-                                   "compliance_officer", "pacing_editor")
+                                   "compliance_officer")
         print("  顾问批评家：连贯性 / 合规 / 节奏（**不进裁定**）")
     if args.accept_script:
         print("  ⚠️ --accept-script：无视剧本门禁裁定（仅用于验证下游）")

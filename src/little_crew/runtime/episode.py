@@ -23,7 +23,7 @@ episode.master（成片清单/母版）+ delivery.evidence（交付证据）
 
 ⚠️ 已实录名的产出名与规划文档有差异
 ----------------------------------
-名册声明 ``assembly_editor`` 产出 ``episode.master`` / ``delivery.evidence``，
+名册里 ``episode.master`` / ``delivery.evidence`` 由**代码**产出（成片阶段），
 其 ``requires`` 含 ``shot.video`` —— 那是**含视频**的完整形态。
 本模块产出的是**图像阶段的降级版**：同样的产出名，内容里 ``shots`` 指向图像。
 这不是偷偷降级：清单里显式带 ``stage="image"`` 与 ``pendingStages=["video","audio"]``，
@@ -1725,6 +1725,7 @@ class EpisodeRunner:
             artifacts[o.graph_id] = sorted(o.artifacts)
 
         # ---- 5) 合成 ----
+        self._run_post_production(picked, engine=str(getattr(self, "engine_name", "") or ""))
         self._mark("assemble")
         ir_hashes: dict[str, str] = {}
         for (s, ir) in zip(picked, irs):
@@ -2975,7 +2976,7 @@ class EpisodeRunner:
 
     #: **顾问批评家**（2026-10-18）：这些职位的意见会进报告，但**不进裁定**。
     #:
-    #: 例如 `("continuity_supervisor", "compliance_officer", "pacing_editor")`。
+    #: 例如 `("continuity_supervisor", "compliance_officer")`。
     #: 空元组 = 不跑（默认）。
     #:
     #: ⚠️ 它们**不是免费的**：每个职位每集一次 LLM 调用。
@@ -3540,6 +3541,44 @@ class EpisodeRunner:
                 return {"batch": _outs}
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
+
+    def _run_post_production(self, picked, *, engine: str = "") -> dict:
+        """后期统筹：产出 `post.plan`（字幕/转场/BGM/音轨策略/响度）。
+
+        **不阻断**：拿不到计划就用代码里的默认值（成片照出）。
+        """
+        self._post_plan = {}
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "post_production" not in impls:
+            return {}
+        try:
+            out = self.orch.run_stage(
+                "post_production", "post.plan",
+                {"shot.list": list(picked),
+                 "script.final": getattr(self, "_script_text_for_post", "") or "",
+                 "nativeAudio": bool(getattr(self, "native_audio", False)),
+                 "engine": engine})
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 后期统筹未运行：{type(exc).__name__}: {exc}")
+            return {}
+        plan = self.orch.blackboard.value("post.plan")
+        if not isinstance(plan, dict):
+            plan = ((getattr(getattr(out, "result", None), "output", None) or {})
+                    .get("post.plan"))
+        if not isinstance(plan, dict):
+            return {}
+        self._post_plan = plan
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if wd:
+            (_d := Path(str(wd)) / "delivery").mkdir(parents=True, exist_ok=True)
+            (_d / "post.plan.json").write_text(
+                __import__("json").dumps(plan, ensure_ascii=False, indent=2, default=str),
+                encoding="utf-8")
+        sub = plan.get("subtitle") or {}
+        print(f"  后期统筹：音轨 {plan.get('audioStrategy')} · "
+              f"字幕约 {sub.get('estimatedCount')} 条（{sub.get('maxCharsPerLine')}字/行）· "
+              f"响度目标 {plan.get('loudness', {}).get('targetLufs')} LUFS")
+        return plan
 
     def _render_clip_stage(self, per_shot: Any, *,
                           on_progress: Any = None) -> dict[str, Any]:

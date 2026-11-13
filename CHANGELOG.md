@@ -57,6 +57,44 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.18] — 2026-11-13（**合并剪辑师+合成剪辑 -> 后期统筹；三处声明纠正**）
+
+### 名册 20 -> 19
+
+| 动作 | 内容 |
+|---|---|
+| **合并** | `pacing_editor`（剪辑师，实测更差 4.62 vs 3.79）+ `assembly_editor`（合成剪辑，职责本已代码化）→ **`post_production` 后期统筹** |
+| **纠正声明** | `production_designer` 图像生成→**TEXT_LLM**（它出美术设定文本）；`review_board` 视觉模型→**TEXT_LLM**（审镜头表文本）；`continuity_supervisor` 视觉模型→**TEXT_LLM**（跨镜看图需身份度量，未做） |
+
+**为什么合并**：剪辑师"节奏好不好"没有可测判据；合成剪辑是纯执行。合并后
+**一个职位定方案 + 一份可读计划**，执行仍归 ffmpeg：
+
+```
+post.plan = {
+  audioStrategy: native | tts+bgm（H3 原生音轨 vs 静帧路径）
+  subtitle: {16 字/行, 2 行, 底部安全区 8%, 估算条数}
+  bgm: {gainDb: -22, fadeIn/Out, ducking}
+  transitions: {同场 cut / 换场 fade / 跳接 dissolve, 逐镜序列 + 计数}
+  loudness: {targetLufs: -16, EBU R128 两遍}
+  colorGrade: {executed: false, note}   ← 只记目标，未执行
+}
+```
+
+### 顺带修的口径
+
+- `episode.master` / `delivery.evidence` 改登记为**代码产出**（原来挂在 assembly_editor 名下）
+- 导演/分镜的 `consumes` 去掉已合并的 `pacing.plan` / `episode.assemble`
+- 删掉 `pacing_editor` 的批评家检查项、orchestrator 映射、顾问清单（顾问 2 -> 1）
+- `console` 的 assembly_editor 分支改指 post_production
+
+### 测试
+
+`runtime/post_production_check` **14 项**（计划内容/转场规则/音轨策略/可复现/走编排器），
+`critic_llm_check` 37、`advisory_check` 10、`test_agent_collab` 49 同步更新。
+全量 **2634/2621 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.17] — 2026-11-13（**封面支持标题**：后合成叠字）
 
 ### 封面现在可以带标题了
