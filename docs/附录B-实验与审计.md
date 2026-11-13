@@ -208,6 +208,8 @@ Anthropic 的 [Building effective agents](https://www.anthropic.com/engineering/
 ## B.3 整集链路缺口审计（2026-11-10 复核）
 
 > ⚠️ **本页是历史审计**。当前状态以 `docs/16-当前状态与目标.md` 为准。
+> **2026-11-13 更新**：名册 **19** · 有实现 19 · **真跑 17** · 未接 2；
+> 剪辑师+合成剪辑**已合并为后期统筹**，新增**封面设计师**，角色设计师已接入。
 > 2026-11-10 复核：`review_board` / `composer` / `camera_operator`(开关后) / `dialogue_editor` **已接入**；`character_designer` 仍由规则表承担、未绑成职位；`continuity_supervisor` / `pacing_editor` / `compliance_officer` 仍故意不接（无可测判据）。
 
 > 方法：把名册 19 个职位的 `capabilities` 与 `episode.run()` 里**实际发生的调用**逐条对账。
