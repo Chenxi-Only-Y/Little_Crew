@@ -253,6 +253,14 @@ class Backend:
     body_template_json: str = ""
     #: 响应取值路径，如 ``data.0.url``、``output.0``
     response_path: str = ""
+    #: **内联 base64 的取值路径**（可选，如 `data.0.b64_json`）。
+    #:
+    #: 为什么需要（2026-11-13）：OpenAI 兼容接口有两种返回形态 ——
+    #: `url`（给了链接）与 `b64_json`（直接把图片塞在响应里）。
+    #: 实测 Sudorelay 的 `url` 为空、只有 `b64_json`，于是
+    #: `response_path=data.0.url` 会取到空串 → 产物 uri 为空却不报错。
+    response_b64_path: str = ""
+
     #: 该接口是异步任务式（提交后需轮询）还是同步返回
     async_task: bool = False
     #: 异步时的状态查询路径模板，如 ``/v1/tasks/{task_id}``
@@ -284,10 +292,38 @@ class Backend:
     #: 人类可读备注（用于"选择通道"界面展示）
     notes: str = ""
 
+    #: **自定义 User-Agent**（默认空 = 用通道默认）。
+    #:
+    #: 为什么需要（2026-11-13 实测）：某些网关（Sudorelay）对默认的
+    #: Python urllib UA 直接返回 403 / error code 1010 —— 换 UA 即恢复。
+    #: 这不是"绕过鉴权"，是对方要求声明调用方；按供应商声明最清楚。
+    user_agent: str = ""
+
+    #: **不校验证书**（按供应商显式声明，默认 False）。
+    #:
+    #: 为什么需要（2026-11-13）：有的厂商（实测智谱 bigmodel）返回的证书链
+    #: **缺中间证书**。浏览器/Windows 会自动通过 AIA 补全，Python 的 ssl 不会，
+    #: 表现为**间歇性** `CERTIFICATE_VERIFY_FAILED`（同一请求重试有时能过）。
+    #: 全局关校验是错的（影响所有端点）；按供应商声明才可控 —— 只对这家生效，
+    #: 且在 CLI/doctor 里必须显示出来。
+    insecure_tls: bool = False
+
+    #: **用途限定**：只有这些职位可以调用该通道（空 = 不限）。
+    #:
+    #: 为什么需要它（2026-11-13）：接第三方图像 API 时，最容易出的不是技术故障，
+    #: 而是**误用** —— 主链路渲染一旦被路由到云端生图，一集 40 镜的成本会直接失控，
+    #: 且画面一致性从"本地同一底模"变成"每次远端漂移"。
+    #: 所以"用途限定"必须是**代码强制**（`runtime/backend_guard`），不是文档约定。
+    allowed_agents: tuple[str, ...] = ()
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "kind": self.kind.value,
             "endpoint": self.endpoint,
+            "allowedAgents": list(self.allowed_agents),
+            "insecureTls": bool(self.insecure_tls),
+            "userAgent": self.user_agent,
+            "responseB64Path": self.response_b64_path,
             "apiKeyEnv": self.api_key_env,
             "requiredKinds": list(self.required_kinds),
             "weightFiles": list(self.weight_files),

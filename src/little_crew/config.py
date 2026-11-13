@@ -237,3 +237,15 @@ def load_secrets(root: Path | None = None) -> dict[str, str]:
     except OSError:
         return {}
 
+
+def allow_unverified_risk() -> bool:
+    """是否**显式接受**未核实授权的风险（默认否）。
+
+    自定义供应商（用户自备 key）的授权记录不可能预先核验，所以给一个显式开关：
+    `LITTLE_CREW_ALLOW_UNVERIFIED=1`。放在 config 层是因为 **governance 与
+    models 都要读它**，而两者之间不允许互相依赖（R1 反向依赖，架构守卫会拦）。
+    """
+    import os
+
+    return str(os.environ.get("LITTLE_CREW_ALLOW_UNVERIFIED") or "").strip() in (
+        "1", "true", "yes", "on")

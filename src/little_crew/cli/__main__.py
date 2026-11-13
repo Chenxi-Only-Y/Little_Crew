@@ -163,6 +163,16 @@ def build_parser() -> argparse.ArgumentParser:
     lb.add_argument("--json", action="store_true")
 
     rp = sub.add_parser("report", help="生成某一集的报告页")
+    # ---- provider：第三方供应商 / 自定义模型 API（2026-11-13）----
+    pv = sub.add_parser("provider", help="第三方供应商 / 自定义模型 API")
+    pv_sub = pv.add_subparsers(dest="provider_action")
+    pv_sub.add_parser("vendors", help="内置供应商目录")
+    pv_sub.add_parser("list", help="已配置的供应商与模型")
+    pv_t = pv_sub.add_parser("test", help="检查配置/凭据/端点（不生成）")
+    pv_t.add_argument("model_id")
+    pv_a = pv_sub.add_parser("add", help="追加一条供应商配置（先校验后写）")
+    pv_a.add_argument("--json", required=True, help="供应商 JSON")
+    pv_a.add_argument("--dry-run", action="store_true")
     rp.add_argument("workdir", help="这一集的目录（如 outputs/_EF38）")
     rp.add_argument("--title", default="", help="标题（默认取集信息）")
 
@@ -186,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
         build_parser().print_help()
         return ExitCode.USAGE
 
-    from little_crew.cli import commands
+    from little_crew.cli import commands, provider_cmd
 
     handler = {
         "probe": commands.cmd_probe,
@@ -197,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
         "submit": commands.cmd_submit,
         "status": commands.cmd_status,
         "fetch": commands.cmd_fetch,
+        "provider": provider_cmd.cmd_provider,
         "doctor": commands.cmd_doctor,
         "library": commands.cmd_library,
         "report": commands.cmd_report,

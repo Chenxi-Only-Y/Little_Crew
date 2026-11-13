@@ -358,6 +358,21 @@ class LicenseGate:
 
         # 0) 目录中无记录 -> 视为未核实
         if info is None:
+            # 自定义供应商的授权记录本就不在目录里（用户自备 key）。
+            # 默认拒绝；`LITTLE_CREW_ALLOW_UNVERIFIED=1` 才放行，且写明风险归属。
+            try:
+                from little_crew.config import allow_unverified_risk
+
+                _allow = allow_unverified_risk()
+            except Exception:                                 # noqa: BLE001
+                _allow = False
+            if _allow:
+                return LicenseVerdict(
+                    Verdict.ALLOW, model_id,
+                    reason=(f"模型 {model_id!r} 无授权记录，但用户显式接受风险"
+                            f"（LITTLE_CREW_ALLOW_UNVERIFIED=1）"),
+                    triggered_rule="NO_RECORD_ACCEPTED_RISK",
+                )
             return LicenseVerdict(
                 Verdict.NEEDS_REVIEW, model_id,
                 reason=f"模型 {model_id!r} 无授权记录，需先核实并登记",
@@ -372,6 +387,22 @@ class LicenseGate:
                 triggered_rule="CONFLICTING_SOURCES",
             )
         if not info.verified:
+            # **自定义供应商**：用户自备 key、自担授权责任（2026-11-13）。
+            # 默认仍拒绝；只有显式 `LITTLE_CREW_ALLOW_UNVERIFIED=1` 才放行，
+            # 且裁决里写明"用户显式接受风险"——不能假装它已核实。
+            try:
+                from little_crew.config import allow_unverified_risk
+
+                _allow = allow_unverified_risk()
+            except Exception:                                 # noqa: BLE001
+                _allow = False
+            if _allow:
+                return LicenseVerdict(
+                    Verdict.ALLOW, model_id,
+                    reason=(f"授权**未核实**，但用户显式接受风险"
+                            f"（LITTLE_CREW_ALLOW_UNVERIFIED=1）：{info.note}"),
+                    triggered_rule="UNVERIFIED_ACCEPTED_RISK",
+                )
             return LicenseVerdict(
                 Verdict.NEEDS_REVIEW, model_id,
                 reason=f"授权未核实，拒绝自动启用：{info.note}",

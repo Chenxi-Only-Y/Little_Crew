@@ -712,11 +712,37 @@ def _audio_models() -> list[ModelSpec]:
 # 组装
 # ==========================================================================
 
-def build_default_registry() -> ModelRegistry:
-    """构建内置模型目录。"""
-    return ModelRegistry(
-        _text_models() + _image_models() + _video_models() + _audio_models()
-    )
+def build_default_registry(*, with_custom: bool = True) -> ModelRegistry:
+    """构建模型目录：**内置 + 自定义供应商**（2026-11-13）。
+
+    自定义供应商来自 `config/providers.custom.json`（见 `models/custom_providers.py`）。
+    **冲突不覆盖**：自定义 id 与内置同名 -> 跳过并告警，绝不静默覆盖内置定义
+    （内置定义经过授权核验与实测，被配置悄悄替换是最危险的一种"可配置"）。
+    """
+    specs = _text_models() + _image_models() + _video_models() + _audio_models()
+    if with_custom:
+        try:
+            import os as _os
+
+            if str(_os.environ.get("LITTLE_CREW_CUSTOM_PROVIDERS", "1")) != "0":
+                from little_crew.models.custom_providers import (
+                    load_custom_providers,
+                )
+
+                custom, problems = load_custom_providers()
+                builtin_ids = {s.model_id for s in specs}
+                for s in custom:
+                    if s.model_id in builtin_ids:
+                        problems.append(
+                            f"{s.model_id}：与内置模型同名，已跳过（不覆盖内置定义）")
+                        continue
+                    specs.append(s)
+                for msg in problems:
+                    print(f"  ⚠️ 自定义供应商：{msg}")
+        except Exception as exc:                              # noqa: BLE001
+            # 配置坏了不该让整个平台起不来 —— 但要让人看见
+            print(f"  ⚠️ 自定义供应商加载失败（已忽略）：{type(exc).__name__}: {exc}")
+    return ModelRegistry(specs)
 
 
 #: 任务档案：把"某个任务需要什么"表达成可求解的约束。

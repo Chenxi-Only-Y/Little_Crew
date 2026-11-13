@@ -37,6 +37,8 @@
 
 from __future__ import annotations
 
+from little_crew import net as _net
+
 import json
 import os
 import re
@@ -525,7 +527,7 @@ class LlmClient:
                                      method="POST")
         t0 = time.perf_counter()
         try:
-            with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            with _net.urlopen(req, timeout=timeout_s) as resp:
                 payload = resp.read().decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             raw = ""

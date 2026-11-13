@@ -62,6 +62,21 @@ def _node_params(ir: Mapping[str, Any], kind: str) -> dict:
     return {}
 
 
+def _model_id(ir: Mapping[str, Any]) -> str:
+    """从 IR 里取模型 id（meta.modelId / engine.modelId / nodes[*].engine.modelId）。"""
+    for key in ("modelId", "model_id"):
+        v = (ir.get("meta") or {}).get(key) if isinstance(ir.get("meta"), Mapping) else None
+        if v:
+            return str(v)
+    for n in _nodes(ir):
+        eng = n.get("engine")
+        if isinstance(eng, Mapping):
+            for key in ("modelId", "model_id"):
+                if eng.get(key):
+                    return str(eng[key])
+    return ""
+
+
 def _has_kind(ir: Mapping[str, Any], kind: str) -> bool:
     return any(str(n.get("kind")) == kind for n in _nodes(ir))
 
@@ -139,7 +154,13 @@ class HttpImageCompiler:
                                "已忽略，降级由上层决定")
 
         values = {"prompt": prompt, "negative_prompt": negative,
-                  "width": width, "height": height, "steps": steps,
+                  "width": width, "height": height,
+                  # `size` / `model`：OpenAI 兼容的图像接口（含自定义供应商）
+                  # 用 `"size": "1024x1024"` 与模型名，而不是宽高两个数字。
+                  # 缺这两个变量时模板填充会直接报错（实测踩到）。
+                  "size": f"{width}x{height}",
+                  "model": str(_model_id(ir) or ""),
+                  "steps": steps,
                   "seed": _seed, "cfg": float(sampler.get("cfg") or 4.0),
                   "sampler": str(sampler.get("sampler") or "euler"),
                   "scheduler": str(sampler.get("scheduler") or "simple")}

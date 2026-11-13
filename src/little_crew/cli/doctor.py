@@ -155,6 +155,31 @@ def run_checks() -> list[dict[str, Any]]:
     ok6, why6 = _ffmpeg_ok()
     checks.append({"name": "FFmpeg", "ok": ok6, "blocking": ok6 is False,
                    "detail": why6})
+
+    # 自定义供应商（2026-11-13）：**不阻塞**（用户可选），但必须列出来 ——
+    # 否则"我配了怎么没生效"只能靠猜。
+    try:
+        from little_crew.models.custom_providers import describe as _desc
+
+        info = _desc()
+        if not info["exists"]:
+            checks.append({"name": "自定义供应商", "ok": True, "blocking": False,
+                           "detail": f"未配置（{info['path']}）"})
+        else:
+            parts = []
+            for r in info["providers"]:
+                key = "key √" if r["keyPresent"] else f"缺 {r['keyEnv']}"
+                scope = ("限定 " + ",".join(r["allowedAgents"])) if r["allowedAgents"] else "不限"
+                parts.append(f"{r['id']}（{r['task']} · {key} · {scope}）")
+            bad = info["problems"]
+            detail = " · ".join(parts) or "配置为空"
+            if bad:
+                detail += f" · ⚠️ {len(bad)} 条问题"
+            checks.append({"name": "自定义供应商", "ok": not bad, "blocking": False,
+                           "detail": detail[:160]})
+    except Exception as exc:                                  # noqa: BLE001
+        checks.append({"name": "自定义供应商", "ok": False, "blocking": False,
+                       "detail": f"读取失败：{type(exc).__name__}: {exc}"})
     return checks
 
 
