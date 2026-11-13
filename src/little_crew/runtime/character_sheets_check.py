@@ -201,12 +201,19 @@ def main() -> int:
           and all(PROPORTION_PROFILES.values()), "")
     pa = _bp5(lib.sheets[0], proportion="adult")
     pc = _bp5(lib.sheets[0], proportion="cute")
-    check("A20 ★★★ cute 档：脸更短(0.78~0.82)/中庭短/眼位 42%~45%/眼裂 1/4",
+    check("A20 ★★★ cute 档（v1 数值）：脸宽 0.78~0.82/中庭 0.32/眼位 42%~45%/眼裂 1/4",
           all(k in pc for k in ("0.78~0.82", "0.32", "42%~45%", "1/4")), "")
     check("A21 ★★★ cute 档负面词换成「成熟感」组（不再用「比例崩坏」）",
           "成熟御姐感" in pc and "马脸" not in pc, "")
     check("A22 ★★ 未知比例档退回 adult（不崩）",
           resolve_proportion("xxx")[0] == "adult", "")
+    # ⚠️ 2026-11-13 回退：v2 曾给 cute 单独加"特写 90%~95%"布局，
+    # 与"眼裂 1/3 + 无毛孔磨皮"同时生效后出现过拟合娃娃脸（用户判定"这版不行"）。
+    # 现在**两档共用布局**，只靠比例锁区分。
+    check("A23 ★★★ 两档共用布局（cute 不再单独放大特写）",
+          "90%~95%" not in pc and "左侧约占四成半" in pc and "左侧约占四成半" in pa, "")
+    check("A24 ★★ cute 档皮肤要求「轻微磨皮但保留极细纹理」（不是无毛孔）",
+          "保留极细纹理" in pc and "哑光瓷肌" not in pc, "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
