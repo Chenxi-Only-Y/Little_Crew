@@ -57,6 +57,30 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.23] — 2026-11-13（**B1：验收图入库**）
+
+### 问题
+
+用户验收的 4 张角色设定板（A1~A4）与提示词全文此前只在 `outputs/` ——
+而 `outputs/` 被 `.gitignore` 忽略，**仓库里看不到验收证据**。
+
+### 入库内容（合计 **432 KB**）
+
+| 文件 | 大小 | 说明 |
+|---|---|---|
+| `research/character-sheets/approved/A1~A4.jpg` | 56~71 KB × 4 | 长边 1024、q4 缩略图 |
+| `research/character-sheets/approved/contact_sheet_4.jpg` | 151 KB | 2×2 联系表（一眼看全 4 张） |
+| `research/character-sheets/prompts/user_prompt_3.txt` | 4 KB | **提示词全文**（1708 字） |
+| `research/character-sheets/approved.json` | — | 清单增 `thumb / sha256Thumb / sha256Original / originalBytes / originalSize / promptRepoFile / promptFullText / repoLayout` |
+
+### 纪律
+
+- **原图不入库**（9 MB 级），清单里保留 `file` 路径与 `sha256Original`，可核对
+- `refined26` 的 8 张同样不入库（19 MB），清单已有路径
+- sha256 与原记录逐张核对一致（升级后图没被替换）
+
+---
+
 ## [0.4.0-beta.22] — 2026-11-13（**B2 续：真实 token 用量接入成本表**）
 
 ### 用户提供价目表后补的两块

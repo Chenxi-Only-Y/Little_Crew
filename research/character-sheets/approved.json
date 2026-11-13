@@ -12,7 +12,22 @@
       "promptFile": "outputs/_usertest/user_prompt_3.txt",
       "note": "图生图：用户提供的「更好那版」参考图（1535px）+ 长提示词（1700字）",
       "approvedBy": "user",
-      "approvedAt": "2026-11-13"
+      "approvedAt": "2026-11-13",
+      "thumb": "research/character-sheets/approved/A1_ref_better.jpg",
+      "sha256Thumb": "663cf42b807b8ac0f1018c92890bcd838ced9efffb0982e76d8aa924aaebc2a2",
+      "thumbBytes": 57955,
+      "thumbSize": [
+        1024,
+        576
+      ],
+      "originalBytes": 2197183,
+      "originalSize": [
+        1672,
+        941
+      ],
+      "sha256Original": "bbfad269ea81ade653801a72dfdea59bcf6f6ebbfec0e4ecdb9e12a05af58619",
+      "promptRepoFile": "research/character-sheets/prompts/user_prompt_3.txt",
+      "promptSha256": "5699ef9e3c4177d2a4ecf8e529b05d672944cac7e1f09a3d16fa766dd1acdc3e"
     },
     {
       "tag": "A2_ref_purple",
@@ -24,7 +39,22 @@
       "promptFile": "outputs/_usertest/user_prompt_3.txt",
       "note": "图生图：参考图=灰紫露肩+黑阔腿裤（958px）+ 长提示词",
       "approvedBy": "user",
-      "approvedAt": "2026-11-13"
+      "approvedAt": "2026-11-13",
+      "thumb": "research/character-sheets/approved/A2_ref_purple.jpg",
+      "sha256Thumb": "fa7c9e866e9e3f8e23e0799857b921ab2c85c41dc3ed4cf18856291683aa04db",
+      "thumbBytes": 73491,
+      "thumbSize": [
+        1024,
+        576
+      ],
+      "originalBytes": 2325649,
+      "originalSize": [
+        1672,
+        941
+      ],
+      "sha256Original": "fdd912ddfbb8a6bc4269c8ba60ba09fb43427d7adc6ee7f281e5ff7fb6326644",
+      "promptRepoFile": "research/character-sheets/prompts/user_prompt_3.txt",
+      "promptSha256": "5699ef9e3c4177d2a4ecf8e529b05d672944cac7e1f09a3d16fa766dd1acdc3e"
     },
     {
       "tag": "A3_ref_school",
@@ -36,7 +66,22 @@
       "promptFile": "outputs/_usertest/user_prompt_3.txt",
       "note": "图生图：参考图=藏蓝开衫+灰百褶裙（958px）+ 长提示词",
       "approvedBy": "user",
-      "approvedAt": "2026-11-13"
+      "approvedAt": "2026-11-13",
+      "thumb": "research/character-sheets/approved/A3_ref_school.jpg",
+      "sha256Thumb": "8028be02a1a2adf6a5e01d5b7ee9a20d4348d88c0e3bccb61c3988034f1516eb",
+      "thumbBytes": 66643,
+      "thumbSize": [
+        1024,
+        576
+      ],
+      "originalBytes": 2271115,
+      "originalSize": [
+        1672,
+        941
+      ],
+      "sha256Original": "0acc2494faa95f06891825f33abe2335bb466d125dd9ae03156ba57f69f7f191",
+      "promptRepoFile": "research/character-sheets/prompts/user_prompt_3.txt",
+      "promptSha256": "5699ef9e3c4177d2a4ecf8e529b05d672944cac7e1f09a3d16fa766dd1acdc3e"
     },
     {
       "tag": "A4_ref_y2k",
@@ -48,7 +93,22 @@
       "promptFile": "outputs/_usertest/user_prompt_3.txt",
       "note": "图生图：参考图=豹纹吊带+军绿工装裤（958px）+ 长提示词",
       "approvedBy": "user",
-      "approvedAt": "2026-11-13"
+      "approvedAt": "2026-11-13",
+      "thumb": "research/character-sheets/approved/A4_ref_y2k.jpg",
+      "sha256Thumb": "8c9a601c039d73a62afc6a46b479e8c017982366063f382efd798facb1e388e7",
+      "thumbBytes": 70159,
+      "thumbSize": [
+        1024,
+        576
+      ],
+      "originalBytes": 2344252,
+      "originalSize": [
+        1672,
+        941
+      ],
+      "sha256Original": "d91ce5cc74142114b301a9d5e5f524b4f678d38fa4ca4637225f494a9a4fdaaf",
+      "promptRepoFile": "research/character-sheets/prompts/user_prompt_3.txt",
+      "promptSha256": "5699ef9e3c4177d2a4ecf8e529b05d672944cac7e1f09a3d16fa766dd1acdc3e"
     }
   ],
   "whyThese": [
@@ -111,5 +171,16 @@
       "source": "outputs/_usertest/refs8/r8_stripe2.png.jpg"
     }
   ],
-  "editsNote": "2.6 的 /images/edits 现在可用（早期文档的 502 记录已过期）；2.6 在细节保持上优于 2.5（百褶裙、菱格纹、鞋结构）"
+  "editsNote": "2.6 的 /images/edits 现在可用（早期文档的 502 记录已过期）；2.6 在细节保持上优于 2.5（百褶裙、菱格纹、鞋结构）",
+  "repoLayout": {
+    "why": "用户验收的图原本只在 outputs/（被 .gitignore 忽略），仓库里看不到证据。入库**缩略图 + 提示词全文**（长边 1024、q4），原图仍留在 outputs/ 作为源文件。",
+    "approvedDir": "research/character-sheets/approved/",
+    "promptsDir": "research/character-sheets/prompts/",
+    "contactSheet": "research/character-sheets/approved/contact_sheet_4.jpg",
+    "sizeBudget": "4 张缩略图 + 联系表 + 提示词 ≈ 450 KB",
+    "notIncluded": "refined26 的 8 张（约 19 MB）与 4 张原图（约 9 MB）不入库，清单里有路径与 sha256"
+  },
+  "contactSheet": "research/character-sheets/approved/contact_sheet_4.jpg",
+  "contactSheetSha256": "691c05fd26a2a64eb8d6eead947ff84d45b70f4d8710ff889a6d4e83a3dfeb34",
+  "promptFullText": "高精度3D半写实国漫女性角色四视图，精致CG建模与细腻BJD人偶感五官，冷白粉润肌肤，甜美中带清冷感的现代甜酷少女。严格参考图片中的人物外貌、发型、妆容、服饰与配饰，保留柔和立体的面部体积和高级面料质感，不要真人摄影质感，不要平面插画感。\n【构图与展示】\n横向16:9画幅，干净的浅灰色影棚背景，背景与地面自然衔接。左侧约占画面四成半，为同一人物的大幅正面头肩特写，清晰展示发型、面部、耳饰、肩颈、锁骨和上胸部，头顶保留少量空间，完整呈现蓬松发型。人物正对镜头，头部端正，双眼平视，无歪头、仰头或低头。右侧依次并列正面全身、严格侧面全身、背面全身，三个全身视图大小一致、脚底齐平，从头顶到鞋底完整入画。站姿自然端正，双臂放松垂于身体两侧，无手势。四个视图必须属于同一人物，五官、肤色、发型、服装结构和首饰完全一致。\n【脸型与五官】\n年轻成年少女，小巧偏窄的鹅蛋脸，融合偏短的柔和瓜子脸轮廓。额头饱满，颧骨平缓，面颊柔润，下颌自然收窄，下巴精巧，避免过长、过尖。下颌边缘依靠细腻的体积与柔和明暗塑造，不使用生硬描边。眼睛为较大但不过分夸张的杏眼，横向舒展，眼尾轻微上扬，内眼角精致；灰棕色玻璃质感虹膜，瞳孔与深色外环清晰，眼内有柔和高光。上眼睑略带厚度，双眼皮自然，睫毛细长有层次，下睫毛清楚而轻盈。眉毛为柔和灰棕色，眉头浅淡，眉峰轻缓，眉尾自然收细。鼻梁纤细直顺，鼻根过渡柔和，鼻尖小巧圆润，鼻翼窄。嘴唇为低饱和豆沙玫瑰粉，上唇唇峰柔和，下唇略饱满，带细腻水润光泽。双唇自然轻合，神情平静，眼神柔和而略带疏离感。\n【肤色与妆容】\n冷调瓷白肤色，带自然淡粉血色，面部、耳朵、颈部和身体肤色统一。皮肤清透柔润，以细腻CG材质呈现，弱化毛孔，保留鼻尖、面颊和唇周的柔和体积。眼妆采用灰粉与淡玫瑰棕晕染，上眼线纤细，下眼睑带轻薄粉色，卧蚕自然。面颊轻扫淡粉腮红，鼻尖微微泛粉，妆容精致清淡，不使用浓重修容。\n【发型与首饰】\n深巧克力棕长卷发，整体接近黑棕色，受光处出现柔和冷棕光泽。高颅顶，发量丰厚，发根蓬松，接近中分的自然分缝。额前长刘海向两侧弯曲散开，少量细发垂落眉间，鬓发修饰脸颊。头发从颧骨附近开始形成松散的大波浪，卷曲方向自然交错，发束有粗细变化，长度垂至腰部附近。背面呈现丰满的层叠波浪，发尾轻盈，避免整齐僵硬的统一卷曲。双耳佩戴银色细长垂坠耳饰，由小型晶石、细链和星芒形吊坠组成，闪光精巧克制。\n【服饰与搭配】\n上身穿低饱和灰紫色细罗纹针织短上衣，面料柔软细密，具有轻薄而有厚度的弹性织物质感。领口采用不对称斜向露肩结构，人物左肩露出圆润肩头，并保留两条窄肩带；另一侧肩部由衣料自然包覆。领缘形成柔软叠褶，衣身贴合但不勒紧，人物左侧腰部有抽绳收褶，形成斜向汇聚的细密褶皱，短抽绳自然垂落。衣摆露出少量腰部与肚脐。长袖贴顺手臂，袖口延伸至手背附近，腕部有自然堆褶。\n下身搭配高腰炭黑色宽松阔腿长裤，裤腰清楚，腰胯贴合，裤腿从大腿向下自然垂落，宽松有余量。腰间搭配黑色皮带与银色圆角金属扣，腰胯处加入斜向交叠的黑色皮革结构片，形成不对称层次，边缘有细窄银色装饰线。侧腰设置银色扣环与细长垂带。裤料为细腻哑光材质，保留纵向垂坠褶皱，裤脚覆盖部分鞋面，并产生适量堆叠。背面保留裤腰、臀部拼接线与简洁后袋。脚穿黑色圆头厚底皮鞋，鞋面带克制光泽，鞋底厚实但不过高。\n【身材、灯光与质感】\n身形纤细高挑，头身比例修长协调，肩颈舒展，腰线清晰，双腿长而自然，小胸，不夸张胸腰臀比例。大面积柔光从正前上方照射，辅以轻柔轮廓光，突出面部体积、发束层次、针织纹理与裤料垂感。脚下仅保留浅淡接触阴影。画面清晰细腻，色彩低饱和，8K级角色设定图质感，无文字、无水印。\n【负面提示词】\n真人照片、真人皮肤质感、明显毛孔、蜡像、塑料脸、芭比脸、二维线稿、平面五官、生硬下颌线、过尖下巴、长脸、夸张大眼、斗鸡眼、浓妆、油亮皮肤、稀疏扁塌头发、僵硬卷发、不同视图换脸、发型不一致、服饰结构不一致、歪头、驼背、手势、短腿、大头、紧身裤、低腰裤、夸张大胸、乳沟、廉价面料、做旧、复杂背景、强烈阴影、噪点、裁切头顶、裁切鞋子、多余肢体、文字、水印。\n"
 }
