@@ -79,6 +79,7 @@ class CharacterSheetPainter:
     def paint(self, sheets: Any, out_dir: str | Path, *,
               style: str = "", proportion: str = "adult",
               refine: bool = False, refiner: Any = None,
+              qc: bool = False, qc_judge: Any = None,
               qc_extra: bool = True) -> dict[str, Any]:
         """把角色表画成图集。**返回报告，从不抛**（除配置性错误外都记进报告）。"""
         out = Path(str(out_dir))
@@ -87,9 +88,19 @@ class CharacterSheetPainter:
                                   "outDir": str(out), "painted": [], "failed": [],
                                   "skipped": [], "limit": self.limit,
                                   "refine": bool(refine), "refined": [],
-                                  "refineFailed": []}
+                                  "refineFailed": [],
+                                  "qc": bool(qc), "qcReports": [],
+                                  "qcFailed": []}
         # 保图微调（2026-11-13）：生成后立刻用 2.6 的 /images/edits 修细节。
         # 默认关；失败只记录，不影响整集（与"图集不阻断"同一纪律）。
+        if qc and qc_judge is None:
+            try:
+                from little_crew.review.sheet_qc import judge as qc_judge
+            except Exception as exc:                          # noqa: BLE001
+                report["qcFailed"].append(
+                    {"reason": f"质检模块不可用：{type(exc).__name__}: {exc}"})
+                qc = False
+
         if refine and refiner is None:
             try:
                 from little_crew.runtime.sudorelay_edits import refine_sheet as refiner
@@ -168,6 +179,27 @@ class CharacterSheetPainter:
                 else:
                     report["refineFailed"].append(
                         {"id": cid, "error": str(rr.get("error"))[:160]})
+            if qc and qc_judge is not None:
+                targets = [("original", Path(item["file"]))]
+                refined_file = str((item.get("refined") or {}).get("file") or "")
+                if refined_file:
+                    targets.append(("refined", Path(refined_file)))
+                for label, target in targets:
+                    if not target.is_file():
+                        continue
+                    try:
+                        qrep = qc_judge(str(target), context=f"角色设定板：{name}")
+                    except Exception as exc:                  # noqa: BLE001
+                        report["qcFailed"].append(
+                            {"id": cid, "which": label,
+                             "error": f"{type(exc).__name__}: {exc}"})
+                        continue
+                    qrep["which"] = label
+                    qrep["characterId"] = cid
+                    report["qcReports"].append(qrep)
+                    from little_crew.review.sheet_qc import summarize as _qsum
+
+                    print(f"  🔎 质检 {cid}/{label}：{_qsum(qrep)}")
             report["painted"].append(item)
         report["count"] = len(report["painted"])
         report["ok"] = not report["failed"]

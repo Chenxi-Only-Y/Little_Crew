@@ -2613,7 +2613,8 @@ class EpisodeRunner:
                 style=str(getattr(self, "character_sheet_style", "") or ""),
                 proportion=str(getattr(self, "character_sheet_proportion", "adult")
                                or "adult"),
-                refine=bool(getattr(self, "character_sheet_refine", False)))
+                refine=bool(getattr(self, "character_sheet_refine", False)),
+                qc=bool(getattr(self, "character_sheet_qc", False)))
             self._character_sheets = {"enabled": True, **report}
             _n_ok = len(report.get("painted") or ())
             _n_bad = len(report.get("failed") or ())
