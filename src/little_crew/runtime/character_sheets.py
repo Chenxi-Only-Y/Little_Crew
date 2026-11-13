@@ -79,7 +79,7 @@ class CharacterSheetPainter:
     def paint(self, sheets: Any, out_dir: str | Path, *,
               style: str = "", proportion: str = "adult",
               refine: bool = False, refiner: Any = None,
-              qc: bool = False, qc_judge: Any = None,
+              qc: bool = False, qc_judge: Any = None, qc_attempts: int = 1,
               qc_extra: bool = True) -> dict[str, Any]:
         """把角色表画成图集。**返回报告，从不抛**（除配置性错误外都记进报告）。"""
         out = Path(str(out_dir))
@@ -89,8 +89,8 @@ class CharacterSheetPainter:
                                   "skipped": [], "limit": self.limit,
                                   "refine": bool(refine), "refined": [],
                                   "refineFailed": [],
-                                  "qc": bool(qc), "qcReports": [],
-                                  "qcFailed": []}
+                                  "qc": bool(qc), "qcAttempts": int(qc_attempts),
+                                  "qcReports": [], "qcFailed": []}
         # 保图微调（2026-11-13）：生成后立刻用 2.6 的 /images/edits 修细节。
         # 默认关；失败只记录，不影响整集（与"图集不阻断"同一纪律）。
         if qc and qc_judge is None:
@@ -180,15 +180,17 @@ class CharacterSheetPainter:
                     report["refineFailed"].append(
                         {"id": cid, "error": str(rr.get("error"))[:160]})
             if qc and qc_judge is not None:
-                targets = [("original", Path(item["file"]))]
+                # 只判**最终交付的那张**（有精修判精修，否则判原图）——
+                # 质检单次 20~40s，判两张等于白烧一倍时间（实测）。
                 refined_file = str((item.get("refined") or {}).get("file") or "")
-                if refined_file:
-                    targets.append(("refined", Path(refined_file)))
+                targets = [("refined", Path(refined_file))] if refined_file else [
+                    ("original", Path(item["file"]))]
                 for label, target in targets:
                     if not target.is_file():
                         continue
                     try:
-                        qrep = qc_judge(str(target), context=f"角色设定板：{name}")
+                        qrep = qc_judge(str(target), context=f"角色设定板：{name}",
+                                        attempts=int(qc_attempts))
                     except Exception as exc:                  # noqa: BLE001
                         report["qcFailed"].append(
                             {"id": cid, "which": label,

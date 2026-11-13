@@ -40,7 +40,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("质检员", [sys.executable, "-m", "little_crew.review.qc_inspector_check"], 14),
     ("设定板质检", [sys.executable, "-m", "little_crew.review.sheet_qc_check"], 19),
     ("自定义供应商", [sys.executable, "-m", "little_crew.runtime.custom_providers_check"], 30),
-    ("角色设定图", [sys.executable, "-m", "little_crew.runtime.character_sheets_check"], 44),
+    ("角色设定图", [sys.executable, "-m", "little_crew.runtime.character_sheets_check"], 47),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),
     ("模型路由与双通道", [sys.executable, str(PLATFORM / "tests" / "test_model_routing.py")], 60),
     # **同一模型的调用串行化**：GLM 端点并发受限，并发调用时第二个返回空内容，

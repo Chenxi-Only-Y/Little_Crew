@@ -250,6 +250,45 @@ def main() -> int:
               len(rep_bad.get("refineFailed") or []) == 1
               and len(rep_bad.get("painted") or []) == 1, str(rep_bad.get("refineFailed"))[:80])
 
+        # 质检：只判"最终交付那张"（有精修判精修，否则原图）；attempts 透传
+        seen: list[str] = []
+
+        def fake_judge(path: str, *, context: str = "", attempts: int = 1) -> dict:
+            seen.append(f"{Path(path).name}|attempts={attempts}")
+            return {"kind": "sheet.qc", "verdict": "no_defect", "passed": 12,
+                    "reviewed": 12, "failed": 0, "unclear": 0, "items": [],
+                    "claim": "未发现硬缺陷（不等于合格）"}
+
+        rep_q1 = _Painter(limit=1).paint(_lib(1), Path(td5) / "q1", qc=True,
+                                         qc_judge=fake_judge, qc_attempts=1)
+        check("E7 ★★★ 无精修时只判 1 张（原图）",
+              len(rep_q1.get("qcReports") or []) == 1 and "sheet.png" in seen[0],
+              str(seen))
+        seen.clear()
+        rep_q2 = _Painter(limit=1).paint(
+            _lib(1), Path(td5) / "q2", refine=True,
+            refiner=lambda s: (lambda p: {"ok": True, "out": str(p),
+                                          "model": "gpt-image-2.6-sunburst",
+                                          "seconds": 1.0})(Path(s).with_name("sheet_refined.png")),
+            qc=True, qc_judge=fake_judge, qc_attempts=2)
+        # 上面 refiner 没真正写文件 -> 会跳过；换成真写
+        seen.clear()
+
+        def refiner2(src: str) -> dict:
+            out = Path(src).with_name("sheet_refined.png")
+            out.write_bytes(PNG)
+            return {"ok": True, "out": str(out), "model": "gpt-image-2.6-sunburst",
+                    "seconds": 1.0}
+
+        rep_q3 = _Painter(limit=1).paint(_lib(1), Path(td5) / "q3", refine=True,
+                                         refiner=refiner2, qc=True,
+                                         qc_judge=fake_judge, qc_attempts=2)
+        check("E8 ★★★ 有精修时只判精修那张（省一半）",
+              len(rep_q3.get("qcReports") or []) == 1 and "sheet_refined.png" in seen[0],
+              str(seen))
+        check("E9 ★★ attempts 透传给质检（严格模式=2）",
+              "attempts=2" in seen[0], str(seen))
+
     from little_crew.runtime import sudorelay_edits as SE
 
     check("E5 ★★ 精修默认模型是 2.6（早期 502 记录已过期）",
