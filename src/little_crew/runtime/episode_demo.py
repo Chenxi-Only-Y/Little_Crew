@@ -194,6 +194,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="启用配音轨（本机 breeze-tts-2，每句约 3~4 秒）")
     ap.add_argument("--dry-run", action="store_true",
                     help="不出图，只跑到分镜与桥接")
+    ap.add_argument("--render-model", default="",
+                    help="主链路渲染模型（默认 z-image-turbo；填云端模型如 "
+                         "gpt-image-2.6-sunburst 即「整集用云端跑」）")
     ap.add_argument("--backend", default="localgen",
                     choices=["localgen", "comfyui"],
                     help="出图后端（默认 localgen）。comfyui 才能编译控制图节点")
@@ -538,7 +541,13 @@ def main(argv: list[str] | None = None) -> int:
             fetcher=lambda r: f"PNG:{r.uri}".encode(), checkpoint=ck)
         backend = None
     else:
-        spec = build_default_registry().get("z-image-turbo")
+        _rm = str(getattr(args, "render_model", "") or "").strip()
+        spec = build_default_registry().get(_rm or "z-image-turbo")
+        if spec is None:
+            print(f"  ❌ 渲染模型 {_rm!r} 未注册（可用 --render-model 指定已注册模型）")
+            return 1
+        if _rm:
+            print(f"  渲染模型：{_rm}（{spec.display_name}）")
         # 后端由 `--backend` 决定（默认 localgen，与改造前一致）。
         #
         # 改造前这里写死 `BackendKind.HTTP` —— 于是整集永远走 local-gen，
@@ -553,11 +562,15 @@ def main(argv: list[str] | None = None) -> int:
         be = _pick_backend(spec, args.backend)
         print(f"  后端 {args.backend} -> {_describe_backend(be)}")
         ch = _make_channel(be, timeout_s=1800)
-        okv, why = ch.available()
-        if not okv:
-            print(f"  ❌ {args.backend} 不可用：{why}")
-            print("     先启动服务，或加 --dry-run 只验证到分镜。")
-            return 1
+        # 云端后端：根路径通常 401/404，探活必假 —— **不探，直接信配置**（与角色设计师一致）
+        if bool(getattr(be, "is_local_by_default", True)):
+            okv, why = ch.available()
+            if not okv:
+                print(f"  ❌ {args.backend} 不可用：{why}")
+                print("     先启动服务，或加 --dry-run 只验证到分镜。")
+                return 1
+        else:
+            print("  云端后端：跳过探活（远端根路径不接受健康检查）")
         # **编译器按后端选**（2026-10-22）：`_null_compiler()` 意味着 IR 从不被编译
         # —— 一直是「一份 http 形态的任务」，ComfyUI 收不了，而 local-gen 正好要它。
         _comp = (_comfy_compiler(ch, be.endpoint)

@@ -16,7 +16,8 @@
       "vendor": "sudorelay",
       "apiKeyEnv": "SUDORELAY_API_KEY",
       "allowedAgents": [
-        "character_designer"
+        "character_designer",
+        "render"
       ],
       "license": {
         "id": "openai-gpt-image",
@@ -34,7 +35,8 @@
               2048
             ],
             "chinese_text_score": 0.85
-          }
+          },
+          "bodyTemplate": "{\"model\": \"{model}\", \"prompt\": \"{prompt}\", \"size\": \"1536x1024\", \"n\": 1}"
         },
         {
           "id": "gpt-image-2.5-sunburst",
@@ -46,7 +48,8 @@
               2048
             ],
             "chinese_text_score": 0.85
-          }
+          },
+          "bodyTemplate": "{\"model\": \"{model}\", \"prompt\": \"{prompt}\", \"size\": \"1536x1024\", \"n\": 1}"
         },
         {
           "id": "gpt-image-2",
@@ -58,10 +61,11 @@
               2048
             ],
             "chinese_text_score": 0.8
-          }
+          },
+          "bodyTemplate": "{\"model\": \"{model}\", \"prompt\": \"{prompt}\", \"size\": \"1536x1024\", \"n\": 1}"
         }
       ],
-      "notes": "OpenAI 兼容中转；1536x1024 横版，适合角色设定板（左侧留白/文字栏）。仅角色设计师可用。",
+      "notes": "OpenAI 兼容中转；1536x1024 横版，适合角色设定板（左侧留白/文字栏）。 主链路（render）也允许：用于「用云端跑整集」的关键镜/整集渲染。",
       "userAgent": "OpenAI/Python 1.0",
       "responseB64Path": "data.0.b64_json"
     },

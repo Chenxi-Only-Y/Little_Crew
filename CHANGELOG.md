@@ -57,6 +57,44 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.20] — 2026-11-13（**A1：云端整集跑通**，并修掉三个"本地能跑、云端就挂"的洞）
+
+### 真机结果（一集，全部走云端）
+
+```
+EF-CLOUD-2 · 20 镜 · 20/20 有产物 · ① 视觉闸严重 1 条 -> 重画 1 镜 -> 复验通过
+成片 delivery/episode.master.mp4 · 114.0s · 6.16 MB · h264 832x480
+封面 delivery/cover.png（选帧 + ffmpeg 叠加标题）
+门禁：✅ 跑通一集 —— 全部镜头就绪
+```
+
+新增开关 **`--render-model`**：主链路渲染模型（默认 `z-image-turbo`；填云端模型即整集用云端跑）。
+云端后端**跳过探活**（远端根路径 401，探活必假）。
+
+### 三个洞（都是这次跑出来的，本地路径从不触发）
+
+| # | 现象 | 根因 | 修法 |
+|---|---|---|---|
+| 1 | 成片阶段 `AttributeError: 'list' object has no attribute 'cache_hits'` | 云端并行分支返回**纯 list**，下游按 `batch.outcomes` 访问 | `_render` 并发分支包成 `CachedBatch`；新增 `_outcomes_of()` 两种形态都认 |
+| 2 | 可数审片 **20/32 镜 `missing-artifact`**，门禁全要返工 | 云端 b64 产物被写到**系统临时目录**（`%TEMP%/little-crew-inline/`），workdir 里没有 | 新增 `_materialize_batch()`：按镜头写进 `assets/shots/<sid>/<sid>-<name>`，并把产物名规范化（去盘符/反斜杠） |
+| 3 | `size-mismatch` 满屏（期望 832x480，实际 1024x1536） | 云端输出尺寸由服务商决定，IR 约束按本地分辨率核对 | 新增 `_normalize_cloud_image()`：落盘时统一到 `engine_resolution`（cover + 居中裁切），**合同不放宽** |
+
+顺带：`config/providers.custom.json` 给 Sudorelay 模型加 `allowedAgents: ["render"]` 与固定尺寸
+`bodyTemplate`（IR 的 values 里没有 `size`，写进模板避免破坏本地缓存哈希）。
+
+### 回归
+
+`runtime/cloud_episode_check` **8 项**（批结果形态 / 产物落盘 / 字节归一 / 本地不归一），
+全量 **2655/2642 + 架构守卫 PASS**。
+
+### 仍待办（记录下来，不是"已完成"）
+
+- `--render-model` 与混合渲染（`--cloud-shots`）是**两条路**，尚未合并成统一策略
+- 本机 `FFMPEG` 环境变量未配置（归一变通为"实例属性 -> 字面量路径 -> PATH"）
+- 两处非致命告警：配额对账 `script_draft` NameError、接口缺陷清单 `shots` UnboundLocalError
+
+---
+
 ## [0.4.0-beta.19] — 2026-11-13（**方案 C：混合渲染（关键镜云端 + 角色沿用现有库）**）
 
 ### 用户决定

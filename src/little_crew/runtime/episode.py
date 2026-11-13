@@ -1676,6 +1676,8 @@ class EpisodeRunner:
         batch, _retried = self._retry_channel_failures(batch, irs, rstats)
         if _retried:
             print(f"  ↻ 渲染重试：{_retried} 镜成功（通道瞬时不可用）")
+        # 产物落盘（云端 b64 产物在系统临时目录，不落盘下游全找不到）—— 见方法注释
+        self._materialize_batch(batch, picked)
 
         # ---- 4.5) 验收门禁（C3）----
         #
@@ -1705,6 +1707,7 @@ class EpisodeRunner:
              applied_repairs) = self._repair_loop(
                 gate_report=gate_report, batch=batch, irs=irs, picked=picked)
 
+        self._materialize_batch(batch, picked)
         gate_dict = gate_report.as_dict() if gate_report is not None else {}
         if repair_log:
             gate_dict["repairRounds"] = list(repair_log)
@@ -1720,9 +1723,10 @@ class EpisodeRunner:
         # 于是清单指向一张**已经被判定不合格的图**。
         # 那类错误不报任何异常，只是"交付的图不是最终那张"。
         artifacts: dict[str, list[str]] = {}
-        for o in batch.outcomes:
+        for o in self._outcomes_of(batch):
             # 产物名以缓存层为准（它保证唯一）
-            artifacts[o.graph_id] = sorted(o.artifacts)
+            artifacts[str(getattr(o, "graph_id", ""))] = sorted(
+                getattr(o, "artifacts", {}) or {})
 
         # ---- 5) 合成 ----
         self._run_post_production(picked, engine=str(getattr(self, "engine_name", "") or ""))
@@ -2761,6 +2765,128 @@ class EpisodeRunner:
         except Exception as _e:                              # noqa: BLE001
             print(f"  ⚠️ 场景主体检查未运行：{type(_e).__name__}: {_e}")
 
+    @staticmethod
+    def _outcomes_of(batch: Any) -> list:
+        """兼容两种批结果形态：`CachedBatch.outcomes`（串行）与 `list[CacheOutcome]`（并行）。
+
+        ⚠️ 2026-11-13 云端并行首次真跑踩到：`_render` 在云端并发分支返回
+        `{"batch": [...]}`（纯列表），而下游一律按 `batch.outcomes` 访问 ——
+        `AttributeError: 'list' object has no attribute 'outcomes'`，整集在渲染后崩掉。
+        """
+        outs = getattr(batch, "outcomes", None)
+        if outs is not None:
+            return list(outs)
+        if isinstance(batch, (list, tuple)):
+            return list(batch)
+        return []
+
+    def _normalize_cloud_image(self, path: Path) -> bytes | None:
+        """把**云端产物**统一缩放到引擎分辨率（cover + 中心裁切）。
+
+        ## 为什么必须做（2026-11-13）
+
+        云端生图的输出尺寸由服务商决定：请求 1536x1024，可能返回 1024x1536；
+        而 IR 里的 `resolution_matches` 约束与可数审片都按 `engine_resolution`
+        （本地 832x480）核对 —— 于是 20 镜全被判 `size-mismatch`、门禁全要返工。
+
+        两种"解法"里选哪个：
+        - ❌ 改约束放宽：那等于**删掉合同**，以后真出低分辨率也没人拦
+        - ✅ **落盘时归一**：合同不变，输入先被拉齐（本函数）
+
+        返回归一后的字节（供证据链用同一份数据）；不需要归一返回 None。
+        """
+        be = getattr(self, "backend", None)
+        if be is not None and bool(getattr(be, "is_local_by_default", True)):
+            return None
+        res = getattr(self, "engine_resolution", None)
+        if not isinstance(res, (tuple, list)) or len(res) != 2:
+            return None
+        from little_crew.review.image_review import png_size
+
+        got = png_size(path)
+        if got is None or (int(got[0]), int(got[1])) == (int(res[0]), int(res[1])):
+            return None
+        w, h = int(res[0]), int(res[1])
+        tmp = path.with_name(path.stem + "_norm.png")
+        vf = (f"scale={w}:{h}:force_original_aspect_ratio=increase,"
+              f"crop={w}:{h},setsar=1")
+        # ffmpeg 解析：**先看实例属性**（demo 会直接赋绝对路径），再字面量路径，
+        # 再环境变量/PATH。2026-11-13：只走 `_ffmpeg()` 时它退化成 "ffmpeg"
+        # （本机 PATH 里没有），归一全部 FileNotFoundError —— 而同一集的视频阶段
+        # 用的是 `self.ffmpeg` 属性，所以"视频能合、归一失败"。
+        exe = "ffmpeg"
+        for _cand in (getattr(self, "ffmpeg", None),
+                      r"D:\AI\FFmpeg\bin\ffmpeg.exe",
+                      str(self._ffmpeg() or "")):
+            if _cand and pathlib.Path(str(_cand)).is_file():
+                exe = str(_cand)
+                break
+        try:
+            import subprocess as _sp
+
+            _sp.run([exe, "-y", "-hide_banner", "-loglevel", "error",
+                     "-i", str(path), "-vf", vf, "-frames:v", "1", str(tmp)],
+                    check=True, capture_output=True, timeout=180)
+            tmp.replace(path)
+            return path.read_bytes()
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 云端产物归一失败（保留原尺寸）：{type(exc).__name__}: {exc}")
+            return None
+
+    def _materialize_batch(self, batch, picked) -> None:
+        """把渲染产物**落到 workdir**：`assets/shots/<shotId>/<shotId>-<原文件名>`。
+
+        ## 为什么必须要这一步（2026-11-13 云端整集跑出来的洞）
+
+        本地通道（local-gen / ComfyUI）的产物引用是 URL，缓存层按名字存进
+        `cache/t*/` 分片目录，`artifact_resolver` 能按文件名 rglob 找回来。
+        但**云端 b64 产物**（`response_b64_path`）是由 HttpChannel 解码后写到
+        **系统临时目录**（`%TEMP%/little-crew-inline/...`）的 —— workdir 里没有，
+        于是可数审片 32 镜全部 `missing-artifact`、门禁 32 镜全要返工。
+
+        这一步把字节**按镜头写进 workdir**，并把产物名改成稳定且唯一的
+        `<shotId>-<basename>`（去掉了 Windows 临时路径里的盘符/反斜杠）。
+        """
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            return
+        import re as _re
+
+        base = Path(str(wd)) / "assets" / "shots"
+        prefix = f"G-{self.episode_id}-"
+        for o in self._outcomes_of(batch):
+            blobs = getattr(o, "artifacts", None)
+            if not isinstance(blobs, dict) or not blobs:
+                continue
+            gid = str(getattr(o, "graph_id", "") or "")
+            sid = gid[len(prefix):] if gid.startswith(prefix) else gid
+            clean_map: dict[str, bytes] = {}
+            for name, blob in blobs.items():
+                if not isinstance(blob, (bytes, bytearray)):
+                    continue
+                bn = _re.split(r"[\\/]", str(name))[-1]
+                if not _re.search(r"\.(png|jpe?g|webp)$", bn, _re.I):
+                    bn += ".png"
+                nm = f"{sid}-{bn}"
+                d = base / sid
+                try:
+                    d.mkdir(parents=True, exist_ok=True)
+                    dst = d / nm
+                    dst.write_bytes(bytes(blob))
+                except Exception:                             # noqa: BLE001
+                    continue
+                # 云端产物尺寸由服务商决定 -> 落盘后统一到引擎分辨率
+                try:
+                    norm = self._normalize_cloud_image(dst)
+                except Exception:                             # noqa: BLE001
+                    norm = None
+                clean_map[nm] = norm if norm is not None else bytes(blob)
+            if clean_map:
+                try:
+                    o.artifacts = clean_map
+                except Exception:                             # noqa: BLE001
+                    pass
+
     def _stage_image_review(self, picked, per_shot_artifacts, artifact_hashes):
         """渲染产物可数审片（2026-11-10 抽出）。
 
@@ -2787,12 +2913,27 @@ class EpisodeRunner:
                         _f0 = _hits[0] if _hits else _f0
                     _got.append(str(_f0) if _f0 is not None else "")
                 _paths[_sid] = [x for x in _got if x]
+            # 期望尺寸：本地引擎用 IR 分辨率；**云端后端产物尺寸由服务商决定**
+            # （实测 1536x1024 请求返回 1672x941），用"首张实际尺寸"当基准，
+            # 校验的是"所有镜一致"，而不是"等于本地配置"。
+            _expect = None
+            if isinstance(self.engine_resolution, (tuple, list)):
+                _expect = tuple(self.engine_resolution)
+            _be0 = getattr(self, "backend", None)
+            _local0 = bool(getattr(_be0, "is_local_by_default", True)) if _be0 else True
+            if not _local0:
+                for _names0 in _paths.values():
+                    for _p0 in _names0:
+                        _got0 = _irv.png_size(_p0)
+                        if _got0:
+                            _expect = tuple(_got0)
+                            break
+                    if _expect and tuple(_expect) != tuple(self.engine_resolution or ()):
+                        break
             _review = _irv.review(
                 picked,
                 artifacts_by_shot=_paths,
-                expect_size=(tuple(self.engine_resolution)
-                             if isinstance(self.engine_resolution, (tuple, list))
-                             else None),
+                expect_size=_expect,
                 hashes_by_shot=dict(artifact_hashes),
             )
             _wd1 = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
@@ -3540,7 +3681,13 @@ class EpisodeRunner:
                     _outs = list(_ex.map(
                         lambda j: self.renderer.render_http(j[0], backend, job_id=j[1]),
                         jobs))
-                return {"batch": _outs}
+                # ⚠️ 必须包成 `CachedBatch` 再返回：下游全靠它的派生属性
+                # （`cache_hits` / `rendered` / `seconds_saved` …）。
+                # 2026-11-13 云端并行首次真跑：直接返回 list -> 成片阶段
+                # `AttributeError: 'list' object has no attribute 'cache_hits'`。
+                from little_crew.runtime.cached_render import CachedBatch
+
+                return {"batch": CachedBatch(outcomes=tuple(_outs))}
             return {"batch": self.renderer.render_http_batch(jobs, backend)}
         return {"batch": self.renderer.render_batch(irs)}
 
@@ -4454,9 +4601,9 @@ class EpisodeRunner:
             from little_crew.runtime.cached_render import CachedBatch
 
             by_gid = {str(getattr(o, "graph_id", "")): o
-                      for o in sub_batch.outcomes}
+                      for o in self._outcomes_of(sub_batch)}
             merged = [by_gid.get(str(getattr(o, "graph_id", "")), o)
-                      for o in batch.outcomes]
+                      for o in self._outcomes_of(batch)]
             batch = CachedBatch(outcomes=tuple(merged))
 
             # ---- 复检 ----
