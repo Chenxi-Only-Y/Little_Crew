@@ -139,10 +139,82 @@ _BUILDS = (
     "身形匀称，肩线柔和，腰线清楚，体态自然",
 )
 
+#: **画风预设**（2026-11-13）：骨架不变，只换画风/质感/光照/负面词。
+#:
+#: 为什么做成预设而不是让用户自由填一句：同一套设定集要放在一起才像一套
+#: —— 四个角色用四种随手写的画风词，摆在一起就是四个世界。
+#: 预设保证**同一风格的质感描述一致**，换风格只换一个键。
+STYLE_PRESETS: dict[str, dict[str, str]] = {
+    "3d-guoman": {
+        "label": "高精度 3D 半写实国漫（默认）",
+        "prefix": "高精度 3D 半写实国漫角色四视图角色设定图，CG 建模质感",
+        "look": "真实皮肤材质与次表面散射，五官按国漫审美美化但解剖可信；发丝为片状分层",
+        "lighting": "大面积柔光自正前上方照射，辅以极轻轮廓光；脚下浅淡接触阴影",
+        "negative": "塑料感、卡通粗描边、像素化、低模面数",
+    },
+    "2.5d-film": {
+        "label": "2.5D 动画电影风格",
+        "prefix": "2.5D 动画电影风格角色四视图设定图，动画电影概念设计",
+        "look": ("赛璐璐色块 + 厚涂渐变的混合渲染；干净的明暗分界线与柔和过渡并存；"
+                 "五官精致但保留手绘动画的造型感；发丝按动画分层处理"),
+        "lighting": "电影感布光：主光柔和偏侧、边缘光明显、背景有极淡的氛围渐层与光晕",
+        "negative": "PBR 金属反光、写实毛孔、CG 塑料脸、真人照片感、过度3D高光",
+    },
+    "painting-cg": {
+        "label": "绘画感 CG（厚涂概念设计）",
+        "prefix": "绘画感 CG 角色四视图设定图，厚涂概念设计稿",
+        "look": ("可见的厚涂笔触与色彩堆叠（不是照片）；边缘有画笔起收的松动感；"
+                 "色块区分明、略带纸面/画布颗粒；五官靠明暗体积塑造"),
+        "lighting": "统一的绘画性光源，暖冷对比明确，阴影处带色相变化而非纯黑",
+        "negative": "照片写实、3D 塑料高光、平滑渐变、线条描边、像素噪点",
+    },
+    "stylized-real": {
+        "label": "风格化写实（比例风格化 + 材质写实）",
+        "prefix": "风格化写实角色四视图设定图，stylized realism",
+        "look": ("比例与头身比适度风格化（眼略大、脸偏小），但材质与光照按写实标准："
+                 "真实布料纤维、皮革纹理、金属反射；皮肤半透光"),
+        "lighting": "写实影棚光：主光 + 柔光箱补光 + 轮廓光；接触阴影与材质高光分明",
+        "negative": "夸张卡通比例、简化材质、纯色平涂、塑料玩具感",
+    },
+    "nextgen-game": {
+        "label": "次世代游戏角色（高模 + PBR）",
+        "prefix": "次世代游戏角色四视图设定图，3A 游戏角色概念，高模烘焙级细节",
+        "look": ("PBR 材质四件套：布料纤维/皮革纹理/金属反射/皮肤次表面；"
+                 "模型边缘有真实厚度与倒角，接缝与缝线可见；装备有功能性结构细节"),
+        "lighting": "游戏引擎级三点布光 + 环境光照（HDRI 灰棚），AO 阴影清晰，高光可控",
+        "negative": "卡通渲染、手绘笔触、低模方块、塑料质感、无细节平涂",
+    },
+}
+
+#: 用户常用简称 -> 预设键
+_STYLE_ALIASES = {
+    "3d": "3d-guoman", "国漫": "3d-guoman", "默认": "3d-guoman",
+    "2.5d": "2.5d-film", "25d": "2.5d-film", "动画电影": "2.5d-film",
+    "动画": "2.5d-film", "film": "2.5d-film",
+    "painting": "painting-cg", "厚涂": "painting-cg", "绘画感": "painting-cg",
+    "cg": "painting-cg",
+    "风格化写实": "stylized-real", "stylized": "stylized-real", "写实": "stylized-real",
+    "nextgen": "nextgen-game", "次世代": "nextgen-game", "3a": "nextgen-game",
+    "游戏": "nextgen-game",
+}
+
+
+def resolve_style(name: str) -> dict[str, str]:
+    """把用户输入解析成风格预设（未知则视为自定义画风前缀）。"""
+    key = str(name or "").strip().lower()
+    key = _STYLE_ALIASES.get(key, key)
+    if key in STYLE_PRESETS:
+        return dict(STYLE_PRESETS[key])
+    base = dict(STYLE_PRESETS["3d-guoman"])
+    if key:
+        base["label"] = name
+        base["prefix"] = str(name).strip()
+    return base
+
+
 #: 画风默认值（模板 §二 槽 2）
-DEFAULT_STYLE = ("高精度 3D 半写实国漫角色四视图角色设定图，CG 建模质感；"
-                 "**面部细节为最高优先级**：干净的妆面、清晰的睫毛与卧蚕、"
-                 "瓷白通透的皮肤与空气感发丝层次")
+#: 兼容旧调用：默认画风 = `3d-guoman` 预设
+DEFAULT_STYLE = STYLE_PRESETS["3d-guoman"]["prefix"]
 
 
 def _h(seed: str) -> int:
@@ -211,10 +283,14 @@ def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
     build = (app.get("build") or app.get("身形") or _pick(_BUILDS, cid, "build"))
 
     palette = (app.get("palette") or app.get("配色") or "")
+    style_preset = resolve_style(style) if style else resolve_style("3d-guoman")
     return {
         "配色": str(palette),
         "身份": identity,
-        "画风": style or DEFAULT_STYLE,
+        "画风": style_preset["prefix"],
+        "风格描述": style_preset["look"],
+        "风格光照": style_preset["lighting"],
+        "风格负面": style_preset["negative"],
         "脸型骨相": _pick(_FACES, cid, "face"),
         "眼睛": _pick(_EYES, cid, "eyes").format(eye_color=eye_color),
         "眉鼻唇": _pick(_BROWS, cid, "brows"),
@@ -233,16 +309,19 @@ def slots_for(sheet: Any, *, style: str = "") -> dict[str, str]:
     }
 
 
-def negative_words() -> str:
-    """负面词（四组全带，模板硬性要求）。"""
-    return "【负面词】不要：" + "；".join(NEGATIVE_GROUPS.values()) + "。"
+def negative_words(*, style_negative: str = "") -> str:
+    """负面词（模板四组 + 面部崩坏 + 当前风格的专属否定项）。"""
+    groups = list(NEGATIVE_GROUPS.values())
+    if style_negative:
+        groups.append(style_negative)
+    return "【负面词】不要：" + "；".join(groups) + "。"
 
 
 def build_prompt(sheet: Any, *, style: str = "") -> str:
     """按模板 §三 的顺序组装完整题面。"""
     s = slots_for(sheet, style=style)
     return (
-        f"{s['画风']}。\n"
+        f"{s['画风']}。风格要点：{s['风格描述']}。\n"
         f"【身份基准】{s['身份']}，{s['脸型骨相']}。\n"
         f"{_LAYOUT}\n"
         f"【面部细节·最高优先级】面部占画面信息密度的大头，必须精细：\n"
@@ -257,9 +336,10 @@ def build_prompt(sheet: Any, *, style: str = "") -> str:
         + (f"细节：{s['细节']}（必须画出来）。" if s.get("细节") else "")
         + "\n"
         f"【身材】{s['身材']}。\n"
-        f"{_LIGHTING}\n"
+        f"【灯光质感】{s['风格光照']}；脚下仅有浅淡接触阴影；低饱和、克制配色；"
+        f"材质细节可辨；无文字、无水印、无标签、无边框、无信息栏。\n"
         f"【场景光】{s['场景光']}。\n"
-        f"{negative_words()}"
+        f"{negative_words(style_negative=s.get('风格负面', ''))}"
     )
 
 

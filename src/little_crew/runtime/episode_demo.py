@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--char-sheet-limit", type=int, default=6,
                     help="一次最多画几个角色（默认 6）")
     ap.add_argument("--char-sheet-style", default="",
-                    help="设定板画风（默认高精度 3D 半写实国漫；古风可填水墨淡彩）")
+                    help="设定板画风：3d-guoman（默认）/ 2.5d-film / painting-cg / stylized-real / nextgen-game，也可直接填画风")
     ap.add_argument("--no-forge-voices", action="store_true",
                     help="不自动为缺音色的角色造音色（默认会造）")
     ap.add_argument("--voice", action="store_true",

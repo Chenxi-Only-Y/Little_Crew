@@ -160,6 +160,23 @@ def main() -> int:
           "面部崩坏" in NEGATIVE_GROUPS
           and all(k in NEGATIVE_GROUPS["面部崩坏"] for k in ("小眼睛", "呆滞", "油光")), "")
 
+    print(); print("A2d. 画风预设（用户要求：2.5D/绘画感/风格化写实/次世代）")
+    from little_crew.runtime.character_sheet_prompt import (
+        STYLE_PRESETS, build_prompt as _bp3, resolve_style,
+    )
+
+    for key in ("3d-guoman", "2.5d-film", "painting-cg", "stylized-real", "nextgen-game"):
+        check(f"A13 预设 {key} 可解析且前缀非空",
+              key in STYLE_PRESETS and bool(resolve_style(key).get("prefix")), "")
+    p1 = _bp3(lib.sheets[0], style="2.5d-film")
+    p2 = _bp3(lib.sheets[0], style="painting-cg")
+    check("A14 ★★★ 换风格：前缀不同，但**骨架不变**（布局/一致性句仍在）",
+          p1.splitlines()[0] != p2.splitlines()[0]
+          and all(k in p1 and k in p2 for k in ("左侧约占四成半", "四个视图必须属于同一角色")), "")
+    p3 = _bp3(lib.sheets[0], style="随便写的画风")
+    check("A15 ★★ 未知画风当作自定义前缀（不报错、不丢骨架）",
+          p3.startswith("随便写的画风") and "四个视图必须属于同一角色" in p3, p3[:40])
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
