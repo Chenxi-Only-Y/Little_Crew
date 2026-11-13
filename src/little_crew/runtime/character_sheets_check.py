@@ -177,6 +177,20 @@ def main() -> int:
     check("A15 ★★ 未知画风当作自定义前缀（不报错、不丢骨架）",
           p3.startswith("随便写的画风") and "四个视图必须属于同一角色" in p3, p3[:40])
 
+    print(); print("A2e. 比例锁（2026-11-13 实测：窄长 V 脸 -> 马脸+高眼位）")
+    from little_crew.runtime.character_sheet_prompt import (
+        build_prompt as _bp4,
+    )
+
+    pl = _bp4(lib.sheets[0])
+    check("A16 ★★★ 题面含「比例锁」（三庭等分/眼位百分比/脸宽比）",
+          "比例锁" in pl and "1/3" in pl and "45%~50%" in pl and "0.72~0.75" in pl, "")
+    check("A17 ★★★ 负面词含「比例崩坏」组（长脸/眼位过高/中庭过长）",
+          "比例崩坏" in NEGATIVE_GROUPS
+          and all(k in NEGATIVE_GROUPS["比例崩坏"] for k in ("长脸", "眼位过高", "中庭过长")), "")
+    check("A18 ★★ 脸宽比不再是 0.6x 的窄长脸（硬指标 0.72~0.75）",
+          "0.6" not in pl.split("【比例锁")[0].split("脸宽约")[-1][:6], "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
