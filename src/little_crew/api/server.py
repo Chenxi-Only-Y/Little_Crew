@@ -495,17 +495,20 @@ class _Handlers:
         # 因为不对的那个参数根本不在你写的那份模板里。
         from little_crew.models.registry import build_default_registry
 
-        spec = build_default_registry().get("z-image-turbo")
-        be = (next((b for b in spec.backends
-                    if b.kind is BackendKind.HTTP), None)
-              if spec is not None else None)
-        if be is None:
-            raise RuntimeError("模型注册表里没有 z-image-turbo 的 HTTP 后端")
+        # 主渲染模型（2026-11-14 A1）：`renderModel` 可换云端模型。
+        from little_crew.runtime.run_options import (
+            is_local_backend as _is_local_be2,
+            pick_main_spec as _pick_main2,
+        )
 
+        spec, be = _pick_main2(str(body.get("renderModel") or ""))
         ch = HttpChannel(be, timeout_s=1800)
-        ok, why = ch.available()
-        if not ok:
-            raise RuntimeError(f"local-gen 不可用：{why}")
+        if _is_local_be2(be):
+            ok, why = ch.available()
+            if not ok:
+                raise RuntimeError(f"本地渲染后端不可用：{why}")
+        else:
+            run.emit("提示", note=f"云端渲染 {spec.model_id}（跳过探活）")
 
         renderer = CachingRenderer(
             RenderSession(ch, None), ContentCache(out / "cache"),
@@ -529,6 +532,34 @@ class _Handlers:
         # 客户端没法选；现在按请求体来，默认与以前一致（只出图、不配音）。
         # ⚠️ 白模（previs）只在 ComfyUI 通道有意义 —— API 走 HTTP 通道，
         # 因此 `whiteModel` 传了也只记录到 emit 里，不做静默忽略。
+        # ---- 运行选项（2026-11-14 A1）：与 demo/CLI 共用 ----
+        from little_crew.runtime.run_options import (
+            apply_options as _apply_run_opts2,
+            normalize as _norm_run_opts2,
+        )
+
+        try:
+            _opts2 = _norm_run_opts2(
+                cast_anchors=body.get("castAnchor"),
+                style_hint=str(body.get("styleHint") or ""),
+                cloud_all=bool(body.get("cloudAll", False)),
+                render_model=str(body.get("renderModel") or ""),
+                shots_target=int(body.get("shotsTarget") or 0),
+                target_seconds=float(body.get("targetSeconds") or 0.0),
+                cover=bool(body.get("cover", False)),
+                cover_title=str(body.get("coverTitle") or ""),
+                char_sheets=bool(body.get("charSheets", False)),
+                char_sheet_style=str(body.get("charSheetStyle") or ""),
+                char_sheet_refine=bool(body.get("charSheetRefine", False)),
+                char_sheet_qc=bool(body.get("charSheetQc", False)),
+                vision_max=int(body.get("visionMax") or 12),
+                script_threshold=float(body.get("scriptThreshold") or 0.0),
+            )
+            _eff2 = _apply_run_opts2(runner, _opts2)
+            run.emit("运行选项", **{k: v for k, v in _eff2.items() if v})
+        except Exception as _e_opt2:                          # noqa: BLE001
+            raise ValueError(f"运行选项装配失败：{_e_opt2}") from _e_opt2
+
         runner.assemble_video = bool(body.get("video", False))
         runner.voice_enabled = bool(body.get("voice", False))
         _wm = bool(body.get("whiteModel", False))

@@ -414,21 +414,27 @@ def cmd_episode(args: Any) -> int:
         # 那类缺陷的教训很直接：**同一份契约在两处维护，必然漂移**，
         # 而漂移的表现是"服务端说参数不对，可参数看着都对"。
         # 注册表已经是那份契约的单一来源。
-        spec = build_default_registry().get("z-image-turbo")
-        if spec is None:
-            print("模型注册表里没有 z-image-turbo", file=sys.stderr)
-            return ExitCode.ENVIRONMENT
-        be = next((b for b in spec.backends if b.kind is BackendKind.HTTP),
-                  None)
-        if be is None:
-            print("z-image-turbo 未声明 HTTP 后端", file=sys.stderr)
+        # 主渲染模型（2026-11-14 A1）：默认 z-image-turbo；`--render-model`
+        # 可换云端模型（如 gpt-image-2.6-sunburst）——选中逻辑与 demo/API 共用。
+        from little_crew.runtime.run_options import (
+            is_local_backend as _is_local_be,
+            pick_main_spec as _pick_main,
+        )
+
+        try:
+            spec, be = _pick_main(str(getattr(args, "render_model", "") or ""))
+        except Exception as _e_ms:                            # noqa: BLE001
+            print(f"渲染模型选择失败：{_e_ms}", file=sys.stderr)
             return ExitCode.ENVIRONMENT
 
         ch = HttpChannel(be, timeout_s=1800)
-        ok, why = ch.available()
-        if not ok:
-            print(f"local-gen 不可用：{why}", file=sys.stderr)
-            return ExitCode.ENVIRONMENT
+        if _is_local_be(be):
+            ok, why = ch.available()
+            if not ok:
+                print(f"本地渲染后端不可用：{why}", file=sys.stderr)
+                return ExitCode.ENVIRONMENT
+        else:
+            print(f"  云端渲染：{spec.model_id} · {be.endpoint}（跳过探活）")
         renderer = CachingRenderer(RenderSession(ch, None),
                                    ContentCache(work / "cache"),
                                    fetcher=artifact_fetcher_for(ch),
@@ -456,6 +462,43 @@ def cmd_episode(args: Any) -> int:
     # 解析器为 None 时 `_assemble()` 直接 `return (None, None)` ——
     # 于是 `--no-video` 形同虚设：视频永远合不出来，且不报错。
     runner.resolve_artifact = None if args.no_video else artifact_resolver(work)
+    # ---- 运行选项（2026-11-14 A1）：与 demo/API 共用一份装配逻辑 ----
+    from little_crew.runtime.run_options import (
+        apply_options as _apply_run_opts,
+        normalize as _norm_run_opts,
+    )
+
+    try:
+        _opts = _norm_run_opts(
+            cast_anchors=getattr(args, "cast_anchor", None),
+            style_hint=str(getattr(args, "style_hint", "") or ""),
+            cloud_all=bool(getattr(args, "cloud_all", False)),
+            render_model=str(getattr(args, "render_model", "") or ""),
+            shots_target=int(getattr(args, "shots_target", 0) or 0),
+            target_seconds=float(getattr(args, "target_seconds", 0.0) or 0.0),
+            cover=bool(getattr(args, "cover", False)),
+            cover_title=str(getattr(args, "cover_title", "") or ""),
+            char_sheets=bool(getattr(args, "char_sheets", False)),
+            char_sheet_style=str(getattr(args, "char_sheet_style", "") or ""),
+            char_sheet_refine=bool(getattr(args, "char_sheet_refine", False)),
+            char_sheet_qc=bool(getattr(args, "char_sheet_qc", False)),
+            vision_max=int(getattr(args, "vision_max", 12) or 12),
+            script_threshold=float(getattr(args, "script_threshold", 0.0) or 0.0),
+        )
+        _eff = _apply_run_opts(runner, _opts)
+        if _eff.get("castAnchors"):
+            print(f"  角色锚点：{'、'.join(_eff['castAnchors'])}"
+                  + (f" · 外观锁定 {_eff['anchorAppearances']} 个"
+                     if _eff.get("anchorAppearances") else ""))
+        if _eff.get("cloudAll"):
+            print("  整集云端图生图：开")
+        if _eff.get("shotsTarget"):
+            print(f"  目标镜数：{_eff['shotsTarget']} · 目标时长 {_eff['targetSeconds']}s")
+        if _eff.get("scriptThreshold"):
+            print(f"  剧本阈值：{_eff['scriptThreshold']:.0f}")
+    except Exception as _e_opt:                              # noqa: BLE001
+        print(f"运行选项装配失败：{_e_opt}", file=sys.stderr)
+        return ExitCode.USAGE
     if args.white_model:
         runner.use_white_model = True
         runner.use_zimage_source = True

@@ -673,64 +673,38 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheets_enabled = bool(getattr(args, "char_sheets", False))
     runner.character_sheets_limit = int(getattr(args, "char_sheet_limit", 6) or 6)
     runner.character_sheet_style = str(getattr(args, "char_sheet_style", "") or "")
-    # ---- 「最后一班」60s：目标时长 / 云端整集 / 锚点 / 统一画风 ----
+    # ---- 运行选项（2026-11-14 A1）：抽到 `runtime.run_options`，与 CLI/Server 共用 ----
+    from little_crew.runtime.run_options import (
+        apply_anchor_appearance as _apply_anchor,
+        set_script_threshold as _set_th,
+    )
+
     runner.target_seconds = float(getattr(args, "target_seconds", 0.0) or 0.0)
     runner.shots_target = int(getattr(args, "shots_target", 0) or 0)
     runner.vision_max_shots = int(getattr(args, "vision_max", 12) or 12)
-    _th = float(getattr(args, "script_threshold", 0.0) or 0.0)
+    _th = _set_th(float(getattr(args, "script_threshold", 0.0) or 0.0))
     if _th > 0:
-        import os as _os_th
-
-        _os_th.environ["LITTLE_CREW_SCRIPT_THRESHOLD"] = str(_th)
         print(f"  剧本阈值：{_th:.0f}（默认 65；阻断级意见仍照旧阻断）")
     runner.cloud_all = bool(getattr(args, "cloud_all", False))
     runner.style_hint = str(getattr(args, "style_hint", "") or "")
     runner.cloud_model = str(getattr(args, "render_model", "") or "")
-    _cast: dict[str, str] = {}
-    for _pair in (getattr(args, "cast_anchor", None) or []):
-        if "=" in str(_pair):
-            _n, _p = str(_pair).split("=", 1)
-            if _p and Path(_p).is_file():
-                _cast[_n.strip()] = _p.strip()
-            else:
-                print(f"  ⚠️ cast-anchor 路径不存在：{_p}")
-    runner.cast_anchors = _cast
-    # ---- 锚点外观自动注入（2026-11-14）----
-    # 只给图片锚点还不够：镜头描述里若写了别的服装/发型，模型会两边打架
-    # （第一次跑出来是黑色风衣+背包，与 cover_lead 的灰紫露肩装完全不同）。
-    # 这里把锚点同目录 `sheet.json` 的 appearance 拼进统一画风提示，并**明确禁止换装**。
-    _apis: list[str] = []
-    for _name, _pth in _cast.items():
-        try:
-            _meta = Path(_pth).with_name("sheet.json")
-            if _meta.is_file():
-                import json as _jc
-
-                _app = str((_jc.loads(_meta.read_text(encoding="utf-8")) or {}).get("appearance") or "")
-                if _app:
-                    _apis.append(f"「{_name}」固定外观：{_app}")
-        except Exception:                                     # noqa: BLE001
-            pass
-    if _apis:
-        runner.style_hint = (str(getattr(runner, "style_hint", "") or "")
-                             + "；" + "；".join(_apis)
-                             + "。每一镜的服装、发型、配饰必须与参考图完全一致，"
-                             "禁止换装、禁止改发型、禁止添加背包/外套等参考图没有的物件。")
-        print(f"  外观锁定：{len(_apis)} 个角色（来自 sheet.json）")
-
+    _ai = _apply_anchor(runner, getattr(args, "cast_anchor", None))
+    if _ai.get("castAnchors"):
+        print(f"  角色锚点：{'、'.join(_ai['castAnchors'])}"
+              + (f" · 外观锁定 {_ai['appearances']} 个（来自 sheet.json）"
+                 if _ai.get("appearances") else ""))
     runner.compare_local = bool(getattr(args, "compare_local", False))
     if _local_renderer is not None:
         runner.local_renderer = _local_renderer
         runner.local_backend = _be2
     elif getattr(args, "compare_local", False):
         runner.compare_local = False          # 没有本地渲染器就不要空跑
-    if _cast:
-        print(f"  角色锚点：{'、'.join(f'{k}→{Path(v).name}' for k, v in _cast.items())}")
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
     runner.cloud_max_shots = int(getattr(args, "cloud_shots", 0) or 0)
-    runner.cloud_model = str(getattr(args, "cloud_model", "") or "")
+    runner.cloud_model = (str(getattr(args, "cloud_model", "") or "")
+                          or str(getattr(args, "render_model", "") or ""))
     runner.cover_enabled = bool(getattr(args, "cover", False))
     runner.cover_mode = str(getattr(args, "cover_mode", "select") or "select")
     runner.cover_title = str(getattr(args, "cover_title", "") or "")

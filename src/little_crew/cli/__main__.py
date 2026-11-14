@@ -126,6 +126,35 @@ def build_parser() -> argparse.ArgumentParser:
                     help="先清空工作目录（新一集进同一个目录时用）")
     se.add_argument("--allow-reuse", action="store_true",
                     help="允许往已有**别的集**的工作目录里写（默认拒绝）")
+    # ---- 2026-11-14（A1）：与 episode_demo 对齐的能力开关 ----
+    se.add_argument("--render-model", default="", dest="render_model",
+                    help="主渲染模型（默认 z-image-turbo；填云端模型如 "
+                         "gpt-image-2.6-sunburst 即整集用云端）")
+    se.add_argument("--cloud-all", action="store_true", dest="cloud_all",
+                    help="整集云端图生图（每镜用角色锚点锁脸）")
+    se.add_argument("--cast-anchor", action="append", default=[],
+                    dest="cast_anchor", metavar="NAME=PATH",
+                    help="角色名=锚点图路径（可重复）；自动读取 sheet.json 外观")
+    se.add_argument("--style-hint", default="", dest="style_hint",
+                    help="统一画风提示（拼进每镜提示词）")
+    se.add_argument("--shots-target", type=int, default=0, dest="shots_target",
+                    help="目标镜数（0=不约束）；60s 短片建议 12")
+    se.add_argument("--target-seconds", type=float, default=0.0,
+                    dest="target_seconds", help="目标总时长（秒）")
+    se.add_argument("--cover", action="store_true", help="生成封面（选帧 + 叠标题）")
+    se.add_argument("--cover-title", default="", dest="cover_title")
+    se.add_argument("--char-sheets", action="store_true", dest="char_sheets",
+                    help="生成角色四视图设定板")
+    se.add_argument("--char-sheet-style", default="", dest="char_sheet_style")
+    se.add_argument("--char-sheet-refine", action="store_true",
+                    dest="char_sheet_refine", help="设定板保图微调（+1 次生图）")
+    se.add_argument("--char-sheet-qc", action="store_true", dest="char_sheet_qc",
+                    help="设定板 VLM 质检（12 条）")
+    se.add_argument("--script-threshold", type=float, default=0.0,
+                    dest="script_threshold",
+                    help="剧本通过阈值（0=默认 65；60s 无对白短片建议 55）")
+    se.add_argument("--vision-max", type=int, default=12, dest="vision_max",
+                    help="视觉闸最多抽检几镜（默认 12）")
     se.add_argument("--json", action="store_true")
 
     # ---- serve / submit / status / fetch（HTTP 客户端，2026-11-11）----
