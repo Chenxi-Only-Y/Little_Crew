@@ -57,6 +57,40 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.27] — 2026-11-14（**A1 产品入口 + C1 设计文档补章**）
+
+### A1：产品 CLI / Server API 接上新能力
+
+**新增公共装配层 `runtime/run_options.py`**（demo / CLI / API 共用一份）：
+
+| 函数 | 作用 |
+|---|---|
+`parse_cast_anchors` | `NAME=PATH` 解析 + **路径不存在明确报错** |
+`apply_anchor_appearance` | 自动读同目录 `sheet.json` 的 `appearance` 拼进画风 + **禁止换装** |
+`set_script_threshold` | 短片阈值（只放宽分数线，硬约束照旧） |
+`pick_main_spec` / `is_local_backend` | 主渲染模型选择；**云端不探活**（根路径 401） |
+
+**CLI `little-crew episode` 新增**：`--render-model --cloud-all --cast-anchor --style-hint
+--shots-target --target-seconds --cover --cover-title --char-sheets --char-sheet-style
+--char-sheet-refine --char-sheet-qc --script-threshold --vision-max`
+
+**Server API `/v1/shot` 新增请求字段**：`renderModel cloudAll castAnchor styleHint
+shotsTarget targetSeconds cover coverTitle charSheets charSheetStyle charSheetRefine
+charSheetQc scriptThreshold visionMax`（装配同一份逻辑，选项写进 emit）
+
+`episode_demo` 同步改用公共层（删掉重复的锚点/外观代码）。
+
+自检 `runtime/run_options_check` **14 项**；全量 **2679/2666 + 架构守卫 PASS**。
+
+### C1：`docs/01-平台设计文档.md` 补三块
+
+- **5.10.24** 后期统筹 + 封面设计师（合并理由 / `post.plan` 字段 / 双模式与标题）
+- **8.7** 角色视觉资产流水线（五阶段 + 四条纪律 + 8.7.1 图生图实测）
+- **9.8** 渲染策略：本地 / 云端 / 混合（三条路径 + 选镜打分 + B3 对照 + 成本）
+- TOC 同步补三行
+
+---
+
 ## [0.4.0-beta.26] — 2026-11-14（**P0.5：成片 12/12、短片阈值**）
 
 ### 修掉「成片 11/12 镜」
