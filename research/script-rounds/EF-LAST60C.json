@@ -1,0 +1,110 @@
+{
+  "episodeId": "EF-LAST60C",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：本场的核心代价是抵押工牌（\"工牌押你这儿……明天我来赎\"），但这个代价在后面被两处掏空：S06 小满自述\"今天我辞职了，最后一天。桌都收了\"——一张已经失效的离职工牌对她没有任何约束力；S08 老陈又\"两块牌子一起塞回她手里\"，抵押被全额退还。她为进站付出的代价，最终是零。', suggestion='让这张牌子换成她仍然离不开的东西：比如离职结算必须凭工牌领取、或她回家的路费就押在这张卡上；或者 S08 只还她一块（上个月那块），这一块永远留在老陈兜里——用一件拿不回来的东西把代价钉死。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：两个人立场完全一致、同病相怜，全场没有对抗：老陈的\"回库车，不载人\"是告知，\"所以你打算在这儿坐到天亮？\"是反问而非逼迫，小满一句\"她没答\"就滑过去了。没有人阻拦她、也没有人索取什么，场次靠灯带扫脸的氛围撑着。', suggestion='给老陈一个与她目的相冲的动作：比如他开始按流程清站、关灯、要她登记离站信息，甚至要收回她坐着的那块立柱区域——她的低落必须和一个具体的阻碍发生摩擦，而不是两个人一起叹气。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全剧的情感兑现是\"她出来的时候，跟她说我到了。这次照实说\"，但这个解决既没有路径也没有代价：末班车已走、二十分钟后关站、她手机是老陈的、包被列车拖走、口袋是空的，剧本没有任何交代说明她今晚能出现在医院；而护士那句谎言（\"我说，到了，在楼下\"）本该是扎心的一刀，却只换来\"好，这次我照实说\"的顺水人情——谁都没有付出什么，\"我到了\"就成立了。', suggestion='要么在 S08 的出口给出口一个具体去向（员工通道直通医院夜班入口，\"从这儿出去，近\"落到实处），让\"我到了\"有落点；要么让真话先疼一次：护士反问\"你现在到底在哪\"，她必须在电话里承认自己没赶上，把谎言戳破，再把这句承认当作 S08 摸黑往上跑的动力。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 53.751
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 367.92
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 69.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：全场没有任何对抗：她坐下、看广告、笑一下、说\"行吧\"、走向出口——唯一的变化是\"站台的灯开始一排排熄灭\"，但灯熄对她的行动毫无阻碍（\"她回头看了一眼那片暗下去的地方，还是走向了出口\"）。从 S03 的丢失重创到 S05 的闸门锁死之间，这一场是纯粹的情绪空转，观众看不到她\"认命\"与\"还要走\"之间的挣扎。', suggestion='给这一场一个具体的内部阻力，让她必须付出选择：比如熄灭的灯带正压向她唯一能辨认出口的方向，她必须摸黑、数格子才能走到；或让她在广告玻璃的倒影里真正做出一次退缩（转身往回走、在长椅上躺下），再被某个细节（手里那半张药费单、口袋里最后一枚硬币）逼回来——这样\"走向出口\"才是挣来的，而不是顺手写的。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：冲突（\"明天我要凭它领结算\"\"我妈明早要交住院费\"）的解决没有落地的代价：老陈撕下一页纸塞给她就放行，她\"什么也没说，把纸折好，塞进裤兜\"。最急迫的现实风险——明早的住院费——被一张三天后才能兑现的收据悄悄抵消，代价没有在她身上留下任何痕迹，反而成了通往结局的通行证。', suggestion='让代价咬住她：她捏着纸追问\"那明早的钱怎么办\"，老陈不答或给不出答案；或她走出通道前必须交出身上仅剩的那枚硬币/半张药费单作为登记抵押。让观众看到她拿到路的同时真的失去了明天的一部分，最后那句\"这次是真的\"才配得上前面所有的损失。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 69.4,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 63.86
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 86.881
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 69.4）"
+}

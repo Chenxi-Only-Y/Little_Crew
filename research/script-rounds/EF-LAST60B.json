@@ -1,0 +1,163 @@
+{
+  "episodeId": "EF-LAST60B",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：对抗焦点摇摆：『门“哧”地滑开』之后，她喊的是『你看着我干什么，开门啊！』——门已经开了，观众不清楚她到底在争什么（要他下车？要他留下？），阻力在“他不肯下车”和“门要关了”之间来回切换，没有钉死在一条线上。', suggestion='把对抗收束到一个可动作的目标上：门开时让他下车——他不动、只指手机摇头，阻力明确为“他不肯跨出这一步”；再由广播的关门提示把时间压力叠上去。删掉“开门啊”或改成“你下来啊”，冲突指向就单一了。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：全场唯一的“阻力”是她自己的想象——『下意识把蛋糕盒抱紧，以为要被赶、被罚』，一秒钟就被『摊开手：两片创可贴』化解；站务员没有任何要求、不满或阻拦，双方零对抗，她也零付出（创可贴是白得的，护送是白得的），情绪从紧张到松弛之间缺少一段真正的阻力。', suggestion='给站务员一个真实的立场再让它软化：例如他确实要清站锁门，催她“两分钟内必须走”，她抱着塌掉的蛋糕不肯动、两人僵持一两句，他才摸出创可贴。这样她为“多留一会儿”付出了被催赶的代价，转折（预设的惩罚变成关心）才有落点。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：开头的对抗在第一回合就消失了：『姑娘，这儿不能坐。』『两分钟。』『清洁工耸耸肩，站在旁边等』——阻力瞬间让步，此后整场只剩下她一个人完成仪式（接电话、分蛋糕、离开），没有新的对抗撑住后半段。', suggestion='让清洁工的立场持续一拍再松：他可以边等边赶时间（扫帚划水痕、催末班保洁），或对“把蛋糕给他”这件事推辞拉扯一下，她的坚持才构成对抗；同时把『按掉来电』这层代价往前挪一点，让“拒绝他”与“被赶着离开”压在同一段时间里。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 59.9,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 3,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 51.145
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 79.191
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 58.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S02', shot='', line=0, asset=''), problem='S02：阻力全是机械性小故障——「余额不足」「五块钱被吞」「票投反了」，没有一个活人跟她对抗。站务员只给了句提醒（「卡里没钱就跑快点」），不但不是阻力，反而像帮忙。结果这一场只是把 S01 的「擦线过关」重复了一遍：红灯→折腾→绿灯，节奏同构，紧张感不升反降。', suggestion='把其中一个障碍升级为人对人的对抗：例如站务员坚持按规章让她补全程票价、或告知她末班车已提前发车，让她付出代价（掏光零钱/耽误十几秒）才通过；或者把 S01、S02 合并压缩成一场，只保留最狠的一道闸（票投反了导致横杆打腿），把省下的篇幅给 S03–S04 的核心冲突。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：站务员的代价是口头声明的——「锁了门我要写检查」——但这个代价从头到尾没有兑现，他一看到血就立刻软化（「僵了两三秒……我给你一分钟」），转折发生在一个动作里，让步太便宜。他的抵抗只持续了两句台词。', suggestion='给站务员一个真正的拒绝回合：他先执行规定（把闸门合上、看表、转身要走），逼少女付出某种让步（交出证件/答应清站后立刻离开/自己去登记），他才回头开门。让「一分钟」成为双方各付一半的交易，软化的那一下才有分量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：清洁工的阻力（「我赶末班保洁」「这儿不能坐」）被半块蛋糕瞬间化解，他随即蹲下来吃——他自己的时限没有任何后果，她也没有为此付出任何东西。冲突双方谁都没被改变，这一场实际上是和解而非对抗。', suggestion='让时限咬人：水已经漫到她脚边、他真的开始在她身边拖地逼她起身，她必须付出代价（端着盒子退到更冷的角落、蛋糕被水汽浸坏一角）才换来他靠墙停手；或反过来让他拒绝蛋糕、只肯站着吃完一口就走，保留一点不被收买的硬度。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 58.4,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 5,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 54.126
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 222.524
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：本场唯一的落点转折是『灯在这时灭了一排，站台又暗下去一截』——这只是气氛变化，不改变局势；而真正推动剧情的动作『才把闸杆抬起一半』之后，她是否穿过闸门、是滞留还是离开，完全没有交代，行动结果悬空，情绪停在半空。', suggestion='让闸杆抬起一半本身成为转折的载体：比如她刚侧身挤过，闸在身后落到底，站务员的手表还在闸箱上没被拿走——用一个已发生的不可逆事实收尾，而不是用灯光暗示。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：清洁工在 S06 刚做过恶意动作『把水阀拧大了半圈……水往她这边流』，S08 却因她递出一块蛋糕就『用手指挑了一口，嚼了两下，说甜，然后推起车走了』——态度 180 度翻转没有任何触发，前一场的对抗被一块蛋糕抹平，和解来得廉价。', suggestion='给转变一个可见的触发点：让他先踩到水、看见她用手护火护到烫伤，或让他说一句与自己末班车/回家有关的话，再接蛋糕；也可以保留他的强硬，只把『水停了、人没走』作为松动，把彻底和解放到灯熄之后。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：本场情绪是单向升级：清洁工从『杵在脚尖前』到『拧大水阀』一路加压，她一路退让，全场没有一次反向变化，观众在 S05『点着了』的高点之后被按在同一个张力平面上直到 S08。', suggestion='在中段插一次小反转打断单调推进——例如她不退反进、把盒子放到他必经的路中间，或他被对讲机/末班车广播打断一次，让她在被动中抢回半口气。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 55.894
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 109.104
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": false,
+  "reason": "达到轮次上限 3 仍未通过，升级人工；最后一轮权威总分 59.1（REVISE）；最好的是第 1 轮（59.9 分）"
+}

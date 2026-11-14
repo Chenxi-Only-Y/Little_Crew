@@ -1,0 +1,163 @@
+{
+  "episodeId": "EF-LAST60",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 50.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：S04 结尾她被“硬生生弹开”后，S05 全场她只剩静态承受——“她两只手按在门上”“她把额头抵在玻璃上”，没有任何一次新的尝试（追下一节车厢、扒门、拍玻璃喊）。阻力（列车）仍在，但主角放弃了对抗，冲突退化为单向目送；乘客“很轻地摇了摇头”是回应她的姿态，而不是回应她的动作。', suggestion='在摇头之前给她一次具体的、注定失败的主动动作：列车启动时她沿站台追着第四节车厢跑、伸手扒下一道门缝、拍着玻璃喊出声——让列车/车门持续拒绝她一次，女人的摇头才成为对这次行动的判决，而不是对一个站姿的旁白。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：情绪转折没有触发器：“我说，我到了。你听见没有。还是没人应”之后直接跳到“轻轻笑了一下”，从“不甘”到自嘲之间缺一个把她说服的事件；同时“我到了”的收话人从 S01 到 S05 从未建立（S01 只亮了时间，S02 只亮了电量），这场的转折落在一个空靶子上。', suggestion='在前段埋一次具体钩子（S01 或 S02 里一条她没来得及回的消息／一个没拨出去的电话）；S06 给一个触发动作再笑——例如一列车进站她本能地一缩、发现自己已经不打算追了，或者她意识到自己在对黑屏说话，笑才成立。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S07', shot='', line=0, asset=''), problem='S07：收尾段零阻力：“他看见她光着的脚，没多问”“卷帘门我给你留着缝”“他侧身让开”——S01 里拦住她的卷帘门在这里由别人免费打开，站务员从头帮到尾，没有任何摩擦、拒绝或代价，主角不付代价就通过了她一路撞过来的那道门。', suggestion='给一处真实摩擦：站务员问她为什么赶、她必须咽回去（说出口就要付出代价）；或她出于自尊拒绝他的钥匙/帮助，自己找出口；也可以让他带来一个有价的信息（她要见的人没来／那通电话从没拨出），让“明天早点”这句善意带刺。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：全场无阻力：“夜街比来时更空……她只朝家的方向走”，没有任何东西挡住她；“她看着它开过去，没有追”是在末班公交还没给她任何机会之前就发生的，因此不构成选择，只是描述。“最后一班……就最后一班吧”这句话没有被任何对抗检验过。', suggestion='让末班公交真的构成诱惑：车在她面前停下、车门打开、她迈出一步再收回——把“没有追”变成一个要付出代价的决定；或给她最后一个微型障碍（雨、认不出的路口、需要却没电的手机），让结尾的“接受”是在压力下挣来的，而不是走出来的。')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 50.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 31.745
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 251.336
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 59.15,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S04', shot='', line=0, asset=''), problem='S04：唯一的对手毫无动作：「女人没有起身，也没有去按什么按钮，只是看着她」「两个人都没有动」。少女单方面扒门、拍窗、喊话，车厢内既不阻拦也不回应，对抗完全是一边倒的空气墙，阻力强度反而低于 S02（闸机+男乘客）和 S03（夹手的车门）。', suggestion='给女乘客一个明确的反向动作，让阻力升级：她可以拉下窗帘、移开视线、按亮手机背过身，甚至起身走向另一节车厢——任何一个主动拒绝的动作，都会把「隔着玻璃的对峙」从静态画面变成真正的对抗。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S06', shot='', line=0, asset=''), problem='S06：全场无阻力也无代价：她坐下→对黑屏说两句话→站起来往出口走，中途没有任何力量阻拦或逼迫；核心醒悟「姐姐根本不知道她来过」由一句自述式的内心独白直接交付（「就在这一下里她明白了」），没有经过任何对抗就被说破，代价为零。', suggestion='让这个认知是被「撞」出来的，而不是想出来的：例如她不死心地拨出电话，听筒里只有一声接通后的忙音/关机提示；或她翻到姐姐 23:47 那条消息的发送状态。用一个她无法反驳的外部事实，代替「她明白了」的旁白，同时让她为求证付出最后一点电量或体力。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：回家的车是诱惑而非阻力，且双方没有交锋：司机只问了一句「上不上？」，她的决定由「就在这一步里她想起……」的内心闪回瞬间完成——「她把脚收回来」之前，场面里没有拉扯，只有一次想起。', suggestion='把内在冲突外化成一次短暂的对抗：让她已经踩上台阶、甚至投币或坐下，再让某个细节（车内报站、暖气、座位上的人）触发那段记忆，逼她重新下车；或者让司机有一句挽留/催促，她必须开口拒绝才能离开——拒绝要说出口，收回脚才有重量。')"
+      ],
+      "asDict": {
+        "round": 2,
+        "verdict": "REVISE",
+        "total": 59.15,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 4,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 43.413
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 85.094
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 68.65,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：本场没有可对抗的阻力：灯一排排熄灭、广播报停止运营都是环境状态，不是对手或障碍；她的反应也是被动的——\"黑得坐不住\"才撑柱子站起来，等于被物理条件推着走，没有她主动的选择或较劲。', suggestion='给她一个主动动作来承载低谷：比如她走向已经锁死的端头门去拍、去撬，或者对着广播回话/关掉广播——让\"被抛弃的站\"真正挡她一下，再失败，情绪才落地。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S08', shot='', line=0, asset=''), problem='S08：\"师傅。我不去了。\"是全集唯一的反向转折，但前面没有任何铺垫：S06她还在执着地拨号、敲字\"我没赶上\"，说明她仍想让姐姐知道；到 S08 突然放弃，动机凭空出现，观众看不到是什么让她变了。司机那句\"你确定\"只提供了外部阻力，没有提供她的内部理由。', suggestion='在 S06→S08 之间埋一颗种子（比如黑屏前她瞥见姐姐最后一条消息/一个未接来电/一个时间点），让\"不去了\"成为她读懂某件事后的决定；或把这句改成一个更小的中间动作（先按了下车铃、先抱着桶站起来又坐下），分两拍完成转折。')"
+      ],
+      "asDict": {
+        "round": 3,
+        "verdict": "PASS",
+        "total": 68.65,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 51.317
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 84.919
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 3 轮通过（权威总分 68.7）"
+}
