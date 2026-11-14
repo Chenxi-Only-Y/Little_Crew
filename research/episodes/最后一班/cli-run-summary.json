@@ -1,0 +1,2791 @@
+{
+  "kind": "episode.run.summary",
+  "via": "product CLI (little-crew episode)",
+  "episodeId": "CLI-LAST60",
+  "title": "最后一班",
+  "renderPath": "local",
+  "crew": "default_crew_stubs（规则桩，非真 LLM）",
+  "run.report.json": {
+    "episodeId": "CLI-LAST60",
+    "ok": true,
+    "scriptRounds": 2,
+    "scriptVerdict": "PASS",
+    "failureKind": "",
+    "clipVideo": "",
+    "art": {},
+    "schedule": {},
+    "previs": {
+      "ok": false,
+      "reason": "没有绑定 previs 实现 —— 加 --llm（--llm-previs 需要它）"
+    },
+    "clipAudio": {},
+    "advisory": [],
+    "humanGate": {
+      "kind": "human.gate",
+      "decision": "skip",
+      "reviewed": false,
+      "approved": false,
+      "assisted": false,
+      "by": "disabled",
+      "reason": "未开启人工 Gate（--human-gate 可开）",
+      "interactive": false,
+      "shots": 12,
+      "seconds": 60.0
+    },
+    "director": {},
+    "gaffer": {},
+    "plannedShots": 12,
+    "rendered": 12,
+    "cacheHits": 0,
+    "failed": 0,
+    "coverage": 1.0,
+    "totalSeconds": 60.0,
+    "wallSeconds": 236.59,
+    "playable": true,
+    "sceneVeto": false,
+    "visionNotJudged": false,
+    "video": {
+      "ok": true,
+      "failure": "none",
+      "reason": "全部镜头合成成功",
+      "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\episode.master.mp4",
+      "clipsBuilt": 12,
+      "clipsTotal": 12,
+      "coverage": 1.0,
+      "seconds": 60.0,
+      "wallSeconds": 2.73,
+      "bytes": 1861111
+    },
+    "videoPath": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\episode.master.mp4",
+    "characters": {
+      "kind": "character.library",
+      "episodeId": "CLI-LAST60",
+      "seed": "00cfe745c2f96017",
+      "count": 1,
+      "sheets": [
+        {
+          "kind": "character.sheet",
+          "name": "少女",
+          "characterId": "CHAR-DEF0",
+          "appearance": {
+            "hair_style": "蓬松微卷中长发",
+            "hair_color": "浅亚麻",
+            "eye_color": "浅灰",
+            "build": "清瘦文弱",
+            "outfit": "白色衬衫配马甲",
+            "outfit_accent": "领口一枚铜扣",
+            "signature": "惯常把袖口捏在手里",
+            "gender": "女性",
+            "age_band": "少女"
+          },
+          "promptFragment": "女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里",
+          "scenes": [
+            "SC-CLI-LAST60-001",
+            "SC-CLI-LAST60-002",
+            "SC-CLI-LAST60-003",
+            "SC-CLI-LAST60-004"
+          ],
+          "aliases": [],
+          "overridden": [],
+          "notes": "",
+          "pending": [
+            "anchorSet"
+          ],
+          "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+        }
+      ]
+    },
+    "reason": "全部镜头就绪",
+    "failures": [],
+    "manifest": {
+      "kind": "episode.master",
+      "episodeId": "CLI-LAST60",
+      "title": "最后一班",
+      "stage": "image",
+      "pendingStages": [
+        "video",
+        "audio"
+      ],
+      "shotCount": 12,
+      "totalSeconds": 60.0,
+      "shots": [
+        {
+          "shotId": "SH-CLI-LAST60-001-001",
+          "sceneId": "SC-CLI-LAST60-001",
+          "shotSize": "full",
+          "cameraMovement": "static",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-001-001-SH-CLI-LAST60-001-001-0903d6c7_img_20261114_183008_2d3034.png"
+          ],
+          "prompt": "少女 快步穿过夜街，玻璃门反光掠过她的脸，手机屏幕亮着 23:58（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-001-002",
+          "sceneId": "SC-CLI-LAST60-001",
+          "shotSize": "medium",
+          "cameraMovement": "dolly_in",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-001-002-SH-CLI-LAST60-001-002-93f1b2e3_img_20261114_183028_282e0f.png"
+          ],
+          "prompt": "她低头看了一眼时间，脚步加快，跑向地铁口（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-001-004",
+          "sceneId": "SC-CLI-LAST60-001",
+          "shotSize": "close",
+          "cameraMovement": "dolly_out",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-001-004-SH-CLI-LAST60-001-004-30cae6bd_img_20261114_183043_31eea3.png"
+          ],
+          "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-002-001",
+          "sceneId": "SC-CLI-LAST60-002",
+          "shotSize": "medium_full",
+          "cameraMovement": "static",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-002-001-SH-CLI-LAST60-002-001-603f1a41_img_20261114_183059_1fdb8c.png"
+          ],
+          "prompt": "少女 刷卡穿过闸机，冲下空荡的扶梯（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-002-002",
+          "sceneId": "SC-CLI-LAST60-002",
+          "shotSize": "full",
+          "cameraMovement": "static",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-002-002-SH-CLI-LAST60-002-002-fbd216b7_img_20261114_183115_07fd06.png"
+          ],
+          "prompt": "站台灯带一排排亮起，远处隧道里亮起一束车灯（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-002-004",
+          "sceneId": "SC-CLI-LAST60-002",
+          "shotSize": "medium_close",
+          "cameraMovement": "truck_left",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-002-004-SH-CLI-LAST60-002-004-4b8ba016_img_20261114_183131_882f62.png"
+          ],
+          "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-003-001",
+          "sceneId": "SC-CLI-LAST60-003",
+          "shotSize": "close",
+          "cameraMovement": "dolly_out",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-003-001-SH-CLI-LAST60-003-001-da3eb8d1_img_20261114_183146_d98d1b.png"
+          ],
+          "prompt": "少女 停在安全线前，松了一口气，抬头看向进站的列车（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-003-002",
+          "sceneId": "SC-CLI-LAST60-003",
+          "shotSize": "medium_full",
+          "cameraMovement": "static",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-003-002-SH-CLI-LAST60-003-002-85811b2e_img_20261114_183202_e2cecb.png"
+          ],
+          "prompt": "车门合上的那一瞬，她的表情从放松变成怔住（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-003-004",
+          "sceneId": "SC-CLI-LAST60-003",
+          "shotSize": "medium",
+          "cameraMovement": "dolly_in",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-003-004-SH-CLI-LAST60-003-004-257d9f0c_img_20261114_183217_1ad9c0.png"
+          ],
+          "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-004-001",
+          "sceneId": "SC-CLI-LAST60-004",
+          "shotSize": "medium_close",
+          "cameraMovement": "truck_left",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-004-001-SH-CLI-LAST60-004-001-c98d2353_img_20261114_183232_e216f3.png"
+          ],
+          "prompt": "少女 看着列车驶离，灯带的光从她脸上扫过（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-004-002",
+          "sceneId": "SC-CLI-LAST60-004",
+          "shotSize": "close",
+          "cameraMovement": "dolly_out",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-004-002-SH-CLI-LAST60-004-002-698d4add_img_20261114_183248_6d9fe0.png"
+          ],
+          "prompt": "她背靠柱子慢慢坐下（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-CLI-LAST60-004-004",
+          "sceneId": "SC-CLI-LAST60-004",
+          "shotSize": "full",
+          "cameraMovement": "static",
+          "durationSec": 5.0,
+          "characters": [
+            "少女"
+          ],
+          "artifacts": [
+            "SH-CLI-LAST60-004-004-SH-CLI-LAST60-004-004-dd5da5e6_img_20261114_183304_939ee3.png"
+          ],
+          "prompt": "她起身走向出口，身后站台的灯一排排熄灭（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+          "ready": true
+        }
+      ],
+      "createdAt": 1794652422.2364233
+    },
+    "evidence": {
+      "kind": "delivery.evidence",
+      "episodeId": "CLI-LAST60",
+      "artifactCount": 12,
+      "artifacts": [
+        "SH-CLI-LAST60-001-001-SH-CLI-LAST60-001-001-0903d6c7_img_20261114_183008_2d3034.png",
+        "SH-CLI-LAST60-001-002-SH-CLI-LAST60-001-002-93f1b2e3_img_20261114_183028_282e0f.png",
+        "SH-CLI-LAST60-001-004-SH-CLI-LAST60-001-004-30cae6bd_img_20261114_183043_31eea3.png",
+        "SH-CLI-LAST60-002-001-SH-CLI-LAST60-002-001-603f1a41_img_20261114_183059_1fdb8c.png",
+        "SH-CLI-LAST60-002-002-SH-CLI-LAST60-002-002-fbd216b7_img_20261114_183115_07fd06.png",
+        "SH-CLI-LAST60-002-004-SH-CLI-LAST60-002-004-4b8ba016_img_20261114_183131_882f62.png",
+        "SH-CLI-LAST60-003-001-SH-CLI-LAST60-003-001-da3eb8d1_img_20261114_183146_d98d1b.png",
+        "SH-CLI-LAST60-003-002-SH-CLI-LAST60-003-002-85811b2e_img_20261114_183202_e2cecb.png",
+        "SH-CLI-LAST60-003-004-SH-CLI-LAST60-003-004-257d9f0c_img_20261114_183217_1ad9c0.png",
+        "SH-CLI-LAST60-004-001-SH-CLI-LAST60-004-001-c98d2353_img_20261114_183232_e216f3.png",
+        "SH-CLI-LAST60-004-002-SH-CLI-LAST60-004-002-698d4add_img_20261114_183248_6d9fe0.png",
+        "SH-CLI-LAST60-004-004-SH-CLI-LAST60-004-004-dd5da5e6_img_20261114_183304_939ee3.png"
+      ],
+      "irHashes": {
+        "SH-CLI-LAST60-001-001": "sha256:1862d4da90f078333ca9795f04e3924448ef66d2cb8f9c11e751a7316164fdf1",
+        "SH-CLI-LAST60-001-002": "sha256:1ab32559b006c89e0f50e06aa5169b0697728e3fbf33fd0050f81837608aada5",
+        "SH-CLI-LAST60-001-004": "sha256:9409430d047a80e104f550999fcb416c33eccec2c5dc721a15e4adbba4e18231",
+        "SH-CLI-LAST60-002-001": "sha256:ef512554d7e0ee3c55f41db3eba7774a4ba236eb6bebee6ccc13e2585b486eb2",
+        "SH-CLI-LAST60-002-002": "sha256:bc00620561c28f7e1c59c827b40b05d1a001f68ab7714459ce50ada5a5575aa0",
+        "SH-CLI-LAST60-002-004": "sha256:bee68a941df80db4c636b657f8d436a127da586df5ad19bc749d914c3965307c",
+        "SH-CLI-LAST60-003-001": "sha256:041bbf84e781ab31d48ff8dc12b0340df54bf119dca2549145ab0a42db44123d",
+        "SH-CLI-LAST60-003-002": "sha256:3c02cd4a2a3f82885f980cc12ddb6450f6c42e8763281da6958b926a55aded3b",
+        "SH-CLI-LAST60-003-004": "sha256:76e06da8e05034188ca77f68598cca98f84db0b401af969626506f325d9407e7",
+        "SH-CLI-LAST60-004-001": "sha256:007a265f4dfbb46a95f5488ffd39c09b78b1458dbeab68a0d6c436778077e6cf",
+        "SH-CLI-LAST60-004-002": "sha256:6a4ee3182ab89c79e47723f7cfd70e51d06b2faa492cdca6a95be67c7b069daf",
+        "SH-CLI-LAST60-004-004": "sha256:b3e0d45a83cdb0e7d5ea35ead6f61725f07a0d5bd4fcc94f20f81882e42afb56"
+      },
+      "artifactHashes": {
+        "SH-CLI-LAST60-001-001-SH-CLI-LAST60-001-001-0903d6c7_img_20261114_183008_2d3034.png": "sha256:b8cb0369122d5691d7b723e3e441cf3285583c8c7a0aeaab96c8ef2e60b18f8f",
+        "SH-CLI-LAST60-001-002-SH-CLI-LAST60-001-002-93f1b2e3_img_20261114_183028_282e0f.png": "sha256:45a8a52544d12004484b6bafd9f6ab2f67e2eb9fedd1e05daab18dfd7a005ef9",
+        "SH-CLI-LAST60-001-004-SH-CLI-LAST60-001-004-30cae6bd_img_20261114_183043_31eea3.png": "sha256:7231fa6d84e14fb7c599db1ce39d9354f9d7930e978d22d3905927f40a589d17",
+        "SH-CLI-LAST60-002-001-SH-CLI-LAST60-002-001-603f1a41_img_20261114_183059_1fdb8c.png": "sha256:e5aafee550a33ad4ef0742a8a3c871da820296c66d046e4f9af52234a2e0ae1f",
+        "SH-CLI-LAST60-002-002-SH-CLI-LAST60-002-002-fbd216b7_img_20261114_183115_07fd06.png": "sha256:7de512f4c35302c45068088f3b5408b79be3148aedc2084af99bf5b9eff437c9",
+        "SH-CLI-LAST60-002-004-SH-CLI-LAST60-002-004-4b8ba016_img_20261114_183131_882f62.png": "sha256:85b234521eef3fca54fc56447fd5f7bec3a2be0ad32b4ebc3626af0a1ba5bcf4",
+        "SH-CLI-LAST60-003-001-SH-CLI-LAST60-003-001-da3eb8d1_img_20261114_183146_d98d1b.png": "sha256:3e68752f2f13625d494bf9dccccc8e399309ba48a42668fae1a30fea57bb267d",
+        "SH-CLI-LAST60-003-002-SH-CLI-LAST60-003-002-85811b2e_img_20261114_183202_e2cecb.png": "sha256:3432efe8475003b2bb73e0ff8557180abc8d92ab55bc67d9b5fdb19c6a976e6a",
+        "SH-CLI-LAST60-003-004-SH-CLI-LAST60-003-004-257d9f0c_img_20261114_183217_1ad9c0.png": "sha256:89ad04257f85515903e5f6dae37428646be1a9c0f5b563b437d2825c8a760710",
+        "SH-CLI-LAST60-004-001-SH-CLI-LAST60-004-001-c98d2353_img_20261114_183232_e216f3.png": "sha256:e513530c3885ab306a53143f05c43960b47684027383d9e9dcf6d103509ef186",
+        "SH-CLI-LAST60-004-002-SH-CLI-LAST60-004-002-698d4add_img_20261114_183248_6d9fe0.png": "sha256:2171093b1a50037b404af38d7f65739c8243365d42bebe7c8f9c3bd076142de2",
+        "SH-CLI-LAST60-004-004-SH-CLI-LAST60-004-004-dd5da5e6_img_20261114_183304_939ee3.png": "sha256:6231a3610e58257c4463c379f3ee2ee9186575602eba168138403e5315500395"
+      },
+      "cache": {
+        "hits": 0,
+        "rendered": 12,
+        "secondsSaved": 0.0,
+        "secondsSpent": 194.44
+      },
+      "checks": {
+        "allShotsHaveArtifacts": true,
+        "allShotsWithinDurationLimit": true,
+        "manifestNonEmpty": true,
+        "artifactsUnique": true,
+        "hasContentHashChain": true
+      },
+      "allChecksPassed": true,
+      "gate": {
+        "results": [
+          {
+            "artifactId": "SH-CLI-LAST60-001-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-001-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-001-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-001-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-001-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.793853,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting",
+                  "otherShotId": "SH-CLI-LAST60-003-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-001-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.793853,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-003-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-001-002",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-001-002",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-001-002",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-001-002",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-001-002",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.841973,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-001-002",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.841973,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-001-004",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-001-004",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-001-004",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-001-004",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-001-004",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.822642,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-001-004",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.822642,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-002-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-002-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-002-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-002-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-002-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.871376,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-002-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.871376,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-002-002",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-002-002",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-002-002",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-002-002",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-002-002",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.831742,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-002-002",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.831742,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-002-004",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-002-004",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-002-004",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-002-004",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-002-004",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.831788,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-002-004",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.831788,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-003-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-003-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-003-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-003-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-003-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.793853,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-003-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.793853,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-003-002",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-003-002",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-003-002",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-003-002",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-003-002",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.851436,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-003-002",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.851436,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-003-004",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-003-004",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-003-004",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-003-004",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-003-004",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.819556,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-003-004",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.819556,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-004-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-004-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-004-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-004-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-004-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.826279,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-004-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.826279,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-004-002",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-004-002",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-004-002",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-004-002",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-004-002",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.81017,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-004-002",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.81017,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-CLI-LAST60-004-004",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-CLI-LAST60-004-004",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "少女"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-CLI-LAST60-004-004",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-CLI-LAST60-004-004",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.0,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-CLI-LAST60-004-004",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_identity_少女",
+                "op": "identity_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "identity_similarity",
+                  "characterRef": "少女",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.880059,
+                  "min": 0.7,
+                  "max": 1.0,
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette",
+                  "otherShotId": "SH-CLI-LAST60-001-001"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "sampleRef": "",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-CLI-LAST60-004-004",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.880059,
+                  "min": 0.7,
+                  "otherShotId": "SH-CLI-LAST60-001-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "palette"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 6,
+              "passed": 6,
+              "blocking": 0,
+              "hard": 3
+            }
+          }
+        ],
+        "skippedConstraints": [
+          "SH-CLI-LAST60-001-001/cr_blind_SH-CLI-LAST60-001-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-001-002/cr_blind_SH-CLI-LAST60-001-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-001-004/cr_blind_SH-CLI-LAST60-001-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-002-001/cr_blind_SH-CLI-LAST60-002-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-002-002/cr_blind_SH-CLI-LAST60-002-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-002-004/cr_blind_SH-CLI-LAST60-002-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-003-001/cr_blind_SH-CLI-LAST60-003-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-003-002/cr_blind_SH-CLI-LAST60-003-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-003-004/cr_blind_SH-CLI-LAST60-003-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-004-001/cr_blind_SH-CLI-LAST60-004-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-004-002/cr_blind_SH-CLI-LAST60-004-002(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-CLI-LAST60-004-004/cr_blind_SH-CLI-LAST60-004-004(blind_read_verdict) 未执行：缺观测 ['blindVerdict']"
+        ],
+        "availableObservations": [
+          "bytes",
+          "characterCount",
+          "characters",
+          "consistencySignature",
+          "description",
+          "durationSec",
+          "height",
+          "method",
+          "name",
+          "otherShotId",
+          "pairwise",
+          "similarity",
+          "weakestDimension",
+          "width"
+        ],
+        "counts": {
+          "shots": 12,
+          "kept": 12,
+          "retry": 0,
+          "escalate": 0,
+          "skipped": 12
+        }
+      },
+      "gatePassed": true,
+      "providers": {
+        "total": 2,
+        "providers": [
+          {
+            "provider": "api.deepseek.com",
+            "model": "deepseek-flash",
+            "calls": 1,
+            "servedModels": {
+              "deepseek-flash": 1
+            },
+            "kinds": {
+              "llm": 1
+            }
+          },
+          {
+            "provider": "api.xiaomimimo.com",
+            "model": "mimo-v2.6-flash",
+            "calls": 1,
+            "servedModels": {
+              "mimo-v2.6-flash": 1
+            },
+            "kinds": {
+              "vision:封面选帧": 1
+            }
+          }
+        ],
+        "missingServedModel": 0
+      },
+      "createdAt": 1794652422.2374232
+    }
+  },
+  "episode.master.json": {
+    "kind": "episode.master",
+    "episodeId": "CLI-LAST60",
+    "title": "最后一班",
+    "stage": "image",
+    "pendingStages": [
+      "video",
+      "audio"
+    ],
+    "shotCount": 12,
+    "totalSeconds": 60.0,
+    "shots": [
+      {
+        "shotId": "SH-CLI-LAST60-001-001",
+        "sceneId": "SC-CLI-LAST60-001",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-001-001-SH-CLI-LAST60-001-001-0903d6c7_img_20261114_183008_2d3034.png"
+        ],
+        "prompt": "少女 快步穿过夜街，玻璃门反光掠过她的脸，手机屏幕亮着 23:58（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-001-002",
+        "sceneId": "SC-CLI-LAST60-001",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-001-002-SH-CLI-LAST60-001-002-93f1b2e3_img_20261114_183028_282e0f.png"
+        ],
+        "prompt": "她低头看了一眼时间，脚步加快，跑向地铁口（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-001-004",
+        "sceneId": "SC-CLI-LAST60-001",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-001-004-SH-CLI-LAST60-001-004-30cae6bd_img_20261114_183043_31eea3.png"
+        ],
+        "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-001",
+        "sceneId": "SC-CLI-LAST60-002",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-002-001-SH-CLI-LAST60-002-001-603f1a41_img_20261114_183059_1fdb8c.png"
+        ],
+        "prompt": "少女 刷卡穿过闸机，冲下空荡的扶梯（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-002",
+        "sceneId": "SC-CLI-LAST60-002",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-002-002-SH-CLI-LAST60-002-002-fbd216b7_img_20261114_183115_07fd06.png"
+        ],
+        "prompt": "站台灯带一排排亮起，远处隧道里亮起一束车灯（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-004",
+        "sceneId": "SC-CLI-LAST60-002",
+        "shotSize": "medium_close",
+        "cameraMovement": "truck_left",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-002-004-SH-CLI-LAST60-002-004-4b8ba016_img_20261114_183131_882f62.png"
+        ],
+        "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-001",
+        "sceneId": "SC-CLI-LAST60-003",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-003-001-SH-CLI-LAST60-003-001-da3eb8d1_img_20261114_183146_d98d1b.png"
+        ],
+        "prompt": "少女 停在安全线前，松了一口气，抬头看向进站的列车（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-002",
+        "sceneId": "SC-CLI-LAST60-003",
+        "shotSize": "medium_full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-003-002-SH-CLI-LAST60-003-002-85811b2e_img_20261114_183202_e2cecb.png"
+        ],
+        "prompt": "车门合上的那一瞬，她的表情从放松变成怔住（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-004",
+        "sceneId": "SC-CLI-LAST60-003",
+        "shotSize": "medium",
+        "cameraMovement": "dolly_in",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-003-004-SH-CLI-LAST60-003-004-257d9f0c_img_20261114_183217_1ad9c0.png"
+        ],
+        "prompt": "代价是她再也回不到从前那种笃定里了（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-001",
+        "sceneId": "SC-CLI-LAST60-004",
+        "shotSize": "medium_close",
+        "cameraMovement": "truck_left",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-004-001-SH-CLI-LAST60-004-001-c98d2353_img_20261114_183232_e216f3.png"
+        ],
+        "prompt": "少女 看着列车驶离，灯带的光从她脸上扫过（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-002",
+        "sceneId": "SC-CLI-LAST60-004",
+        "shotSize": "close",
+        "cameraMovement": "dolly_out",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-004-002-SH-CLI-LAST60-004-002-698d4add_img_20261114_183248_6d9fe0.png"
+        ],
+        "prompt": "她背靠柱子慢慢坐下（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-004",
+        "sceneId": "SC-CLI-LAST60-004",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 5.0,
+        "characters": [
+          "少女"
+        ],
+        "artifacts": [
+          "SH-CLI-LAST60-004-004-SH-CLI-LAST60-004-004-dd5da5e6_img_20261114_183304_939ee3.png"
+        ],
+        "prompt": "她起身走向出口，身后站台的灯一排排熄灭（少女：女性，少女，清瘦文弱身形，浅亚麻蓬松微卷中长发，浅灰眼睛，身穿白色衬衫配马甲，领口一枚铜扣，惯常把袖口捏在手里）",
+        "ready": true
+      }
+    ],
+    "createdAt": 1794652422.2364233
+  },
+  "cover.json": {
+    "enabled": true,
+    "kind": "cover.select",
+    "episodeTitle": "最后一班",
+    "candidates": [
+      "SH-CLI-LAST60-001-001",
+      "SH-CLI-LAST60-001-002",
+      "SH-CLI-LAST60-002-001",
+      "SH-CLI-LAST60-002-002",
+      "SH-CLI-LAST60-003-001",
+      "SH-CLI-LAST60-003-002",
+      "SH-CLI-LAST60-004-001",
+      "SH-CLI-LAST60-004-002"
+    ],
+    "dropped": [
+      {
+        "shotId": "SH-CLI-LAST60-001-004",
+        "reason": "未抽样（超出候选上限）"
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-004",
+        "reason": "未抽样（超出候选上限）"
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-004",
+        "reason": "未抽样（超出候选上限）"
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-004",
+        "reason": "未抽样（超出候选上限）"
+      }
+    ],
+    "ok": true,
+    "contactSheet": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\cover_candidates.jpg",
+    "judge": {
+      "ok": true,
+      "pick": 5,
+      "reason": "正面近景表情清晰主体占比大",
+      "bad": [
+        1,
+        7
+      ]
+    },
+    "shotId": "SH-CLI-LAST60-003-001",
+    "source": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\assets\\shots\\SH-CLI-LAST60-003-001\\SH-CLI-LAST60-003-001-SH-CLI-LAST60-003-001-da3eb8d1_img_20261114_183146_d98d1b.png",
+    "cover": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\cover.png",
+    "reason": "正面近景表情清晰主体占比大",
+    "mode": "select",
+    "titleMode": "overlay",
+    "title": {
+      "ok": true,
+      "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\cover.png",
+      "font": "C:\\Windows\\Fonts\\msyh.ttc",
+      "size": 59,
+      "title": "最后一班"
+    },
+    "coverRaw": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CLIVERIFY2\\delivery\\cover_raw.png"
+  },
+  "duration_target.json": {
+    "kind": "duration.target",
+    "targetSeconds": 60.0,
+    "originalSeconds": 72.0,
+    "adjustedSeconds": 60.0,
+    "factor": 0.8333,
+    "perShot": [
+      {
+        "shotId": "SH-CLI-LAST60-001-001",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-001-002",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-001-004",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-001",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-002",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-002-004",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-001",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-002",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-003-004",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-001",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-002",
+        "old": 6.0,
+        "new": 5.0
+      },
+      {
+        "shotId": "SH-CLI-LAST60-004-004",
+        "old": 6.0,
+        "new": 5.0
+      }
+    ],
+    "note": "成比例缩放（不删镜头）；每镜夹在 2~10s；残差由最后一镜吸收"
+  },
+  "shot_selection.json": {
+    "kind": "shots.target",
+    "targetShots": 12,
+    "originalShots": 16,
+    "keptShots": 12,
+    "droppedShots": 4,
+    "scenes": 4,
+    "perSceneQuota": 3,
+    "keptIds": [
+      "SH-CLI-LAST60-001-001",
+      "SH-CLI-LAST60-001-002",
+      "SH-CLI-LAST60-001-004",
+      "SH-CLI-LAST60-002-001",
+      "SH-CLI-LAST60-002-002",
+      "SH-CLI-LAST60-002-004",
+      "SH-CLI-LAST60-003-001",
+      "SH-CLI-LAST60-003-002",
+      "SH-CLI-LAST60-003-004",
+      "SH-CLI-LAST60-004-001",
+      "SH-CLI-LAST60-004-002",
+      "SH-CLI-LAST60-004-004"
+    ],
+    "note": "每场等距挑选，保留时间顺序；不做语义合并"
+  }
+}

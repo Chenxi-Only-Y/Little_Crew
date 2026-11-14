@@ -2944,7 +2944,10 @@ class EpisodeRunner:
                                    total_seconds=round(sum(
                                        float(getattr(s, "duration_sec", 0.0) or 0.0)
                                        for s in picked), 2))
-            self.orch.blackboard.set("shot.list", new_list)
+            # `Blackboard` 的写 API 是 `put(key, value, owner=...)`，
+            # 没有 `set` —— 2026-11-14 CLI 真机跑出 `AttributeError`，
+            # 缩放后的镜头表没写回黑板（下游仍用局部变量，所以成片没坏）。
+            self.orch.blackboard.put("shot.list", new_list, owner="episode")
         except Exception:                                     # noqa: BLE001
             new_list = shot_list
         report = {"kind": "shots.target", "targetShots": target,
@@ -3003,7 +3006,10 @@ class EpisodeRunner:
         try:
             new_list = _dc_replace(shot_list, shots=tuple(new),
                                    total_seconds=round(new_total, 2))
-            self.orch.blackboard.set("shot.list", new_list)
+            # `Blackboard` 的写 API 是 `put(key, value, owner=...)`，
+            # 没有 `set` —— 2026-11-14 CLI 真机跑出 `AttributeError`，
+            # 缩放后的镜头表没写回黑板（下游仍用局部变量，所以成片没坏）。
+            self.orch.blackboard.put("shot.list", new_list, owner="episode")
         except Exception as exc:                              # noqa: BLE001
             print(f"  ⚠️ 时长缩放后回写黑板失败：{type(exc).__name__}: {exc}")
             new_list = shot_list

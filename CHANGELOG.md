@@ -57,6 +57,33 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.29] — 2026-11-14（**产品 CLI 真机验证通过**）
+
+### 用产品入口跑完一集
+
+```
+little-crew episode --script research/episodes/最后一班/story.txt \
+  --render-path local --shots-target 12 --target-seconds 60 \
+  --cover --cover-title 最后一班 --script-threshold 55
+→ 12 镜 · 60.0s 成片 · 封面（选帧+标题）· 门禁 KEEP 12 · 墙钟 236.6s · 成本 ¥0
+```
+
+- 剧组是 `default_crew_stubs()`（**规则桩，不是真 LLM**）—— 这一步验证的是"产品入口链路"，
+  不是内容质量；给 CLI 接 `--llm` 是下一步。
+- 证据：`research/episodes/最后一班/{cli_film_frames.jpg,cli_cover.jpg,cli-run-summary.json}`
+
+### 修掉一个被 try 吞掉的旧 API 调用
+
+`_apply_target_duration` / `_apply_shots_target` 用 `blackboard.set(...)` 写回镜头表，
+而 `Blackboard` 的写 API 是 `put(key, value, owner=...)` → `AttributeError`（只打印一行警告）；
+下游用局部变量所以成片没坏、但黑板没更新。已改 `put(..., owner="episode")` 并复跑确认。
+
+### 测试
+
+全量 **2673/2660 + 架构守卫 PASS**（见上版）；CLI 入口由真机验证覆盖。
+
+---
+
 ## [0.4.0-beta.28] — 2026-11-14（**A2：删混合路径；云端由用户显式选**）
 
 ### 用户决定

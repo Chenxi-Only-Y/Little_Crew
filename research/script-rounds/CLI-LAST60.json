@@ -1,0 +1,107 @@
+{
+  "episodeId": "CLI-LAST60",
+  "rounds": [
+    {
+      "verdict": "Verdict.REVISE",
+      "total": 44.4,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-CLI-LAST60-001', shot='', line=0, asset=''), problem='SC-CLI-LAST60-001 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-CLI-LAST60-001 补一个体现「冲突」的镜头或段落')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-CLI-LAST60-002', shot='', line=0, asset=''), problem='SC-CLI-LAST60-002 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-CLI-LAST60-002 补一个体现「冲突」的镜头或段落')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-CLI-LAST60-003', shot='', line=0, asset=''), problem='SC-CLI-LAST60-003 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-CLI-LAST60-003 补一个体现「冲突」的镜头或段落')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-CLI-LAST60-004', shot='', line=0, asset=''), problem='SC-CLI-LAST60-004 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-CLI-LAST60-004 补一个体现「冲突」的镜头或段落')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "REVISE",
+        "total": 44.4,
+        "issueCount": 4,
+        "blockerCount": 0,
+        "repairHintCount": 12,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 0.001
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 0.001
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.001
+          }
+        ]
+      }
+    },
+    {
+      "verdict": "Verdict.PASS",
+      "total": 80.5,
+      "asDict": {
+        "round": 2,
+        "verdict": "PASS",
+        "total": 80.5,
+        "issueCount": 0,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 0.0
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 2 轮通过（权威总分 80.5）"
+}

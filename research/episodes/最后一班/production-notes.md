@@ -100,3 +100,27 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
 & "D:\Python\python.exe" -X utf8 tools\compare_local_cloud.py `
   --workdir outputs\_EFLAST60C --episode EF-LAST60C
 ```
+
+---
+
+## 六、产品 CLI 验证（2026-11-14，B 选项）
+
+用**产品入口**（`little-crew episode`）跑同一部短片，验证"平台入口"可用（不是只有 demo 能跑）：
+
+| 项 | 结果 |
+|---|---|
+| 命令 | `little-crew episode --script story.txt --render-path local --shots-target 12 --target-seconds 60 --cover --cover-title 最后一班 --script-threshold 55` |
+| 剧组 | `default_crew_stubs()`（**规则桩，不是真 LLM**） |
+| 镜头 | 16 → **12 镜**（每场等距 3 镜） |
+| 时长 | 72.0s → **60.0s**（清单与成片都是 60.0s） |
+| 渲染 | 本地 local-gen，12/12 成功，**¥0** |
+| 封面 | ✅ 选帧 + 叠标题（`cli_cover.jpg`） |
+| 门禁 | **KEEP 12 / RETRY 0 / ESCALATE 0** |
+| 墙钟 | **236.6s** |
+| 交付 | `run.report.json` / `episode.master.json` / `episode.master.mp4` / `delivery.evidence.json` |
+
+**本次跑出的 bug（已修）**：`_apply_target_duration` 里用 `blackboard.set(...)` 写回缩放后的镜头表，
+而 `Blackboard` 的写 API 是 `put(key, value, owner=...)` → `AttributeError`（被 try 吞掉，
+只打印一行警告；下游用局部变量所以成片没坏）。已改为 `put(..., owner="episode")` 并复跑确认警告消失。
+
+> 证据：`cli_film_frames.jpg` / `cli_cover.jpg` / `cli-run-summary.json`。
