@@ -63,9 +63,18 @@ Little_Crew/
 │   ├── compiler/               [3] IR -> 执行图/请求编译器 + 模型路由
 │   ├── agent/                  [3] 三层调用协议
 │   ├── runtime/                [4] 执行层（通道/队列/缓存/检查点/GPU 调度）
-│   │   └── channels/               通道实现：comfy.py · http.py
+│   │   ├── channels/               通道实现：comfy.py · http.py
+│   │   ├── cloud_render.py         **云端整集渲染**（图生图 + 锚点，用户显式选）
+│   │   ├── run_options.py          一集运行选项的**公共装配层**（demo/CLI/API 共用）
+│   │   ├── llm_crew.py             规则桩 → 真实 LLM 的绑定层（跨族/成对替换）
+│   │   ├── character_sheets*.py    角色四视图设定板（题面/生成/精检/检查）
+│   │   ├── post_production.py      后期统筹（`post.plan`，确定性规则）
+│   │   └── sudorelay_edits.py      图生图（保图微调）通道
 │   ├── review/                 [4] 验收层（断言算子/门禁/返工闭环）
-│   │   └── operators/              确定性断言算子
+│   │   ├── operators/              确定性断言算子
+│   │   ├── qc_inspector.py         质检员（逐镜抽审 → 返工 → 复验）
+│   │   ├── sheet_qc.py             设定板 12 条质检（挑错器，非放行器）
+│   │   └── cover_designer.py       封面设计师（选帧 / 生成 / 叠标题）
 │   ├── api/                    [5] 对外 HTTP 接口
 │   └── cli/                    [5] 命令行入口
 ├── tests/
@@ -537,3 +546,23 @@ Store 的应用执行别名是 reparse point，harness 特意用 `lstatSync` 而
 | v1.1 | 2026-10-11 | 项目迁入 `小剧组·Little_Crew/`，脚手架从 `platform/` 上移至项目根；`src/` 只保留源码；§2 目录树与 §5 构建命令同步更新。**目录职责与配置规范移交 [`STRUCTURE.md`](STRUCTURE.md)**，本文专注代码分层 |
 | v1.2 | 2026-10-11 | **ComfyUI 接口契约修正**（源码级核实，依据 `research/comfyui-internals/`）：① 新增 `capability/comfy_interfaces.py` 作为接口契约知识的唯一位置（失效钩子已知表 + 确定性三分类 + 端口类型表）；② 修正"种子需强制重算"的过度判断 —— 种子在 `inputs` 里，ComfyUI 签名已覆盖；③ 修复**把文件路径喂给 IMAGE 端口**的缺陷（新增 `image.file` 规则 + `_coerce_for_port` 自动注入 `LoadImage` + 路径派生确定性节点 id）；④ 环境哈希纳入钩子存在性（ABI 变化），新增 `FINGERPRINT_HOOK_CHANGED` 漂移；⑤ 新增 §4.2.1 三条 runtime 硬约束。测试 69 → 89 项 |
 | v1.3 | 2026-10-11 | **降噪修正**：新增官方确定性节点白名单 `KNOWN_PURE_CLASS_TYPES` 与第三方节点在册表 `THIRD_PARTY_NODES_IN_USE`，区分"未收录"与"确实未知"；确定性存疑告警改为**按 `class_type` 去重**并声明影响范围。实测同一镜头图的告警由 **9 条降至 1 条**，且保留的那条是真实的（`IPAdapterAdvanced` 钩子未核实）。测试 89 → 94 项 |
+
+
+## 2.5 2026-11-13 / 14 新增模块（与入口对应）
+
+| 模块 | 层 | 作用 | 入口 |
+|---|---|---|---|
+`runtime/character_sheets.py` + `character_sheet_prompt.py` | runtime | 四视图设定板（12 槽模板 + 5 画风 + 比例档） | `--char-sheets` |
+`runtime/sudorelay_edits.py` | runtime | 图生图保图微调（只修细节、不改设计） | `--char-sheet-refine` |
+`review/sheet_qc.py` | review | 设定板 12 条 VLM 质检（fail 可信、pass ≠ 合格） | `--char-sheet-qc` |
+`review/cover_designer.py` | review | 封面设计师（拼图选帧 / 图生图生成 / ffmpeg 叠标题） | `--cover` |
+`runtime/post_production.py` | runtime | 后期统筹：字幕/转场/BGM/音轨策略/响度 → `post.plan` | 成片阶段自动 |
+`runtime/cloud_render.py` | runtime | 云端整集图生图（每镜锚点锁脸、并行、失败不阻断） | `--render-path cloud` |
+`runtime/run_options.py` | runtime | 运行选项公共装配（demo / CLI / API 同一份） | 三个入口 |
+`runtime/llm_crew.py` | runtime | 规则桩 ↔ 真实 LLM 的绑定（跨族纪律、成对替换） | `--llm` |
+`tools/cost_report.py` | tools | 从 workdir 提调用数并按单价算现金 | 成本报告 |
+`tools/compare_local_cloud.py` | tools | 同镜本地 vs 云端对照（不重跑云端） | B3 对照 |
+`tools/measure_tokens.py` | tools | 代表性调用实测 token 与成本 | 成本测算 |
+
+> 依赖方向仍由 `tests/test_architecture.py` 机器强制：review(4) 不 import runtime(4+)；
+> 公共逻辑下沉到 `runtime/run_options.py` 与 `net.py`，避免三处各写一份（历史教训：漂移）。

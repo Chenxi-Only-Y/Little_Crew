@@ -580,9 +580,13 @@ class LlmClient:
         }
         req = urllib.request.Request(url, data=data, headers=headers,
                                      method="POST")
+        # 证书：只对**显式声明 insecure_tls 的供应商**关闭校验
+        # （2026-11-14：智谱 GLM 端点证书链缺中间证书，实测间歇 CERTIFICATE_VERIFY_FAILED）
+        _insecure = bool(getattr(self.spec.backends[0], "insecure_tls", False)) \
+            if getattr(self.spec, "backends", None) else False
         t0 = time.perf_counter()
         try:
-            with _net.urlopen(req, timeout=timeout_s) as resp:
+            with _net.urlopen(req, timeout=timeout_s, insecure=_insecure) as resp:
                 payload = resp.read().decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             raw = ""

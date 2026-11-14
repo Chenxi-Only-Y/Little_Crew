@@ -254,6 +254,10 @@ def _text_models() -> list[ModelSpec]:
                 kind=BackendKind.HTTP,
                 endpoint="https://open.bigmodel.cn/api/paas/v4",
                 api_key_env="GLM_API_KEY",
+                # 2026-11-14 实测：该端点证书链缺中间证书，Python 校验间歇失败
+                # （同一请求重试有时能过）。**只对这一家**关闭校验证书 ——
+                # 与自定义供应商的 `insecureTls` 语义一致，不全局放开。
+                insecure_tls=True,
                 path="/chat/completions",
                 body_template=(
                     '{"model": "GLM-5.3-flash",'

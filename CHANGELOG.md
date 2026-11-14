@@ -57,6 +57,37 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.31] — 2026-11-14（**GLM TLS 收敛 + 文档索引/架构记录 + 答辩一页纸**）
+
+### GLM `insecure_tls`（只对该供应商生效）
+
+智谱 `open.bigmodel.cn` 证书链缺中间证书 → Python 校验**间歇**失败
+（实测：整集跑因此 `ESCALATE [review-failed]`）。修法两层：
+
+1 `models/registry.py`：GLM 后端声明 `insecure_tls=True`（与自定义供应商同一语义）
+2 `agent/llm.py::_post`：把该字段传给 `net.urlopen(..., insecure=...)`
+
+**不是全局关校验**：`deepseek-flash` 仍走正常校验（回归 E1~E4 钉住）。
+真机：清空 `LITTLE_CREW_SSL_NO_VERIFY` 后 GLM 调用成功。
+
+### C2/C3 文档索引与架构记录
+
+- `docs/00` 折叠附录区加「独立附录文档」索引（附录A/B/**C 成本测算**）
+- `ARCHITECTURE.md`：目录树补 8 个新模块 + 新增 **§2.5 新增模块表**
+- `STRUCTURE.md`：文件放哪表补 runtime/review/tools/research 新增项
+
+### B3 答辩一页纸
+
+新增 `docs/12-答辩一页纸.md`：主张 · 四个可验证数字 · 8 分钟演示脚本 ·
+**边界与负结果**（剪辑师更差/场记判不了细漂移/身份度量缺/H3 太慢/返工成本）· 六个必答问题。
+
+### 测试
+
+`llm_crew_check` +E1~E4（TLS 只对声明者放开）→ **15/15**；
+全量 **2688/2675 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.30] — 2026-11-14（**产品 CLI 接真实 LLM**）
 
 ### 新增 `runtime/llm_crew.py`（demo/CLI 共用绑定层）

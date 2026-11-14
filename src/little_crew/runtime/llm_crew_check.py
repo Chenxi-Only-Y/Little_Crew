@@ -68,6 +68,56 @@ def main() -> int:
     check("D3 ★★★ 密钥是掩码形式（含 …）",
           ("…" in text) or (not raw_key), text[:100])
 
+    print(); print("E. TLS 只对显式声明的供应商放开（2026-11-14 GLM 小修）")
+    from little_crew.models.registry import build_default_registry as _reg
+
+    _glm = _reg().get("GLM-5.3-flash")
+    _ds = _reg().get("deepseek-flash")
+    check("E1 ★★★ GLM 后端声明 insecure_tls（证书链缺中间证书）",
+          bool(_glm.backends[0].insecure_tls), "")
+    check("E2 ★★★ 其它供应商不放宽（deepseek=False）",
+          bool(_ds.backends[0].insecure_tls) is False, "")
+
+    import little_crew.agent.llm as _llm_mod
+
+    _cap: dict = {}
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            return b'{"choices":[{"message":{"content":"ok"}}],"usage":{}}'
+
+    _orig = _llm_mod._net.urlopen
+
+    def _fake(req, **kw):
+        _cap.update(kw)
+        return _Resp()
+
+    try:
+        _llm_mod._net.urlopen = _fake
+        _llm_mod.LlmClient("GLM-5.3-flash").chat("hi", temperature=0)
+    except Exception:                                         # noqa: BLE001
+        pass
+    finally:
+        _llm_mod._net.urlopen = _orig
+    check("E3 ★★★ GLM 的 HTTP 调用带 insecure=True（只对这一家）",
+          _cap.get("insecure") is True, str(_cap))
+    _cap.clear()
+    try:
+        _llm_mod._net.urlopen = _fake
+        _llm_mod.LlmClient("deepseek-flash").chat("hi", temperature=0)
+    except Exception:                                         # noqa: BLE001
+        pass
+    finally:
+        _llm_mod._net.urlopen = _orig
+    check("E4 ★★★ deepseek 走正常校验（insecure=False）",
+          _cap.get("insecure") is False, str(_cap))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

@@ -141,6 +141,10 @@ Little_Crew/
 | `outputs/` | 生成的图片/视频/报告 | 任何需要入库的内容 |
 | `logs/` | 运行日志 | — |
 | `tools/` | 独立校验/运维脚本。只用标准库、不 import 本包 —— 它核验的是「证据链与磁盘是否一致」，不能由被测系统自己提供。首个脚本：`verify_evidence.py`（重算产物 sha256） |
+| `src/little_crew/runtime/`（新增模块） | `cloud_render.py`（云端整集渲染）· `run_options.py`（运行选项装配）· `llm_crew.py`（真实 LLM 绑定）· `post_production.py`（后期计划）· `character_sheets*.py` · `sudorelay_edits.py` | 通道/厂商相关实现（只做执行，不做验收） |
+| `src/little_crew/review/`（新增模块） | `qc_inspector.py`（质检员）· `sheet_qc.py`（设定板 12 条）· `cover_designer.py`（封面设计师） | 验收与视觉判断（不 import runtime） |
+| `tools/`（新增脚本） | `cost_report.py`（成本）· `compare_local_cloud.py`（同镜对照）· `measure_tokens.py`（token 实测）· `bench_cloud_parallel.py` | 独立脚本：只用标准库、不 import 本包 |
+| `research/episodes/<集名>/` | 成片证据（`story.txt` / `production-notes.md` / `compare_*.jpg` / `run-summary.json`） | 原始大图/视频（在 `outputs/`，gitignored） |
 | `assets/` | 跨集复用的**角色资产**：`characters/<名字>/{sheet.json,anchor.png}`。不属于任何一集，所以不放 `outputs/`（会被清理）。`runtime/anchors.discover()` 先找工作目录，再退到这里 |
 
 > **`research/` 的定位**：它是**证据留存**，不是代码。里面的第三方源码快照
