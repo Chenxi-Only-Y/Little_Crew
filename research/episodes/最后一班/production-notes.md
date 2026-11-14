@@ -90,7 +90,7 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
   --episode-id EF-LAST60 --workdir outputs\_EFLAST60 --fresh `
   --title "最后一班" --story-file research\episodes\最后一班\story.txt `
   --shots-target 12 --target-seconds 60 `
-  --cloud-all --render-model gpt-image-2.6-sunburst `
+  --render-path cloud --render-model gpt-image-2.6-sunburst `
   --cast-anchor "少女=$P\assets\characters\cover_lead\sheet.png" `
   --style-hint "高精度 3D 半写实国漫 CG，与参考图同一套建模、材质与光照；冷调瓷白肌、BJD 人偶感五官；夜色霓虹与冷白站台灯，低饱和电影感" `
   --vision-max 12 --qc-model mimo-v2.6-flash --llm --script-threshold 55 `

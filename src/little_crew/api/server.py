@@ -501,7 +501,8 @@ class _Handlers:
             pick_main_spec as _pick_main2,
         )
 
-        spec, be = _pick_main2(str(body.get("renderModel") or ""))
+        spec, be = _pick_main2(str(body.get("renderModel") or ""),
+                               str(body.get("renderPath") or "local"))
         ch = HttpChannel(be, timeout_s=1800)
         if _is_local_be2(be):
             ok, why = ch.available()
@@ -540,9 +541,9 @@ class _Handlers:
 
         try:
             _opts2 = _norm_run_opts2(
+                render_path=str(body.get("renderPath") or "local"),
                 cast_anchors=body.get("castAnchor"),
                 style_hint=str(body.get("styleHint") or ""),
-                cloud_all=bool(body.get("cloudAll", False)),
                 render_model=str(body.get("renderModel") or ""),
                 shots_target=int(body.get("shotsTarget") or 0),
                 target_seconds=float(body.get("targetSeconds") or 0.0),

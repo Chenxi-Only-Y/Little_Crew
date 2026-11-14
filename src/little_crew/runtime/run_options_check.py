@@ -3,7 +3,7 @@
 锁住五件事：
 1 `parse_cast_anchors`：列表/字典两种形式；**路径不存在必须报错**（不静默）
 2 外观注入：读同目录 `sheet.json` 的 appearance，并带"禁止换装"约束
-3 `apply_options`：把语义落到 runner 属性（含 cover/char-sheets/cloud-all）
+3 `apply_options`：把语义落到 runner 属性（含 cover/char-sheets/云端模型名）
 4 剧本阈值：设置环境变量、0 表示不设
 5 主渲染模型选择：默认 z-image-turbo；云端模型可选；未注册报错
 """
@@ -74,14 +74,14 @@ def main() -> int:
         r.style_hint = "高精度 3D 半写实国漫 CG"
         opts = RO.normalize(cast_anchors=[f"少女={png}"],
                             style_hint="高精度 3D 半写实国漫 CG",
-                            cloud_all=True, render_model="gpt-image-2.6-sunburst",
+                            render_model="gpt-image-2.6-sunburst",
                             shots_target=12, target_seconds=60,
                             cover=True, cover_title="最后一班",
                             char_sheets=True, vision_max=6,
                             script_threshold=55)
         eff = RO.apply_options(r, opts)
         check("C1 ★★★ runner 属性全部落地",
-              r.cloud_all is True and r.shots_target == 12
+              r.shots_target == 12
               and abs(r.target_seconds - 60) < 1e-9 and r.cover_enabled is True
               and r.cover_title == "最后一班" and r.character_sheets_enabled is True
               and r.vision_max_shots == 6 and r.cast_anchors.get("少女"), "")
@@ -107,6 +107,21 @@ def main() -> int:
         except RuntimeError:
             err_ok = True
         check("D3 ★★ 未注册模型 -> 明确报错", err_ok, "")
+
+    print(); print("E. 渲染路径（用户显式选）")
+    o_local = RO.normalize()
+    check("E1 ★★★ 默认 local（不会偷偷烧云端）", o_local["render_path"] == "local", "")
+    o_cloud = RO.normalize(render_path="cloud")
+    check("E2 ★★★ 显式 cloud 才生效", o_cloud["render_path"] == "cloud", "")
+    try:
+        RO.normalize(render_path="cloudx")
+        bad_path = False
+    except ValueError:
+        bad_path = True
+    check("E3 ★★★ 非法路径 -> 报错（不被当成云端）", bad_path, "")
+    spec_c, be_c = RO.pick_main_spec("", "cloud")
+    check("E4 ★★ 云端路径默认模型是 gpt-image-2.6-sunburst",
+          spec_c.model_id == "gpt-image-2.6-sunburst", spec_c.model_id)
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

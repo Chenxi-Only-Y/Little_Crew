@@ -166,10 +166,6 @@ def main(argv: list[str] | None = None) -> int:
                     help="一次最多画几个角色（默认 6）")
     ap.add_argument("--char-sheet-qc-strict", action="store_true",
                     help="质检重复 2 次取 fail 并集（更严但耗时×2）")
-    ap.add_argument("--cloud-shots", type=int, default=0,
-                    help="混合渲染：最多几镜走云端图生图（0=全本地；缺锚点会现生设定图）")
-    ap.add_argument("--cloud-model", default="",
-                    help="云端关键镜模型（默认 gpt-image-2.6-sunburst）")
     ap.add_argument("--cover", action="store_true",
                     help="生成封面（默认从成片选帧；--cover-mode generate 则用图生图生成）")
     ap.add_argument("--cover-title", default="",
@@ -206,15 +202,16 @@ def main(argv: list[str] | None = None) -> int:
                     help="质检视觉模型（默认 mimo：非推理、快；deepseek-flash 是推理模型会慢很多）")
     ap.add_argument("--target-seconds", type=float, default=0.0,
                     help="目标总时长（秒）；分镜排长了会成比例缩到它（60=一分钟短片）")
-    ap.add_argument("--cloud-all", action="store_true",
-                    help="整集走云端图生图（每镜用角色锚点锁脸），不经过本地渲染")
     ap.add_argument("--cast-anchor", action="append", default=[],
                     metavar="NAME=PATH",
-                    help="角色名=锚点图路径（可重复）；配合 --cloud-all 锁脸")
+                    help="角色名=锚点图路径（可重复）；配 --render-model 选云端模型时用于锁脸")
     ap.add_argument("--compare-local", action="store_true",
                     help="云端整集跑完后，用同一批 IR 本地再渲一遍做同镜对照（B3）")
     ap.add_argument("--style-hint", default="",
                     help="统一画风提示（拼进每镜云端提示词，保证一集风格一致）")
+    ap.add_argument("--render-path", default="local",
+                    choices=("local", "cloud"),
+                    help="渲染路径（用户显式选）：local=本地；cloud=整集云端图生图（需 --cast-anchor 锁脸）")
     ap.add_argument("--render-model", default="",
                     help="主链路渲染模型（默认 z-image-turbo；填云端模型如 "
                          "gpt-image-2.6-sunburst 即「整集用云端跑」）")
@@ -563,6 +560,8 @@ def main(argv: list[str] | None = None) -> int:
         backend = None
     else:
         _rm = str(getattr(args, "render_model", "") or "").strip()
+        if not _rm and str(getattr(args, "render_path", "local")) == "cloud":
+            _rm = "gpt-image-2.6-sunburst"
         spec = build_default_registry().get(_rm or "z-image-turbo")
         if spec is None:
             print(f"  ❌ 渲染模型 {_rm!r} 未注册（可用 --render-model 指定已注册模型）")
@@ -603,7 +602,7 @@ def main(argv: list[str] | None = None) -> int:
         backend = be
 
     # ---------- 对照用本地渲染器（B3）----------
-    # 主渲染器可能是云端（--render-model / --cloud-all）；对照必须显式用本地，
+    # 主渲染器可能是云端（--render-model 选中云端模型）；对照必须显式用本地，
     # 否则会把云端再跑一遍（第一次跑就白花了 ¥1.6）。
     _local_renderer = None
     if getattr(args, "compare_local", False) and not args.dry_run:
@@ -685,9 +684,11 @@ def main(argv: list[str] | None = None) -> int:
     _th = _set_th(float(getattr(args, "script_threshold", 0.0) or 0.0))
     if _th > 0:
         print(f"  剧本阈值：{_th:.0f}（默认 65；阻断级意见仍照旧阻断）")
-    runner.cloud_all = bool(getattr(args, "cloud_all", False))
     runner.style_hint = str(getattr(args, "style_hint", "") or "")
-    runner.cloud_model = str(getattr(args, "render_model", "") or "")
+    runner.render_path = str(getattr(args, "render_path", "local") or "local")
+    runner.cloud_model = (str(getattr(args, "render_model", "") or "")
+                          or ("gpt-image-2.6-sunburst"
+                              if runner.render_path == "cloud" else ""))
     _ai = _apply_anchor(runner, getattr(args, "cast_anchor", None))
     if _ai.get("castAnchors"):
         print(f"  角色锚点：{'、'.join(_ai['castAnchors'])}"
@@ -702,7 +703,6 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
-    runner.cloud_max_shots = int(getattr(args, "cloud_shots", 0) or 0)
     runner.cloud_model = (str(getattr(args, "cloud_model", "") or "")
                           or str(getattr(args, "render_model", "") or ""))
     runner.cover_enabled = bool(getattr(args, "cover", False))

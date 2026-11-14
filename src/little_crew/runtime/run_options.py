@@ -2,7 +2,7 @@
 
 ## 为什么需要它
 
-`--render-model / --cloud-all / --cast-anchor / --style-hint / --shots-target /
+`--render-model / --cast-anchor / --style-hint / --shots-target /
 --target-seconds / --cover / --char-sheets / --script-threshold` 这些能力先在
 `episode_demo` 里长出来，然后是产品 CLI 与 Server API 需要同一套语义。
 
@@ -35,7 +35,7 @@ _RUNNER_ATTRS: dict[str, Any] = {
     "shots_target": 0,
     "target_seconds": 0.0,
     "style_hint": "",
-    "cloud_all": False,
+    "render_path": "local",
     "cloud_model": "",
     "compare_local": False,
     "vision_max_shots": 12,
@@ -133,7 +133,8 @@ def set_script_threshold(value: float) -> float:
 
 
 def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
-              style_hint: str = "", cloud_all: bool = False,
+              style_hint: str = "",
+              render_path: str = "local",
               render_model: str = "", shots_target: int = 0,
               target_seconds: float = 0.0, cover: bool = False,
               cover_title: str = "", cover_mode: str = "select",
@@ -145,6 +146,9 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               compare_local: bool = False,
               ) -> dict[str, Any]:
     """解析 + 校验 + （锚点存在时）**自动注入外观**。返回可直接应用的选择字典。"""
+    path = str(render_path or "local").strip().lower() or "local"
+    if path not in ("local", "cloud"):
+        raise ValueError(f"render_path 只能是 local / cloud：{render_path!r}")
     anchors = parse_cast_anchors(cast_anchors)
     apis = anchor_appearances(anchors) if anchors else []
     style = style_with_appearances(str(style_hint or ""), anchors)
@@ -154,7 +158,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
         "shots_target": int(shots_target or 0),
         "target_seconds": float(target_seconds or 0.0),
         "style_hint": style,
-        "cloud_all": bool(cloud_all),
+        "render_path": path,
         "cloud_model": str(render_model or ""),
         "compare_local": bool(compare_local),
         "vision_max_shots": int(vision_max or 12),
@@ -187,7 +191,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
     return {"castAnchors": sorted((opts.get("cast_anchors") or {}).keys()),
             "anchorAppearances": len(opts.get("anchorAppearances") or ()),
             "styleHint": bool(opts.get("style_hint")),
-            "cloudAll": bool(opts.get("cloud_all")),
+            "renderModel": str(opts.get("cloud_model") or ""),
+            "renderPath": str(opts.get("render_path") or "local"),
             "shotsTarget": int(opts.get("shots_target") or 0),
             "targetSeconds": float(opts.get("target_seconds") or 0.0),
             "cover": bool(opts.get("cover_enabled")),
@@ -195,7 +200,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
             "scriptThreshold": th}
 
 
-def pick_main_spec(render_model: str = "") -> tuple[Any, Any]:
+def pick_main_spec(render_model: str = "",
+                   render_path: str = "local") -> tuple[Any, Any]:
     """主渲染用哪个模型 —— 返回 `(spec, HTTP backend)`。
 
     `render_model` 为空时退到内置 `z-image-turbo`（与旧行为一致）。
@@ -205,7 +211,10 @@ def pick_main_spec(render_model: str = "") -> tuple[Any, Any]:
     from little_crew.models.spec import BackendKind
 
     reg = build_default_registry()
-    mid = str(render_model or "").strip() or "z-image-turbo"
+    default_cloud = "gpt-image-2.6-sunburst"
+    mid = str(render_model or "").strip()
+    if not mid:
+        mid = default_cloud if str(render_path or "local") == "cloud" else "z-image-turbo"
     spec = reg.get(mid)
     if spec is None:
         raise RuntimeError(

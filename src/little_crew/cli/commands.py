@@ -422,7 +422,8 @@ def cmd_episode(args: Any) -> int:
         )
 
         try:
-            spec, be = _pick_main(str(getattr(args, "render_model", "") or ""))
+            spec, be = _pick_main(str(getattr(args, "render_model", "") or ""),
+                                  str(getattr(args, "render_path", "local") or "local"))
         except Exception as _e_ms:                            # noqa: BLE001
             print(f"渲染模型选择失败：{_e_ms}", file=sys.stderr)
             return ExitCode.ENVIRONMENT
@@ -471,8 +472,8 @@ def cmd_episode(args: Any) -> int:
     try:
         _opts = _norm_run_opts(
             cast_anchors=getattr(args, "cast_anchor", None),
+            render_path=str(getattr(args, "render_path", "local") or "local"),
             style_hint=str(getattr(args, "style_hint", "") or ""),
-            cloud_all=bool(getattr(args, "cloud_all", False)),
             render_model=str(getattr(args, "render_model", "") or ""),
             shots_target=int(getattr(args, "shots_target", 0) or 0),
             target_seconds=float(getattr(args, "target_seconds", 0.0) or 0.0),
@@ -490,12 +491,12 @@ def cmd_episode(args: Any) -> int:
             print(f"  角色锚点：{'、'.join(_eff['castAnchors'])}"
                   + (f" · 外观锁定 {_eff['anchorAppearances']} 个"
                      if _eff.get("anchorAppearances") else ""))
-        if _eff.get("cloudAll"):
-            print("  整集云端图生图：开")
         if _eff.get("shotsTarget"):
             print(f"  目标镜数：{_eff['shotsTarget']} · 目标时长 {_eff['targetSeconds']}s")
         if _eff.get("scriptThreshold"):
             print(f"  剧本阈值：{_eff['scriptThreshold']:.0f}")
+        print(f"  渲染路径：{_eff.get('renderPath', 'local')}"
+              + ("（整集云端图生图）" if _eff.get("renderPath") == "cloud" else "（本地）"))
     except Exception as _e_opt:                              # noqa: BLE001
         print(f"运行选项装配失败：{_e_opt}", file=sys.stderr)
         return ExitCode.USAGE

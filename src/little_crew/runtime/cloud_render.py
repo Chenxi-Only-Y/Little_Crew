@@ -18,7 +18,7 @@
 ## 纪律
 
 - **只替换、不删除**：本地版留在原处（可回退、可对比）
-- 每镜记录 `{shotId, anchor, model, seconds, out}`，写进 `delivery/cloud_shots.json`
+- 每镜记录 `{shotId, anchor, model, seconds, out}`，写进渲染记录（由调用方落盘）
 - 失败**不阻断**：某镜云端失败就保留本地版，逐条记录
 """
 

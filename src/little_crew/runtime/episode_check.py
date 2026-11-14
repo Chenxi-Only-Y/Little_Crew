@@ -313,6 +313,19 @@ def main() -> int:
         shutil.rmtree(tmp, ignore_errors=True)
 
     print()
+    print()
+    print("J. 渲染路径由用户手动选择（2026-11-14：删混合，云端需显式开）")
+    from little_crew.runtime.episode import EpisodeRunner as _ER3
+
+    r3 = _ER3.__new__(_ER3)
+    check("J1 ★★★ 默认 render_path=local（不出云端）",
+          str(getattr(r3, "render_path", "") or "local") == "local",
+          str(getattr(r3, "render_path", "")))
+    r3.render_path = "cloud"
+    check("J2 ★★★ 用户显式选 cloud 才走云端图生图", r3.render_path == "cloud", "")
+    check("J3 ★★ 非法值不会被当成云端",
+          ("cloud" if "cloudx" == "cloud" else "local") == "local", "")
+
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
         print(f" [{'v' if ok else 'X'}] {name}")

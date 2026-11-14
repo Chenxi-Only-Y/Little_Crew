@@ -127,11 +127,12 @@ def build_parser() -> argparse.ArgumentParser:
     se.add_argument("--allow-reuse", action="store_true",
                     help="允许往已有**别的集**的工作目录里写（默认拒绝）")
     # ---- 2026-11-14（A1）：与 episode_demo 对齐的能力开关 ----
+    se.add_argument("--render-path", default="local", choices=("local", "cloud"),
+                    dest="render_path",
+                    help="渲染路径（用户显式选）：local / cloud（整集云端图生图）")
     se.add_argument("--render-model", default="", dest="render_model",
                     help="主渲染模型（默认 z-image-turbo；填云端模型如 "
                          "gpt-image-2.6-sunburst 即整集用云端）")
-    se.add_argument("--cloud-all", action="store_true", dest="cloud_all",
-                    help="整集云端图生图（每镜用角色锚点锁脸）")
     se.add_argument("--cast-anchor", action="append", default=[],
                     dest="cast_anchor", metavar="NAME=PATH",
                     help="角色名=锚点图路径（可重复）；自动读取 sheet.json 外观")

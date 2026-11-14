@@ -57,6 +57,50 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.28] — 2026-11-14（**A2：删混合路径；云端由用户显式选**）
+
+### 用户决定
+
+1 **不要混合渲染** —— 关键镜上云那套"第二套选镜策略"与整集路径重叠，删。
+2 **云端路径由用户手动选择** —— 不从"后端是否本地"自动推断（猜错会悄悄烧钱）。
+
+### 删除（破坏性）
+
+| 删除项 | 说明 |
+|---|---|
+`runtime/cloud_policy.py` | 选镜打分（特写+3/场次首末镜/多人同框…）整文件删 |
+`runtime/cloud_shots_check.py` | 混合路径自检（13 项套件）删 |
+`EpisodeRunner._run_cloud_shots` | 混合渲染入口删 |
+`--cloud-shots` / `--cloud-all` / `--cloud-model` | demo/CLI/API 三处一并删 |
+`EpisodeRunner._backend_is_local` | 自动推断删（改用显式 `render_path`） |
+
+### 新的唯一方式：`--render-path local|cloud`
+
+```powershell
+# 本地（默认，不花钱）
+little-crew episode --script ... 
+# 云端整集图生图（用户显式选；每镜带锚点锁脸）
+little-crew episode --render-path cloud --render-model gpt-image-2.6-sunburst \
+  --cast-anchor "少女=assets/characters/cover_lead/sheet.png"
+```
+
+- 校验：只允许 `local` / `cloud`，非法值**报错**（不会被当成云端）
+- `cloud` 且未给 `--render-model` → 默认 `gpt-image-2.6-sunburst`
+- demo / CLI / Server API **三处同一份** `runtime/run_options` 装配
+
+### 测试
+
+- 移除混合套件 13 项；`episode_check` +J1~J3（默认 local / 显式 cloud / 非法值）→ **92/92**
+- `run_options_check` +E1~E4（默认 local / 显式 cloud / 非法报错 / 默认云端模型）→ **18/18**
+- 全量 **2673/2660 + 架构守卫 PASS**
+
+### 文档
+
+`docs/01` §9.8 改"云端由用户显式选"；`docs/16`、`research/episodes/最后一班/production-notes.md` 同步；
+`docs/20` A2 勾掉。
+
+---
+
 ## [0.4.0-beta.27] — 2026-11-14（**A1 产品入口 + C1 设计文档补章**）
 
 ### A1：产品 CLI / Server API 接上新能力
