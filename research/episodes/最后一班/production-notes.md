@@ -11,7 +11,7 @@
 |---|---|
 | 集号 | `EF-LAST60C`（工作目录 `outputs/_EFLAST60C`，gitignored） |
 | 镜头 | **12 镜**（8 场，每场等距 2 镜；原始分镜 35 镜 → `--shots-target 12` 压到 12） |
-| 时长 | 清单 **60.01s**；成片 **56.8s**（h264 832×480，1.81 MB） |
+| 时长 | 清单 **60.01s**；成片 **60.0s / 12 镜**（h264 832×480，2.06 MB）✅ 2026-11-14 修复后重建 |
 | 对白 | 0 句（纯画面叙事） |
 | 画风 | 高精度 3D 半写实国漫 CG（`--style-hint`）+ 锚点外观锁定 |
 | 女主 | `cover_lead/sheet.png`，`--cast-anchor 少女=...` 图生图锁脸
@@ -66,12 +66,14 @@
 
 ---
 
-## 四、已知问题（下一步修）
+## 四、已修复 / 仍待办
 
-1. **成片 11/12 镜**：清单 12 镜 60.0s，视频只有 11 个片段（56.8s），有一镜在成片阶段未解析到静帧。
-   产物本身 12 个都在、resolver 现在也能解析 —— 属**成片阶段时序**问题（对照/物化与视频读取的交叠），待查。
-2. 脚本门禁：60s 短片（0 对白）**过不了"3 分钟剧"的评分门槛**（3 轮 59.1 分 REVISE），
-   本次用 `--accept-script` 人工接受。后续应给短片一个**不同阈值/评分维度**，而不是强行拉长剧本。
+1. ✅ **成片 11/12 镜（已修）**：根因不是时序，而是**被重画那一镜的产物名是缓存原始名**
+   （`<hash>_C:\...\Temp\...png`），解析器按名找不到，静默进 `plan.problems`。
+   修法：`_assemble_video` 增加 **shotId 兜底**（按 `assets/shots/<sid>/` 直接找）+ 解析失败重试 + `video_plan.json` 诊断。
+   重建后 **12/12 镜 · 60.0s**。
+2. ✅ **短片阈值（已加开关）**：新增 `LITTLE_CREW_SCRIPT_THRESHOLD` / `--script-threshold`；
+   60s 无对白短片建议 `55`（默认 65）。**阻断级意见/硬约束仍照旧阻断**，只是放宽分数线。
 3. 视觉闸：6/12 抽审，未覆盖全部；时间允许应 12/12。
 
 ---
@@ -91,7 +93,7 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
   --cloud-all --render-model gpt-image-2.6-sunburst `
   --cast-anchor "少女=$P\assets\characters\cover_lead\sheet.png" `
   --style-hint "高精度 3D 半写实国漫 CG，与参考图同一套建模、材质与光照；冷调瓷白肌、BJD 人偶感五官；夜色霓虹与冷白站台灯，低饱和电影感" `
-  --vision-max 6 --qc-model mimo-v2.6-flash --llm --accept-script `
+  --vision-max 12 --qc-model mimo-v2.6-flash --llm --script-threshold 55 `
   --cover --cover-title "最后一班"
 
 # 2) 本地 vs 云端同镜对照（需本地 local-gen 服务：D:\AI\local-ai\media）

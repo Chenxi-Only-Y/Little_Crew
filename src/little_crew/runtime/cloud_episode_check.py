@@ -115,6 +115,35 @@ def main() -> int:
             check("C2 ★★★ 归一返回字节（造图失败）", False, "")
             check("C3 ★★★ 本地不归一（造图失败）", False, "")
 
+    print(); print("D. 成片产物名兜底（2026-11-14：11/12 镜）")
+    with tempfile.TemporaryDirectory() as td4:
+        d4 = Path(td4)
+        shot_dir = d4 / "assets" / "shots" / "S1"
+        shot_dir.mkdir(parents=True)
+        _mk(shot_dir / "a.png", 64, 64)
+        (d4 / "delivery").mkdir()
+        from little_crew.runtime.episode import EpisodeRunner as _ER2, artifact_resolver as _ar2
+
+        r2 = _ER2.__new__(_ER2)
+        r2._workdir = str(d4)
+        r2.workdir = str(d4)
+        r2.resolve_artifact = _ar2(d4)
+        r2.video_width = 64
+        r2.video_height = 64
+        r2.video_out_dir = lambda: d4 / "delivery"
+        r2.video_filename = "out.mp4"
+
+        class _Man:
+            def as_dict(self):
+                return {"shots": [{"shotId": "S1", "artifacts": ["不存在的名字.png"],
+                                   "durationSec": 1.0, "cameraMovement": "static"}]}
+
+        res, path = r2._assemble_video(_Man(), {})
+        built = getattr(res, "clips_built", 0)
+        check("D1 ★★★ 产物名找不到时按 shotId 兜底（不再静默少一镜）",
+              built == 1, f"clips={built}")
+        check("D2 ★★ 兜底后成片真的产出", bool(path) and Path(str(path)).is_file(), str(path))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

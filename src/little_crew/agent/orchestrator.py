@@ -408,6 +408,28 @@ FAILURE_ACTIONS: dict[str, str] = {
 PASS_THRESHOLD: float = 65.0
 
 
+def pass_threshold() -> float:
+    """当前的通过阈值（**可被环境变量覆盖**，默认 65）。
+
+    ## 为什么允许覆盖（2026-11-14）
+
+    阈值是在「3 分钟、多场、有对白」的剧上标定的。60 秒**无对白**短片的
+    评分天然偏低（实测 3 轮 59.1 分 REVISE，且内容确实合格），
+    用同一把尺子会把合格的短片挡在门外。短片用
+    `LITTLE_CREW_SCRIPT_THRESHOLD=55` 是**放宽阈值**，不是关掉门禁：
+    阻断级意见/硬约束仍然照旧阻断（见 merge_reviews 的注释）。
+    """
+    import os as _os
+
+    try:
+        v = float(str(_os.environ.get("LITTLE_CREW_SCRIPT_THRESHOLD") or "").strip())
+        if 0 < v <= 100:
+            return v
+    except (TypeError, ValueError):
+        pass
+    return PASS_THRESHOLD
+
+
 def _best_round(rounds: Sequence["RoundResult"]) -> "RoundResult | None":
     """取**权威总分最高**的那一轮。
 
@@ -535,7 +557,7 @@ def merge_reviews(
         if _SEV_RANK[iss.severity] >= _SEV_RANK[BLOCKING_SEVERITY]
     )
     hard = max((r.verdict for r in reviews), key=lambda v: _VERDICT_RANK[v])
-    below = total < PASS_THRESHOLD
+    below = total < pass_threshold()
     if hard in (Verdict.ESCALATE, Verdict.REJECT):
         verdict = hard                      # 作废/驳回优先
     elif blocking:

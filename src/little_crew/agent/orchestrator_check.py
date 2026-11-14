@@ -668,5 +668,19 @@ def _blackboard_wiring() -> None:
           "BLOCKER" in fb_blk.note, fb_blk.note[:60])
 
 
+    print()
+    print("J. 阈值可覆盖（2026-11-14：60s 无对白短片）")
+    import os as _os2
+
+    from little_crew.agent.orchestrator import pass_threshold as _pt
+
+    _os2.environ.pop("LITTLE_CREW_SCRIPT_THRESHOLD", None)
+    check("J1 ★★ 默认阈值 65", _pt() == 65.0, str(_pt()))
+    _os2.environ["LITTLE_CREW_SCRIPT_THRESHOLD"] = "55"
+    check("J2 ★★ 环境变量覆盖为 55（短片用）", _pt() == 55.0, str(_pt()))
+    _os2.environ["LITTLE_CREW_SCRIPT_THRESHOLD"] = "abc"
+    check("J3 ★★ 非法值回退默认（不静默变 0）", _pt() == 65.0, str(_pt()))
+    _os2.environ.pop("LITTLE_CREW_SCRIPT_THRESHOLD", None)
+
 if __name__ == "__main__":
     raise SystemExit(main())

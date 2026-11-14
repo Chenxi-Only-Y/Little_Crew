@@ -57,6 +57,46 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.26] — 2026-11-14（**P0.5：成片 12/12、短片阈值**）
+
+### 修掉「成片 11/12 镜」
+
+**根因不是时序**：被视觉闸重画的那一镜，清单里的产物名是**缓存层原始名**
+（`<hash>_C:\Users\...\Temp\little-crew-inline\....png`），
+`compile_clip_plan` 按名解析失败 → 静默进 `plan.problems` → 少一镜。
+
+| 修法 | 位置 |
+|---|---|
+| 产物名兜底：解析失败时按 `assets/shots/<shotId>/` 直接找 | `EpisodeRunner._assemble_video` |
+| 解析失败**重试一次**（Windows 新写文件偶发 rglob 看不到） | 同上 |
+| 计划落盘 `delivery/video_plan.json`（clips/problems 可查） | 同上 |
+
+**重建结果**：`12/12 镜 · 60.0s · 2.06 MB`（原来 11/12 · 56.8s）。
+
+### 短片阈值（可覆盖）
+
+`PASS_THRESHOLD=65` 是在"3 分钟多场有对白"的剧上标定的；60s **无对白**短片
+实测 3 轮 59.1 分 REVISE，内容其实合格。新增：
+
+```powershell
+--script-threshold 55          # 或 LITTLE_CREW_SCRIPT_THRESHOLD=55
+```
+
+**只放宽分数线**：阻断级意见/硬约束（分辨率/时长/合规）照旧阻断。
+
+### 回归
+
+- `cloud_episode_check` +D1/D2（产物名兜底 + 兜底后真的出片）→ **10/10**
+- `orchestrator_check` +J1~J3（默认 65 / 覆盖 55 / 非法值回退）→ **63/63**
+- 全量 **2665/2652 + 架构守卫 PASS**
+
+### 文档
+
+`research/episodes/最后一班/production-notes.md` 更新（成片 60.0s、根因、阈值）；
+`docs/20-待办清单.md` P0.5 三项已勾。
+
+---
+
 ## [0.4.0-beta.25] — 2026-11-14（**首支 60 秒短片「最后一班」跑通**）
 
 ### 成片（真机）

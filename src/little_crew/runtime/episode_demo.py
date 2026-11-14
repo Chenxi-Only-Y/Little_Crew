@@ -198,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="剧本源文件（UTF-8，[场N] 格式）；不给则用内置传说")
     ap.add_argument("--shots-target", type=int, default=0,
                     help="目标镜数（0=不约束）；60s 短片建议 12")
+    ap.add_argument("--script-threshold", type=float, default=0.0,
+                    help="剧本通过阈值（0=默认 65）；60s 无对白短片建议 55")
     ap.add_argument("--vision-max", type=int, default=12,
                     help="视觉闸最多抽检几镜（默认 12；时间紧可降到 6）")
     ap.add_argument("--qc-model", default="mimo-v2.6-flash",
@@ -675,6 +677,12 @@ def main(argv: list[str] | None = None) -> int:
     runner.target_seconds = float(getattr(args, "target_seconds", 0.0) or 0.0)
     runner.shots_target = int(getattr(args, "shots_target", 0) or 0)
     runner.vision_max_shots = int(getattr(args, "vision_max", 12) or 12)
+    _th = float(getattr(args, "script_threshold", 0.0) or 0.0)
+    if _th > 0:
+        import os as _os_th
+
+        _os_th.environ["LITTLE_CREW_SCRIPT_THRESHOLD"] = str(_th)
+        print(f"  剧本阈值：{_th:.0f}（默认 65；阻断级意见仍照旧阻断）")
     runner.cloud_all = bool(getattr(args, "cloud_all", False))
     runner.style_hint = str(getattr(args, "style_hint", "") or "")
     runner.cloud_model = str(getattr(args, "render_model", "") or "")

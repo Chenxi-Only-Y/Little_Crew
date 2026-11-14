@@ -3446,9 +3446,62 @@ class EpisodeRunner:
             FFmpegTools, VideoAssembler, compile_clip_plan)
 
         try:
+            # ---- 产物名兜底：按 shotId 直接找 `assets/shots/<sid>/` ----
+            # 2026-11-14 真机：某镜被重画后，清单里的产物名是**缓存层原始名**
+            # （`<hash>_C:\...\Temp\...png`），解析器按名找不到 -> 静默少一镜。
+            # 事实是文件就在 `assets/shots/<sid>/` 里 —— 名字不该决定能不能出片。
+            _man = manifest.as_dict()
+            _base = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _fixed = []
+            for _s in (_man.get("shots") or []):
+                _names = list(_s.get("artifacts") or [])
+                _ok = bool(_names) and resolver(_names[0]) is not None
+                if not _ok and _base:
+                    _sid = str(_s.get("shotId") or "")
+                    _d = Path(str(_base)) / "assets" / "shots" / _sid
+                    _hits = sorted(_d.glob("*.png")) if _d.is_dir() else []
+                    if _hits:
+                        _s["artifacts"] = [str(_hits[0])]
+                        _fixed.append(_sid)
+            if _fixed:
+                print(f"  ↻ 成片产物名兜底：{len(_fixed)} 镜按 shotId 找回"
+                      f"（{'、'.join(_fixed[:3])}）")
             plan = compile_clip_plan(
-                manifest.as_dict(), resolve=resolver,
+                _man, resolve=resolver,
                 width=self.video_width, height=self.video_height)
+
+            # ---- 解析失败重试（2026-11-14：成片 11/12 镜）----
+            # 现象：清单 12 镜都带产物名，但编译时有一镜 `resolve()` 返回 None，
+            # 于是静默进 `plan.problems`、成片少一镜（56.8s 而非 60s）。
+            # Windows 上刚写盘的文件偶发被扫描/索引占用，rglob 会短暂看不到；
+            # 这里**重试一次**并把 still unresolved 的写进报告，不再静默。
+            if plan.problems:
+                import time as _t_retry
+
+                _t_retry.sleep(0.4)
+                _plan2 = compile_clip_plan(
+                    manifest.as_dict(), resolve=resolver,
+                    width=self.video_width, height=self.video_height)
+                if len(_plan2.clips) > len(plan.clips):
+                    print(f"  ↻ 成片计划重试：{len(plan.clips)} → {len(_plan2.clips)} 镜"
+                          f"（产物解析延迟）")
+                    plan = _plan2
+            if plan.problems:
+                print(f"  ⚠️ 成片计划有 {len(plan.problems)} 个问题（这些镜不进成片）："
+                      f"{'；'.join(plan.problems[:3])}")
+            try:
+                import json as _j_vp
+
+                _wd_vp = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+                if _wd_vp:
+                    _d_vp = Path(str(_wd_vp)) / "delivery"
+                    _d_vp.mkdir(parents=True, exist_ok=True)
+                    (_d_vp / "video_plan.json").write_text(_j_vp.dumps(
+                        {"kind": "video.plan", "clips": len(plan.clips),
+                         "problems": list(plan.problems)}, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+            except Exception:                                 # noqa: BLE001
+                pass
             if not plan.clips:
                 return (None, None)
 
