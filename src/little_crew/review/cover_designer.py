@@ -549,6 +549,26 @@ def build_cover(ref_images: Iterable[str | Path], shot_images: Mapping[str, str]
                            max_candidates=max_candidates)
     rep["mode"] = str(mode).lower()
     rep["titleMode"] = tmode
+    # ⚠️ 2026-11-13 真机：封面失败时 `delivery/cover.png` 还是**上一轮**的旧图，
+    # 光看文件会以为"这次也出了封面"。失败就把旧图改名成 cover.stale.png。
+    final_cover = Path(str(out_dir)) / "cover.png"
+    if not rep.get("ok"):
+        if final_cover.is_file():
+            try:
+                stale = final_cover.with_name("cover.stale.png")
+                if stale.is_file():
+                    stale.unlink()
+                final_cover.replace(stale)
+                rep["stalePreviousCover"] = str(stale)
+            except Exception:                                 # noqa: BLE001
+                pass
+    else:
+        stale = final_cover.with_name("cover.stale.png")
+        if stale.is_file():
+            try:
+                stale.unlink()                                # 成功时清掉旧的 stale
+            except Exception:                                 # noqa: BLE001
+                pass
     # 后合成标题：默认覆盖 cover.png（留 cover_raw.png 备查），draw 模式不重复叠字
     if rep.get("ok") and title and tmode == "overlay":
         base = Path(str(rep.get("cover") or rep.get("out") or ""))

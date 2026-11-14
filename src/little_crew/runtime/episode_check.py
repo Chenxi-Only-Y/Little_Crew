@@ -951,5 +951,45 @@ def _section_repair_loop(tmp: Path) -> None:
           str((g.get("repairRounds") or [])[:1])[:90])
 
 
+    print()
+    print("I. 附加产物（2026-11-14 P0：两处被 except 吞掉的 NameError）")
+    from little_crew.runtime.episode import EpisodeRunner as _ER
+    import tempfile as _tf
+    import pathlib as _pl
+    import json as _json
+
+    with _tf.TemporaryDirectory() as td9:
+        r9 = _ER.__new__(_ER)
+        r9._workdir = td9
+        r9.workdir = td9
+        r9.orch = CrewOrchestrator()
+        r9.scene_conflicts = []          # 真实 runner 一定有；测试里补上
+        r9.episode_id = "E-T"
+        # I1：配额对账在被传入 script_draft/shots 后应真的跑（不再 NameError）
+        class _SD:
+            scenes = ()
+        try:
+            r9._audit_scene_quota(_SD(), ())
+            ok_q = True
+            err_q = ""
+        except Exception as exc:                              # noqa: BLE001
+            ok_q = False
+            err_q = f"{type(exc).__name__}: {exc}"
+        quota_f = _pl.Path(td9) / "delivery" / "scene_quota.json"
+        check("I1 ★★ 配额对账真的运行（scene_quota.json 落盘，不再 NameError）",
+              ok_q and quota_f.is_file(), err_q or str(quota_f))
+        # I2：接口缺陷清单应吃下 all_shots 参数
+        try:
+            r9._check_interface_defects((), ())
+            ok_i = True
+            err_i = ""
+        except Exception as exc:                              # noqa: BLE001
+            ok_i = False
+            err_i = f"{type(exc).__name__}: {exc}"
+        def_f = _pl.Path(td9) / "delivery" / "interface_defects.json"
+        check("I2 ★★ 接口缺陷清单真的生成（不再 UnboundLocalError）",
+              ok_i and def_f.is_file(), err_i or str(def_f))
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

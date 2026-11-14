@@ -340,7 +340,11 @@ def _outer_wrapper() -> None:
         render_video_stage_calls = 0
 
     # 1) 缺 ffmpeg -> 必须**在渲染前**失败（不浪费）
-    _os.environ.pop("FFMPEG", None)
+    #
+    # ⚠️ 2026-11-14：`config/.env` 里现在配了 `FFMPEG=...`（P0-A5），
+    # 只 `pop` 进程环境变量**压不住**它 —— 测试会误判"ffmpeg 可用"。
+    # 这里显式指向一个不存在的路径（与"缺 ffmpeg"走同一条前置失败分支）。
+    _os.environ["FFMPEG"] = "C:/no/such/ffmpeg-for-test.exe"
     d1 = _D()
     d1._workdir = pathlib.Path(".")
     got = d1._render_clip_stage({"S1": ["C:/x/a.png"]})

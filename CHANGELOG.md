@@ -57,6 +57,39 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.24] — 2026-11-14（**P0：清掉三个已知口子**）
+
+### A3 两处被 `except` 吞掉的 NameError
+
+真机日志里的两条 ⚠️ 其实是**代码 bug**（抽成方法后引用了 `run()` 的局部变量）：
+
+| 告警 | 根因 | 修法 |
+|---|---|---|
+| `配额对账未运行：NameError: name 'script_draft' is not defined` | `_audit_scene_quota()` 引用 `script_draft` / `shots` | 改为显式传参 `_audit_scene_quota(script_draft, shots)` |
+| `接口缺陷清单未生成：UnboundLocalError: shots` | `_check_interface_defects()` 里 `budget_shots=shots` | 新增 `all_shots` 参数，传**全量镜头表**（不是被 --limit 截断的） |
+
+**回归**：`episode_check` 新增 I1/I2（配额对账真的落盘 `scene_quota.json`；
+接口缺陷真的生成 `interface_defects.json`），**89/89 通过**。
+
+### A4 封面失败不得残留旧图
+
+`cover.png` 是上一轮成功产物时，本次失败光看文件会以为"这次也出了封面"。
+现在：失败 → 旧图改名 `cover.stale.png` + 报告写 `stalePreviousCover`；
+成功 → 清掉 stale。`cover_designer_check` 新增 G1~G3，**24/24 通过**。
+
+### A5 配置 `FFMPEG`
+
+`config/.env` 加 `FFMPEG=D:\AI\FFmpeginfmpeg.exe`（gitignored）。
+`_ffmpeg_status()` 现在直接命中，不再依赖 PATH 兜底。
+副作用已处理：`video_mode_check` 的"缺 ffmpeg"用例改为指向不存在的路径
+（`.env` 的配置会压过 `os.environ.pop`）。
+
+### 测试
+
+全量 **2660/2647 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.23] — 2026-11-13（**B1：验收图入库**）
 
 ### 问题

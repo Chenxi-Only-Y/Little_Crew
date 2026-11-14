@@ -176,6 +176,28 @@ def main() -> int:
               isinstance(r_ov.get("title"), dict) and r_ov["title"].get("ok"),
               str(r_ov.get("title"))[:80])
 
+    print(); print("G. 失败不得残留旧封面（2026-11-14 P0）")
+    with tempfile.TemporaryDirectory() as td4:
+        d4 = Path(td4)
+        base = d4 / "base.png"
+        _mk_image(base)
+        stale = d4 / "cover.png"
+        stale.write_bytes(b"OLDCOVER")                  # 上一轮留下的封面
+        rep_fail = CD.build_cover([], {"S0": str(base)}, d4, mode="select",
+                                  client=_Client("不是 JSON"), title="第一集")
+        check("G1 ★★★ 失败时旧 cover.png 被改名为 cover.stale.png",
+              not stale.is_file() and (d4 / "cover.stale.png").is_file(),
+              str([p.name for p in d4.glob("*")]))
+        check("G2 ★★★ 报告里标出 stalePreviousCover（可追溯）",
+              bool(rep_fail.get("stalePreviousCover")), str(rep_fail.get("stalePreviousCover")))
+        # 成功时：旧的 stale 应被清掉，cover.png 存在
+        rep_ok = CD.build_cover([], {"S0": str(base)}, d4, mode="select",
+                                client=_Client({"pick": 1}), title="第一集")
+        check("G3 ★★★ 成功时清掉 stale、正常出 cover.png",
+              rep_ok.get("ok") and (d4 / "cover.png").is_file()
+              and not (d4 / "cover.stale.png").is_file(),
+              str([p.name for p in d4.glob("*")]))
+
     n = sum(1 for _, ok_, _ in _r if ok_)
     print()
     for name, ok_, detail in _r:

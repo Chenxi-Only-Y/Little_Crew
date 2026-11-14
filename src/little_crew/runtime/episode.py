@@ -808,8 +808,14 @@ class EpisodeRunner:
             print(f"  ⚠️ 剧本轮次未落盘：{type(_e).__name__}: {_e}")
 
 
-    def _audit_scene_quota(self) -> None:
+    def _audit_scene_quota(self, script_draft: Any = None,
+                           shots: Any = None) -> None:
         """镜头配额对账 + 再分配处置（**附加产物，不参与门禁**）。
+
+        ⚠️ 2026-11-13 真机：这里原引用 `script_draft` / `shots`，但它们是
+        `run()` 的局部变量 —— 抽成方法后成了**未定义名**，整块被
+        `except` 吞掉，只留一行 "⚠️ 配额对账未运行：NameError"。
+        现在显式传入（None 时用空，不让整块静默死掉）。
 
         抽出来的理由：这段 80 行只读黑板、只写 `delivery/*.json`，
         块内变量在块外一个都不用；留在 `run()` 里会把"分镜检查"和"越权检查"隔开。
@@ -831,7 +837,7 @@ class EpisodeRunner:
                         _plan0 = _in0
                         break
             _q = _qf(_plan0, getattr(script_draft, "scenes", ()) or ())
-            _q["audit"] = _qa(_q, shots)
+            _q["audit"] = _qa(_q, shots or ())
             _wdq = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wdq:
                 import json as _jq
@@ -897,7 +903,7 @@ class EpisodeRunner:
             print(f"  ⚠️ 配额对账未运行：{type(_e_q).__name__}: {_e_q}")
 
 
-    def _check_interface_defects(self, picked) -> None:
+    def _check_interface_defects(self, picked, all_shots: Any = None) -> None:
         """接口缺陷检查：落 `delivery/interface_defects.json`（**附加产物，不参与门禁**）。
 
         为什么抽出来：这段 191 行、只做"检查 + 落盘"，块内变量在块外一个都不用；
@@ -995,7 +1001,11 @@ class EpisodeRunner:
                 limit_s=8.0,
                 plan=_plan,
                 episode_id=self.episode_id,
-                budget_shots=shots,
+                # ⚠️ 2026-11-13：原来写 `budget_shots=shots` —— `shots` 是
+                # `run()` 的局部变量，抽成方法后未定义，整块被吞。
+                # 语义上它要的是**全量镜头表**（不是被 --limit 截断的 picked）：
+                # 用截断版比会把未取到的场次当 0 镜，报一串假偏差。
+                budget_shots=all_shots if all_shots is not None else picked,
             )
             _payload.setdefault("inputs", {})["planKeyHit"] = _plan_key
             if _rb.get("defects"):        # 整体审的意见并进缺陷清单，让定向返工接住
@@ -1496,7 +1506,7 @@ class EpisodeRunner:
         # 配额是**事前**的约束，这里是**事后**的对账：
         # 分镜到底有没有落在 [min,max]、有没有超场时长。
         # 落 delivery/scene_quota.json —— 既不参与门禁，也不假装通过。
-        self._audit_scene_quota()
+        self._audit_scene_quota(script_draft, shots)
 
         self._check_scene_subjects(picked, script_draft)
 
@@ -1506,7 +1516,7 @@ class EpisodeRunner:
         # 这里把三类「单元之间的接口」信号格式化成可定位的缺陷，
         # 落 delivery/interface_defects.json，供定向返工与证据链使用。
         # **它是附加产物，不参与门禁判决。**
-        self._check_interface_defects(picked)
+        self._check_interface_defects(picked, shots)
 
         if self.scene_conflicts:
             # **按严重度分开报**：越权新增 = 协作冲突（该退）；丢场景 = 特写的常态（不该退）

@@ -39,7 +39,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
     ("质检员", [sys.executable, "-m", "little_crew.review.qc_inspector_check"], 14),
     ("设定板质检", [sys.executable, "-m", "little_crew.review.sheet_qc_check"], 19),
-    ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 21),
+    ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 24),
     ("后期统筹", [sys.executable, "-m", "little_crew.runtime.post_production_check"], 14),
     ("混合渲染", [sys.executable, "-m", "little_crew.runtime.cloud_shots_check"], 13),
     ("云端整集回归", [sys.executable, "-m", "little_crew.runtime.cloud_episode_check"], 8),
@@ -150,7 +150,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 反馈循环很贵（2 镜 ≈12 分钟 / 整集 ≈2.4 小时），所以先用假通道验接线。
     # 重点是失败语义：**拿不到本地后端绝不退回付费 API**。
     ("video_mode 第二段", [sys.executable, "-m", "little_crew.runtime.video_mode_check"], 36),
-    ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 87),
+    ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 89),
     ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
