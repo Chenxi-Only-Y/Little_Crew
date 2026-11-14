@@ -1,0 +1,59 @@
+{
+  "episodeId": "CLI-LLM",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 72.1,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S03', shot='', line=0, asset=''), problem='S03：本场唯一的阻力是那张撕剩一半的告示——“她心里咯噔一下，可列车正进站，风把她的头发全掀起来，她没停。”障碍在同一个节拍里被发现又被她无视，等于没有产生对抗；整场只剩“跑”这个动作，没有人在拦她，也没有东西在拦她。', suggestion='让她的“没停”变成一个主动选择而非无反应：比如她盯着那半张告示，心里给自己找了个理由（“撕成这样肯定过期了”“末班怎么会不停”），用自我欺骗的台词把告示的阻力坐实。这样 S05 揭穿时刻表时，代价才是她自己骗了自己，而不是单纯的跑错。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='S05', shot='', line=0, asset=''), problem='S05：开场冲突“你为什么不让我上？你早说是空的也行啊！”被老周三句陈述（“那是回库的空车”“末班二十三点四十七就开走了”“哪一年的”）完全化解，她一秒钟内从质问转为认错，双方没有一个来回的拉扯，对抗没有真正发生。', suggestion='给她一个抵抗阶段：她坚持“时刻表上明明写的是零点”“我截图的时候看过的”，逼老周说出更狠的细节（告示贴了一周/这站末班从上月就改点了），让她自己撞上证据才塌。质问→抵抗→崩塌，三段走完，S06 的滑坐才有重量。')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.QUALITY: 'quality'>, location=IssueLocation(scene='S04（同类问题另见 S03）', shot='', line=0, asset='script.draft'), problem='检查项 2（用词层级是否一致（书面语与口语不能混用到出戏））：情绪标注层混入武侠腔用词：S04 老周『站住！』标注为『暴喝』，属旧派武侠/网文语汇，与全篇都市现实题材的克制、口语化语域明显不符，建议改为『厉声』或『吼』；同类偏旧派腔的还有 S03 的『嘶声』，可一并统一。正文叙述与对白本身的书面/口语分层是干净的，问题只在标注用词。', suggestion='按问题描述修订该处')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 72.1,
+        "issueCount": 3,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 59.545
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 97.858
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 358.883
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 72.1）"
+}

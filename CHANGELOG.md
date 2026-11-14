@@ -57,6 +57,42 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.30] — 2026-11-14（**产品 CLI 接真实 LLM**）
+
+### 新增 `runtime/llm_crew.py`（demo/CLI 共用绑定层）
+
+```python
+info = bind_llm_crew(stubs, llm=True, llm_model="deepseek-flash",
+                     llm_reviewer="mimo-v2.6-flash", ...)
+```
+
+- **跨族纪律**：编剧与剧评人同模型 → 明确失败（不让门禁退化成自我签收）
+- **成对替换**：编剧换真实现时必须同时换分镜师（否则 LLM 剧本被桩读成 0 镜）
+- 可选职位（导演/预演/美术/排期/灯光/文风/质检）按开关启用，不默认全开
+- 密钥缺失/模型未注册 → **明确失败**，不静默回退规则桩
+
+### `little-crew episode` 新增真实 LLM 参数
+
+`--llm --llm-model --llm-reviewer --llm-critic-model --llm-director --llm-previs
+--llm-art --llm-schedule --llm-gaffer --llm-critics --llm-qc`
+
+### 真机验证（限 3 镜）
+
+```
+编剧 DeepSeek V4.1 Flash / 剧评人 MiMo / 文风批评家 GLM-5.3 Flash（跨族）
+剧本 1 轮 → PASS · 3 镜 · 成片 17.0s · 封面 · 门禁 KEEP 3 · 墙钟 719.3s
+```
+
+**踩坑**：智谱 GLM 端点偶发 `CERTIFICATE_VERIFY_FAILED`（证书链缺中间证书）→
+本次用 `LITTLE_CREW_SSL_NO_VERIFY=1` 跑通；待办给内置 GLM provider 声明 `insecure_tls`。
+
+### 测试
+
+新增 `runtime/llm_crew_check` **11 项**（默认不换/核心三职位/成对/审片/跨族/未注册/密钥掩码）；
+全量 **2684/2671 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.29] — 2026-11-14（**产品 CLI 真机验证通过**）
 
 ### 用产品入口跑完一集

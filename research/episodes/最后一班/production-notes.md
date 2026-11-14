@@ -124,3 +124,25 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
 只打印一行警告；下游用局部变量所以成片没坏）。已改为 `put(..., owner="episode")` 并复跑确认警告消失。
 
 > 证据：`cli_film_frames.jpg` / `cli_cover.jpg` / `cli-run-summary.json`。
+
+### 产品 CLI + 真实 LLM（2026-11-14 晚，限 3 镜验证）
+
+`little-crew episode ... --llm --llm-critics --limit 3`：
+
+| 项 | 结果 |
+|---|---|
+| 真实 LLM | 编剧 DeepSeek V4.1 Flash / 剧评人 MiMo / 文风批评家 GLM-5.3 Flash（跨族） |
+| 绑定 | `screenwriter · dramaturge · storyboard_artist · story_editor · review_board` |
+| 剧本 | **1 轮 → PASS**（阈值 55） |
+| 镜头 | 3 镜（`--limit 3` 压测入口）· 出图 3 · 失败 0 · **成片 17.0s** |
+| 封面 | ✅ 选帧 + 叠标题 |
+| 门禁 | KEEP 3 / RETRY 0 |
+| 墙钟 | 719.3s（含真实 LLM 剧本/分镜/审片） |
+
+**踩坑**：智谱 GLM 端点偶发 `CERTIFICATE_VERIFY_FAILED`（证书链缺中间证书），
+首次跑因此 `ESCALATE [review-failed]`；本次用 `LITTLE_CREW_SSL_NO_VERIFY=1` 跑通。
+待办：给内置 GLM provider 声明 `insecure_tls`（自定义供应商已支持该字段），
+或配置 `LITTLE_CREW_SSL_CA_BUNDLE`。
+
+> 证据：`cli_llm_frame.jpg` / `cli_llm_cover.jpg`。
+

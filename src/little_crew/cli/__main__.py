@@ -156,6 +156,22 @@ def build_parser() -> argparse.ArgumentParser:
                     help="剧本通过阈值（0=默认 65；60s 无对白短片建议 55）")
     se.add_argument("--vision-max", type=int, default=12, dest="vision_max",
                     help="视觉闸最多抽检几镜（默认 12）")
+    # ---- 真实 LLM 剧组（2026-11-14）：默认关闭，开了才花钱 ----
+    se.add_argument("--llm", action="store_true",
+                    help="编剧/剧评人/分镜师换成真实 LLM（默认规则桩）")
+    se.add_argument("--llm-model", default="deepseek-flash", dest="llm_model")
+    se.add_argument("--llm-reviewer", default="mimo-v2.6-flash",
+                    dest="llm_reviewer", help="审核方模型（必须与编剧不同族）")
+    se.add_argument("--llm-critic-model", default="GLM-5.3-flash",
+                    dest="llm_critic_model")
+    se.add_argument("--llm-director", action="store_true", dest="llm_director")
+    se.add_argument("--llm-previs", action="store_true", dest="llm_previs")
+    se.add_argument("--llm-art", action="store_true", dest="llm_art")
+    se.add_argument("--llm-schedule", action="store_true", dest="llm_schedule")
+    se.add_argument("--llm-gaffer", action="store_true", dest="llm_gaffer")
+    se.add_argument("--llm-critics", action="store_true", dest="llm_critics")
+    se.add_argument("--llm-qc", action="store_true", dest="llm_qc",
+                    help="质检员用真实视觉模型（默认关）")
     se.add_argument("--json", action="store_true")
 
     # ---- serve / submit / status / fetch（HTTP 客户端，2026-11-11）----

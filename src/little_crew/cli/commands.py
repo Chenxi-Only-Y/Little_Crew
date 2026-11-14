@@ -445,7 +445,35 @@ def cmd_episode(args: Any) -> int:
 
     # ---- 组装剧组 ----
     orch = CrewOrchestrator(max_rounds=3, model_families={})
-    orch.bind_many(default_crew_stubs())
+    # ---- 真实 LLM 剧组（2026-11-14 A1 续）：与 demo 共用一份绑定逻辑 ----
+    from little_crew.runtime.llm_crew import (
+        bind_llm_crew as _bind_llm,
+        describe_binding as _describe_bind,
+    )
+
+    _stubs = default_crew_stubs()
+    _binfo = _bind_llm(
+        _stubs,
+        llm=bool(getattr(args, "llm", False)),
+        llm_model=str(getattr(args, "llm_model", "deepseek-flash") or "deepseek-flash"),
+        llm_reviewer=str(getattr(args, "llm_reviewer", "mimo-v2.6-flash")
+                         or "mimo-v2.6-flash"),
+        llm_critic_model=str(getattr(args, "llm_critic_model", "GLM-5.3-flash")
+                             or "GLM-5.3-flash"),
+        director=bool(getattr(args, "llm_director", False)),
+        previs=bool(getattr(args, "llm_previs", False)),
+        art=bool(getattr(args, "llm_art", False)),
+        schedule=bool(getattr(args, "llm_schedule", False)),
+        gaffer=bool(getattr(args, "llm_gaffer", False)),
+        critics=bool(getattr(args, "llm_critics", False)),
+        qc=bool(getattr(args, "llm_qc", False)),
+    )
+    if not _binfo["ok"]:
+        print(f"[X] {_binfo['error']}", file=sys.stderr)
+        return ExitCode.ENVIRONMENT
+    for _line in _describe_bind(_binfo):
+        print(f"  {_line}")
+    orch.bind_many(_stubs)
 
     class _R(EpisodeRunner):
         def engine_backend(self) -> Any:
