@@ -1,0 +1,2854 @@
+{
+  "kind": "episode.run.summary",
+  "episodeId": "EF-LAST60C",
+  "title": "最后一班",
+  "run.report.json": {
+    "episodeId": "EF-LAST60C",
+    "ok": true,
+    "scriptRounds": 0,
+    "scriptVerdict": "",
+    "failureKind": "resumed",
+    "clipVideo": "",
+    "art": {},
+    "schedule": {},
+    "previs": {
+      "ok": false,
+      "reason": "没有绑定 previs 实现 —— 加 --llm（--llm-previs 需要它）"
+    },
+    "clipAudio": {},
+    "advisory": [],
+    "humanGate": {
+      "kind": "human.gate",
+      "decision": "skip",
+      "reviewed": false,
+      "approved": false,
+      "assisted": false,
+      "by": "disabled",
+      "reason": "未开启人工 Gate（--human-gate 可开）",
+      "interactive": false,
+      "shots": 12,
+      "seconds": 60.0
+    },
+    "director": {
+      "ok": true,
+      "plan": {
+        "tone": "深夜末班车之后的失守与托付——冷白灯管下一次次合上的门，和一个不肯把人关死的人情",
+        "pacing": "前段追着秒数碎切，中段放开长镜留她一个人喘，末两场靠停顿与沉默把话顶回喉咙里",
+        "scenes": [
+          {
+            "sceneId": "S01",
+            "shotBudget": 2,
+            "role": "铺垫",
+            "priority": 3,
+            "avgTarget": "偏短",
+            "allowLong": false,
+            "sceneSeconds": 20.0,
+            "focus": "卷帘门下落的倒计时压在她身上——钻门、擦背、滚半圈、爬起来接着跑，动作必须比犹豫快；保住她对着空闸机比的那个“等我”手势"
+          },
+          {
+            "sceneId": "S02",
+            "shotBudget": 2,
+            "role": "铺垫",
+            "priority": 4,
+            "avgTarget": "中性",
+            "allowLong": false,
+            "sceneSeconds": 30.0,
+            "focus": "工牌“啪”地拍在窗台那一下——她押的是明天的结算钱，老陈翻到背面看见“离职结算凭证”后那两秒的沉默，以及他按下按钮却不肯看她、只低声说“跑吧”的松动"
+          },
+          {
+            "sceneId": "S03",
+            "shotBudget": 3,
+            "role": "高潮",
+            "priority": 5,
+            "avgTarget": "偏短",
+            "allowLong": false,
+            "sceneSeconds": 45.0,
+            "focus": "车门只开两秒：那点笑还挂在嘴角来不及收回，指尖擦过冰凉玻璃，包带被门缝咬住、人被带得踉跄、肩带断掉、包随车滑进隧道——这一集最大的失去要一次打完，不给她反应的时间"
+          },
+          {
+            "sceneId": "S04",
+            "shotBudget": 2,
+            "role": "抒情",
+            "priority": 2,
+            "avgTarget": "偏长",
+            "allowLong": true,
+            "sceneSeconds": 25.0,
+            "focus": "独处的第一口气：她坐在立柱下对着广告玻璃里那个头发乱掉的自己笑了一下，说“行吧”，撑起来走两步又停住；身后灯带一排排朝她压过来，回头看一眼还是走向出口"
+          },
+          {
+            "sceneId": "S05",
+            "shotBudget": 2,
+            "role": "铺垫",
+            "priority": 4,
+            "avgTarget": "中性",
+            "allowLong": false,
+            "sceneSeconds": 30.0,
+            "focus": "老陈关手电的那一下——争吵别演成吵架，是规程一寸寸收紧；登记本压上立柱、笔尖停在“离站时间”，最后整层只剩她头顶一盏灯，这是他从“清站”转向“帮人”的转折"
+          },
+          {
+            "sceneId": "S06",
+            "shotBudget": 2,
+            "role": "抒情",
+            "priority": 3,
+            "avgTarget": "偏长",
+            "allowLong": true,
+            "sceneSeconds": 25.0,
+            "focus": "她说“到了”“在楼下”时声音稳得不像自己，眼睛却看着熄灭的灯带和玻璃里那个乱掉的人；老陈接回手机翻了一下通话记录才放回兜里，这个动作不能省"
+          },
+          {
+            "sceneId": "S07",
+            "shotBudget": 2,
+            "role": "高潮",
+            "priority": 5,
+            "avgTarget": "中性",
+            "allowLong": true,
+            "sceneSeconds": 40.0,
+            "focus": "“我没赶上”终于说出口，她蹲下去额头抵住地砖、眼泪砸出一小片深色；护士那句“我跟她说你在楼下”不可以改，她哑着嗓子要求别改——谎言被戳穿之后她仍然选择维持它，老陈把钥匙串攥紧的那一下要保住"
+          },
+          {
+            "sceneId": "S08",
+            "shotBudget": 2,
+            "role": "过场",
+            "priority": 3,
+            "avgTarget": "偏短",
+            "allowLong": false,
+            "sceneSeconds": 30.0,
+            "focus": "工牌被夹进登记本、三天后才准领——她押的命被流程收走，她一句话没说，把那张薄纸折好塞进裤兜；楼道里鞋声一级级撞上去，跑出巷口红十字在头顶，最后仰头看三楼最亮那扇窗，有人影动了一下"
+          }
+        ],
+        "motifs": [
+          "一排排逐格熄灭的灯带",
+          "玻璃／车窗上自己的倒影",
+          "闸机与卷帘门红灯式的“关”",
+          "那块被翻到背面、又被夹进登记本的工牌",
+          "站外沾在鞋尖上的雨水"
+        ],
+        "totalShotBudget": 17
+      }
+    },
+    "gaffer": {},
+    "plannedShots": 12,
+    "rendered": 12,
+    "cacheHits": 0,
+    "failed": 0,
+    "coverage": 1.0,
+    "totalSeconds": 60.01,
+    "wallSeconds": 414.42,
+    "playable": true,
+    "sceneVeto": false,
+    "visionNotJudged": false,
+    "video": {
+      "ok": true,
+      "failure": "none",
+      "reason": "全部镜头合成成功",
+      "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\delivery\\episode.master.mp4",
+      "clipsBuilt": 11,
+      "clipsTotal": 11,
+      "coverage": 1.0,
+      "seconds": 56.78,
+      "wallSeconds": 1.71,
+      "bytes": 1892768
+    },
+    "videoPath": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\delivery\\episode.master.mp4",
+    "characters": {
+      "kind": "character.library",
+      "episodeId": "EF-LAST60C",
+      "seed": "979ff741db4364e0",
+      "count": 3,
+      "sheets": [
+        {
+          "kind": "character.sheet",
+          "name": "护士",
+          "characterId": "CHAR-33EB",
+          "appearance": {
+            "hair_style": "及腰直长发",
+            "hair_color": "深栗棕",
+            "eye_color": "深褐",
+            "build": "纤细高挑",
+            "outfit": "靛蓝染布短褂",
+            "outfit_accent": "腰间系麻绳",
+            "signature": "眉间有一颗小痣",
+            "gender": "男性",
+            "age_band": "少年"
+          },
+          "promptFragment": "男性，少年，纤细高挑身形，深栗棕及腰直长发，深褐眼睛，身穿靛蓝染布短褂，腰间系麻绳，眉间有一颗小痣",
+          "scenes": [
+            "SC-EF-LAST60C-006",
+            "SC-EF-LAST60C-007",
+            "SC-EF-LAST60C-008"
+          ],
+          "aliases": [],
+          "overridden": [],
+          "notes": "",
+          "pending": [
+            "anchorSet"
+          ],
+          "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+        },
+        {
+          "kind": "character.sheet",
+          "name": "小满",
+          "characterId": "CHAR-A18E",
+          "appearance": {
+            "hair_style": "高马尾",
+            "hair_color": "乌黑",
+            "eye_color": "墨绿",
+            "build": "清瘦文弱",
+            "outfit": "素色长袍系腰带",
+            "outfit_accent": "腰间系麻绳",
+            "signature": "眉间有一颗小痣",
+            "gender": "人物",
+            "age_band": "少年"
+          },
+          "promptFragment": "人物，少年，清瘦文弱身形，乌黑高马尾，墨绿眼睛，身穿素色长袍系腰带，腰间系麻绳，眉间有一颗小痣",
+          "scenes": [
+            "SC-EF-LAST60C-001",
+            "SC-EF-LAST60C-002",
+            "SC-EF-LAST60C-003",
+            "SC-EF-LAST60C-004",
+            "SC-EF-LAST60C-005",
+            "SC-EF-LAST60C-006",
+            "SC-EF-LAST60C-007",
+            "SC-EF-LAST60C-008"
+          ],
+          "aliases": [],
+          "overridden": [],
+          "notes": "",
+          "pending": [
+            "anchorSet"
+          ],
+          "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+        },
+        {
+          "kind": "character.sheet",
+          "name": "老陈",
+          "characterId": "CHAR-ADDC",
+          "appearance": {
+            "hair_style": "齐肩内扣短发",
+            "hair_color": "暗红棕",
+            "eye_color": "浅灰",
+            "build": "纤细高挑",
+            "outfit": "亚麻长裙",
+            "outfit_accent": "领口一枚铜扣",
+            "signature": "眉间有一颗小痣",
+            "gender": "女性",
+            "age_band": "少女"
+          },
+          "promptFragment": "女性，少女，纤细高挑身形，暗红棕齐肩内扣短发，浅灰眼睛，身穿亚麻长裙，领口一枚铜扣，眉间有一颗小痣",
+          "scenes": [
+            "SC-EF-LAST60C-002",
+            "SC-EF-LAST60C-005",
+            "SC-EF-LAST60C-006",
+            "SC-EF-LAST60C-007",
+            "SC-EF-LAST60C-008"
+          ],
+          "aliases": [],
+          "overridden": [],
+          "notes": "",
+          "pending": [
+            "anchorSet"
+          ],
+          "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+        }
+      ]
+    },
+    "reason": "全部镜头就绪",
+    "failures": [],
+    "manifest": {
+      "kind": "episode.master",
+      "episodeId": "EF-LAST60C",
+      "title": "最后一班",
+      "stage": "image",
+      "pendingStages": [
+        "video",
+        "audio"
+      ],
+      "shotCount": 12,
+      "totalSeconds": 60.01,
+      "shots": [
+        {
+          "shotId": "SH-EF-LAST60C-S01-001",
+          "sceneId": "S01",
+          "shotSize": "full",
+          "cameraMovement": "truck_left",
+          "durationSec": 4.62,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S01-003",
+          "sceneId": "S01",
+          "shotSize": "medium",
+          "cameraMovement": "static",
+          "durationSec": 4.62,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S02-001",
+          "sceneId": "S02",
+          "shotSize": "full",
+          "cameraMovement": "static",
+          "durationSec": 3.23,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "896116dc_C:\\Users\\OnlyY\\AppData\\Local\\Temp\\little-crew-inline\\8cd9584715cbff4d.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S02-005",
+          "sceneId": "S02",
+          "shotSize": "medium_close",
+          "cameraMovement": "dolly_in",
+          "durationSec": 5.08,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005.png"
+          ],
+          "prompt": "小满把脖子上的挂绳从领口摘下来，蓝色工牌在灯下晃了一下，被她反手“啪”地拍在值班亭的窗台上，塑料壳撞出清脆的响声。牌面朝下，露着磨白的边角和她手指压住的力道。她的指节发白，眼睛直直看着玻璃后面的人。（小满：人物，少年，清瘦文弱身形，乌黑高马尾，墨绿眼睛，身穿素色长袍系腰带，腰间系麻绳，眉间有一颗小痣）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S03-001",
+          "sceneId": "S03",
+          "shotSize": "full",
+          "cameraMovement": "dolly_in",
+          "durationSec": 3.23,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S03-005",
+          "sceneId": "S03",
+          "shotSize": "close",
+          "cameraMovement": "static",
+          "durationSec": 3.23,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005.png"
+          ],
+          "prompt": "特写。车门合上，小满伸出的手指尖擦过车窗，只摸到冰凉玻璃和微微震动；玻璃上映出她的脸，嘴角那点笑还挂着，来不及收回，车厢里低头看手机的人影模糊。（小满：人物，少年，清瘦文弱身形，乌黑高马尾，墨绿眼睛，身穿素色长袍系腰带，腰间系麻绳，眉间有一颗小痣）",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S04-001",
+          "sceneId": "S04",
+          "shotSize": "medium_full",
+          "cameraMovement": "dolly_in",
+          "durationSec": 6.46,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S04-003",
+          "sceneId": "S04",
+          "shotSize": "medium",
+          "cameraMovement": "truck_left",
+          "durationSec": 5.54,
+          "characters": [
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S05-001",
+          "sceneId": "S05",
+          "shotSize": "medium_full",
+          "cameraMovement": "dolly_in",
+          "durationSec": 4.62,
+          "characters": [
+            "老陈"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S05-003",
+          "sceneId": "S05",
+          "shotSize": "medium_close",
+          "cameraMovement": "static",
+          "durationSec": 4.62,
+          "characters": [
+            "老陈",
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S06-001",
+          "sceneId": "S06",
+          "shotSize": "medium",
+          "cameraMovement": "static",
+          "durationSec": 7.38,
+          "characters": [
+            "老陈",
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001.png"
+          ],
+          "prompt": "",
+          "ready": true
+        },
+        {
+          "shotId": "SH-EF-LAST60C-S06-003",
+          "sceneId": "S06",
+          "shotSize": "medium_close",
+          "cameraMovement": "static",
+          "durationSec": 7.38,
+          "characters": [
+            "老陈",
+            "小满"
+          ],
+          "artifacts": [
+            "SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003.png"
+          ],
+          "prompt": "",
+          "ready": true
+        }
+      ],
+      "createdAt": 1794638958.329134
+    },
+    "evidence": {
+      "kind": "delivery.evidence",
+      "episodeId": "EF-LAST60C",
+      "artifactCount": 12,
+      "artifacts": [
+        "SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001.png",
+        "SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003.png",
+        "896116dc_C:\\Users\\OnlyY\\AppData\\Local\\Temp\\little-crew-inline\\8cd9584715cbff4d.png",
+        "SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005.png",
+        "SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001.png",
+        "SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005.png",
+        "SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001.png",
+        "SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003.png",
+        "SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001.png",
+        "SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003.png",
+        "SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001.png",
+        "SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003.png"
+      ],
+      "irHashes": {
+        "SH-EF-LAST60C-S01-001": "sha256:efb45a80d0c16b6ff8e9702335c3e22ad50f526dbb6dc5da3fe7ef6ff881562d",
+        "SH-EF-LAST60C-S01-003": "sha256:1c8ca7cb16dc80d16306863e83c2cc48e8634b336f5b0162ef2f46cfb3ed7282",
+        "SH-EF-LAST60C-S02-001": "sha256:f4a6de103a5beb449b6ce4b5a212ddab990e9d6b426b7c6b25a00bdddd392325",
+        "SH-EF-LAST60C-S02-005": "sha256:166ab77e72223a4f4491660fe6133b7da98fc9a2c822680a11dd6296b2467171",
+        "SH-EF-LAST60C-S03-001": "sha256:89c4aa1617c9cb4b5fee09756948eb288c64e2c2a429330f1edf36b163a2f174",
+        "SH-EF-LAST60C-S03-005": "sha256:363a68a478d1a754d56afff361c16dae6f3856c480fca88560a24f28a7036f57",
+        "SH-EF-LAST60C-S04-001": "sha256:7d9c75ca29fe6a10268de438f50370a9b2083e0fba20cd3233d033b126305588",
+        "SH-EF-LAST60C-S04-003": "sha256:ad4b8aad8ce70cdcf381f26e36f373e50b1ca78f49c7b393fa2c80a9cf0d477b",
+        "SH-EF-LAST60C-S05-001": "sha256:5a9528e42b36e7accce8ff1b9cd51fbc1640e211793e20dd58ae6c1ddfc8c6c7",
+        "SH-EF-LAST60C-S05-003": "sha256:4d9750e2ab87f3ce9091941d84727b8e9e4088815c3596d67015fbdb7762f4e3",
+        "SH-EF-LAST60C-S06-001": "sha256:1e3706a7b02a74fc9a3bd2f8d65e36113e82baa82d31130b972acaba88c2c783",
+        "SH-EF-LAST60C-S06-003": "sha256:aa23eab49997e66947c787dd63488284ebfd0ecb98f9e0fff0c3b0ab2fa94447"
+      },
+      "artifactHashes": {
+        "SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001.png": "sha256:f3a05ecd94682e6d0fc982984fc904ab1a9abfb86999a04dc03001594d5c790c",
+        "SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003.png": "sha256:d20f60e34f343bb593e45203ca76ee787e8a205c6e8453d887a2a8d477f5dda6",
+        "SH-EF-LAST60C-S02-001-SH-EF-LAST60C-S02-001-SH-EF-LAST60C-S02-001.png": "sha256:adc98aa77f8a3d6553faab48cfd5d8840724c25010449ad621a666fec3a08189",
+        "SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005.png": "sha256:6e958e5a6ffa5d7fa3ef772143771ccdf194dc4ec581fcea028a29b593a07b39",
+        "SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001.png": "sha256:9321ad258a9a44909ee881bb31b328771b2bb64fcedf512d6c94380d94a7b113",
+        "SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005.png": "sha256:e39123db6008529cc42701517e5bdb3f29386baee590d4d5cced0ba337159442",
+        "SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001.png": "sha256:9b0cb208a8534f647c0c7c574d6bfb7d05e44a62f0d7500c7799f812dd1c3f64",
+        "SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003.png": "sha256:4c5a33b945a4b040c68d96e1bf4c2d45ca99aa4b5fbaf257462dc1e35d1404fe",
+        "SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001.png": "sha256:425bb5a4d408593d9556ad9d9ec7720ba645ab433073ef4668747018050c9d1a",
+        "SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003.png": "sha256:baee6f34da244c587160f9cc3e8153e8a4218806884170c8727f0c75a64b6eef",
+        "SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001.png": "sha256:b018b23f244b755bc9a707ea0e49acc4b3e3a26eebd3c3ec95ad05c64c6fd6cd",
+        "SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003.png": "sha256:9f10e885049da3935cb4a8c57a560f51547d9aa2312853961f4599de7bed287f"
+      },
+      "cache": {
+        "hits": 0,
+        "rendered": 12,
+        "secondsSaved": 0.0,
+        "secondsSpent": 576.4
+      },
+      "checks": {
+        "allShotsHaveArtifacts": true,
+        "allShotsWithinDurationLimit": true,
+        "manifestNonEmpty": true,
+        "artifactsUnique": true,
+        "hasContentHashChain": true
+      },
+      "allChecksPassed": true,
+      "gate": {
+        "results": [
+          {
+            "artifactId": "SH-EF-LAST60C-S01-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S01-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S01-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S01-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 4.62,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S01-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S01-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.855183,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S06-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S01-003",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S01-003",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S01-003",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S01-003",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 4.62,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S01-003",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S01-003",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.920459,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S01-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S02-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S02-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S02-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S02-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 3.23,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S02-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S02-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.883477,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S05-003",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S02-005",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S02-005",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S02-005",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S02-005",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.08,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S02-005",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S02-005",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.895173,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S06-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S03-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S03-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S03-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S03-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 3.23,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S03-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S03-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.887193,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S06-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S03-005",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S03-005",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S03-005",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S03-005",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 3.23,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S03-005",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S03-005",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.879819,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S06-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S04-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S04-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S04-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S04-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 6.46,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S04-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S04-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.891686,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S05-003",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S04-003",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S04-003",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S04-003",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S04-003",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 5.54,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S04-003",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S04-003",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.914431,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S05-003",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S05-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S05-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 1,
+                  "names": [
+                    "老陈"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "1 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S05-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S05-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 4.62,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S05-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 1.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S05-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.906375,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S05-003",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S05-003",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S05-003",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 2,
+                  "names": [
+                    "老陈",
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "2 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S05-003",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S05-003",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 4.62,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S05-003",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 2.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S05-003",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.86746,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S06-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S06-001",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S06-001",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 2,
+                  "names": [
+                    "老陈",
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "2 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S06-001",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S06-001",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 7.38,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S06-001",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 2.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S06-001",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.855183,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S01-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "layout"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          },
+          {
+            "artifactId": "SH-EF-LAST60C-S06-003",
+            "verdict": "KEEP",
+            "assertions": [
+              {
+                "constraintRef": "cr_cast_text_SH-EF-LAST60C-S06-003",
+                "op": "cast_consistent_with_text",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "cast_consistent_with_text"
+                },
+                "observed": {
+                  "characters": 2,
+                  "names": [
+                    "老陈",
+                    "小满"
+                  ],
+                  "soloMarkers": [],
+                  "direction": "consistent"
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "2 人，描述无矛盾标记",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_res_SH-EF-LAST60C-S06-003",
+                "op": "resolution_matches",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "resolution_matches",
+                  "width": 832,
+                  "height": 480
+                },
+                "observed": {
+                  "width": 832,
+                  "height": 480,
+                  "expectedWidth": 832,
+                  "expectedHeight": 480
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_dur_SH-EF-LAST60C-S06-003",
+                "op": "duration_within",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "duration_within",
+                  "max": 10.0
+                },
+                "observed": {
+                  "durationSec": 7.38,
+                  "min": 0.0,
+                  "max": 10.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cast_SH-EF-LAST60C-S06-003",
+                "op": "count_at_most",
+                "enforcement": "hard",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "count_at_most",
+                  "field": "characterCount",
+                  "max": 3
+                },
+                "observed": {
+                  "characterCount": 2.0,
+                  "max": 3.0
+                },
+                "evidence": {
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              },
+              {
+                "constraintRef": "cr_cross_shot_SH-EF-LAST60C-S06-003",
+                "op": "pairwise_similarity",
+                "enforcement": "audit",
+                "passed": true,
+                "blocking": false,
+                "expected": {
+                  "op": "pairwise_similarity",
+                  "min": 0.7
+                },
+                "observed": {
+                  "similarity": 0.902846,
+                  "min": 0.7,
+                  "otherShotId": "SH-EF-LAST60C-S01-001",
+                  "method": "consistency-descriptor/v2",
+                  "weakestDimension": "lighting"
+                },
+                "evidence": {
+                  "method": "consistency-descriptor/v2",
+                  "evaluated": true,
+                  "operatorVersion": "1",
+                  "observedSource": "artifact-ref"
+                },
+                "detail": "",
+                "inconclusive": false
+              }
+            ],
+            "repairs": [],
+            "repairActions": [],
+            "repairable": false,
+            "escalations": [],
+            "notes": [],
+            "counts": {
+              "total": 5,
+              "passed": 5,
+              "blocking": 0,
+              "hard": 3
+            }
+          }
+        ],
+        "skippedConstraints": [
+          "SH-EF-LAST60C-S01-001/cr_blind_SH-EF-LAST60C-S01-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S01-003/cr_blind_SH-EF-LAST60C-S01-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S02-001/cr_blind_SH-EF-LAST60C-S02-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S02-005/cr_blind_SH-EF-LAST60C-S02-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S03-001/cr_blind_SH-EF-LAST60C-S03-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S03-005/cr_blind_SH-EF-LAST60C-S03-005(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S04-001/cr_blind_SH-EF-LAST60C-S04-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S04-003/cr_blind_SH-EF-LAST60C-S04-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S05-001/cr_blind_SH-EF-LAST60C-S05-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S05-003/cr_blind_SH-EF-LAST60C-S05-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S06-001/cr_blind_SH-EF-LAST60C-S06-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+          "SH-EF-LAST60C-S06-003/cr_blind_SH-EF-LAST60C-S06-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']"
+        ],
+        "availableObservations": [
+          "bytes",
+          "characterCount",
+          "characters",
+          "consistencySignature",
+          "description",
+          "durationSec",
+          "height",
+          "method",
+          "name",
+          "otherShotId",
+          "pairwise",
+          "similarity",
+          "weakestDimension",
+          "width"
+        ],
+        "counts": {
+          "shots": 12,
+          "kept": 12,
+          "retry": 0,
+          "escalate": 0,
+          "skipped": 12
+        }
+      },
+      "gatePassed": true,
+      "providers": {
+        "total": 18,
+        "providers": [
+          {
+            "provider": "api.deepseek.com",
+            "model": "deepseek-flash",
+            "calls": 10,
+            "servedModels": {
+              "deepseek-flash": 10
+            },
+            "kinds": {
+              "llm": 1,
+              "llm.json": 9
+            }
+          },
+          {
+            "provider": "api.xiaomimimo.com",
+            "model": "mimo-v2.6-flash",
+            "calls": 8,
+            "servedModels": {
+              "mimo-v2.6-flash": 8
+            },
+            "kinds": {
+              "llm.json": 1,
+              "vision:画面审查": 6,
+              "vision:封面选帧": 1
+            }
+          }
+        ],
+        "missingServedModel": 0
+      },
+      "createdAt": 1794638958.3301334
+    }
+  },
+  "episode.master.json": {
+    "kind": "episode.master",
+    "episodeId": "EF-LAST60C",
+    "title": "最后一班",
+    "stage": "image",
+    "pendingStages": [
+      "video",
+      "audio"
+    ],
+    "shotCount": 12,
+    "totalSeconds": 60.01,
+    "shots": [
+      {
+        "shotId": "SH-EF-LAST60C-S01-001",
+        "sceneId": "S01",
+        "shotSize": "full",
+        "cameraMovement": "truck_left",
+        "durationSec": 4.62,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S01-003",
+        "sceneId": "S01",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 4.62,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "sceneId": "S02",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 3.23,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "896116dc_C:\\Users\\OnlyY\\AppData\\Local\\Temp\\little-crew-inline\\8cd9584715cbff4d.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-005",
+        "sceneId": "S02",
+        "shotSize": "medium_close",
+        "cameraMovement": "dolly_in",
+        "durationSec": 5.08,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005.png"
+        ],
+        "prompt": "小满把脖子上的挂绳从领口摘下来，蓝色工牌在灯下晃了一下，被她反手“啪”地拍在值班亭的窗台上，塑料壳撞出清脆的响声。牌面朝下，露着磨白的边角和她手指压住的力道。她的指节发白，眼睛直直看着玻璃后面的人。（小满：人物，少年，清瘦文弱身形，乌黑高马尾，墨绿眼睛，身穿素色长袍系腰带，腰间系麻绳，眉间有一颗小痣）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-001",
+        "sceneId": "S03",
+        "shotSize": "full",
+        "cameraMovement": "dolly_in",
+        "durationSec": 3.23,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-005",
+        "sceneId": "S03",
+        "shotSize": "close",
+        "cameraMovement": "static",
+        "durationSec": 3.23,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005.png"
+        ],
+        "prompt": "特写。车门合上，小满伸出的手指尖擦过车窗，只摸到冰凉玻璃和微微震动；玻璃上映出她的脸，嘴角那点笑还挂着，来不及收回，车厢里低头看手机的人影模糊。（小满：人物，少年，清瘦文弱身形，乌黑高马尾，墨绿眼睛，身穿素色长袍系腰带，腰间系麻绳，眉间有一颗小痣）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-001",
+        "sceneId": "S04",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "durationSec": 6.46,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-003",
+        "sceneId": "S04",
+        "shotSize": "medium",
+        "cameraMovement": "truck_left",
+        "durationSec": 5.54,
+        "characters": [
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-001",
+        "sceneId": "S05",
+        "shotSize": "medium_full",
+        "cameraMovement": "dolly_in",
+        "durationSec": 4.62,
+        "characters": [
+          "老陈"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-003",
+        "sceneId": "S05",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "durationSec": 4.62,
+        "characters": [
+          "老陈",
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-001",
+        "sceneId": "S06",
+        "shotSize": "medium",
+        "cameraMovement": "static",
+        "durationSec": 7.38,
+        "characters": [
+          "老陈",
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001.png"
+        ],
+        "prompt": "",
+        "ready": true
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-003",
+        "sceneId": "S06",
+        "shotSize": "medium_close",
+        "cameraMovement": "static",
+        "durationSec": 7.38,
+        "characters": [
+          "老陈",
+          "小满"
+        ],
+        "artifacts": [
+          "SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003.png"
+        ],
+        "prompt": "",
+        "ready": true
+      }
+    ],
+    "createdAt": 1794638958.329134
+  },
+  "post.plan.json": {
+    "kind": "post.plan",
+    "audioStrategy": "tts+bgm",
+    "audioNativeNote": "静帧路径：TTS 对白 + BGM，无环境音（H3 才有原生音效）",
+    "subtitle": {
+      "style": "burned",
+      "maxCharsPerLine": 16,
+      "maxLines": 2,
+      "safeAreaBottom": 0.08,
+      "estimatedCount": 0
+    },
+    "bgm": {
+      "gainDb": -22.0,
+      "fadeInS": 2.0,
+      "fadeOutS": 3.0,
+      "duckingDb": -6.0
+    },
+    "transitions": {
+      "rules": {
+        "sameScene": "cut",
+        "sceneChange": "fade",
+        "timeJump": "dissolve"
+      },
+      "sequence": [
+        {
+          "index": 1,
+          "type": "cut",
+          "fromScene": null,
+          "toScene": "S01"
+        },
+        {
+          "index": 2,
+          "type": "cut",
+          "fromScene": "S01",
+          "toScene": "S01"
+        },
+        {
+          "index": 3,
+          "type": "fade",
+          "fromScene": "S01",
+          "toScene": "S02"
+        },
+        {
+          "index": 4,
+          "type": "cut",
+          "fromScene": "S02",
+          "toScene": "S02"
+        },
+        {
+          "index": 5,
+          "type": "fade",
+          "fromScene": "S02",
+          "toScene": "S03"
+        },
+        {
+          "index": 6,
+          "type": "cut",
+          "fromScene": "S03",
+          "toScene": "S03"
+        },
+        {
+          "index": 7,
+          "type": "fade",
+          "fromScene": "S03",
+          "toScene": "S04"
+        },
+        {
+          "index": 8,
+          "type": "cut",
+          "fromScene": "S04",
+          "toScene": "S04"
+        },
+        {
+          "index": 9,
+          "type": "fade",
+          "fromScene": "S04",
+          "toScene": "S05"
+        },
+        {
+          "index": 10,
+          "type": "cut",
+          "fromScene": "S05",
+          "toScene": "S05"
+        },
+        {
+          "index": 11,
+          "type": "fade",
+          "fromScene": "S05",
+          "toScene": "S06"
+        },
+        {
+          "index": 12,
+          "type": "cut",
+          "fromScene": "S06",
+          "toScene": "S06"
+        }
+      ],
+      "counts": {
+        "cut": 7,
+        "fade": 5
+      }
+    },
+    "loudness": {
+      "targetLufs": -16.0,
+      "approach": "EBU R128 两遍（先扫后归）"
+    },
+    "colorGrade": {
+      "executed": false,
+      "note": "调色暂不执行；本字段只记录目标，供后续接 LUT"
+    },
+    "shotCount": 12,
+    "engine": ""
+  },
+  "shot_selection.json": {
+    "kind": "shots.target",
+    "targetShots": 12,
+    "originalShots": 41,
+    "keptShots": 12,
+    "droppedShots": 29,
+    "scenes": 8,
+    "perSceneQuota": 2,
+    "keptIds": [
+      "SH-EF-LAST60C-S01-001",
+      "SH-EF-LAST60C-S01-003",
+      "SH-EF-LAST60C-S02-001",
+      "SH-EF-LAST60C-S02-005",
+      "SH-EF-LAST60C-S03-001",
+      "SH-EF-LAST60C-S03-005",
+      "SH-EF-LAST60C-S04-001",
+      "SH-EF-LAST60C-S04-003",
+      "SH-EF-LAST60C-S05-001",
+      "SH-EF-LAST60C-S05-003",
+      "SH-EF-LAST60C-S06-001",
+      "SH-EF-LAST60C-S06-003"
+    ],
+    "note": "每场等距挑选，保留时间顺序；不做语义合并"
+  },
+  "duration_target.json": {
+    "kind": "duration.target",
+    "targetSeconds": 60.0,
+    "originalSeconds": 65.0,
+    "adjustedSeconds": 60.01,
+    "factor": 0.9231,
+    "perShot": [
+      {
+        "shotId": "SH-EF-LAST60C-S01-001",
+        "old": 5.0,
+        "new": 4.62
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S01-003",
+        "old": 5.0,
+        "new": 4.62
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "old": 3.5,
+        "new": 3.23
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-005",
+        "old": 5.5,
+        "new": 5.08
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-001",
+        "old": 3.5,
+        "new": 3.23
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-005",
+        "old": 3.5,
+        "new": 3.23
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-001",
+        "old": 7.0,
+        "new": 6.46
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-003",
+        "old": 6.0,
+        "new": 5.54
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-001",
+        "old": 5.0,
+        "new": 4.62
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-003",
+        "old": 5.0,
+        "new": 4.62
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-001",
+        "old": 8.0,
+        "new": 7.38
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-003",
+        "old": 8.0,
+        "new": 7.38
+      }
+    ],
+    "note": "成比例缩放（不删镜头）；每镜夹在 2~10s；残差由最后一镜吸收"
+  },
+  "token_usage.json": {
+    "kind": "token.usage",
+    "models": {
+      "deepseek-flash": {
+        "calls": 10,
+        "input": 12179,
+        "output": 22929,
+        "cached": 6656,
+        "kinds": {
+          "llm": 1,
+          "llm.json": 9
+        }
+      },
+      "mimo-v2.6-flash": {
+        "calls": 8,
+        "input": 15511,
+        "output": 1480,
+        "cached": 0,
+        "kinds": {
+          "llm.json": 1,
+          "vision:画面审查": 6,
+          "vision:封面选帧": 1
+        }
+      }
+    },
+    "totalCalls": 18,
+    "totalInput": 27690,
+    "totalOutput": 24409
+  },
+  "qc.report.json": {
+    "kind": "qc.report",
+    "reviewedCount": 6,
+    "total": 12,
+    "errors": 0,
+    "findings": [
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "kind": "vision.faces-broken",
+        "severity": "error",
+        "reason": "人物脸部崩坏：人物全程背影，未见脸部；地面无明显湿脚印；灯带熄灭细节不明显"
+      }
+    ],
+    "actions": [
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "action": "redraw",
+        "reason": "人物脸部崩坏：人物全程背影，未见脸部；地面无明显湿脚印；灯带熄灭细节不明显"
+      }
+    ],
+    "skipped": 6,
+    "notReviewed": [
+      "SH-EF-LAST60C-S04-001",
+      "SH-EF-LAST60C-S04-003",
+      "SH-EF-LAST60C-S05-001",
+      "SH-EF-LAST60C-S05-003",
+      "SH-EF-LAST60C-S06-001",
+      "SH-EF-LAST60C-S06-003"
+    ],
+    "notJudged": false
+  },
+  "vision_review.json": {
+    "kind": "qc.report",
+    "reviewedCount": 6,
+    "total": 12,
+    "errors": 0,
+    "findings": [
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "kind": "vision.faces-broken",
+        "severity": "error",
+        "reason": "人物脸部崩坏：人物全程背影，未见脸部；地面无明显湿脚印；灯带熄灭细节不明显"
+      }
+    ],
+    "actions": [
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "action": "redraw",
+        "reason": "人物脸部崩坏：人物全程背影，未见脸部；地面无明显湿脚印；灯带熄灭细节不明显"
+      }
+    ],
+    "skipped": 6,
+    "notReviewed": [
+      "SH-EF-LAST60C-S04-001",
+      "SH-EF-LAST60C-S04-003",
+      "SH-EF-LAST60C-S05-001",
+      "SH-EF-LAST60C-S05-003",
+      "SH-EF-LAST60C-S06-001",
+      "SH-EF-LAST60C-S06-003"
+    ],
+    "notJudged": false
+  },
+  "render_compare.json": {
+    "kind": "render.compare",
+    "mode": "同镜（同一批 IR，独立工具）",
+    "episode": "EF-LAST60C",
+    "model": "z-image-turbo",
+    "compared": 12,
+    "total": 12,
+    "rows": [
+      {
+        "shotId": "SH-EF-LAST60C-S01-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S01-001\\SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001-SH-EF-LAST60C-S01-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S01-001.png",
+        "seconds": 9.2,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S01-003",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S01-003\\SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003-SH-EF-LAST60C-S01-003.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S01-003.png",
+        "seconds": 9.0,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S02-001\\SH-EF-LAST60C-S02-001-SH-EF-LAST60C-S02-001-SH-EF-LAST60C-S02-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S02-001.png",
+        "seconds": 9.0,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S02-005",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S02-005\\SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005-SH-EF-LAST60C-S02-005.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S02-005.png",
+        "seconds": 8.7,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S03-001\\SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001-SH-EF-LAST60C-S03-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S03-001.png",
+        "seconds": 8.6,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S03-005",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S03-005\\SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005-SH-EF-LAST60C-S03-005.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S03-005.png",
+        "seconds": 8.6,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S04-001\\SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001-SH-EF-LAST60C-S04-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S04-001.png",
+        "seconds": 8.6,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S04-003",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S04-003\\SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003-SH-EF-LAST60C-S04-003.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S04-003.png",
+        "seconds": 8.7,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S05-001\\SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001-SH-EF-LAST60C-S05-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S05-001.png",
+        "seconds": 8.9,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S05-003",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S05-003\\SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003-SH-EF-LAST60C-S05-003.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S05-003.png",
+        "seconds": 8.5,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-001",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S06-001\\SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001-SH-EF-LAST60C-S06-001.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S06-001.png",
+        "seconds": 8.7,
+        "error": ""
+      },
+      {
+        "shotId": "SH-EF-LAST60C-S06-003",
+        "cloud": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\shots\\SH-EF-LAST60C-S06-003\\SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003-SH-EF-LAST60C-S06-003.png",
+        "local": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_EFLAST60C\\assets\\local_shots\\SH-EF-LAST60C-S06-003.png",
+        "seconds": 8.8,
+        "error": ""
+      }
+    ],
+    "wallSeconds": 105.3,
+    "note": "左云端 / 右本地；本地渲染不参与主流程产物"
+  }
+}

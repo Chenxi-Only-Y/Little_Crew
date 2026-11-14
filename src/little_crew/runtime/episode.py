@@ -639,6 +639,29 @@ class EpisodeRunner:
         self.trace: dict[str, Any] = {}
         #: 跑到这个阶段后停下（"" = 不停）。给 `--stop-after` 用。
         self.stop_after: str = ""
+        # ---- 「最后一班」60s 制作（2026-11-14）----
+        #: 目标总时长（秒）；0 = 不约束。分镜排长了会**成比例缩到目标**并落盘记录。
+        self.target_seconds: float = 0.0
+        #: 整集走云端图生图（每镜用锚点锁角色），不经过本地渲染通道。
+        self.cloud_all: bool = False
+        #: 角色名 -> 锚点图路径（覆盖/补充库里发现的锚点）。
+        self.cast_anchors: dict[str, str] = {}
+        #: 统一画风提示（拼进每镜云端提示词，保证一集风格一致）。
+        self.style_hint: str = ""
+        #: 云端整集用的模型（None = cloud_render 默认）
+        self.cloud_model: str = ""
+        #: 云端整集跑完后，用同一批 IR 本地再渲一遍做对照（B3，默认关）。
+        self.compare_local: bool = False
+        #: 对照结果（供报告/证据链）
+        self._render_compare: dict = {}
+        #: **本地**渲染器（对照用）。主渲染器可能是云端；
+        #: 对照必须显式指定本地渲染器，否则会把云端再跑一遍（¥+时间双浪费）。
+        self.local_renderer: Any = None
+        #: 对照用的**本地后端**（`_render` 里 `engine_backend()` 读的是 self.backend，
+        #: 只换 renderer 不换 backend 会仍走云端 —— 2026-11-14 实测 401/白跑）
+        self.local_backend: Any = None
+        #: 目标镜数（0 = 不约束）。60s 短片从 32 镜压到 12 镜用。
+        self.shots_target: int = 0
         self._t0: float = time.time()
 
     # ---- 主流程 --------------------------------------------------------
@@ -1498,6 +1521,21 @@ class EpisodeRunner:
         except Exception:                                    # noqa: BLE001
             pass
 
+        # ---- 目标镜数（2026-11-14）：60s 短片不该有 32 个镜头 ----
+        _sel = self._apply_shots_target(list(shots), shot_list)
+        if _sel is not None:
+            shots = tuple(_sel["shots"])
+            shot_list = _sel["shotList"]
+
+        # ---- 目标时长（2026-11-14）：分镜排长了就**成比例缩** ----
+        # 为什么要做：60s 短片的分镜模型会按"完整叙事"排到 100s+，
+        # 而交付要求是 60s。静默截掉几镜会破坏叙事，所以缩时长而不是删镜头；
+        # 每镜仍受平台硬约束（2~10s），缩放结果写 delivery/duration_target.json。
+        _dur = self._apply_target_duration(list(shots), shot_list)
+        if _dur is not None:
+            shots = tuple(_dur["shots"])
+            shot_list = _dur["shotList"]
+
         planned = len(shots) if limit is None else min(len(shots), int(limit))
         picked = shots[:planned]
 
@@ -1690,7 +1728,11 @@ class EpisodeRunner:
         # `channel_unavailable: 无法连接 127.0.0.1:8188`，而集成 20 分钟才发现。
         # 先探一次，探不到就**明确报错**，别让 6 镜在后面才丢。
         self._render_backend_healthcheck()
-        rstats = self._render(irs, on_progress=on_progress)
+        if bool(getattr(self, "cloud_all", False)):
+            # 整集云端图生图（每镜带角色锚点 + 统一画风）
+            rstats = self._render_cloud_all(picked)
+        else:
+            rstats = self._render(irs, on_progress=on_progress)
         batch = rstats["batch"]
 
         # 单镜失败重试一次（只重试"通道不可用"这类瞬时错误）
@@ -1793,6 +1835,10 @@ class EpisodeRunner:
             s.shot_id: artifacts.get(f"G-{self.episode_id}-{s.shot_id}", [])
             for s in picked
         }
+
+        # ---- B3 同镜对照（2026-11-14，默认关）----
+        # 放在"主产物已确定"之后：对照失败不影响交付，成功则多一份质量证据。
+        self._run_render_compare(picked, irs, per_shot_artifacts)
 
         # ---- 阶段 checkpoint：渲染（2026-11-08）----
         try:
@@ -2853,6 +2899,336 @@ class EpisodeRunner:
         except Exception as exc:                              # noqa: BLE001
             print(f"  ⚠️ 云端产物归一失败（保留原尺寸）：{type(exc).__name__}: {exc}")
             return None
+
+    def _apply_shots_target(self, shots: list, shot_list: Any) -> dict | None:
+        """把镜头数压到 `shots_target`（**每场等距挑**，保留叙事顺序）。
+
+        为什么不用"缩时长"解决：32 镜 × 2s 虽然也是 60s，但每镜平均 2 秒
+        会变成快切，人物动作与情绪来不及；60s 短片 12 镜（每镜 5s）才合理。
+        所以先压镜数，再由 `_apply_target_duration` 微调时长。
+        """
+        target = int(getattr(self, "shots_target", 0) or 0)
+        if target <= 0 or len(shots) <= target:
+            return None
+        from dataclasses import replace as _dc_replace
+        from collections import OrderedDict
+
+        by_scene: "OrderedDict[str, list]" = OrderedDict()
+        for s in shots:
+            by_scene.setdefault(str(getattr(s, "scene_id", "") or ""), []).append(s)
+        n_scenes = max(1, len(by_scene))
+        quota = max(1, int(round(target / n_scenes)))
+        picked: list = []
+        dropped = 0
+        for sid, group in by_scene.items():
+            if len(group) <= quota:
+                picked.extend(group)
+                continue
+            # 等距挑（含首尾），保持场内时间顺序
+            step = len(group) / float(quota)
+            idxs = sorted({min(len(group) - 1, int(round(i * step)))
+                           for i in range(quota)})
+            picked.extend(group[i] for i in idxs)
+            dropped += len(group) - len(idxs)
+        # 场次不均时用多出来的场次补足（仍未到目标就从最长的场再取）
+        if len(picked) < target:
+            used = {id(s) for s in picked}
+            for s in shots:
+                if len(picked) >= target:
+                    break
+                if id(s) not in used:
+                    picked.append(s)
+        picked = picked[:target]
+        picked.sort(key=lambda s: shots.index(s))       # 恢复全局镜序
+        try:
+            new_list = _dc_replace(shot_list, shots=tuple(picked),
+                                   total_seconds=round(sum(
+                                       float(getattr(s, "duration_sec", 0.0) or 0.0)
+                                       for s in picked), 2))
+            self.orch.blackboard.set("shot.list", new_list)
+        except Exception:                                     # noqa: BLE001
+            new_list = shot_list
+        report = {"kind": "shots.target", "targetShots": target,
+                  "originalShots": len(shots), "keptShots": len(picked),
+                  "droppedShots": len(shots) - len(picked),
+                  "scenes": n_scenes, "perSceneQuota": quota,
+                  "keptIds": [str(getattr(s, "shot_id", "")) for s in picked],
+                  "note": "每场等距挑选，保留时间顺序；不做语义合并"}
+        print(f"  镜数：{len(shots)} → {len(picked)}（目标 {target}，"
+              f"{n_scenes} 场 × 每场≈{quota} 镜）")
+        try:
+            wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if wd:
+                import json as _j
+
+                out = Path(str(wd)) / "delivery"
+                out.mkdir(parents=True, exist_ok=True)
+                (out / "shot_selection.json").write_text(
+                    _j.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        return {"shots": picked, "shotList": new_list, "report": report}
+
+    def _apply_target_duration(self, shots: list, shot_list: Any) -> dict | None:
+        """把镜头表成比例缩放到 `target_seconds`（±5% 内不动）。
+
+        返回 `{"shots": [...], "shotList": ShotList, "report": {...}}`；
+        没有设目标 / 差距很小 / 无法缩放时返回 None（调用方保持原样）。
+        """
+        target = float(getattr(self, "target_seconds", 0.0) or 0.0)
+        if target <= 0 or not shots:
+            return None
+        from dataclasses import replace as _dc_replace
+
+        total = sum(float(getattr(s, "duration_sec", 0.0) or 0.0) for s in shots)
+        if total <= 0:
+            return None
+        if abs(total - target) / target <= 0.05:
+            print(f"  时长：{total:.1f}s，目标 {target:.0f}s（偏差 <5%，不缩放）")
+            return None
+        # 每镜硬边界：<2s 太快看不清；>10s 本机视频模型 OOM（与分镜约束一致）
+        lo, hi = 2.0, 10.0
+        factor = target / total
+        new: list = []
+        for s in shots:
+            d = float(getattr(s, "duration_sec", 0.0) or 0.0) * factor
+            new.append(_dc_replace(s, duration_sec=round(min(hi, max(lo, d)), 2)))
+        new_total = sum(float(getattr(s, "duration_sec", 0.0)) for s in new)
+        # 夹紧后可能仍偏离目标 -> 用最后一镜吸收残差（同样受边界约束）
+        resid = round(target - new_total, 2)
+        if abs(resid) >= 0.05 and new:
+            last = new[-1]
+            d = min(hi, max(lo, float(getattr(last, "duration_sec", 0.0)) + resid))
+            new[-1] = _dc_replace(last, duration_sec=round(d, 2))
+        new_total = sum(float(getattr(s, "duration_sec", 0.0)) for s in new)
+        try:
+            new_list = _dc_replace(shot_list, shots=tuple(new),
+                                   total_seconds=round(new_total, 2))
+            self.orch.blackboard.set("shot.list", new_list)
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 时长缩放后回写黑板失败：{type(exc).__name__}: {exc}")
+            new_list = shot_list
+        report = {
+            "kind": "duration.target",
+            "targetSeconds": target,
+            "originalSeconds": round(total, 2),
+            "adjustedSeconds": round(new_total, 2),
+            "factor": round(factor, 4),
+            "perShot": [{"shotId": getattr(s, "shot_id", ""),
+                         "old": round(float(getattr(o, "duration_sec", 0.0)), 2),
+                         "new": round(float(getattr(s, "duration_sec", 0.0)), 2)}
+                        for o, s in zip(shots, new)],
+            "note": "成比例缩放（不删镜头）；每镜夹在 2~10s；残差由最后一镜吸收",
+        }
+        print(f"  时长：{total:.1f}s → {new_total:.1f}s（目标 {target:.0f}s，×{factor:.2f}）")
+        try:
+            wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if wd:
+                out = Path(str(wd)) / "delivery"
+                out.mkdir(parents=True, exist_ok=True)
+                import json as _j
+
+                (out / "duration_target.json").write_text(
+                    _j.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        self._duration_report = report
+        return {"shots": new, "shotList": new_list, "report": report}
+
+    def _run_render_compare(self, picked, irs, per_shot_artifacts) -> None:
+        """**同镜对照（B3）**：用同一批 IR 在本地再渲一遍，与云端版并排落盘。
+
+        - 本地版写 `assets/local_shots/<shotId>.png`（不覆盖云端主产物）
+        - 报告写 `delivery/render_compare.json`（每镜云端/本地路径、字节、sha256）
+        - 拼两张对照图 `delivery/render_compare_1/2.jpg`（每张 6 镜：左云端 / 右本地）
+        - **失败不阻断**：对照是证据，不是交付依赖
+        """
+        if not bool(getattr(self, "compare_local", False)):
+            return
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            return
+        wd = Path(str(wd))
+        print("  ▓ 对照：本地再渲一遍（同一批 IR）…")
+        try:
+            # ⚠️ `_render` 返回的是 `{"batch": CachedBatch}`（dict），不是 batch 本体；
+            # 且对照必须用**本地**渲染器 —— 2026-11-14 第一次跑时主渲染器是云端，
+            # 结果 32 张云端图被再渲一遍然后丢弃（¥1.6 白花）。
+            # ⚠️ `_Runner.engine_backend()` 读的是 **`self._backend`**（不是 self.backend）。
+            # 只换 renderer / self.backend，`_render` 仍会按云端后端分派 —— 2026-11-14 实测 401。
+            _saved_r = self.renderer
+            _saved_b = getattr(self, "_backend", None)
+            _saved_pub = getattr(self, "backend", None)
+            _lb = getattr(self, "local_backend", None)
+            if getattr(self, "local_renderer", None) is not None:
+                self.renderer = self.local_renderer
+                if _lb is not None:
+                    self._backend = _lb
+                    self.backend = _lb
+            try:
+                _r = self._render(irs)
+            finally:
+                self.renderer = _saved_r
+                if hasattr(self, "_backend"):
+                    self._backend = _saved_b
+                self.backend = _saved_pub
+            batch = _r.get("batch") if isinstance(_r, dict) else _r
+            local_dir = wd / "assets" / "local_shots"
+            local_dir.mkdir(parents=True, exist_ok=True)
+            prefix = f"G-{self.episode_id}-"
+            rows = []
+            for o in self._outcomes_of(batch):
+                gid = str(getattr(o, "graph_id", ""))
+                sid = gid[len(prefix):] if gid.startswith(prefix) else gid
+                blob = None
+                for _n, _b in (getattr(o, "artifacts", {}) or {}).items():
+                    if isinstance(_b, (bytes, bytearray)):
+                        blob = bytes(_b)
+                        break
+                local_path = ""
+                if getattr(o, "ok", False) and blob:
+                    p = local_dir / f"{sid}.png"
+                    norm = self._normalize_cloud_image_b64(blob, p)
+                    local_path = str(norm or p)
+                rows.append({"shotId": sid, "ok": bool(getattr(o, "ok", False)),
+                             "local": local_path,
+                             "reason": str(getattr(o, "reason", ""))[:120]})
+            # 云端版路径：从 per_shot_artifacts 反查 assets/shots/<sid>/
+            cloud_root = wd / "assets" / "shots"
+            for r in rows:
+                hits = list((cloud_root / r["shotId"]).glob("*.png")) \
+                    if (cloud_root / r["shotId"]).is_dir() else []
+                r["cloud"] = str(hits[0]) if hits else ""
+            ok = [r for r in rows if r.get("local") and r.get("cloud")]
+            report = {"kind": "render.compare", "mode": "同镜（同一批 IR）",
+                      "shots": rows, "compared": len(ok), "total": len(rows),
+                      "note": "左云端 / 右本地；本地渲染不参与主流程产物"}
+            (_d := wd / "delivery").mkdir(parents=True, exist_ok=True)
+            import json as _j
+            (_d / "render_compare.json").write_text(
+                _j.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+            self._render_compare = report
+            print(f"  ▓ 对照：{len(ok)}/{len(rows)} 镜两边都有图")
+            self._build_compare_sheets(ok, _d)
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 同镜对照未完成：{type(exc).__name__}: {exc}")
+            self._render_compare = {"kind": "render.compare", "error": str(exc)[:160]}
+
+    def _normalize_cloud_image_b64(self, blob: bytes, path: Path) -> str:
+        """把本地渲染的字节写盘（本地尺寸已符合 IR，不归一，只负责落盘）。"""
+        try:
+            path.write_bytes(blob)
+            return str(path)
+        except Exception:                                     # noqa: BLE001
+            return ""
+
+    def _build_compare_sheets(self, rows: list, out_dir: Path) -> None:
+        """每张对照图 6 镜：左列云端、右列本地（ffmpeg xstack）。"""
+        try:
+            exe = "ffmpeg"
+            for _cand in (getattr(self, "ffmpeg", None),
+                          r"D:\AI\FFmpeg\bin\ffmpeg.exe",
+                          str(self._ffmpeg() or "")):
+                if _cand and Path(str(_cand)).is_file():
+                    exe = str(_cand)
+                    break
+            import subprocess as _sp
+            W, H = 640, 360
+            for sheet_i in range(0, len(rows), 6):
+                chunk = rows[sheet_i:sheet_i + 6]
+                if not chunk:
+                    continue
+                cmd = [exe, "-y", "-hide_banner", "-loglevel", "error"]
+                for r in chunk:
+                    cmd += ["-i", r["cloud"]] if r.get("cloud") else []
+                for r in chunk:
+                    cmd += ["-i", r["local"]] if r.get("local") else []
+                n = len(chunk)
+                parts = []
+                for i in range(n * 2):
+                    parts.append(f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
+                                 f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
+                labels = "".join(f"[v{i}]" for i in range(n * 2))
+                layout = []
+                for i in range(n):
+                    layout.append(f"0_{i * H}")          # 云端：左列
+                    layout.append(f"{W}_{i * H}")        # 本地：右列
+                parts.append(labels + f"xstack=inputs={n * 2}:layout={'|'.join(layout)}")
+                out = out_dir / f"render_compare_{sheet_i // 6 + 1}.jpg"
+                cmd += ["-filter_complex", ";".join(parts), "-frames:v", "1", str(out)]
+                _sp.run(cmd, check=True, capture_output=True, timeout=180)
+                print(f"  ▓ 对照图：{out.name}（{n} 镜，左云端/右本地）")
+        except Exception as exc:                              # noqa: BLE001
+            print(f"  ⚠️ 对照图拼装失败：{type(exc).__name__}: {exc}")
+
+    def _render_cloud_all(self, picked) -> dict:
+        """**整集**走云端图生图：每镜用角色锚点锁脸 + 统一画风（2026-11-14）。
+
+        与 `--render-model`（整集文生图）的区别：
+        - `--render-model`：每镜**纯文生图**，人脸靠文字描述，跨镜会漂
+        - 本方法：每镜以**锚点图**为参考做 `/images/edits`，同一张脸贯穿全集
+
+        产物按 `G-{episode}-{shotId}` 组织成 `CachedBatch`，与本地渲染的
+        下游完全一致（门禁/审片/缓存统计都能接）。
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        from little_crew.runtime.cached_render import CachedBatch, CacheOutcome
+        from little_crew.runtime import cloud_render as _cr
+
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            raise RuntimeError("cloud-all 需要 workdir（产物要落盘）")
+        wd = Path(str(wd))
+        anchors = _cr.load_anchors(wd)
+        # 仓库角色库兜底（跨集复用）
+        for cid, pth in _cr.load_anchors(Path(__file__).resolve().parents[3]).items():
+            anchors.setdefault(cid, pth)
+        # 用户显式指定：角色名 -> 锚点（优先于库里按 cid 的匹配）
+        for name, pth in (getattr(self, "cast_anchors", None) or {}).items():
+            anchors[str(name)] = str(pth)
+
+        style = str(getattr(self, "style_hint", "") or "")
+        out_dir = wd / "assets" / "cloud_shots"
+        rows = [{"shotId": str(getattr(s, "shot_id", "")), "score": 0,
+                 "reasons": ["cloud-all"]} for s in picked]
+        print(f"  云端整集：{len(rows)} 镜 · 锚点 {len(anchors)} 个"
+              + (f" · 画风「{style}」" if style else ""))
+        res = _cr.render_plan(
+            picked, rows, anchors, out_dir,
+            model=str(getattr(self, "cloud_model", "") or "") or _cr.DEFAULT_MODEL,
+            extra=style, workers=4)
+        outcomes: list[CacheOutcome] = []
+        prefix = f"G-{self.episode_id}-"
+        by_id = {r.get("shotId"): r for r in (res.get("records") or [])}
+        for s in picked:
+            sid = str(getattr(s, "shot_id", ""))
+            rec = by_id.get(sid) or {}
+            if rec.get("ok"):
+                p = Path(str(rec.get("out") or ""))
+                try:
+                    blob = p.read_bytes()
+                except Exception:                             # noqa: BLE001
+                    outcomes.append(CacheOutcome(
+                        graph_id=f"{prefix}{sid}", ok=False,
+                        failure="artifact-missing",
+                        reason=f"产物读不到：{p}"))
+                    continue
+                outcomes.append(CacheOutcome(
+                    graph_id=f"{prefix}{sid}", ok=True, from_cache=False,
+                    # 按 shotId 命名，与本地产物同一套规则（_materialize 会再去重命名）
+                    artifacts={f"{sid}.png": blob},
+                    seconds=float(rec.get("seconds") or 0.0)))
+            else:
+                outcomes.append(CacheOutcome(
+                    graph_id=f"{prefix}{sid}", ok=False,
+                    failure="render-failed",
+                    reason=str(rec.get("error") or "云端渲染失败")[:160]))
+        batch = CachedBatch(outcomes=tuple(outcomes))
+        ok_n = len(batch.succeeded)
+        print(f"  云端整集：完成 {ok_n}/{len(outcomes)} 镜"
+              + (f" · ⚠️ 失败 {len(batch.failed)}" if batch.failed else ""))
+        return {"batch": batch}
 
     def _materialize_batch(self, batch, picked) -> None:
         """把渲染产物**落到 workdir**：`assets/shots/<shotId>/<shotId>-<原文件名>`。

@@ -57,6 +57,55 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.25] — 2026-11-14（**首支 60 秒短片「最后一班」跑通**）
+
+### 成片（真机）
+
+```
+EF-LAST60C · 12 镜 · 清单 60.01s / 成片 56.8s（h264 832x480, 1.81MB）
+女主 = assets/characters/cover_lead/sheet.png（图生图锁脸）
+封面 = 选帧 + 叠加标题「最后一班」；视觉闸 6/12 抽审严重 0
+```
+
+### 新增能力（都为这条 60s 短片）
+
+| 能力 | 说明 |
+|---|---|
+`--story-file` | 剧本输入（原来写死内置传说） |
+`--shots-target N` | 目标镜数：35 镜 → **12 镜**（每场等距挑，保留顺序） |
+`--target-seconds N` | 目标时长：成比例缩到 60s（每镜夹 2~10s） |
+`--cloud-all` | **整集**云端图生图（每镜带锚点），不经过本地渲染 |
+`--cast-anchor NAME=PATH` | 角色名→锚点图；**自动读取同目录 `sheet.json` 的 appearance** 拼进提示词 |
+`--style-hint` | 统一画风提示（每镜都带） |
+`--compare-local` | 同镜对照：主流程产物不变，本地另渲一份 |
+`--vision-max / --qc-model` | 视觉闸抽检数与模型（默认改为 mimo：非推理、快） |
+
+### 关键发现：**只给图锚点不够，必须给文字外观约束**
+
+| 做法 | 结果 |
+|---|---|
+| 只给锚点图 | ❌ 黑色风衣+背包（与 cover_lead 完全不同） |
+| 锚点 + `appearance` 拼进提示词 + "禁止换装/改发型/加参考图没有的物件" | ✅ 12 镜服装/发型/耳饰一致 |
+
+### 踩到并修掉的坑
+
+1. **对照误用云端渲染器**：`_Runner.engine_backend()` 读的是 `self._backend`，只换 `renderer` 无效
+   → 32 张云端图白跑（**¥1.60**）。现在同时切 `renderer` + `_backend`。
+2. `--from render` 续跑 + `--accept-script`：60s 无对白短片过不了"3 分钟剧"的评分门槛（59.1 REVISE），
+   本次人工接受；后续应给短片单独阈值。
+3. 已知问题：成片阶段 **11/12 镜**（56.8s）—— 一镜静帧未进入片段计划，产物本身完整可解析，待查时序。
+
+### 新增文件
+
+- `research/episodes/最后一班/{story.txt,production-notes.md,cover.jpg,film_frames.jpg,compare_1/2.jpg,run-summary.json}`
+- `tools/compare_local_cloud.py`（B3 同镜对照独立工具：不重跑云端，本地 12 镜 105s）
+
+### 测试
+
+全量 **2660/2647 + 架构守卫 PASS**（episode_check 89 / cover 24 / cloud_episode 8 均绿）。
+
+---
+
 ## [0.4.0-beta.24] — 2026-11-14（**P0：清掉三个已知口子**）
 
 ### A3 两处被 `except` 吞掉的 NameError

@@ -194,6 +194,25 @@ def main(argv: list[str] | None = None) -> int:
                     help="启用配音轨（本机 breeze-tts-2，每句约 3~4 秒）")
     ap.add_argument("--dry-run", action="store_true",
                     help="不出图，只跑到分镜与桥接")
+    ap.add_argument("--story-file", default="",
+                    help="剧本源文件（UTF-8，[场N] 格式）；不给则用内置传说")
+    ap.add_argument("--shots-target", type=int, default=0,
+                    help="目标镜数（0=不约束）；60s 短片建议 12")
+    ap.add_argument("--vision-max", type=int, default=12,
+                    help="视觉闸最多抽检几镜（默认 12；时间紧可降到 6）")
+    ap.add_argument("--qc-model", default="mimo-v2.6-flash",
+                    help="质检视觉模型（默认 mimo：非推理、快；deepseek-flash 是推理模型会慢很多）")
+    ap.add_argument("--target-seconds", type=float, default=0.0,
+                    help="目标总时长（秒）；分镜排长了会成比例缩到它（60=一分钟短片）")
+    ap.add_argument("--cloud-all", action="store_true",
+                    help="整集走云端图生图（每镜用角色锚点锁脸），不经过本地渲染")
+    ap.add_argument("--cast-anchor", action="append", default=[],
+                    metavar="NAME=PATH",
+                    help="角色名=锚点图路径（可重复）；配合 --cloud-all 锁脸")
+    ap.add_argument("--compare-local", action="store_true",
+                    help="云端整集跑完后，用同一批 IR 本地再渲一遍做同镜对照（B3）")
+    ap.add_argument("--style-hint", default="",
+                    help="统一画风提示（拼进每镜云端提示词，保证一集风格一致）")
     ap.add_argument("--render-model", default="",
                     help="主链路渲染模型（默认 z-image-turbo；填云端模型如 "
                          "gpt-image-2.6-sunburst 即「整集用云端跑」）")
@@ -519,14 +538,14 @@ def main(argv: list[str] | None = None) -> int:
 
         _qc_client = None
         if args.llm:
-            _qc_client = LlmClient(getattr(args, "llm_model", "") or "deepseek-flash",
-                                   timeout_s=45)
+            _qc_client = LlmClient(getattr(args, "qc_model", "mimo-v2.6-flash")
+                                   or "mimo-v2.6-flash", timeout_s=45)
             print(f"  质检员：**真实视觉模型**（{_qc_client.model_id}）")
         else:
             print("  质检员：未绑（没有 LLM 客户端，视觉闸退回直调）")
         if _qc_client is not None:
             stubs["qc_inspector"] = _QC(client=_qc_client,
-                                        max_shots=int(getattr(args, "vision_shots", 12) or 12))
+                                        max_shots=int(getattr(args, "vision_max", 12) or 12))
     except Exception as _e_qc0:                                # noqa: BLE001
         print(f"  ⚠️ 质检员装配失败：{type(_e_qc0).__name__}: {_e_qc0}")
 
@@ -581,6 +600,38 @@ def main(argv: list[str] | None = None) -> int:
                                    checkpoint=ck)
         backend = be
 
+    # ---------- 对照用本地渲染器（B3）----------
+    # 主渲染器可能是云端（--render-model / --cloud-all）；对照必须显式用本地，
+    # 否则会把云端再跑一遍（第一次跑就白花了 ¥1.6）。
+    _local_renderer = None
+    if getattr(args, "compare_local", False) and not args.dry_run:
+        try:
+            from little_crew.runtime.backend_select import (
+                make_channel as _mk_ch2, pick_backend as _pick_be2)
+            from little_crew.runtime.cache import ContentCache as _CC2
+            from little_crew.runtime.cached_render import (
+                CachingRenderer as _CR2,
+                artifact_fetcher_for as _af2)
+            from little_crew.runtime.cache_measure import _null_compiler as _nc2
+            from little_crew.runtime.render import RenderSession as _RS2
+            from little_crew.runtime.checkpoint import RenderCheckpoint as _RC2
+
+            _spec2 = build_default_registry().get("z-image-turbo")
+            _be2 = _pick_be2(_spec2, args.backend)
+            _ch2 = _mk_ch2(_be2, timeout_s=1800)
+            _ok2, _why2 = _ch2.available()
+            if not _ok2:
+                print(f"  ⚠️ 对照已关闭：本地后端 {args.backend} 不可用（{_why2}）")
+            else:
+                _local_renderer = _CR2(
+                    _RS2(_ch2, _nc2()), _CC2(work / "cache_local"),
+                    fetcher=_af2(_ch2),
+                    checkpoint=_RC2(work / "checkpoint_local",
+                                    episode_id=args.episode_id))
+                print(f"  对照：本地渲染器就绪（{args.backend}）")
+        except Exception as _e2:                              # noqa: BLE001
+            print(f"  ⚠️ 对照本地渲染器构建失败：{type(_e2).__name__}: {_e2}")
+
     # ---------- 跑 ----------
     runner = _Runner(orch, renderer, episode_id=args.episode_id,
                      title=args.title, backend=backend)
@@ -620,6 +671,53 @@ def main(argv: list[str] | None = None) -> int:
     runner.character_sheets_enabled = bool(getattr(args, "char_sheets", False))
     runner.character_sheets_limit = int(getattr(args, "char_sheet_limit", 6) or 6)
     runner.character_sheet_style = str(getattr(args, "char_sheet_style", "") or "")
+    # ---- 「最后一班」60s：目标时长 / 云端整集 / 锚点 / 统一画风 ----
+    runner.target_seconds = float(getattr(args, "target_seconds", 0.0) or 0.0)
+    runner.shots_target = int(getattr(args, "shots_target", 0) or 0)
+    runner.vision_max_shots = int(getattr(args, "vision_max", 12) or 12)
+    runner.cloud_all = bool(getattr(args, "cloud_all", False))
+    runner.style_hint = str(getattr(args, "style_hint", "") or "")
+    runner.cloud_model = str(getattr(args, "render_model", "") or "")
+    _cast: dict[str, str] = {}
+    for _pair in (getattr(args, "cast_anchor", None) or []):
+        if "=" in str(_pair):
+            _n, _p = str(_pair).split("=", 1)
+            if _p and Path(_p).is_file():
+                _cast[_n.strip()] = _p.strip()
+            else:
+                print(f"  ⚠️ cast-anchor 路径不存在：{_p}")
+    runner.cast_anchors = _cast
+    # ---- 锚点外观自动注入（2026-11-14）----
+    # 只给图片锚点还不够：镜头描述里若写了别的服装/发型，模型会两边打架
+    # （第一次跑出来是黑色风衣+背包，与 cover_lead 的灰紫露肩装完全不同）。
+    # 这里把锚点同目录 `sheet.json` 的 appearance 拼进统一画风提示，并**明确禁止换装**。
+    _apis: list[str] = []
+    for _name, _pth in _cast.items():
+        try:
+            _meta = Path(_pth).with_name("sheet.json")
+            if _meta.is_file():
+                import json as _jc
+
+                _app = str((_jc.loads(_meta.read_text(encoding="utf-8")) or {}).get("appearance") or "")
+                if _app:
+                    _apis.append(f"「{_name}」固定外观：{_app}")
+        except Exception:                                     # noqa: BLE001
+            pass
+    if _apis:
+        runner.style_hint = (str(getattr(runner, "style_hint", "") or "")
+                             + "；" + "；".join(_apis)
+                             + "。每一镜的服装、发型、配饰必须与参考图完全一致，"
+                             "禁止换装、禁止改发型、禁止添加背包/外套等参考图没有的物件。")
+        print(f"  外观锁定：{len(_apis)} 个角色（来自 sheet.json）")
+
+    runner.compare_local = bool(getattr(args, "compare_local", False))
+    if _local_renderer is not None:
+        runner.local_renderer = _local_renderer
+        runner.local_backend = _be2
+    elif getattr(args, "compare_local", False):
+        runner.compare_local = False          # 没有本地渲染器就不要空跑
+    if _cast:
+        print(f"  角色锚点：{'、'.join(f'{k}→{Path(v).name}' for k, v in _cast.items())}")
     runner.character_sheet_proportion = str(getattr(args, "char_sheet_proportion", "adult") or "adult")
     runner.character_sheet_refine = bool(getattr(args, "char_sheet_refine", False))
     runner.character_sheet_qc = bool(getattr(args, "char_sheet_qc", False))
@@ -689,7 +787,17 @@ def main(argv: list[str] | None = None) -> int:
     #
     # 所以这里捕获三类收尾：Ctrl+C、异常、主动停（`--stop-after`）。
     try:
-        res = runner.run(LAVENDER_LEGEND, limit=args.limit)
+        # ---- 剧本来源（2026-11-14）----
+        # 默认内置传说；`--story-file` 换成任意 UTF-8 剧本文本（[场N] 格式）。
+        _src = LAVENDER_LEGEND
+        if getattr(args, "story_file", ""):
+            _sf = Path(args.story_file)
+            if not _sf.is_file():
+                print(f"  ❌ 剧本文件不存在：{_sf}")
+                return 1
+            _src = _sf.read_text(encoding="utf-8")
+            print(f"  剧本来源：{_sf}（{len(_src)} 字，{_src.count('[场')} 场）")
+        res = runner.run(_src, limit=args.limit)
     except (KeyboardInterrupt, StopRequested) as exc:
         from little_crew.runtime.episode import StopRequested as _SR  # noqa: F401
         from little_crew.runtime.partial_report import (
