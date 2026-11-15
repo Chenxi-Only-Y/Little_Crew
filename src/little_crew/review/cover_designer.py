@@ -405,9 +405,252 @@ def _escape_drawtext(s: str) -> str:
             .replace(":", "\\:").replace("%", "\\%").replace(",", "\\,"))
 
 
+# ==========================================================================
+# 标题艺术字（2026-11-15）：参考漫剧封面的"粗体 + 金描边 + 缎带 + 角标"
+# ==========================================================================
+
+#: 标题风格 -> 候选字体（按优先级）。找不到就降级到通用中文字体。
+#:
+#: `banner` 用华文琥珀（圆胖粗体，最接近漫剧封面常用字）；
+#: `brush` 用行楷（笔锋）；`seal` 用隶书/新魏；`display` 用粗黑宋。
+TITLE_FONT_CANDIDATES: dict[str, tuple[str, ...]] = {
+    "banner": ("STHUPO.TTF", "STXINWEI.TTF", "msyhbd.ttc"),
+    "brush": ("STXINGKA.TTF", "FZSTK.TTF", "STXINWEI.TTF", "STLITI.TTF"),
+    "seal": ("STLITI.TTF", "STXINWEI.TTF", "STHUPO.TTF", "STXINGKA.TTF"),
+    "display": ("STXINWEI.TTF", "msyhbd.ttc", "STHUPO.TTF"),
+}
+
+#: 支持的艺术字风格（`classic` = 2026-11 之前的纯 drawtext，可回退）
+TITLE_STYLES = ("banner", "brush", "seal", "display", "classic")
+
+
+def _ffprobe() -> str:
+    return str(os.environ.get("LITTLE_CREW_FFPROBE")
+               or r"D:\AI\FFmpeg\bin\ffprobe.exe")
+
+
+def find_title_font(style: str = "banner") -> str:
+    """按风格找艺术字体；找不到退回 `find_font()`。"""
+    env = str(os.environ.get("LITTLE_CREW_COVER_TITLE_FONT") or "").strip()
+    if env and Path(env).is_file():
+        return str(Path(env))
+    key = str(style or "banner").lower()
+    if key not in TITLE_FONT_CANDIDATES:
+        key = "banner"
+    names = [n.lower() for n in TITLE_FONT_CANDIDATES[key]]
+    # ⚠️ 必须**按候选优先级**外层循环：先按目录扫会把同目录里更早出现的
+    # 备用字体（msyhbd）先命中，导致"指定了琥珀却用了雅黑"（2026-11-15 实测）。
+    dirs = list(font_dirs())
+    for name in names:
+        for d in dirs:
+            try:
+                for f in d.rglob("*"):
+                    if f.is_file() and f.name.lower() == name:
+                        return str(f)
+            except Exception:                                 # noqa: BLE001
+                continue
+    return find_font()
+
+
+def _ff_font(font_file: str) -> str:
+    return str(font_file).replace("\\", "/").replace(":", "\\:")
+
+
+def _ff_esc(s: str) -> str:
+    return (str(s).replace("\\", "\\\\").replace("'", "\u2019")
+            .replace(":", "\\:").replace("%", "\\%").replace(",", "\\,"))
+
+
+def _probe_size(p: str | Path) -> tuple[int, int]:
+    r = subprocess.run(
+        [_ffprobe(), "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=width,height", "-of", "csv=p=0", str(p)],
+        capture_output=True, text=True, check=False)
+    try:
+        w, h = (r.stdout or "1280,720").strip().splitlines()[0].split(",")[:2]
+        return int(w), int(h)
+    except Exception:                                         # noqa: BLE001
+        return 1280, 720
+
+
+def _run_vf(out: Path, W: int, H: int, parts: list[str]) -> dict:
+    vf = ",".join(parts) + ",colorkey=0x000000:0.16:0.04"
+    cmd = [_ffmpeg(), "-y", "-hide_banner", "-loglevel", "error",
+           "-f", "lavfi", "-i", f"color=c=black:s={W}x{H}",
+           "-vf", vf, "-frames:v", "1", str(out)]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+    except subprocess.CalledProcessError as exc:              # noqa: PERF203
+        err = (exc.stderr or b"").decode("utf-8", errors="replace")[:200]
+        return {"ok": False, "error": f"标题卡生成失败：{err}"}
+    except Exception as exc:                                  # noqa: BLE001
+        return {"ok": False, "error": f"标题卡生成失败：{type(exc).__name__}: {exc}"}
+    return {"ok": out.is_file(), "card": str(out)}
+
+
+def _banner_parts(chars: list[str], W: int, H: int, A: str,
+                  subtitle: str, badge: str) -> tuple[list[str], int, list[str]]:
+    if len(chars) > 6:
+        half = (len(chars) + 1) // 2
+        lines = ["".join(chars[:half]), "".join(chars[half:])]
+    elif len(chars) > 4:
+        lines = ["".join(chars)]
+    else:
+        lines = ["".join(chars)]
+    fs = int(min(W * 0.115, H * 0.19))
+    if len(lines) > 1:
+        fs = int(fs * 0.86)
+    step = int(fs * 1.22)
+    block_h = step * len(lines)
+    cy0 = int(H * 0.60) - block_h // 2
+    pad = int(W * 0.055)
+    band_y = cy0 - int(fs * 0.34)
+    band_h = block_h + int(fs * 0.68)
+    parts = [
+        f"drawbox=x={pad}:y={band_y}:w={W - pad * 2}:h={band_h}:color=#120C10@0.52:t=fill",
+        f"drawbox=x={pad}:y={band_y}:w={W - pad * 2}:h=2:color=#D9B25F@0.95:t=fill",
+        f"drawbox=x={pad}:y={band_y + band_h - 2}:w={W - pad * 2}:h=2:"
+        f"color=#D9B25F@0.95:t=fill",
+    ]
+    for i, line in enumerate(lines):
+        y = cy0 + i * step
+        text_w = len(line) * fs
+        x = max(4, (W - text_w) // 2)
+        base = f"fontfile='{A}':text='{_ff_esc(line)}':fontsize={fs}:x={x}:y={y}"
+        parts += [
+            f"drawtext={base}:fontcolor=#FFE9B0@0.20:borderw=18:"
+            f"bordercolor=#FFD98A@0.20",
+            f"drawtext={base}:fontcolor=#2B1608:borderw=12:bordercolor=#2B1608",
+            f"drawtext={base}:fontcolor=#C99733:x={x + 4}:y={y + 5}",
+            f"drawtext={base}:fontcolor=#F7E7B0",
+        ]
+    if subtitle:
+        sub = " ".join(str(subtitle).strip().upper())
+        sfs = max(14, int(fs * 0.20))
+        parts.append(f"drawtext=fontfile='{A}':text='{_ff_esc(sub)}':"
+                     f"fontsize={sfs}:fontcolor=#E8DBC0@0.95:"
+                     f"x={max(4, (W - len(sub) * sfs // 2) // 2)}:"
+                     f"y={band_y + band_h + int(fs * 0.18)}:"
+                     f"shadowcolor=#2B2118@0.6:shadowx=1:shadowy=1")
+    if badge:
+        btxt = str(badge)
+        bfs = max(12, int(fs * 0.22))
+        # 角标宽度按**文字实际长度**算（否则「60 秒短片」会被裁掉 — 实测）
+        bw = max(int(fs * 1.15), bfs * len(btxt) + int(fs * 0.42))
+        bh = int(fs * 0.40)
+        bx, by = pad, band_y - bh
+        parts += [
+            f"drawbox=x={bx}:y={by}:w={bw}:h={bh}:color=#8E2A23@0.95:t=fill",
+            f"drawbox=x={bx}:y={by}:w={bw}:h={bh}:color=#E8C87A@0.9:t=2",
+            f"drawtext=fontfile='{A}':text='{_ff_esc(btxt)}':fontsize={bfs}:"
+            f"fontcolor=#F7F0E3:x={bx + (bw - len(btxt) * bfs) // 2}:"
+            f"y={by + (bh - bfs) // 2}",
+        ]
+    return parts, fs, lines
+
+
+def _brush_parts(chars: list[str], W: int, H: int, A: str,
+                 subtitle: str) -> tuple[list[str], int]:
+    n = len(chars)
+    char_size = int(min(W * 0.135, H * 0.17))
+    step = int(char_size * 1.14)
+    block_h = step * n
+    if block_h > H * 0.74:
+        char_size = max(24, int(H * 0.74 / (n * 1.14)))
+        step = int(char_size * 1.14)
+        block_h = step * n
+    cx = int(W * 0.16)
+    x0 = cx - char_size // 2
+    y0 = max(int(H * 0.06), int(H * 0.82) - block_h)
+    parts = [
+        f"drawbox=x={x0 - int(char_size * 0.62)}:y={y0 - int(char_size * 0.18)}:"
+        f"w=2:h={block_h + int(char_size * 0.30)}:color=#C9A227@0.80:t=fill",
+        f"drawbox=x={x0 - int(char_size * 0.62) - 7}:y={y0 - int(char_size * 0.12)}:"
+        f"w=1:h={block_h + int(char_size * 0.20)}:color=#C9A227@0.45:t=fill",
+    ]
+    for i, ch in enumerate(chars):
+        y = y0 + i * step
+        base = f"fontfile='{A}':text='{_ff_esc(ch)}':fontsize={char_size}:x={x0}:y={y}"
+        parts += [
+            f"drawtext={base}:fontcolor=#FFD98A@0.32:borderw=8:"
+            f"bordercolor=#FFD98A@0.28",
+            f"drawtext={base}:fontcolor=#C9A227:x={x0 + 3}:y={y + 3}",
+            f"drawtext={base}:fontcolor=#F7F0E3:borderw=3:bordercolor=#3B2A20",
+        ]
+    sw = int(char_size * 0.82)
+    sh = int(sw * 1.42)
+    sx = W - sw - int(W * 0.045)
+    sy = H - sh - int(H * 0.075)
+    parts.append(f"drawbox=x={sx}:y={sy}:w={sw}:h={sh}:color=#8E2A23@0.96:t=fill")
+    fs = int(sw * 0.42)
+    for j, ch in enumerate("小剧组"):
+        cy = sy + int(sh * (j + 0.5) / 3) - fs // 2
+        parts.append(f"drawtext=fontfile='{A}':text='{_ff_esc(ch)}':fontsize={fs}:"
+                     f"fontcolor=#F7F0E3:x={sx + (sw - fs) // 2}:y={cy}")
+    if subtitle:
+        sub = " ".join(str(subtitle).strip().upper())
+        sfs = max(13, int(char_size * 0.20))
+        parts.append(f"drawtext=fontfile='{A}':text='{_ff_esc(sub)}':fontsize={sfs}:"
+                     f"fontcolor=#E8DBC0@0.92:x={x0}:"
+                     f"y={min(H - sfs - 8, y0 + block_h + int(char_size * 0.26))}:"
+                     f"shadowcolor=#2B2118@0.6:shadowx=1:shadowy=1")
+    return parts, char_size
+
+
+def build_title_card(title: str, out_dir: str | Path, *, width: int, height: int,
+                     style: str = "banner", subtitle: str = "", badge: str = "",
+                     font: str = "") -> dict:
+    """生成透明标题卡。`style=banner`（横排缎带）/`brush`（竖排行楷）。"""
+    chars = [c for c in str(title or "").strip() if not c.isspace()]
+    if not chars:
+        return {"ok": False, "error": "标题为空"}
+    font_file = font or find_title_font(style)
+    if not font_file:
+        return {"ok": False, "error": "找不到中文字体（可用 LITTLE_CREW_COVER_TITLE_FONT 指定）"}
+    W, H = int(width), int(height)
+    out = Path(str(out_dir))
+    out.mkdir(parents=True, exist_ok=True)
+    card = out / "title_card.png"
+    A = _ff_font(font_file)
+    if str(style).lower() == "brush":
+        parts, size = _brush_parts(chars, W, H, A, subtitle)
+        lines = ["".join(chars)]
+    else:
+        parts, size, lines = _banner_parts(chars, W, H, A, subtitle, badge)
+    rep = _run_vf(card, W, H, parts)
+    if not rep.get("ok"):
+        return rep
+    return {"ok": True, "card": str(card), "font": Path(font_file).name,
+            "size": size, "chars": len(chars), "lines": lines,
+            "style": str(style).lower()}
+
+
+def compose_poster(cover: str | Path, card: str | Path, out: str | Path,
+                   *, width: int, height: int) -> dict:
+    """标题卡合成：左下压暗遮罩 + 胶片颗粒。"""
+    W, H = int(width), int(height)
+    scrim = (f"color=c=black:s={W}x{H},format=rgba,"
+             f"geq=r=0:g=0:b=0:a='clip(255*(0.62*pow(Y/H\\,2.2)+0.28*(1-X/(W*0.9)))\\,0\\,255)'")
+    fc = ("[0:v][1:v]overlay=0:0[b];[b][2:v]overlay=0:0,"
+          "noise=alls=6:allf=t+u[v]")
+    cmd = [_ffmpeg(), "-y", "-hide_banner", "-loglevel", "error",
+           "-i", str(cover), "-f", "lavfi", "-i", scrim,
+           "-i", str(card), "-filter_complex", fc, "-map", "[v]",
+           "-frames:v", "1", str(out)]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+    except subprocess.CalledProcessError as exc:              # noqa: PERF203
+        err = (exc.stderr or b"").decode("utf-8", errors="replace")[:200]
+        return {"ok": False, "error": f"合成失败：{err}"}
+    except Exception as exc:                                  # noqa: BLE001
+        return {"ok": False, "error": f"合成失败：{type(exc).__name__}: {exc}"}
+    return {"ok": Path(str(out)).is_file(), "out": str(out)}
+
+
 def add_title(cover_path: str | Path, title: str, out_path: str | Path | None = None,
               *, font: str = "", size: int = 0, color: str = "white",
-              position: str = "left") -> dict:
+              position: str = "left", style: str = "banner",
+              subtitle: str = "", badge: str = "") -> dict:
     """在封面上**叠加标题**（ffmpeg drawtext）。返回 `{ok, out, font, size}`。
 
     为什么后合成而不是让模型写：**中文文字渲染不稳定**（尤其长标题会糊/错字）；
@@ -419,6 +662,24 @@ def add_title(cover_path: str | Path, title: str, out_path: str | Path | None = 
     text = str(title or "").strip()
     if not text:
         return {"ok": False, "error": "标题为空"}
+    # ---- 艺术字（2026-11-15）：banner/brush 等 -> 生成透明卡再合成 ----
+    if str(style or "").lower() in TITLE_STYLES and \
+            str(style or "").lower() != "classic":
+        dst0 = Path(str(out_path)) if out_path else src.with_name("cover_titled.png")
+        w0, h0 = _probe_size(src)
+        card = build_title_card(text, dst0.parent, width=w0, height=h0,
+                                style=str(style).lower(), subtitle=subtitle,
+                                badge=badge, font=font)
+        if not card.get("ok"):
+            return card
+        comp = compose_poster(src, card["card"], dst0, width=w0, height=h0)
+        if not comp.get("ok"):
+            return comp
+        return {"ok": dst0.is_file(), "out": str(dst0), "shape": "poster",
+                "style": str(style).lower(), "font": card.get("font"),
+                "size": card.get("size"), "title": text,
+                "card": card.get("card"), "subtitle": str(subtitle or ""),
+                "badge": str(badge or "")}
     font_file = font or find_font()
     if not font_file:
         return {"ok": False, "error": "找不到中文字体（可用 LITTLE_CREW_COVER_FONT 指定）"}
@@ -531,15 +792,233 @@ def generate_cover(ref_images: Iterable[str | Path], out_dir: str | Path, *,
         return report
 
 
+# ==========================================================================
+# 生成式海报（2026-11-15）：让模型**直接把标题画进封面**
+# ==========================================================================
+#
+# 为什么换这条路：ffmpeg 叠字虽然字形 100% 正确，但"艺术字感"不够
+# （用户反馈"太正规呆板"）。实测 gpt-image-2.6 直接画的标题有金属渐变、
+# 厚描边、外发光、缎带、角标，观感接近平台热门封面。
+#
+# 代价与纪律：
+# - 每张 ¥0.05；默认 2 个变体（¥0.10），失败可回退到 ffmpeg 叠字
+# - 标题文字必须**逐字**写进 prompt 并强调"字形正确、不糊不改字"
+# - 生成后**不裁切不留字**：画面自带完整构图
+
+_COVER_POSTER_PROMPT = """\
+以参考帧为基础做电影海报。**严格保持参考图的画风、渲染质感、光线、色调与人物形象
+完全不变**：同一个角色、同一套服装、同样的场景氛围与光影；不要重新设计人物，
+不要改变脸型五官，不要改变服装，不要加塑料高光/磨皮/发光特效。
+{character}{story}{style}
+{layout}
+除此之外不要添加任何图形、缎带、角标、水印，不要金色渐变、不要彩色描边光效。
+整体安静、克制、低饱和电影感，保留胶片颗粒。
+"""
+
+#: 海报变体 -> (版式说明)
+POSTER_VARIANTS: dict[str, str] = {
+    "cine": (
+        "版式：保持原画面构图，在画面下方约 1/5 处、左对齐写简体中文标题「{title}」，"
+        "字体用**细衬线宋体**（不是黑体、不要金色、不要渐变、不要描边光效），"
+        "颜色为柔和的象牙白，字号克制（约占画面宽度的 1/4），带极淡的暗色投影。"
+        "{subtitle}"
+    ),
+    "cine_vertical": (
+        "版式：保持原画面构图，在画面右侧留白处**竖排**写简体中文标题「{title}」，"
+        "细衬线宋体、象牙白、字号克制、字距略宽。{subtitle}"
+    ),
+}
+
+
+def poster_prompt(*, title: str, subtitle: str = "", badge: str = "",
+                  character: str = "", story: str = "", style: str = "",
+                  variant: str = "cine") -> str:
+    """拼生成式海报 prompt（克制电影风格；标题逐字写清）。"""
+    v = str(variant or "cine")
+    layout = POSTER_VARIANTS.get(v, POSTER_VARIANTS["cine"])
+    sub_line = (f"标题下方一行极小的英文「{str(subtitle).upper()}」，字距略拉开。"
+                if subtitle else "")
+    if v == "cine_vertical" and subtitle:
+        sub_line = (f"标题下方**竖排**英文小字「{str(subtitle).upper()}」。")
+    layout = layout.replace("{title}", str(title or "标题")).replace(
+        "{subtitle}", sub_line)
+    return _COVER_POSTER_PROMPT.format(
+        character=(f"角色设定：{character}。" if character else ""),
+        story=(f"故事氛围：{story}。" if story else ""),
+        style=(f"视觉风格：{style}。" if style else ""),
+        layout=layout,
+    )
+
+
+def _edit_image_call(ref_path: str | Path, prompt: str, *,
+                     size: str, out_path: str | Path,
+                     model: str = DEFAULT_GEN_MODEL,
+                     timeout_s: float = 900) -> dict:
+    """调 `/images/edits` 生成一张图（review 层本地实现，**不 import runtime**）。
+
+    ⚠️ 架构约束（R1）：review 层不能 import runtime —— 否则反向依赖被守卫拦下
+    （2026-11-15 实测：封面设计师直接借 runtime.sudorelay_edits 当场违规）。
+    所以这里只用 `net` 与 `config`，与 `generate_cover` 同一套调用形态。
+    """
+    import base64
+    import time
+
+    from little_crew import net
+    from little_crew.config import env_value
+
+    rep: dict = {"ok": False}
+    key = str(env_value("SUDORELAY_API_KEY", "") or "")
+    if not key:
+        rep["error"] = "缺少 SUDORELAY_API_KEY"
+        return rep
+    ref = Path(str(ref_path))
+    if not ref.is_file():
+        rep["error"] = f"参考图不存在：{ref}"
+        return rep
+    data = ref.read_bytes()
+    ctype = "image/png" if data[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
+    t0 = time.time()
+    try:
+        raw = net.post_multipart(
+            "https://api.sudorelay.com/v1/images/edits",
+            {"model": model, "prompt": prompt, "size": size, "n": "1"},
+            {"image": (f"ref.{ctype.split('/')[-1]}", data)},
+            headers={"Authorization": f"Bearer {key}",
+                     "User-Agent": "OpenAI/Python 1.0"}, timeout=timeout_s)
+        obj = json.loads(raw.decode("utf-8", errors="replace"))
+        item = (obj.get("data") or [{}])[0]
+        img = None
+        if item.get("b64_json"):
+            img = base64.b64decode(item["b64_json"])
+        elif item.get("url"):
+            with net.urlopen(net.urllib.request.Request(
+                    item["url"], headers={"User-Agent": "OpenAI/Python 1.0"}),
+                    timeout=timeout_s) as rr:
+                img = rr.read()
+        if not img:
+            rep["error"] = "响应里没有图片"
+            return rep
+        dst = Path(str(out_path))
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(img)
+        rep.update({"ok": True, "out": str(dst), "seconds": round(time.time() - t0, 1),
+                    "bytes": len(img), "model": model})
+        return rep
+    except Exception as exc:                                  # noqa: BLE001
+        rep["error"] = f"{type(exc).__name__}: {exc}"
+        rep["seconds"] = round(time.time() - t0, 1)
+        return rep
+
+
+def generate_poster(ref_path: str | Path, out_dir: str | Path, *,
+                    title: str, subtitle: str = "", badge: str = "",
+                    character: str = "", story: str = "", style: str = "",
+                    model: str = DEFAULT_GEN_MODEL, size: str = "1536x1024",
+                    variants: int = 2, editor: Any = None) -> dict:
+    """以参考帧生成成品海报（模型直接写标题）。返回报告，**不抛**。
+
+    `editor` 可注入（测试用）：`(ref, prompt, *, size, out_path) -> dict`。
+    """
+    out = Path(str(out_dir))
+    out.mkdir(parents=True, exist_ok=True)
+    rep: dict = {"kind": "cover.poster", "ok": False, "mode": "poster",
+                 "model": model, "size": size, "variants": [],
+                 "style": str(style or "")}
+    ref = Path(str(ref_path))
+    if not ref.is_file():
+        rep["error"] = f"参考帧不存在：{ref}"
+        return rep
+    edit = editor or (lambda r, p, *, size, out_path:
+                      _edit_image_call(r, p, size=size, out_path=out_path,
+                                       model=model))
+    n = max(1, min(4, int(variants or 1)))
+    names = list(POSTER_VARIANTS.keys())
+    first_ok: Path | None = None
+    for i in range(n):
+        variant = names[i % len(names)]
+        prompt = poster_prompt(title=title, subtitle=subtitle, badge=badge,
+                               character=character, story=story, style=style,
+                               variant=variant)
+        dst = out / f"cover_poster_{i + 1}_{variant}.png"
+        try:
+            res = edit(ref, prompt, size=size, out_path=dst)
+        except Exception as exc:                              # noqa: BLE001
+            res = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        item = {"variant": variant, "prompt": prompt,
+                "ok": bool(res.get("ok")), "out": str(res.get("out") or dst),
+                "seconds": res.get("seconds"), "bytes": res.get("bytes"),
+                "error": res.get("error")}
+        rep["variants"].append(item)
+        if item["ok"] and first_ok is None:
+            first_ok = Path(str(item["out"]))
+    if first_ok and first_ok.is_file():
+        final = out / "cover.png"
+        try:
+            final.write_bytes(first_ok.read_bytes())
+        except Exception as exc:                              # noqa: BLE001
+            rep["error"] = f"复制封面失败：{exc}"
+            return rep
+        rep.update({"ok": True, "out": str(final), "cover": str(final),
+                    "source": str(first_ok),
+                    "okVariants": sum(1 for v in rep["variants"] if v["ok"]),
+                    "title": str(title), "titleStyle": "model-cine",
+                    "subtitle": str(subtitle or "")})
+    else:
+        rep["error"] = "所有变体都生成失败"
+    return rep
+
+
 def build_cover(ref_images: Iterable[str | Path], shot_images: Mapping[str, str],
                 out_dir: str | Path, *, mode: str = "select", client: Any = None,
                 title: str = "", character: str = "", story: str = "",
                 style: str = "", title_mode: str = "overlay",
+                title_style: str = "banner", subtitle: str = "",
+                badge: str = "", variants: int = 2,
+                poster_editor: Any = None,
                 max_candidates: int = DEFAULT_MAX_CANDIDATES) -> dict:
     """统一入口：`mode="select"` 选帧 / `mode="generate"` 生成。"""
     tmode = str(title_mode or "overlay").lower()
     if tmode not in TITLE_MODES:
         tmode = "overlay"
+    # ---- 生成式海报（2026-11-15）：模型直接写标题 ----
+    if str(mode).lower() == "poster":
+        # 1) 先选一帧作为参考（VLM 选帧；没 client 就取第一张可用图）
+        picked_frame = ""
+        shot_imgs = {str(k): str(v) for k, v in (shot_images or {}).items()
+                     if Path(str(v)).is_file()}
+        if shot_imgs:
+            if client is not None:
+                sel = select_cover(shot_imgs, out_dir, client=client, title="")
+                picked_frame = str(sel.get("cover") or sel.get("out") or "")                     if sel.get("ok") else ""
+            if not picked_frame:
+                picked_frame = next(iter(shot_imgs.values()))
+        refs2 = [str(r) for r in (ref_images or ()) if Path(str(r)).is_file()]
+        poster_ref = picked_frame or (refs2[0] if refs2 else "")
+        rep = generate_poster(
+            poster_ref, out_dir, title=title, subtitle=subtitle, badge=badge,
+            character=character, story=story, style=style,
+            variants=max(1, int(variants or 2)), editor=poster_editor)
+        rep["mode"] = "poster"
+        rep["referenceFrame"] = poster_ref
+        if rep.get("ok"):
+            raw = Path(str(out_dir)) / "cover_raw.png"
+            try:
+                if poster_ref and Path(poster_ref).is_file():
+                    raw.write_bytes(Path(poster_ref).read_bytes())
+                    rep["coverRaw"] = str(raw)
+            except Exception:                                 # noqa: BLE001
+                pass
+            return rep
+        # 2) 失败回退：选帧 + ffmpeg 叠字（保证交付不断）
+        rep["fallback"] = "ffmpeg-overlay"
+        if picked_frame:
+            fb = add_title(picked_frame, title, out_path=Path(str(out_dir)) / "cover.png",
+                           style="banner", subtitle=subtitle, badge=badge)
+            if fb.get("ok"):
+                rep.update({"ok": True, "out": fb.get("out"),
+                            "cover": fb.get("out"), "fallback": "ffmpeg-overlay",
+                            "titleStyle": "poster-fallback"})
+        return rep
     if str(mode).lower() == "generate":
         rep = generate_cover(ref_images, out_dir, character=character,
                              story=story, style=style, title=title,
@@ -583,8 +1062,17 @@ def build_cover(ref_images: Iterable[str | Path], shot_images: Mapping[str, str]
                     base.replace(raw)
                 except Exception:                             # noqa: BLE001
                     raw = base
-            titled = add_title(raw, title, out_path=final)
-            rep["title"] = titled
+            titled = add_title(raw, title, out_path=final,
+                               style=str(title_style or "banner"),
+                               subtitle=str(subtitle or ""),
+                               badge=str(badge or ""))
+            rep["title"] = titled          # 叠字报告（F6 依赖：ok/out/font）
+            rep["titleText"] = title
+            rep["titleStyle"] = str(title_style or "banner")
+            if subtitle:
+                rep["subtitle"] = str(subtitle)
+            if badge:
+                rep["badge"] = str(badge)
             if titled.get("ok"):
                 rep["cover"] = str(final)
                 rep["coverRaw"] = str(raw)

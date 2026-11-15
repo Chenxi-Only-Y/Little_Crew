@@ -142,8 +142,20 @@ def build_parser() -> argparse.ArgumentParser:
                     help="目标镜数（0=不约束）；60s 短片建议 12")
     se.add_argument("--target-seconds", type=float, default=0.0,
                     dest="target_seconds", help="目标总时长（秒）")
-    se.add_argument("--cover", action="store_true", help="生成封面（选帧 + 叠标题）")
+    se.add_argument("--cover", action="store_true",
+                    help="生成封面（默认生成式海报：模型直接画标题）")
+    se.add_argument("--cover-mode", default="poster",
+                    choices=("poster", "select", "generate"), dest="cover_mode",
+                    help="封面模式：poster=模型直接生海报（默认）/ select=选帧+叠字 / generate=图生图无标题")
+    se.add_argument("--cover-variants", type=int, default=2, dest="cover_variants",
+                    help="生成式海报变体数（每张 ¥0.05）")
     se.add_argument("--cover-title", default="", dest="cover_title")
+    se.add_argument("--cover-title-style", default="banner",
+                    choices=("banner", "brush", "seal", "display", "classic"),
+                    dest="cover_title_style",
+                    help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带）")
+    se.add_argument("--cover-subtitle", default="", dest="cover_subtitle")
+    se.add_argument("--cover-badge", default="", dest="cover_badge")
     se.add_argument("--char-sheets", action="store_true", dest="char_sheets",
                     help="生成角色四视图设定板")
     se.add_argument("--char-sheet-style", default="", dest="char_sheet_style")

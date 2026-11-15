@@ -170,10 +170,19 @@ def main(argv: list[str] | None = None) -> int:
                     help="生成封面（默认从成片选帧；--cover-mode generate 则用图生图生成）")
     ap.add_argument("--cover-title", default="",
                     help="封面标题（默认用 --title）；overlay 由 ffmpeg 叠加，draw 让模型直接写")
+    ap.add_argument("--cover-title-style", default="banner",
+                    choices=("banner", "brush", "seal", "display", "classic"),
+                    help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带；brush=竖排行楷）")
+    ap.add_argument("--cover-subtitle", default="",
+                    help="封面英文副标题（字距自动拉开，如 THE LAST TRAIN）")
+    ap.add_argument("--cover-badge", default="",
+                    help="封面角标（如「第 1 季」）")
     ap.add_argument("--cover-title-mode", default="overlay",
                     choices=["overlay", "draw", "none"],
                     help="标题方式：overlay=后期叠字（推荐，字形可控）/ draw=模型画 / none=不加")
-    ap.add_argument("--cover-mode", default="select", choices=["select", "generate"],
+    ap.add_argument("--cover-variants", type=int, default=2,
+                    help="生成式海报的变体数（每张 ¥0.05；默认 2）")
+    ap.add_argument("--cover-mode", default="poster", choices=["select", "generate"],
                     help="封面模式：select=从成片选帧 / generate=用角色设定图生成")
     ap.add_argument("--char-sheet-qc", action="store_true",
                     help="用 VLM 对设定板逐条判质检表（12 条，不通过/未确认会记录）")
@@ -706,9 +715,16 @@ def main(argv: list[str] | None = None) -> int:
     runner.cloud_model = (str(getattr(args, "cloud_model", "") or "")
                           or str(getattr(args, "render_model", "") or ""))
     runner.cover_enabled = bool(getattr(args, "cover", False))
-    runner.cover_mode = str(getattr(args, "cover_mode", "select") or "select")
+    runner.cover_mode = str(getattr(args, "cover_mode", "poster") or "poster")
+    runner.cover_variants = int(getattr(args, "cover_variants", 2) or 2)
     runner.cover_title = str(getattr(args, "cover_title", "") or "")
     runner.cover_title_mode = str(getattr(args, "cover_title_mode", "overlay") or "overlay")
+    runner.cover_title_style = str(getattr(args, "cover_title_style", "banner") or "banner")
+    runner.cover_subtitle = str(getattr(args, "cover_subtitle", "") or "")
+    runner.cover_badge = str(getattr(args, "cover_badge", "") or "")
+    runner.cover_title_style = str(getattr(args, "cover_title_style", "banner") or "banner")
+    runner.cover_subtitle = str(getattr(args, "cover_subtitle", "") or "")
+    runner.cover_badge = str(getattr(args, "cover_badge", "") or "")
     runner.title = str(getattr(args, "title", "") or "")
     runner.character_sheet_qc_strict = bool(getattr(args, "char_sheet_qc_strict", False))
     runner.storyboard_retries = int(getattr(args, 'storyboard_retries', 2))

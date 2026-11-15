@@ -39,7 +39,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("三层调用协议", [sys.executable, "-m", "little_crew.agent.selfcheck"], 30),
     ("质检员", [sys.executable, "-m", "little_crew.review.qc_inspector_check"], 14),
     ("设定板质检", [sys.executable, "-m", "little_crew.review.sheet_qc_check"], 19),
-    ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 24),
+    ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 38),
     ("后期统筹", [sys.executable, "-m", "little_crew.runtime.post_production_check"], 14),
     ("云端整集回归", [sys.executable, "-m", "little_crew.runtime.cloud_episode_check"], 10),
     ("运行选项装配", [sys.executable, "-m", "little_crew.runtime.run_options_check"], 18),

@@ -152,7 +152,7 @@ def main() -> int:
         d2 = Path(td2)
         base = d2 / "base.png"
         _mk_image(base)
-        titled = CD.add_title(base, "小剧组 · 第一集")
+        titled = CD.add_title(base, "小剧组 · 第一集", style="classic")
         check("F1 ★★★ 中文字体可发现（跨平台探测）", bool(CD.find_font()), CD.find_font())
         check("F2 ★★★ 叠标题成功且字号按画面自适应",
               titled.get("ok") and int(titled.get("size") or 0) > 0,
@@ -160,7 +160,8 @@ def main() -> int:
         check("F3 ★★★ 叠字后文件确实变了（不是空操作）",
               Path(str(titled.get("out") or "")).is_file()
               and Path(str(titled["out"])).read_bytes() != base.read_bytes(), "")
-        long_title = CD.add_title(base, "第一集：那年夏天的最后一个黄昏", out_path=d2 / "t2.png")
+        long_title = CD.add_title(base, "第一集：那年夏天的最后一个黄昏",
+                                  out_path=d2 / "t2.png", style="classic")
         check("F4 ★★ 长标题自动缩小字号",
               long_title.get("ok") and long_title["size"] < titled["size"],
               f"{long_title.get('size')} vs {titled.get('size')}")
@@ -171,7 +172,7 @@ def main() -> int:
               r_none.get("titleMode") == "none" and not r_none.get("title"), "")
         r_ov = CD.build_cover([], {"S0": str(base)}, d2 / "o", mode="select",
                               client=_Client({"pick": 1}), title="第一集",
-                              title_mode="overlay")
+                              title_mode="overlay", title_style="classic")
         check("F6 ★★★ title_mode=overlay 自动叠字并记录",
               isinstance(r_ov.get("title"), dict) and r_ov["title"].get("ok"),
               str(r_ov.get("title"))[:80])
@@ -197,6 +198,99 @@ def main() -> int:
               rep_ok.get("ok") and (d4 / "cover.png").is_file()
               and not (d4 / "cover.stale.png").is_file(),
               str([p.name for p in d4.glob("*")]))
+
+    print(); print("H. 标题艺术字（2026-11-15：banner 横排 / brush 竖排）")
+    with tempfile.TemporaryDirectory() as td5:
+        d5 = Path(td5)
+        base5 = d5 / "base.png"
+        _mk_image(base5)
+        rep_b = CD.add_title(base5, "最后一班", out_path=d5 / "b1.png",
+                             style="banner", subtitle="THE LAST TRAIN",
+                             badge="60 秒短片")
+        check("H1 ★★★ banner 样式出图（横排粗体+金描边+缎带）",
+              rep_b.get("ok") and rep_b.get("shape") == "poster",
+              str(rep_b)[:90])
+        check("H2 ★★★ 用的是艺术字体（琥珀/新魏系列，不是雅黑兜底）",
+              str(rep_b.get("font") or "").upper().startswith(("STHUPO", "STXINWEI", "STXINGKA", "FZSTK"))
+              or "msyh" not in str(rep_b.get("font") or "").lower(),
+              str(rep_b.get("font")))
+        check("H3 ★★ 副标题与角标写进报告（可追溯）",
+              rep_b.get("subtitle") == "THE LAST TRAIN"
+              and rep_b.get("badge") == "60 秒短片", str(rep_b.get("badge")))
+        # 卡是透明 PNG（rgba）
+        card5 = Path(str(rep_b.get("card") or ""))
+        pixfmt = ""
+        try:
+            rr = subprocess.run(
+                [CD._ffprobe(), "-v", "error", "-select_streams", "v:0",
+                 "-show_entries", "stream=pix_fmt", "-of", "csv=p=0", str(card5)],
+                capture_output=True, text=True, check=False)
+            pixfmt = (rr.stdout or "").strip().splitlines()[0]
+        except Exception:                                     # noqa: BLE001
+            pixfmt = ""
+        check("H4 ★★★ 标题卡是带 alpha 的透明 PNG", "rgba" in pixfmt, pixfmt)
+        rep_v = CD.add_title(base5, "最后一班", out_path=d5 / "v1.png",
+                             style="brush", subtitle="THE LAST TRAIN")
+        check("H5 ★★★ brush 样式（竖排行楷）出图",
+              rep_v.get("ok") and rep_v.get("shape") == "poster", str(rep_v)[:80])
+        check("H6 ★★ brush 用行楷字体",
+              "STXINGKA" in str(rep_v.get("font") or "").upper()
+              or "FZSTK" in str(rep_v.get("font") or "").upper()
+              or "STXINWEI" in str(rep_v.get("font") or "").upper(),
+              str(rep_v.get("font")))
+        rep_c = CD.add_title(base5, "最后一班", out_path=d5 / "c1.png", style="classic")
+        check("H7 ★★ classic 仍可回退（不出艺术卡）",
+              rep_c.get("ok") and rep_c.get("shape") != "poster", str(rep_c)[:70])
+        rep_e = CD.add_title(base5, "   ", out_path=d5 / "e1.png", style="banner")
+        check("H8 ★★ 空标题 -> 明确失败（不画空白卡）", rep_e.get("ok") is False, "")
+
+    print(); print("I. 生成式电影海报（模型直接写标题；2026-11-15）")
+    with tempfile.TemporaryDirectory() as td6:
+        d6 = Path(td6)
+        ref6 = d6 / "frame.png"
+        _mk_image(ref6)
+        calls = {"n": 0, "sizes": [], "prompts": []}
+
+        def _fake_edit(ref, prompt, *, size, out_path):
+            calls["n"] += 1
+            calls["sizes"].append(size)
+            calls["prompts"].append(prompt)
+            Path(out_path).write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 64)
+            return {"ok": True, "out": str(out_path), "bytes": 72, "seconds": 0.1}
+
+        rep_p = CD.generate_poster(ref6, d6 / "p1", title="最后一班",
+                                   subtitle="THE LAST TRAIN", variants=2,
+                                   editor=_fake_edit)
+        check("I1 ★★★ 生成 2 个变体并落 cover.png",
+              rep_p.get("ok") and len(rep_p.get("variants") or []) == 2
+              and (d6 / "p1" / "cover.png").is_file(), str(rep_p)[:90])
+        check("I2 ★★★ prompt 含标题与「严格保持画风」约束",
+              "最后一班" in calls["prompts"][0]
+              and "严格保持" in calls["prompts"][0], calls["prompts"][0][:60])
+        check("I3 ★★★ 变体是 cine/cine_vertical（不是金色广告风）",
+              [v["variant"] for v in rep_p["variants"]] == ["cine", "cine_vertical"],
+              str([v["variant"] for v in rep_p["variants"]]))
+        check("I4 ★★ 默认 1536x1024（与片子 16:9 一致）",
+              calls["sizes"][0] == "1536x1024", str(calls["sizes"]))
+        # 第一张失败、第二张成功 -> 仍算成功
+        seq = {"i": 0}
+
+        def _flaky(ref, prompt, *, size, out_path):
+            seq["i"] += 1
+            if seq["i"] == 1:
+                raise RuntimeError("模拟失败")
+            Path(out_path).write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 64)
+            return {"ok": True, "out": str(out_path), "bytes": 72}
+
+        rep_f = CD.generate_poster(ref6, d6 / "p2", title="最后一班",
+                                   variants=2, editor=_flaky)
+        check("I5 ★★★ 第一张失败不影响整体（变体容错）",
+              rep_f.get("ok") and rep_f.get("okVariants") == 1, str(rep_f)[:80])
+        rep_all_fail = CD.generate_poster(
+            ref6, d6 / "p3", title="最后一班", variants=2,
+            editor=lambda *a, **k: {"ok": False, "error": "x"})
+        check("I6 ★★★ 全部失败 -> ok=False 且有 error（回退由上层负责）",
+              rep_all_fail.get("ok") is False and bool(rep_all_fail.get("error")), "")
 
     n = sum(1 for _, ok_, _ in _r if ok_)
     print()

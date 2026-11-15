@@ -162,3 +162,23 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
 > 证据：`cli_cloud_frames.jpg` / `cli_cloud_cover.jpg` / `cli-cloud-run-summary.json`；
 > 目录内还保留了 `image_calls.run1/run2.json` 与 `run.report.run1/run2.json`。
 > **结论：修复后同一集重跑不再重复计费**（这正是此前重复烧钱的根因所在）。
+
+### 封面改版：模型直接生电影海报（2026-11-15 晚）
+
+**用户反馈的两版问题**：
+1. ffmpeg 叠字（banner/brush）→ "太正规呆板"
+2. 模型画的金色渐变+缎带+角标版 → "像广告，而且画风不一致"
+
+**最终方案**：让模型生成**克制版电影海报**（默认 2 个变体，¥0.10）：
+- prompt 硬约束：**严格保持参考帧的画风/人物/光线/色调**，不要磨皮塑料感；
+- 标题：**细衬线宋体、象牙白、克制字号**，无金饰/无缎带/无角标；
+- 英文副标题字距拉开，安静排版；
+- 生成失败自动回退到「选帧 + ffmpeg 叠字」，交付不断。
+
+| 产物 | 说明 |
+|---|---|
+`cover.png` | 变体 1：横排左下（默认交付） |
+`cover_poster_2_cine_vertical.png` | 变体 2：右侧竖排（备选） |
+`cover.ad_banner.png` | 上一版广告风（留档对比，不作为交付） |
+
+> 证据：`cover_cine.jpg` / `cover_cine_vertical.jpg`。

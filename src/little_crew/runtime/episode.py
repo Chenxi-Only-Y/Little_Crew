@@ -2690,7 +2690,8 @@ class EpisodeRunner:
                 hit = list(Path(str(wd)).rglob(nm)) if nm else []
                 if hit:
                     imgs[str(getattr(s, "shot_id", ""))] = str(hit[0])
-            mode = str(getattr(self, "cover_mode", "select") or "select").lower()
+            # 2026-11-15：默认改成生成式海报（模型直接写标题）；失败自动回退叠字
+            mode = str(getattr(self, "cover_mode", "poster") or "poster").lower()
             refs = []
             if mode == "generate":
                 # 参考图：优先精修版角色设定图
@@ -2709,7 +2710,12 @@ class EpisodeRunner:
                                                            "overlay") or "overlay"),
                                      character=str(getattr(self, "cover_character", "") or ""),
                                      story=str(getattr(self, "title", "") or ""),
-                                     style=str(getattr(self, "character_sheet_style", "") or ""))
+                                     style=str(getattr(self, "character_sheet_style", "") or ""),
+                                     title_style=str(getattr(self, "cover_title_style",
+                                                             "banner") or "banner"),
+                                     subtitle=str(getattr(self, "cover_subtitle", "") or ""),
+                                     badge=str(getattr(self, "cover_badge", "") or ""),
+                                     variants=int(getattr(self, "cover_variants", 2) or 2))
             self._cover_report = {"enabled": True, **report}
             print(f"  封面设计师（{mode}）：{_cd.summarize(report)}")
             (out / "cover.json").write_text(

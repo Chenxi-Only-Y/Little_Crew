@@ -57,6 +57,42 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.35] — 2026-11-15（**封面改版：模型直接生电影海报**）
+
+### 用户反馈驱动的两次返工
+
+| 版本 | 问题 |
+|---|---|
+ffmpeg 叠字（banner/brush 艺术字） | "太正规呆板" |
+模型画金色渐变+缎带+角标 | "像广告，而且画风不一致" |
+
+### 最终：`mode="poster"`（默认）
+
+- **选帧 → 以该帧为参考做图生图**：模型直接把标题写进封面
+- prompt 硬约束：**严格保持参考帧画风/人物/光线/色调**，不要磨皮塑料感；
+  标题为**细衬线宋体、象牙白、克制字号**，**无金饰、无缎带、无角标**
+- 默认 **2 个变体**（¥0.05/张，共 ¥0.10）：`cine` 横排左下 / `cine_vertical` 右侧竖排
+- 失败自动回退「选帧 + ffmpeg 叠字」，交付不断
+- 产物：`cover.png` + `cover_poster_*.png`；`cover.json` 记录 prompt/变体
+
+### 新参数
+
+`--cover-mode poster|select|generate`（默认 poster）· `--cover-variants N`（默认 2）
+· `--cover-subtitle` · `--cover-badge`（广告风角标，cine 风格默认忽略）
+· `--cover-title-style banner|brush|seal|display|classic`（仅 ffmpeg 回退路径用）
+
+### 架构修正
+
+review 层不能 import runtime（R1 守卫拦下）→ 封面生成改为 review 层本地
+`_edit_image_call`（只用 `net`/`config`），与 `generate_cover` 同一套形态。
+
+### 测试
+
+`cover_designer_check` 扩到 **38 项**（+H 艺术字 8 项、+I 生成海报 6 项：变体/画风约束/容错/全失败语义）；
+全量 **2716/2703 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.34] — 2026-11-15（**产品 CLI 云端整集验证：第二次不再花钱**）
 
 ### 验证（修复 `beta.33` 的实际效果）
