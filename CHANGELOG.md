@@ -57,6 +57,34 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.34] — 2026-11-15（**产品 CLI 云端整集验证：第二次不再花钱**）
+
+### 验证（修复 `beta.33` 的实际效果）
+
+```
+little-crew episode --render-path cloud \
+  --cast-anchor "少女=assets/characters/cover_lead/sheet.png" --shots-target 12
+```
+
+| | run1（首次） | run2（同目录重跑） |
+|---|---|---|
+云端新调用 | **12 张** | **0 张** |
+复用 | 0 | **12 张** |
+估算费用 | **¥0.60** | **¥0.00** |
+墙钟 | 217.4s | **64.8s** |
+`rendered / cacheHits` | 12 / 0 | **0 / 12** |
+门禁 | KEEP 12 | KEEP 12 |
+
+- 费用台账落盘：`delivery/image_calls.json`（run1/run2 都保留）、`run.report.imageCalls`
+- 证据：`research/episodes/最后一班/{cli_cloud_frames.jpg,cli_cloud_cover.jpg,cli-cloud-run-summary.json}`
+
+### 结论
+
+**「重复生图烧钱」已闭环**：同内容重跑 = 零新调用；此前 `_EFCLOUD1` 那种
+「20 镜跑 4 次 = 132 次调用」不会再发生。
+
+---
+
 ## [0.4.0-beta.33] — 2026-11-15（**修「重复生图烧钱」：缓存失效 + 无复用**）
 
 ### 根因（用 `_EFCLOUD1` 实测数据定位，不是猜测）

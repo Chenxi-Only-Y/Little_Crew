@@ -1,0 +1,25 @@
+{
+  "kind": "episode.run.summary",
+  "via": "product CLI (little-crew episode) + cloud img2img",
+  "episodeId": "CLI-CLOUD-1",
+  "renderPath": "cloud",
+  "model": "gpt-image-2.6-sunburst",
+  "shots": 12,
+  "run1": {
+    "cloudNew": 12,
+    "reused": 0,
+    "estCostCny": 0.6,
+    "wallSeconds": 217.4,
+    "gate": "KEEP 12"
+  },
+  "run2": {
+    "cloudNew": 0,
+    "reused": 12,
+    "estCostCny": 0.0,
+    "wallSeconds": 64.8,
+    "rendered": 0,
+    "cacheHits": 12,
+    "gate": "KEEP 12"
+  },
+  "totalCostCny": 0.6
+}

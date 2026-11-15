@@ -146,3 +146,19 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
 
 > 证据：`cli_llm_frame.jpg` / `cli_llm_cover.jpg`。
 
+### 产品 CLI + 云端整集（2026-11-15，修复后验证）
+
+`little-crew episode --render-path cloud --cast-anchor "少女=...sheet.png"`（12 镜 · 桩版剧组）：
+
+| | run1（首次） | run2（同目录重跑） |
+|---|---|---|
+云端新调用 | **12 张** | **0 张** |
+复用 | 0 | **12 张** |
+估算费用 | **¥0.60** | **¥0.00** |
+墙钟 | 217.4s | **64.8s** |
+`rendered / cacheHits` | 12 / 0 | **0 / 12** |
+门禁 | KEEP 12 | KEEP 12 |
+
+> 证据：`cli_cloud_frames.jpg` / `cli_cloud_cover.jpg` / `cli-cloud-run-summary.json`；
+> 目录内还保留了 `image_calls.run1/run2.json` 与 `run.report.run1/run2.json`。
+> **结论：修复后同一集重跑不再重复计费**（这正是此前重复烧钱的根因所在）。
