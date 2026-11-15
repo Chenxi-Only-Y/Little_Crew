@@ -289,6 +289,12 @@ class EpisodeResult:
     #: 角色定妆表（文字半）—— 交付物的一部分
     characters: Any = None
 
+    #: 口型通道结论（2026-11-15）：`{enabled, targets, rows, costCny}`；未开启时为空。
+    #:
+    #: 为什么必须进报告：口型是**按秒计费**的增强能力 ——
+    #: 不进报告就等于"花了钱但交付物里看不到"（与 imageCalls 同一个理由）。
+    lipsync: dict[str, Any] = field(default_factory=dict)
+
     #: 生图调用台账（2026-11-15）：`{renderPath, cloud:{new,reused,estCostCny}, local:{...}}`
     #:
     #: 存在的理由：**"这张图是不是重复花钱了"必须能从交付物里看出来** ——
@@ -331,6 +337,7 @@ class EpisodeResult:
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
             "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
+            "lipsync": dict(getattr(self, "lipsync", {}) or {}),
             "failed": self.failed,
             "coverage": round(self.coverage, 4),
             "totalSeconds": round(self.total_seconds, 2),
@@ -1869,6 +1876,9 @@ class EpisodeRunner:
 
         self._stage_voice(picked, shots, script_draft, per_shot_artifacts)
 
+        # ---- 口型视频通道（2026-11-15）：只在显式开启时跑，失败不阻断 ----
+        self._stage_lipsync(picked, per_shot_artifacts)
+
         self._stage_vision(picked, irs, per_shot_artifacts, artifacts)
         # 封面设计师（2026-11-13）：选帧 或 生成（默认选帧）
         self._run_cover(picked, per_shot_artifacts)
@@ -2000,6 +2010,7 @@ class EpisodeRunner:
             shot_count=manifest.shot_count, planned_shots=planned,
             rendered=len(batch.rendered), cache_hits=len(batch.cache_hits),
             image_calls=dict(getattr(self, "_image_calls", {}) or {}),
+            lipsync=dict(getattr(self, "_lipsync_report", {}) or {}),
             failed=len(failed), total_seconds=manifest.total_seconds,
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
@@ -2376,6 +2387,11 @@ class EpisodeRunner:
                 _trk = _vt.build(_lines, shots, synth=_tts.synth,
                                  cast_map=_cast_map, out_dir=_vdir,
                                  max_lines=0)
+                # 2026-11-15：口型通道要靠「镜 -> 对白 wav」映射，把音轨行留一份
+                try:
+                    self._voice_rows = list((_trk or {}).get("utterances") or [])
+                except Exception:                             # noqa: BLE001
+                    self._voice_rows = []
                 if _wd:
                     _vo = Path(str(_wd)) / "delivery"
                     _vo.mkdir(parents=True, exist_ok=True)
@@ -2664,6 +2680,124 @@ class EpisodeRunner:
                         pass
         except Exception as _e_vrw:                          # noqa: BLE001
             print(f"  ⚠️ 视觉重渲未运行：{type(_e_vrw).__name__}: {_e_vrw}")
+
+    def _stage_lipsync(self, picked, per_shot_artifacts) -> None:
+        """口型视频通道（2026-11-15）：静帧 + 对白 → 说话片段。
+
+        只对**同时满足**的镜头生效：有对白音轨、有可解析静帧、
+        （默认）景别为特写/近景。产物落 `assets/lipsync/<sid>.mp4`，
+        成片合成时用 `self._lipsync_clips` 覆盖该镜的静帧。
+
+        **失败不阻断整集**：口型是增强能力，静帧成片仍然有效；
+        每一镜的 ok/费用/错误都写进 `delivery/lipsync.json`。
+        """
+        self._lipsync_report = {"kind": "lipsync.report", "enabled": False}
+        self._lipsync_clips: dict[str, str] = {}
+        if not getattr(self, "lipsync_enabled", False):
+            return
+        rep = self._lipsync_report
+        rep["enabled"] = True
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            rep["error"] = "没有 workdir"
+            return
+        try:
+            from little_crew.runtime import lipsync as _ls
+
+            ok_avail, why = _ls.available()
+            rep["available"] = {"ok": ok_avail, "why": why}
+            if not ok_avail:
+                rep["error"] = why
+                print(f"  ⚠️ 口型通道不可用：{why}")
+                return
+            out_dir = Path(str(wd)) / "assets" / "lipsync"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            # 镜 -> 静帧（与视觉闸同一套解析：manifest 名 / assets/shots 兜底）
+            imgs: dict[str, str] = {}
+            for s in picked:
+                sid = str(getattr(s, "shot_id", ""))
+                nm = ((per_shot_artifacts.get(sid) or [""])[0])
+                hit: list[Path] = []
+                try:
+                    hit = list(Path(str(wd)).rglob(nm)) if nm else []
+                except Exception:                             # noqa: BLE001
+                    hit = []
+                if not hit:
+                    d = Path(str(wd)) / "assets" / "shots" / sid
+                    if d.is_dir():
+                        hit = sorted(d.glob("*.png"))
+                if hit:
+                    imgs[sid] = str(hit[0])
+            # 镜 -> 对白音轨（voice track 的 utterances；同一镜多句取第一句）
+            audios: dict[str, dict] = {}
+            for row in (getattr(self, "_voice_rows", None) or []):
+                sid = str(row.get("shotId") or "")
+                wav = str(row.get("wav") or "")
+                if sid and wav and Path(wav).is_file():
+                    ent = audios.setdefault(sid, {"wav": wav, "lines": 0,
+                                                  "seconds": 0.0})
+                    ent["lines"] += 1
+                    ent["seconds"] += float(row.get("seconds") or 0.0)
+            # 目标：有图 + 有对白（默认只要特写/近景 —— 中远景做口型没意义）
+            targets: list[Any] = []
+            for s in picked:
+                sid = str(getattr(s, "shot_id", ""))
+                if sid not in imgs or sid not in audios:
+                    continue
+                if not getattr(self, "lipsync_all_shots", False):
+                    size = str(getattr(s, "shot_size", "") or "").lower()
+                    if not any(k in size for k in ("close", "特写", "近景", "cu", "mcu")):
+                        continue
+                targets.append(s)
+            cap = int(getattr(self, "lipsync_max_shots", 0) or 0)
+            if cap > 0:
+                targets = targets[:cap]
+            rep["targets"] = [str(getattr(s, "shot_id", "")) for s in targets]
+            if not targets:
+                print("  口型通道：没有符合条件的镜头（需 有图 + 有对白；"
+                      "默认只做特写/近景）")
+                return
+            print(f"  口型通道：{len(targets)} 镜（{getattr(self, 'lipsync_resolution', '480P')}）"
+                  f" · 每镜约 ¥2.4")
+            rows: list[dict] = []
+            total_cost = 0.0
+            for s in targets:
+                sid = str(getattr(s, "shot_id", ""))
+                dst = out_dir / f"{sid}.mp4"
+                row = _ls.synth(
+                    imgs[sid], audios[sid]["wav"], out_path=dst,
+                    resolution=str(getattr(self, "lipsync_resolution", "480P")),
+                    style=str(getattr(self, "lipsync_style", "") or ""),
+                    timeout_s=float(getattr(self, "lipsync_timeout_seconds", 1200.0) or 1200.0),
+                    poll_s=float(getattr(self, "lipsync_poll_seconds", 15.0) or 15.0),
+                    on_progress=lambda st, status, _sid=sid: print(
+                        f"    {_sid} 轮询 HTTP {st} · {status}"))
+                rows.append({"shotId": sid, "ok": bool(row.get("ok")),
+                             "out": row.get("out"), "seconds": row.get("seconds"),
+                             "costCny": float(row.get("costCny") or 0.0),
+                             "error": row.get("error"),
+                             "linesOnShot": audios[sid]["lines"]})
+                if row.get("ok"):
+                    self._lipsync_clips[sid] = str(row.get("out"))
+                    total_cost += float(row.get("costCny") or 0.0)
+                    print(f"    ✅ {sid} → {Path(str(row.get('out'))).name}"
+                          f"（¥{float(row.get('costCny') or 0):.2f}）")
+                else:
+                    print(f"    ❌ {sid}: {str(row.get('error'))[:80]}")
+            rep.update({"okCount": len(self._lipsync_clips), "rows": rows,
+                        "costCny": round(total_cost, 2)})
+            try:
+                (Path(str(wd)) / "delivery").mkdir(parents=True, exist_ok=True)
+                (Path(str(wd)) / "delivery" / "lipsync.json").write_text(
+                    __import__("json").dumps(rep, ensure_ascii=False, indent=2,
+                                             default=str), encoding="utf-8")
+            except Exception:                                 # noqa: BLE001
+                pass
+            print(f"  口型通道：成功 {len(self._lipsync_clips)}/{len(targets)} 镜"
+                  f" · 估算 ¥{total_cost:.2f}")
+        except Exception as exc:                              # noqa: BLE001
+            rep["error"] = f"{type(exc).__name__}: {exc}"
+            print(f"  ⚠️ 口型通道未运行：{type(exc).__name__}: {exc}")
 
     def _run_cover(self, picked, per_shot_artifacts):
         """封面设计师：从成片选帧，或用角色/美术设定生成新封面（2026-11-13）。
@@ -3513,6 +3647,32 @@ class EpisodeRunner:
                 _man, resolve=resolver,
                 width=self.video_width, height=self.video_height)
 
+            # ---- 口型片段覆盖（2026-11-15）----
+            # 有「说话视频」的镜头不再用静帧 + Ken Burns；其余镜头不变。
+            _ov = dict(getattr(self, "_lipsync_clips", None) or {})
+            if _ov and plan.clips:
+                from little_crew.runtime.video import (
+                    ClipPlan as _ClipPlan,
+                    ShotClip as _ShotClip,
+                )
+
+                _new_clips = []
+                _used = 0
+                for _c in plan.clips:
+                    _vp = _ov.get(_c.shot_id)
+                    if _vp and Path(str(_vp)).is_file():
+                        _new_clips.append(_ShotClip(
+                            shot_id=_c.shot_id, image=_c.image,
+                            duration_sec=_c.duration_sec,
+                            camera_movement=_c.camera_movement,
+                            width=_c.width, height=_c.height,
+                            video=Path(str(_vp))))
+                        _used += 1
+                    else:
+                        _new_clips.append(_c)
+                plan = _ClipPlan(clips=tuple(_new_clips), problems=plan.problems)
+                print(f"  🎬 成片使用口型片段 {_used}/{len(plan.clips)} 镜")
+
             # ---- 解析失败重试（2026-11-14：成片 11/12 镜）----
             # 现象：清单 12 镜都带产物名，但编译时有一镜 `resolve()` 返回 None，
             # 于是静默进 `plan.problems`、成片少一镜（56.8s 而非 60s）。
@@ -3564,6 +3724,19 @@ class EpisodeRunner:
     #: 成片分辨率
     video_width: int = 832
     video_height: int = 480
+
+    # ---- 口型视频通道（2026-11-15）-------------------------------------
+    #: 给「静帧 + 对白」的镜头生成说话视频，成片合成时替换该镜的 Ken Burns。
+    #: **默认关**：按秒计费（480P ¥0.5/秒），单镜约 ¥2.4。
+    lipsync_enabled: bool = False
+    lipsync_resolution: str = "480P"
+    lipsync_style: str = ""
+    #: 0 = 不限；>0 时只做前 N 个符合条件的镜头（控成本）
+    lipsync_max_shots: int = 0
+    #: True = 所有「有对白 + 有图」的镜头都做；False = 只做特写/近景
+    lipsync_all_shots: bool = False
+    lipsync_poll_seconds: float = 15.0
+    lipsync_timeout_seconds: float = 1200.0
 
     # ---- 空间控制：白模 ------------------------------------------------
 

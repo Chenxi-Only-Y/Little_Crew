@@ -175,6 +175,16 @@ def main(argv: list[str] | None = None) -> int:
                     help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带；brush=竖排行楷）")
     ap.add_argument("--cover-subtitle", default="",
                     help="封面英文副标题（字距自动拉开，如 THE LAST TRAIN）")
+    ap.add_argument("--lipsync", action="store_true",
+                    help="口型视频通道：给「静帧+对白」的镜头生成说话视频（¥0.5/秒 @480P）")
+    ap.add_argument("--lipsync-resolution", default="480P", choices=("480P", "720P"),
+                    dest="lipsync_resolution")
+    ap.add_argument("--lipsync-max-shots", type=int, default=0, dest="lipsync_max_shots",
+                    help="最多做几镜口型（0=不限；控成本用）")
+    ap.add_argument("--lipsync-all-shots", action="store_true", dest="lipsync_all_shots",
+                    help="所有有对白/有图的镜头都做（默认只做特写/近景）")
+    ap.add_argument("--lipsync-style", default="", choices=("", "speech", "sing", "perform"),
+                    dest="lipsync_style")
     ap.add_argument("--cover-badge", default="",
                     help="封面角标（如「第 1 季」）")
     ap.add_argument("--cover-title-mode", default="overlay",
@@ -722,6 +732,14 @@ def main(argv: list[str] | None = None) -> int:
     runner.cover_title_style = str(getattr(args, "cover_title_style", "banner") or "banner")
     runner.cover_subtitle = str(getattr(args, "cover_subtitle", "") or "")
     runner.cover_badge = str(getattr(args, "cover_badge", "") or "")
+    # ---- 口型视频通道（2026-11-15）----
+    runner.lipsync_enabled = bool(getattr(args, "lipsync", False))
+    runner.lipsync_resolution = str(getattr(args, "lipsync_resolution", "480P") or "480P")
+    runner.lipsync_max_shots = int(getattr(args, "lipsync_max_shots", 0) or 0)
+    runner.lipsync_all_shots = bool(getattr(args, "lipsync_all_shots", False))
+    runner.lipsync_style = str(getattr(args, "lipsync_style", "") or "")
+    if runner.lipsync_enabled:
+        print(f"  口型通道：开（{runner.lipsync_resolution} · ¥0.5/秒@480P）")
     runner.cover_title_style = str(getattr(args, "cover_title_style", "banner") or "banner")
     runner.cover_subtitle = str(getattr(args, "cover_subtitle", "") or "")
     runner.cover_badge = str(getattr(args, "cover_badge", "") or "")

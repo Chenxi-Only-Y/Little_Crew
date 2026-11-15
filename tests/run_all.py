@@ -142,6 +142,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。
     ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 31),
+    ("口型视频通道", [sys.executable, "-m", "little_crew.runtime.lipsync_check"], 21),
     # 顾问批评家的守卫：**取不到可审正文 -> error，不是 PASS**。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签（之前撞过两次）。
     ("顾问批评家守卫", [sys.executable, "-m", "little_crew.runtime.advisory_check"], 10),
@@ -153,7 +154,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # 重点是失败语义：**拿不到本地后端绝不退回付费 API**。
     ("video_mode 第二段", [sys.executable, "-m", "little_crew.runtime.video_mode_check"], 36),
     ("一集流水线", [sys.executable, "-m", "little_crew.runtime.episode_check"], 92),
-    ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 64),
+    ("视频合成", [sys.executable, "-m", "little_crew.runtime.video_check"], 66),
     ("端到端真机", [sys.executable, str(PLATFORM / "tests" / "test_e2e_comfy.py")], 19),
     ("确定性验收门禁", [sys.executable, "-m", "little_crew.review.check"], 116),
     ("L3 跨模型族盲读", [sys.executable, "-m", "little_crew.agent.blind_check"], 19),

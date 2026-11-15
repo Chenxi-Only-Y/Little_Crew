@@ -57,6 +57,32 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.38] — 2026-11-15（**口型接成平台视频通道 `--lipsync`**）
+
+### 新增能力（默认关）
+
+| 层 | 改动 |
+|---|---|
+`runtime/lipsync.py` | **单一实现**：百炼 `wan2.2-s2v` 上传（模型绑定）→ `face-detect` 合规检测 → 异步建任务 → 轮询 → 下载；按秒计费（480P ¥0.5/秒，720P ¥0.9/秒） |
+`EpisodeRunner._stage_lipsync` | 镜→对白映射（voice track `utterances`）+ 默认**只做特写/近景** + `--lipsync-max-shots` 控成本 + 失败逐镜记录不阻断 |
+`ShotClip.video` | **预渲染片段覆盖**：有口型视频的镜头不再用静帧 Ken Burns；统一画幅/24fps，**丢弃片段音轨**（成片音轨统一混） |
+`delivery/lipsync.json` + `run.report.lipsync` | 逐镜 ok/耗时/费用，**花了多少能从交付物看到** |
+入口 | demo / CLI `--lipsync --lipsync-resolution --lipsync-max-shots --lipsync-all-shots --lipsync-style`；API `lipsync/lipsyncResolution/...` |
+
+### 设计取舍
+
+- **视频通道能力，不是新职位**：判定仍归门禁/审片，本能力只负责执行与记账
+- **默认关**：480P 实测 512×640/16fps、动作幅度小，只适合少量正脸台词镜
+- **失败不阻断**：口型是增强，静帧成片仍然有效
+
+### 测试
+
+- `runtime/lipsync_check` **21 项**（模型绑定/调用顺序/检测失败/任务失败/上传异常/缺文件/超 20s/非法分辨率/费用/片段覆盖命令）
+- `video_check` **66 项**（+L1/L2：真片段覆盖进合成）
+- 全量 **2739/2726 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.37] — 2026-11-15（**B 项完成：口型实测可做**）
 
 ### 通道换成阿里云百炼官方 `wan2.2-s2v`（不用 MuAPI 转售）

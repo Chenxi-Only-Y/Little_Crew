@@ -156,6 +156,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带）")
     se.add_argument("--cover-subtitle", default="", dest="cover_subtitle")
     se.add_argument("--cover-badge", default="", dest="cover_badge")
+    se.add_argument("--lipsync", action="store_true",
+                    help="口型视频通道（¥0.5/秒@480P；需要 DASHSCOPE_API_KEY）")
+    se.add_argument("--lipsync-resolution", default="480P", choices=("480P", "720P"),
+                    dest="lipsync_resolution")
+    se.add_argument("--lipsync-max-shots", type=int, default=0, dest="lipsync_max_shots")
+    se.add_argument("--lipsync-all-shots", action="store_true", dest="lipsync_all_shots")
+    se.add_argument("--lipsync-style", default="", choices=("", "speech", "sing", "perform"),
+                    dest="lipsync_style")
     se.add_argument("--char-sheets", action="store_true", dest="char_sheets",
                     help="生成角色四视图设定板")
     se.add_argument("--char-sheet-style", default="", dest="char_sheet_style")

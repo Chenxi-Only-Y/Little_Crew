@@ -182,3 +182,13 @@ $env:LITTLE_CREW_ALLOW_UNVERIFIED="1"; $env:LITTLE_CREW_RENDER_PARALLEL="4"
 `cover.ad_banner.png` | 上一版广告风（留档对比，不作为交付） |
 
 > 证据：`cover_cine.jpg` / `cover_cine_vertical.jpg`。
+
+### 口型接成平台能力（2026-11-15 晚）
+
+- 单一实现：`runtime/lipsync.py`（DashScope `wan2.2-s2v`：上传→检测→建任务→轮询→下载）
+- 平台入口：`--lipsync`（默认关）· `--lipsync-resolution 480P|720P` ·
+  `--lipsync-max-shots N` · `--lipsync-all-shots`
+- 生效条件：该镜**有对白音轨 + 有静帧**，默认还要**特写/近景**
+- 产物：`assets/lipsync/<shotId>.mp4` + `delivery/lipsync.json`；
+  成片合成用 `ShotClip.video` **替换静帧**（统一画幅/帧率，丢片段音轨）
+- 默认关的理由：实测 480P 只有 512×640/16fps，且动作幅度小；按需对少量正脸台词镜开启

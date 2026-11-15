@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -61,6 +62,29 @@ def main() -> int:
         shutil.rmtree(tmp, ignore_errors=True)
 
     print()
+    print(); print("L. 预渲染片段覆盖（口型通道接线，2026-11-15）")
+    with tempfile.TemporaryDirectory() as _tdl:
+        _d = Path(_tdl)
+        _img = _d / "still.png"
+        make_test_png(str(_img))
+        # 造一个 1 秒的真 mp4 作为"口型片段"
+        _talk = _d / "talk.mp4"
+        _ff = find_ffmpeg() or "ffmpeg"
+        _r = subprocess.run([_ff, "-y", "-hide_banner", "-loglevel", "error",
+                             "-loop", "1", "-i", str(_img), "-t", "1.0",
+                             "-c:v", "libx264", "-pix_fmt", "yuv420p", str(_talk)],
+                            capture_output=True, text=True, check=False)
+        _ok_talk = _talk.is_file()
+        check("L1 ★★ 测试片段生成（环境可用）", _ok_talk, "")
+        if _ok_talk:
+            _clip = ShotClip("S_OVR", _img, 1.5, "static", 320, 240,
+                             video=_talk)
+            _ovr_plan = ClipPlan(clips=(_clip,))   # ⚠️ 不能叫 _plan：会遮蔽上游的 _plan(tmp)
+            _asm = VideoAssembler(FFmpegTools(), workdir=_d)
+            _out = _asm.assemble(_ovr_plan, _d / "ovr.mp4")
+            check("L2 ★★★ 用片段覆盖静帧也能合成成功",
+                  bool(_out.ok) and (_d / "ovr.mp4").is_file(),
+                  str(getattr(_out, "reason", ""))[:90])
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
         print(f" [{'v' if ok else 'X'}] {name}")

@@ -344,6 +344,12 @@ class ShotClip:
     camera_movement: str = "static"
     width: int = 832
     height: int = 480
+    #: **预渲染片段覆盖**（2026-11-15：口型视频通道）。
+    #:
+    #: 有值时这一镜不再用静帧 + Ken Burns，而是把该片段统一到目标画幅/帧率/
+    #: 时长后直接进拼接；片段自带音轨会被丢弃（成片的音轨由 mixdown 统一提供，
+    #: 否则会出现"一半原声一半配音"的双音轨）。
+    video: Path | None = None
 
     @property
     def frames(self) -> int:
@@ -377,8 +383,34 @@ class ShotClip:
             parts.insert(-2, f"fade=t=out:st={max(self.duration_sec - 0.25, 0):.3f}:d=0.25")
         return ",".join(parts)
 
+    def video_filter_chain(self) -> str:
+        """预渲染片段的归一化链：画幅/帧率/像素格式统一（**不拉伸**）。
+
+        口型片段来自云端，分辨率与帧率都不由我们决定（实测 512×640/16fps），
+        而拼接要求所有片段同画幅同帧率 —— 所以这里统一 scale+pad，而不是裁剪。
+        """
+        return ",".join([
+            f"scale={self.width}:{self.height}:force_original_aspect_ratio=decrease",
+            f"pad={self.width}:{self.height}:(ow-iw)/2:(oh-ih)/2:color=black",
+            f"fps={FPS}",
+            "setsar=1",
+            "format=yuv420p",
+        ])
+
     def command(self, ffmpeg: str, out: Path) -> list[str]:
         """生成合成这一镜的命令。**纯函数，可用测试断言。**"""
+        if self.video is not None:
+            return [
+                ffmpeg, "-y", "-hide_banner", "-loglevel", "error",
+                "-i", str(self.video),
+                "-vf", self.video_filter_chain(),
+                "-t", f"{self.duration_sec:.3f}",
+                "-r", str(FPS),
+                "-an",                          # 片段音轨丢弃（成片音轨统一混）
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+                "-pix_fmt", "yuv420p",
+                str(out),
+            ]
         return [
             ffmpeg, "-y", "-hide_banner", "-loglevel", "error",
             "-loop", "1", "-i", str(self.image),

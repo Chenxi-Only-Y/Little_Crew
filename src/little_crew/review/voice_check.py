@@ -85,7 +85,7 @@ def check(utterances, *, tolerance: float = ALIGN_TOLERANCE) -> dict:
                              "inconsistent": len(inconsistent)},
         "rows": rows,
         "findings": findings,
-        "notChecked": ["口型同步（lip-sync，明确不做）",
+        "notChecked": ["口型同步（lip-sync；2026-11-15 起为可选能力 --lipsync，默认不做）",
                        "情感贴切度（需要人耳/模型判断）",
                        "背景音与 BGM（尚未接入）"],
     }

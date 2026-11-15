@@ -475,6 +475,7 @@ def build(lines, shots, *, synth, cast_map, max_lines: int = 0,
         "utterances": rows,
         "dropped": dropped,
         "report": rep,
-        "notDone": ["混流（对白 + 环境音 + BGM）", "口型同步（明确不做）",
+        "notDone": ["混流（对白 + 环境音 + BGM）",
+                    "口型同步（2026-11-15 起为可选能力：--lipsync；默认不做）",
                     "跨集音色一致性（需多集样本，目前只有映射规则）"],
     }
