@@ -391,8 +391,15 @@ class CachingRenderer:
                     render_seconds=dt,
                     extra_provenance={"graphId": gid},
                 )
-            except Exception:                                 # noqa: BLE001
-                pass          # 回填失败不影响本次结果 —— 只是下次还要重跑
+            except Exception as exc:                          # noqa: BLE001
+                # 2026-11-15：这里原来是 `pass`。真机后果是**缓存一直存不进去
+                # 却无人知晓**（产物名非法 -> WinError 123 -> 每次重跑全额计费）。
+                self.metric_errors.append(
+                    f"cache.store(IR): {type(exc).__name__}: {exc}")
+                if not getattr(self, "_store_err_logged", False):
+                    print(f"  ⚠️ 缓存写入失败（只报一次，后续记入 cacheErrors）："
+                          f"{type(exc).__name__}: {exc}")
+                    self._store_err_logged = True
             self._by_ir[ir_hash] = (
                 out.compile_result.graph_hash if out.compile_result else "",
                 blobs, dt)
@@ -619,8 +626,13 @@ class CachingRenderer:
                                  render_seconds=dt,
                                  extra_provenance={"jobId": job_id,
                                                    "channel": "http"})
-            except Exception:                                 # noqa: BLE001
-                pass
+            except Exception as exc:                          # noqa: BLE001
+                self.metric_errors.append(
+                    f"cache.store(HTTP): {type(exc).__name__}: {exc}")
+                if not getattr(self, "_store_err_logged", False):
+                    print(f"  ⚠️ 缓存写入失败（只报一次，后续记入 cacheErrors）："
+                          f"{type(exc).__name__}: {exc}")
+                    self._store_err_logged = True
             self._by_ir[key] = ("", blobs, dt)
 
         # ---- 记完成 + 产物名 ----
@@ -665,7 +677,44 @@ class CachingRenderer:
         base = self.cache.stats.as_dict()
         base["memoIndexSize"] = len(self._by_ir)
         base["enabled"] = self.enabled
+        # 2026-11-15：缓存写入错误必须可见 —— 否则"命中率 0"会被当成正常
+        errs = list(getattr(self, "metric_errors", []) or [])
+        base["cacheErrors"] = len(errs)
+        if errs:
+            base["cacheErrorSamples"] = errs[:3]
         return base
+
+
+def safe_artifact_name(name: str, *, fallback: str = "artifact") -> str:
+    """把任意“文件名草稿”净化成**Windows 合法**的文件名（2026-11-15）。
+
+    真机事故：云端 b64 产物名的 `uri` 是临时路径
+    ``C:\\Users\\...\\little-crew-inline\\8cd9.png`` ——
+    `_name_of` 只按 `/` 切末段，于是整个带盘符的字符串成了文件名；
+    `ContentCache.store` 写盘时抛 ``OSError [WinError 123] 文件名语法不正确``，
+    而外层 `except: pass` 把错误吞了 —— **缓存从此一张都没存进去**，
+    每次重跑都全量重新生图、全额重复计费。
+
+    规则：统一分隔符 -> 去盘符 -> 取末段 -> 非法字符换 `_` -> 限长。
+    """
+    s = str(name or "").replace("\\", "/").strip()
+    # 去盘符（C:/...）与 UNC 前缀
+    if len(s) >= 2 and s[1] == ":":
+        s = s[2:]
+    s = s.lstrip("/")
+    tail = s.split("/")[-1].strip()
+    if not tail:
+        return f"{fallback}.png"
+    # Windows 非法字符 + 控制字符
+    bad = '<>:"/\\|?*'
+    cleaned = "".join("_" if (c in bad or ord(c) < 32) else c for c in tail)
+    cleaned = cleaned.strip(" .")
+    if not cleaned or cleaned in (".", ".."):
+        return f"{fallback}.png"
+    if len(cleaned) > 96:
+        stem, dot, ext = cleaned.rpartition(".")
+        cleaned = (stem[:80] + "." + ext) if dot and len(ext) <= 8 else cleaned[:96]
+    return cleaned
 
 
 def _name_of(ref: Any) -> str:
@@ -720,7 +769,9 @@ def _name_of(ref: Any) -> str:
     # 即便上游给了同名文件（不同子目录下的同名产物是常见情况），
     # 也不会互相覆盖。多这 8 个字符，换掉一类静默损坏。
     digest = hashlib.sha256(uri.encode("utf-8")).hexdigest()[:8]
-    return f"{digest}_{name}"
+    # 2026-11-15：`name` 可能带盘符/反斜杠（云端临时路径）—— 必须先净化，
+    # 否则缓存写盘抛 OSError 而且被吞（见 `safe_artifact_name` 的说明）。
+    return f"{digest}_{safe_artifact_name(name)}"
 
 
 #: 会被误当文件名的**路由词**。用它们做键必然撞车。

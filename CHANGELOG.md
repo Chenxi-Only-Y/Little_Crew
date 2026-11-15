@@ -57,6 +57,37 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.33] — 2026-11-15（**修「重复生图烧钱」：缓存失效 + 无复用**）
+
+### 根因（用 `_EFCLOUD1` 实测数据定位，不是猜测）
+
+| # | 根因 | 证据 |
+|---|---|---|
+1 | **云端产物名非法 → 缓存永远存不进去** | `_name_of` 对 `C:\...\x.png` 只按 `/` 切末段 → 文件名含冒号 → `ContentCache.store` 抛 `OSError [WinError 123]` → 被 `except: pass` 吞掉；`_EFCLOUD1/cache/` **0 文件**、`cacheHits: 0` |
+2 | **图生图整集路径完全绕过缓存** | `_render_cloud` 每次直接 `render_plan`；`_EFLAST60C` checkpoint 仅 1 条记录 |
+3 | 缓存错误静默 | 「命中率 0」被当成正常，全流程无人发现 |
+4 | 无费用台账 | 一集花了多少张没有任何文件记录 |
+
+**代价**：`_EFCLOUD1` 20 镜的集 **132 次云端调用**（≈¥6.6，必要 ≈¥2.0）；
+全项目估算 ≈¥9.0 中约 **75% 是重复调用**。
+
+### 修复
+
+| 改动 | 位置 |
+|---|---|
+产物名净化（去盘符/反斜杠/非法字符，保留哈希前缀） | `cached_render.safe_artifact_name` + `_name_of` |
+缓存写入失败**不再静默**：进 `metric_errors`、打印一次、`stats()` 暴露 `cacheErrors` | `CachingRenderer` |
+图生图**内容寻址复用**：`key = sha256(model+size+prompt+锚点哈希)` + sidecar | `cloud_render.content_key` / `render_one` |
+`render_plan` 返回 `reused / newCalls / estCostCny`（单位 ¥0.05） | `cloud_render` |
+`delivery/image_calls.json` + `run.report.imageCalls` | `episode._render_cloud` / `EpisodeResult` |
+
+### 回归
+
+新增 `runtime/cloud_cache_check` **14 项**（名字净化/缓存可写可命中/错误可见/复用不发请求/键随内容变）；
+全量 **2702/2689 + 架构守卫 PASS**。
+
+---
+
 ## [0.4.0-beta.32] — 2026-11-14（**文档整合：改/并/删**）
 
 ### 改（过期数字就地修正）

@@ -44,6 +44,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("云端整集回归", [sys.executable, "-m", "little_crew.runtime.cloud_episode_check"], 10),
     ("运行选项装配", [sys.executable, "-m", "little_crew.runtime.run_options_check"], 18),
     ("真实 LLM 剧组", [sys.executable, "-m", "little_crew.runtime.llm_crew_check"], 15),
+    ("生图去重/缓存", [sys.executable, "-m", "little_crew.runtime.cloud_cache_check"], 14),
     ("自定义供应商", [sys.executable, "-m", "little_crew.runtime.custom_providers_check"], 30),
     ("角色设定图", [sys.executable, "-m", "little_crew.runtime.character_sheets_check"], 47),
     ("三级内容缓存", [sys.executable, "-m", "little_crew.runtime.selfcheck"], 42),

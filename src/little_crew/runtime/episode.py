@@ -289,6 +289,12 @@ class EpisodeResult:
     #: 角色定妆表（文字半）—— 交付物的一部分
     characters: Any = None
 
+    #: 生图调用台账（2026-11-15）：`{renderPath, cloud:{new,reused,estCostCny}, local:{...}}`
+    #:
+    #: 存在的理由：**"这张图是不是重复花钱了"必须能从交付物里看出来** ——
+    #: 之前只看 `cacheHits`，"云端图生图不走缓存"这件事完全不可见。
+    image_calls: dict[str, Any] = field(default_factory=dict)
+
     @property
     def coverage(self) -> float:
         """已出图镜头 / 计划镜头。**这是"跑通一集"最该看的单一数字。**"""
@@ -324,6 +330,7 @@ class EpisodeResult:
             "plannedShots": self.planned_shots,
             "rendered": self.rendered,
             "cacheHits": self.cache_hits,
+            "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
             "failed": self.failed,
             "coverage": round(self.coverage, 4),
             "totalSeconds": round(self.total_seconds, 2),
@@ -1992,6 +1999,7 @@ class EpisodeRunner:
                                 else cycle.failure_kind),
             shot_count=manifest.shot_count, planned_shots=planned,
             rendered=len(batch.rendered), cache_hits=len(batch.cache_hits),
+            image_calls=dict(getattr(self, "_image_calls", {}) or {}),
             failed=len(failed), total_seconds=manifest.total_seconds,
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
@@ -3219,17 +3227,41 @@ class EpisodeRunner:
                         failure="artifact-missing",
                         reason=f"产物读不到：{p}"))
                     continue
+                _reused = bool(rec.get("reused"))
                 outcomes.append(CacheOutcome(
-                    graph_id=f"{prefix}{sid}", ok=True, from_cache=False,
+                    graph_id=f"{prefix}{sid}", ok=True, from_cache=_reused,
                     # 按 shotId 命名，与本地产物同一套规则（_materialize 会再去重命名）
                     artifacts={f"{sid}.png": blob},
-                    seconds=float(rec.get("seconds") or 0.0)))
+                    seconds=0.0 if _reused else float(rec.get("seconds") or 0.0)))
             else:
                 outcomes.append(CacheOutcome(
                     graph_id=f"{prefix}{sid}", ok=False,
                     failure="render-failed",
                     reason=str(rec.get("error") or "云端渲染失败")[:160]))
         batch = CachedBatch(outcomes=tuple(outcomes))
+        # ---- 费用台账（2026-11-15）：云端调用数/复用数/估算费用 ----
+        _new = int(res.get("newCalls") or 0)
+        _reused = int(res.get("reused") or 0)
+        self._image_calls = {
+            "kind": "image.calls", "renderPath": "cloud",
+            "cloud": {"attempted": len(rows), "new": _new, "reused": _reused,
+                      "unitCny": 0.05,
+                      "estCostCny": round(float(res.get("estCostCny") or 0.0), 4)},
+            "local": {"new": 0, "reused": 0, "unitCny": 0.0, "estCostCny": 0.0}}
+        try:
+            import json as _json_ic
+
+            (_ic_dir := wd / "delivery").mkdir(parents=True, exist_ok=True)
+            (_ic_dir / "image_calls.json").write_text(
+                _json_ic.dumps(self._image_calls, ensure_ascii=False, indent=2),
+                encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        if _reused:
+            print(f"  ♻️ 复用已有云端图 {_reused} 张（本次新增 {_new} 张 · "
+                  f"估算 ¥{float(res.get('estCostCny') or 0.0):.2f}）")
+        else:
+            print(f"  云端调用 {_new} 张 · 估算 ¥{float(res.get('estCostCny') or 0.0):.2f}")
         ok_n = len(batch.succeeded)
         print(f"  云端整集：完成 {ok_n}/{len(outcomes)} 镜"
               + (f" · ⚠️ 失败 {len(batch.failed)}" if batch.failed else ""))

@@ -76,6 +76,28 @@ def _prompt_of(shot: Any, extra: str = "") -> str:
         "{extra}", (f"补充：{extra}。" if extra else ""))
 
 
+def content_key(*, prompt: str, anchor: str, model: str, size: str,
+                extra: str = "") -> str:
+    """内容键：**同一内容重复跑 = 同一个键**（图生图复用的判断依据）。
+
+    含锚点图字节哈希（换锚点 = 换内容，必须重渲），不含 shotId
+    （shotId 随集号变，不能用来判断"这张图是不是同一张"）。
+    """
+    import hashlib as _h
+
+    anchor_sha = ""
+    try:
+        ap = Path(str(anchor or ""))
+        if ap.is_file():
+            anchor_sha = _h.sha256(ap.read_bytes()).hexdigest()[:16]
+    except Exception:                                         # noqa: BLE001
+        anchor_sha = ""
+    blob = json.dumps({"model": model, "size": size, "prompt": prompt,
+                       "extra": extra, "anchor": anchor_sha},
+                      sort_keys=True, ensure_ascii=False)
+    return _h.sha256(blob.encode("utf-8")).hexdigest()
+
+
 def render_one(shot: Any, anchor: str, out_dir: str | Path, *,
                model: str = DEFAULT_MODEL, size: str = DEFAULT_SIZE,
                extra: str = "") -> dict:
@@ -85,6 +107,20 @@ def render_one(shot: Any, anchor: str, out_dir: str | Path, *,
     sid = str(getattr(shot, "shot_id", "") if not isinstance(shot, Mapping)
               else shot.get("shot_id") or "shot")
     prompt = _prompt_of(shot, extra)
+    ckey = content_key(prompt=prompt, anchor=anchor or "", model=model,
+                       size=size, extra=extra)
+    dst = out / f"{sid}_cloud.png"
+    side = out / f"{sid}_cloud.json"
+    # ---- 复用（2026-11-15）：同内容已渲过就直接用，**不再计费** ----
+    if dst.is_file() and side.is_file():
+        try:
+            meta = json.loads(side.read_text(encoding="utf-8")) or {}
+        except Exception:                                     # noqa: BLE001
+            meta = {}
+        if str(meta.get("key") or "") == ckey:
+            return {"shotId": sid, "ok": True, "out": str(dst),
+                    "anchor": anchor or "", "model": model,
+                    "seconds": 0.0, "reused": True, "key": ckey}
     key = str(env_value("SUDORELAY_API_KEY", "") or "")
     if not key:
         return {"shotId": sid, "ok": False, "error": "缺少 SUDORELAY_API_KEY"}
@@ -122,10 +158,18 @@ def render_one(shot: Any, anchor: str, out_dir: str | Path, *,
         if not img:
             return {"shotId": sid, "ok": False, "error": "响应里没有图片",
                     "seconds": round(time.time() - t0, 1)}
-        dst = out / f"{sid}_cloud.png"
         dst.write_bytes(img)
+        try:
+            side.write_text(json.dumps(
+                {"key": ckey, "shotId": sid, "model": model, "size": size,
+                 "anchor": anchor or "", "seconds": round(time.time() - t0, 1),
+                 "createdAt": time.time()}, ensure_ascii=False, indent=2),
+                encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
         return {"shotId": sid, "ok": True, "out": str(dst), "anchor": anchor or "",
                 "model": model, "seconds": round(time.time() - t0, 1),
+                "reused": False, "key": ckey,
                 "bytes": len(img), "usedAnchor": bool(anchor)}
     except Exception as exc:                                  # noqa: BLE001
         return {"shotId": sid, "ok": False, "error": f"{type(exc).__name__}: {exc}",
@@ -171,10 +215,15 @@ def render_plan(shots: Iterable[Any], plan_rows: Iterable[Mapping[str, Any]],
     else:
         records += [_one(it) for it in its]
     ok = [r for r in records if r.get("ok")]
+    reused = len([r for r in ok if r.get("reused")])
+    new_calls = len(ok) - reused
     return {"ok": bool(ok), "rendered": len(ok),
             "failed": len(records) - len(ok), "records": records,
-            "workers": workers,
-            "seconds": round(sum(float(r.get("seconds") or 0) for r in records), 1)}
+            "workers": workers, "reused": reused, "newCalls": new_calls,
+            "unitCny": 0.05,
+            "estCostCny": round(new_calls * 0.05, 4),
+            "seconds": round(sum(float(r.get("seconds") or 0)
+                                 for r in records if not r.get("reused")), 1)}
 
 
 def load_anchors(workdir: str | Path) -> dict[str, str]:
