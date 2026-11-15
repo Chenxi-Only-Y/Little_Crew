@@ -114,3 +114,33 @@ media 数组：{ type, url }
 | 3 | 素材是**公网 URL** 还是**可上传/Base64**？ | 全部 |
 | 4 | **480p/852×480 档**的单价 | Vidu、Seedance |
 | 5 | 参考视频的**时长/体积/并发**限制 | 全部（Seedance 已知） |
+## 补充：MuAPI 网关（2026-11-15）
+
+> 来源：<https://muapi.ai>（Open-Generative-AI 的模型网关）+ 定价页
+
+### 它解决本文档最大的门槛
+
+本文档前面的结论是「**多数厂商要公网可访问的素材 URL**，而 `publish.py` 的
+`TunnelPublisher` 未实现」。MuAPI 提供 **`POST /api/v1/upload_file`**（multipart）
+→ 返回公网 URL，正好补上这一步，不必自己搭对象存储或隧道。
+
+### 接入形态（与现有 provider 机制兼容）
+
+```
+1 POST /api/v1/upload_file          上传图片/音频/视频 →  {url}
+2 POST /api/v1/{model-endpoint}     提交任务（x-api-key）→  request_id
+3 GET  /api/v1/predictions/{id}/result   轮询至 completed → 产物 URL
+```
+
+### 与"口型"直接相关的价格（用于 B 项验证预算）
+
+| 模型 | 价格 | 备注 |
+|---|---|---|
+| `wan2.2-speech-to-video` | $0.04/s @480p（$0.08/s @720p） | 图+音频 → 说话视频 |
+| `latentsync-video` | $0.04/条 | 视频+音频 → 对口型 |
+
+### 风险
+
+- 这是**商业网关**（白标 $49/月起），"开源"只指 UI 代码
+- 素材会离开本机（与我们"本地可私有部署"的卖点要分开表述）
+- 内容政策宽松（宣传 no filters）——与我们合规门禁的定位不同，接入需只当"执行通道"
