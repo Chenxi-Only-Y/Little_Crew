@@ -299,6 +299,9 @@ class EpisodeResult:
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
+    #: 场记跨镜审计（2026-11-15）：相邻镜头比对；**只报警、不返工**。
+    continuity: dict[str, Any] = field(default_factory=dict)
+
     #: 合规官结论（2026-11-15）：授权归口 + 交付审计 + 内容初审；
     #: `status` 只会是 `blocked` / `needs_human_review`（**永不 `signed`**）。
     compliance: dict[str, Any] = field(default_factory=dict)
@@ -353,6 +356,7 @@ class EpisodeResult:
             "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
             "lipsync": dict(getattr(self, "lipsync", {}) or {}),
             "compliance": dict(getattr(self, "compliance", {}) or {}),
+            "continuity": dict(getattr(self, "continuity", {}) or {}),
             "camera": dict(getattr(self, "camera", {}) or {}),
             "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
             "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
@@ -1899,6 +1903,8 @@ class EpisodeRunner:
         self._stage_lipsync(picked, per_shot_artifacts)
 
         self._stage_vision(picked, irs, per_shot_artifacts, artifacts)
+        # ---- 场记跨镜审计（2026-11-15）：只报警，不返工 ----
+        self._stage_continuity(picked, per_shot_artifacts)
         # 封面设计师（2026-11-13）：选帧 或 生成（默认选帧）
         self._run_cover(picked, per_shot_artifacts)
 
@@ -2072,6 +2078,7 @@ class EpisodeRunner:
             schedule=sched_info,
             previs=previs_info,
             compliance=dict(getattr(self, "_compliance_report", {}) or {}),
+            continuity=dict(getattr(self, "_continuity_report", {}) or {}),
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -3500,6 +3507,69 @@ class EpisodeRunner:
                     o.artifacts = clean_map
                 except Exception:                             # noqa: BLE001
                     pass
+
+    def _stage_continuity(self, picked: Sequence[Any],
+                          per_shot_artifacts: Mapping[str, Any]) -> dict[str, Any]:
+        """跑场记的**跨镜审计**：相邻镜头比对（角色/道具/空间/轴线）。
+
+        ⚠️ **只报警，不返工**：返工指令唯一出口是单镜质检（`qc.report`）。
+        本阶段替代产物 `continuity.report` 进报告与 `delivery/continuity_audit.json`。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "continuity_supervisor" not in impls:
+            return {}
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        imgs: dict[str, str] = {}
+        descs: dict[str, str] = {}
+        shots: list[dict[str, Any]] = []
+        for s in picked:
+            sid = str(getattr(s, "shot_id", ""))
+            descs[sid] = str(getattr(s, "description", "") or "")
+            shots.append({"shotId": sid,
+                          "sceneId": str(getattr(s, "scene_id", "") or ""),
+                          "description": descs[sid]})
+            names = list(per_shot_artifacts.get(sid) or ())
+            if not names or not wd:
+                continue
+            try:
+                hit = list(Path(str(wd)).rglob(str(names[0])))
+            except Exception:                                 # noqa: BLE001
+                hit = []
+            if hit:
+                imgs[sid] = str(hit[0])
+        payload = {"shot.image": imgs, "descriptions": descs,
+                   "shots": shots,
+                   "maxPairs": int(getattr(self, "continuity_pairs", 3))}
+        try:
+            out = self.orch.run_stage("continuity_supervisor",
+                                      "continuity.check", payload)
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 场记跨镜审计失败：{type(e).__name__}: {e}")
+            return {}
+        rep = self.orch.blackboard.value("continuity.report")
+        if not isinstance(rep, Mapping):
+            res_o = getattr(out, "result", None)
+            rep = ((getattr(res_o, "output", None) or {}).get("continuity.report"))
+        if not isinstance(rep, Mapping):
+            return {"ok": False, "reason": "场记未产出 continuity.report"}
+        self._continuity_report = dict(rep)
+        try:
+            if wd:
+                (_o := Path(str(wd)) / "delivery").mkdir(parents=True,
+                                                         exist_ok=True)
+                import json as _jct
+
+                (_o / "continuity_audit.json").write_text(
+                    _jct.dumps(dict(rep), ensure_ascii=False,
+                               indent=2, default=str), encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        if rep.get("notJudged"):
+            print("  ⚠️ 场记跨镜审计：一对也没判（等于没审，如实记录）")
+        else:
+            print(f"  场记跨镜审计：{rep.get('reviewedPairs', 0)} 对，"
+                  f"{len(rep.get('issues') or ())} 项告警（只报警，不返工）")
+        return {"ok": True, "report": dict(rep)}
 
     def _stage_compliance(self, picked: Sequence[Any],
                           per_shot_artifacts: Mapping[str, Any]) -> dict[str, Any]:

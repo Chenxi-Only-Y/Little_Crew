@@ -118,6 +118,77 @@ def main() -> int:
     check("E1 ★★★ payload 没有图 -> F-NO-IMAGES",
           not res.ok and res.error_code == "F-NO-IMAGES", str(res.error_code))
 
+    print(); print("F. 跨镜审计（2026-11-15：只报警，不返工）")
+    from types import SimpleNamespace as _SNS
+
+    from little_crew.agent.protocol import CallEnvelope as _Env
+    from little_crew.review.qc_inspector import cross_shot_audit as _csa
+
+    with tempfile.TemporaryDirectory() as td4:
+        d4 = Path(td4)
+        # ⚠️ 跨镜审计要真能解码图片（`_png` 是给视觉客户端用的假字节，
+        # 不是合法 PNG —— Pillow 会报 Truncated File Read）。这里用真图。
+        def _real_png(path, color):
+            from PIL import Image as _Img
+
+            _Img.new("RGB", (96, 64), color).save(str(path))
+            return str(path)
+
+        p1 = _real_png(d4 / "c1.png", (40, 60, 90))
+        p2 = _real_png(d4 / "c2.png", (45, 65, 95))
+        p3 = _real_png(d4 / "c3.png", (50, 70, 100))
+        shots3 = [_SNS(shot_id="S1"), _SNS(shot_id="S2"), _SNS(shot_id="S3")]
+        imgs3 = {"S1": p1, "S2": p2, "S3": p3}
+
+        class _CC:
+            def __init__(self, obj):
+                self.obj = obj
+
+            def chat_image(self, prompt, data, what="", max_tokens=0):
+                import json as _j
+
+                return _j.dumps(self.obj)
+
+        r0 = _csa(shots3, imgs3, client=None)
+        check("F1 ★★★ 无视觉客户端 -> performed=False 且 notJudged",
+              r0["performed"] is False and r0["notJudged"] is True, "")
+        r1 = _csa(shots3, imgs3, client=_CC({"consistent": True, "issues": []}))
+        check("F2 ★★★ 一致 -> 判了对数且无告警",
+              r1["reviewedPairs"] >= 1 and not r1["issues"]
+              and r1["advisoryOnly"] is True, str(r1["reviewedPairs"]))
+        r2 = _csa(shots3, imgs3, client=_CC({
+            "consistent": False,
+            "issues": [{"kind": "character", "severity": "high",
+                        "reason": "服装不一致"}]}))
+        check("F3 ★★★ 不一致 -> 记告警且**不产生返工动作**",
+              r2["issues"] and "actions" not in r2, str(r2["issues"][:1]))
+        r3 = _csa(shots3, imgs3, client=_CC({"consistent": True}),
+                  max_pairs=1)
+        check("F4 ★★ maxPairs 生效（成本上限）",
+              r3["requestedPairs"] == 1
+              and r3["reviewedPairs"] + len(r3["skipped"]) <= 1, "")
+        r4 = _csa(shots3, {"S2": p2}, client=_CC({"consistent": True}))
+        check("F5 ★★★ 缺图的一对 -> skipped 记录（不算审过）",
+              r4["notJudged"] is True
+              and any(x.get("why") == "缺图" for x in r4["skipped"]), "")
+        inst = QcInspector(client=_CC({"consistent": True, "issues": []}),
+                           max_shots=2)
+        out_c = inst(envelope=_Env.root("continuity_supervisor",
+                                        "continuity.check",
+                                        {"shot.image": imgs3,
+                                         "shots": [{"shotId": s.shot_id}
+                                                   for s in shots3],
+                                         "maxPairs": 2}, None),
+                     runtime=None)
+        check("F6 ★★★ capability=continuity.check -> 产出 continuity.report",
+              out_c.ok and "continuity.report" in (out_c.output or {}), "")
+        out_q = inst(envelope=_Env.root("continuity_supervisor", "shot.qc",
+                                        {"shot.image": imgs3}, None),
+                     runtime=None)
+        check("F7 ★★★ capability=shot.qc 仍走单镜质检（产物不混）",
+              out_q.ok and "qc.report" in (out_q.output or {})
+              and "continuity.report" not in (out_q.output or {}), "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

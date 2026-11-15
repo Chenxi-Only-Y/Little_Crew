@@ -57,6 +57,35 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.43] — 2026-11-15（**场记跨镜审计：把"声明"变成"实现"**）
+
+### 补的是什么
+
+文档/名册一直写"场记 = 单镜质检 + **跨镜审计**"，但代码只做单镜质检 ——
+跨镜一致性此前只是**描述**。本版补上实现。
+
+### 实现
+
+- `review/qc_inspector.py` 新增 `cross_shot_audit()`：
+  - 相邻镜头**左右拼图**（Pillow）→ 一次 VLM 调用判：角色（脸/发型/服装/配饰）、
+    关键道具、场景空间、视线/轴线
+  - 默认最多 **3 对**（`maxPairs` 成本上限）；缺图/无客户端/解析失败 → `skipped` + `notJudged` 如实留痕
+  - **`advisoryOnly=True`、不产生 `actions`** —— 返工指令唯一出口仍是单镜质检
+- `capability` 分流：`continuity.check` → `continuity.report`；`shot.qc` → `qc.report`（产物不混）
+- `EpisodeRunner._stage_continuity`：跑在视觉闸之后；落 `delivery/continuity_audit.json`；
+  `EpisodeResult.continuity` 进报告
+
+### 测试
+
+`qc_inspector_check` **21/21**（+F1~F7：无客户端/一致/不一致不返工/上限/缺图/能力分流/产物不混）
++ 全量 **2824/2811 + 架构守卫 PASS**
+
+### 文档
+
+`docs/16` 视觉闸行补跨镜；`docs/20` 勾完成；套件数同步 **2824/2811**。
+
+---
+
 ## [0.4.0-beta.42] — 2026-11-15（**合规官接入：三腿 = 授权归口 / 交付审计 / 内容初审**）
 
 ### 定位

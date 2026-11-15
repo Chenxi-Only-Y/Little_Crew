@@ -57,6 +57,151 @@ DEFAULT_MAX_SHOTS = 12
 #: （`qc_inspector_check` 里断言两边相等），漂移即失败。
 RERENDER_KINDS = ("vision.faces-broken", "vision.blank")
 
+#: 跨镜审计最多比对几对相邻镜头（成本可控；默认 3 对）
+CROSS_PAIR_MAX = 3
+
+#: 跨镜一致性检查项（只报警，**不返工** —— 返工权在单镜质检）
+_CROSS_PROMPT = """你是场记，正在做**跨镜一致性审计**。
+左图与右图是同一部短片里**相邻的两个镜头**（顺序：左 -> 右）。
+只判断**跨镜一致性**，不要评价画面好坏：
+1. 同一角色：脸型/发型/服装/配饰是否一致
+2. 关键道具：位置、外观、数量是否连贯
+3. 场景空间：同一场戏的空间结构、家具、光源方向是否一致
+4. 视线/轴线：人物视线方向、机位轴线是否跳轴
+镜头描述（左 / 右）：{desc}
+严格输出 JSON（不要解释）：
+{{"consistent": true|false,
+ "issues": [{{"kind": "character|prop|space|axis|other",
+             "severity": "low|high", "reason": "一句话"}}],
+ "confidence": 0.0-1.0}}
+若图像不可读或无法判断，输出 {{"consistent": null, "issues": []}}。"""
+
+
+
+
+def _json_of(text: str):
+    """从模型回复里抠 JSON（容忍 ```json 包裹与前后废话）。"""
+    s = str(text or "").strip()
+    if s.startswith("```"):
+        parts = s.split("```")
+        s = parts[1] if len(parts) > 1 else s[3:]
+    i, j = s.find("{"), s.rfind("}")
+    if i < 0 or j <= i:
+        return None
+    import json as _j
+
+    try:
+        return _j.loads(s[i:j + 1])
+    except Exception:                                         # noqa: BLE001
+        return None
+
+
+def side_by_side(path_a: str, path_b: str, *, height: int = 420):
+    """把两张图拼成左右并排版（一次视觉调用判一对）。没有 Pillow 就返回 None。"""
+    try:
+        from io import BytesIO
+
+        from PIL import Image
+    except Exception:                                         # noqa: BLE001
+        return None
+    try:
+        a = Image.open(str(path_a)).convert("RGB")
+        b = Image.open(str(path_b)).convert("RGB")
+
+        def _fit(im):
+            w = max(1, int(im.width * (height / max(1, im.height))))
+            return im.resize((w, height))
+
+        a, b = _fit(a), _fit(b)
+        gap = 12
+        canvas = Image.new("RGB", (a.width + gap + b.width, height), (24, 24, 24))
+        canvas.paste(a, (0, 0))
+        canvas.paste(b, (a.width + gap, 0))
+        buf = BytesIO()
+        canvas.save(buf, format="JPEG", quality=86)
+        import base64
+
+        return base64.b64encode(buf.getvalue()).decode()
+    except Exception:                                         # noqa: BLE001
+        return None
+
+
+def cross_shot_audit(shots, images, *, client, max_pairs: int = CROSS_PAIR_MAX,
+                     descs=None) -> dict:
+    """跨镜一致性审计（**只报警，不返工**）。纯函数，便于单测。
+
+    Args:
+        shots: 镜头序列（要有 `shot_id`），相邻两镜为一对。
+        images: `{shotId: 图片路径}`。
+        client: 视觉客户端（`chat_image`）；None = 如实标"未做"。
+        max_pairs: 最多比对几对（成本上限）。
+    """
+    descs = dict(descs or {})
+    order = []
+    for s in (shots or ()):
+        sid = str(getattr(s, "shot_id", "") or "")
+        if sid:
+            order.append(sid)
+    pairs: list[dict] = []
+    issues: list[dict] = []
+    skipped: list[dict] = []
+    judged = 0
+    limit = max(0, int(max_pairs))
+    for a, b in zip(order, order[1:]):
+        if len(pairs) + len(skipped) >= limit:
+            break
+        pa, pb = str((images or {}).get(a) or ""), str((images or {}).get(b) or "")
+        if not pa or not pb:
+            skipped.append({"pair": [a, b], "why": "缺图"})
+            continue
+        if client is None:
+            skipped.append({"pair": [a, b], "why": "未绑定视觉模型"})
+            continue
+        data = side_by_side(pa, pb)
+        if not data:
+            skipped.append({"pair": [a, b], "why": "无法拼图（缺 Pillow）"})
+            continue
+        desc = f"{descs.get(a, '')[:60]} / {descs.get(b, '')[:60]}"
+        try:
+            reply = client.chat_image(_CROSS_PROMPT.replace("{desc}", desc),
+                                     data, what="跨镜一致性审计",
+                                     max_tokens=400)
+            text = reply if isinstance(reply, str) else getattr(reply, "text", "")
+            obj = _json_of(text)
+        except Exception as e:                                # noqa: BLE001
+            skipped.append({"pair": [a, b], "why": f"{type(e).__name__}: {str(e)[:40]}"})
+            continue
+        if not isinstance(obj, dict) or obj.get("consistent") is None:
+            skipped.append({"pair": [a, b], "why": "模型没给可判结论"})
+            continue
+        judged += 1
+        pair_issues = []
+        for it in (obj.get("issues") or ()):
+            if not isinstance(it, dict):
+                continue
+            kind = str(it.get("kind") or "other")
+            if kind not in ("character", "prop", "space", "axis"):
+                kind = "other"
+            rec = {"pair": [a, b], "kind": kind,
+                   "severity": str(it.get("severity") or "low"),
+                   "reason": str(it.get("reason") or "")[:120]}
+            pair_issues.append(rec)
+            issues.append(rec)
+        pairs.append({"pair": [a, b], "consistent": bool(obj.get("consistent")),
+                      "confidence": obj.get("confidence"), "issues": pair_issues})
+    return {
+        "kind": "continuity.report",
+        "performed": judged > 0,
+        # ⚠️ **advisoryOnly**：本报告只报警，不产生返工动作
+        "advisoryOnly": True,
+        "reviewedPairs": judged,
+        "requestedPairs": limit,
+        "pairs": pairs,
+        "issues": issues,
+        "skipped": skipped,
+        # 一对都没判 = 等于没审（必须留痕，不能当通过）
+        "notJudged": judged == 0,
+    }
 
 class QcInspector:
     """质检员实现：`impl(*, envelope, runtime) -> CallResult`。
@@ -76,6 +221,16 @@ class QcInspector:
         payload = dict(getattr(envelope, "payload", {}) or {})
         images = dict(payload.get("shot.image") or {})
         descs = dict(payload.get("descriptions") or {})
+        # ---- 跨镜审计（2026-11-15）：capability 区分，产物是 continuity.report ----
+        if str(getattr(envelope, "capability", "") or "") == "continuity.check":
+            rep = cross_shot_audit(
+                payload.get("shots") or (), images, client=self.client,
+                max_pairs=int(payload.get("maxPairs") or self.max_shots
+                              or CROSS_PAIR_MAX),
+                descs=descs)
+            return CallResult.success({"continuity.report": rep},
+                                      evidence={"reviewedPairs": rep["reviewedPairs"],
+                                                "issues": len(rep["issues"])})
         if not images:
             # 没有图不是"通过"，是"没法判" —— 显式失败
             return CallResult.fail("F-NO-IMAGES",
