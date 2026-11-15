@@ -299,6 +299,9 @@ class EpisodeResult:
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
+    #: 交付元数据（2026-11-15）：AI 标识/署名/素材登记的实际落地情况。
+    delivery_meta: dict[str, Any] = field(default_factory=dict)
+
     #: 场记跨镜审计（2026-11-15）：相邻镜头比对；**只报警、不返工**。
     continuity: dict[str, Any] = field(default_factory=dict)
 
@@ -357,6 +360,7 @@ class EpisodeResult:
             "lipsync": dict(getattr(self, "lipsync", {}) or {}),
             "compliance": dict(getattr(self, "compliance", {}) or {}),
             "continuity": dict(getattr(self, "continuity", {}) or {}),
+            "deliveryMeta": dict(getattr(self, "delivery_meta", {}) or {}),
             "camera": dict(getattr(self, "camera", {}) or {}),
             "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
             "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
@@ -1912,6 +1916,10 @@ class EpisodeRunner:
 
         self._stage_image_review(picked, per_shot_artifacts, artifact_hashes)
 
+        # ---- 交付元数据（2026-11-15）：AI 标识/署名/素材登记 ----
+        # 必须在合规官**之前**：合规官要核对"这些标识有没有真的写进交付物"。
+        self._stage_delivery_meta(picked, per_shot_artifacts)
+
         # ---- 合规官（2026-11-15）：授权归口 + 交付审计 + 内容 VLM 初审 ----
         # 放在**交付物已齐**之后、manifest 之前：报告里才能核对"标识/署名有没有写进交付物"。
         self._stage_compliance(picked, per_shot_artifacts)
@@ -2079,6 +2087,7 @@ class EpisodeRunner:
             previs=previs_info,
             compliance=dict(getattr(self, "_compliance_report", {}) or {}),
             continuity=dict(getattr(self, "_continuity_report", {}) or {}),
+            delivery_meta=dict(getattr(self, "_delivery_meta", {}) or {}),
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -3507,6 +3516,65 @@ class EpisodeRunner:
                     o.artifacts = clean_map
                 except Exception:                             # noqa: BLE001
                     pass
+
+    def _stage_delivery_meta(self, picked: Sequence[Any],
+                             per_shot_artifacts: Mapping[str, Any]) -> dict[str, Any]:
+        """生成并写交付元数据：片尾 AI 标识、封面角标、mp4 隐式标识、署名、素材登记。"""
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        if not wd:
+            return {}
+        try:
+            from little_crew.runtime import delivery_meta as _dm
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 交付元数据模块不可用：{type(e).__name__}: {e}")
+            return {}
+        base = Path(str(wd))
+        d = base / "delivery"
+        # 找 master：delivery 下的 mp4（成片/合成结果都可能）
+        masters = [str(p) for p in sorted(d.glob("*.mp4"))
+                   if p.is_file() and "label" not in p.name]
+        covers = [str(p) for p in sorted(d.glob("cover*"))
+                  if p.is_file() and p.suffix.lower() in (".jpg", ".jpeg", ".png")
+                  and "labeled" not in p.name]
+        audio = [str(d / "mix.wav")] if (d / "mix.wav").is_file() else []
+        # 角色锚点（已使用过的）
+        anchors: dict[str, str] = {}
+        try:
+            table = getattr(self, "_anchor_table", None) or {}
+            used = getattr(self, "_anchors_used", None) or {}
+            ids = {c for cs in used.values() for c in (cs or ())}
+            for cid in ids:
+                if cid in table:
+                    anchors[str(cid)] = str(table[cid])
+        except Exception:                                     # noqa: BLE001
+            anchors = {}
+        models = [str(getattr(self, "engine_checkpoint", "") or ""),
+                  str(getattr(self, "cloud_model", "") or "")]
+        models = [m for m in dict.fromkeys(models) if m]
+        attrs: list[str] = []
+        try:
+            from little_crew.governance.license import LicenseGate
+
+            attrs = LicenseGate().collect_attributions(models)
+        except Exception:                                     # noqa: BLE001
+            attrs = []
+        try:
+            meta = _dm.build_delivery_meta(
+                workdir=base, episode_id=self.episode_id,
+                models=models, attributions=attrs, anchors=anchors,
+                fonts=[], audio=audio, covers=covers, masters=masters)
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 交付元数据生成失败：{type(e).__name__}: {e}")
+            return {}
+        self._delivery_meta = dict(meta)
+        lab = meta.get("aiLabels") or {}
+        print(f"  交付标识：显式={bool(lab.get('explicit'))}"
+              f" 隐式={bool(lab.get('implicit'))}"
+              f" 素材登记={'✓' if meta.get('sourceRegistryOk') else '✗'}"
+              f"（{len(meta.get('sources') or ())} 项）")
+        if meta.get("errors"):
+            print(f"  ⚠️ 交付标识问题：{'；'.join(meta['errors'][:3])}")
+        return {"ok": True, "meta": dict(meta)}
 
     def _stage_continuity(self, picked: Sequence[Any],
                           per_shot_artifacts: Mapping[str, Any]) -> dict[str, Any]:

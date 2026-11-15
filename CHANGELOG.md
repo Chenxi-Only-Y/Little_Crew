@@ -57,6 +57,36 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.44] — 2026-11-15（**A2 交付元数据：AI 标识 / 署名 / 素材登记**）
+
+### 补的是什么
+
+合规官的交付腿一直读 `aiLabels / credits / sourceRegistryOk`，但**没有任何代码写它们** ——
+报告只能列"缺失"。本版把三样东西**真的写进交付物**。
+
+### 实现 `runtime/delivery_meta.py`
+
+| 产物 | 说明 |
+|---|---|
+`delivery/ai_label_endcard.png` | 显式标识：片尾卡「本片由 AI 生成 / AI-GENERATED」+ 署名 |
+`delivery/cover_labeled.*` | 显式标识：封面角标（**副本**，原封面不动） |
+mp4 `comment` + `ai_generated=1` | 隐式标识：ffmpeg 原位 remux，**ffprobe 可读回** |
+`delivery/credits.txt` | 署名（来自 `LicenseGate.collect_attributions`） |
+`delivery/sources.json` | 素材登记：模型许可（目录）/参考图 project-owned/字体 system-font/音轨 |
+`delivery/ai_labels.json` | **实际落地情况**（失败记 errors，不回填 true） |
+
+- `EpisodeRunner._stage_delivery_meta`：成片之后、合规官之前运行；
+  `EpisodeResult.deliveryMeta` 进报告；合规官直接消费该元数据
+- 诚实边界：无 ffmpeg → `implicit=False`；未知来源 → `sourceRegistryOk=False`
+
+### 测试
+
+新增 `runtime/delivery_meta_check` **12 项**（素材登记/片尾卡/封面角标/ffprobe 读回/
+无 ffmpeg 时诚实回退/合规对接）
++ 全量 **2836/2823 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.43] — 2026-11-15（**场记跨镜审计：把"声明"变成"实现"**）
 
 ### 补的是什么
