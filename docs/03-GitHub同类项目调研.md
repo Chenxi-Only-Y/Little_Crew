@@ -568,3 +568,6 @@ Workflow Studio | 节点式多步流水线 | 职位编排（约束更强、无 U
 > 证据：`research/episodes/最后一班/b2-evidence/{lipsync.json, ai_labels.json, compliance.json, frame_0.8s/2.6s/4.4s.png}` +
 > `b2_lipsync_evidence.jpg`（原静帧 vs 口型后三帧）。
 > 成本口径：整条链路 **≈¥0.95**（4 张图 ¥0.20 + 口型 ¥0.75），墙钟 **105s**（含生图缓存命中）。
+
+**音频来源口径（2026-11-16）**：TTS 是**兜底**。视频模型若声明 `native_audio=True`（如 `minimax-h3`），成片音轨由视频模型原生输出，`--voice` 会**跳过外部 TTS**、口型通道也跳过；
+只有视频模型无原生音频（如 `wan22-5b-ti2v`）时才启动 Breeze TTS。doctor 按此条件判断 TTS 是否阻塞。

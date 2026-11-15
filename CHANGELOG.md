@@ -57,6 +57,35 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.47] — 2026-11-16（**A1/A2/A3：B2 暴露问题修复；TTS 改为兜底**）
+
+### A2（口径修正）：TTS 取决于视频模型有没有原生音频
+
+| 情况 | 行为 |
+|---|---|
+视频模型 `native_audio=True`（如 **minimax-h3**） | **跳过外部 TTS**；口型通道跳过（音轨由视频通道原生输出） |
+视频模型无原生音频（如 wan22-5b-ti2v） | 走 Breeze TTS（现状） |
+未知模型 | **不猜**：按需要 TTS（`checked=False`） |
+
+- 新增 `models/registry.native_audio_for(model_id)`；`EpisodeRunner._video_native_audio()`
+- **doctor**：只有"需要外部音频"时 TTS 才阻塞；否则注明"视频原生音频，TTS 可选"，失败时给启动命令
+- demo：`runner.video_model` 按 H3/wan22 声明
+
+### A1：默认负向禁止"对话气泡/字幕"
+
+B2 实测模型把台词**画成对话气泡**印进画面。`_zh_negative()` 与 `default_negative_prompt()`
+**合并为一份**（拆两处必然漂移），新增：字幕、对话气泡、气泡框、漫画对话框。
+
+### A3：云端渲染模型进素材登记
+
+云端渲染时记录实际模型到 `self.cloud_model` → 交付 `sources.json` 覆盖云端模型。
+
+### 测试
+
+新增 `runtime.voice_source_check` **9/9**；全量 **2864/2851 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.46] — 2026-11-16（**B2 口型端到端 + 时长对齐修复**）
 
 ### B2：`--voice` + `--lipsync` 整集链路真跑

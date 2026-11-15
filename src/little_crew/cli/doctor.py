@@ -137,8 +137,25 @@ def run_checks() -> list[dict[str, Any]]:
                    "detail": f"{comfy} · {why}"})
 
     ok2, why2 = _http_ok(tts + "/health")
-    checks.append({"name": "TTS", "ok": ok2, "blocking": ok2 is False,
-                   "detail": f"{tts} · {why2}"})
+    # 2026-11-16：**TTS 是兜底** —— 视频模型原生有音轨就不需要它。
+    _vmid = (_cfg("LITTLE_CREW_VIDEO_MODEL", "") or "")
+    _na = False
+    try:
+        from little_crew.models.registry import native_audio_for
+
+        _na = bool(native_audio_for(str(_vmid)).get("nativeAudio"))
+    except Exception:                                         # noqa: BLE001
+        _na = False
+    if _na:
+        checks.append({"name": "TTS", "ok": True, "blocking": False,
+                       "detail": (f"视频模型 {_vmid} 原生输出音轨 → 不需要 TTS；"
+                                  f"{tts} · {why2}（可选）")})
+    else:
+        _hint = ("启动：D:\AI\local-ai\tts\bin\breeze-tts-2-v0.1.6-windows-x64-vulkan"
+                 "\breeze-server.exe models\breeze-tts-2-q8_0.gguf --port 8110")
+        checks.append({"name": "TTS", "ok": ok2, "blocking": ok2 is False,
+                       "detail": f"{tts} · {why2}"
+                                 + ("" if ok2 else f" · 需要配音时请启动：{_hint}")})
 
     ok3, why3 = _llm_keys()
     checks.append({"name": "LLM key", "ok": ok3, "blocking": ok3 is False,

@@ -2264,6 +2264,26 @@ class EpisodeRunner:
                 print(f"  ⚠️ 成片未运行：{type(_e_f).__name__}: {_e_f}")
 
 
+    def _video_native_audio(self) -> dict:
+        """当前视频通道是否**原生输出音轨**（有则不需要外部 TTS）。
+
+        模型来源优先级：`self.video_model` > `LITTLE_CREW_VIDEO_MODEL`。
+        未知 -> `nativeAudio=False`（按需要 TTS 处理，**不猜**）。
+        """
+        import os as _os_na
+
+        mid = (str(getattr(self, "video_model", "") or "")
+               or str(_os_na.environ.get("LITTLE_CREW_VIDEO_MODEL", "") or ""))
+        if not mid and getattr(self, "video_mode", False):
+            # 视频模式默认走 H3（它原生带音频）；真实模型仍以显式声明优先
+            mid = "minimax-h3"
+        try:
+            from little_crew.models.registry import native_audio_for
+
+            return native_audio_for(mid)
+        except Exception:                                     # noqa: BLE001
+            return {"modelId": mid, "nativeAudio": False, "checked": False}
+
     def _stage_voice(self, picked, shots, script_draft, per_shot_artifacts):
         """配音 + 配乐 + 混流（2026-11-10 抽出）。
 
@@ -2277,6 +2297,20 @@ class EpisodeRunner:
         # 而**音色只剩"造音色未运行"一行提示**，配音照样能跑（用已有音色），
         # 单测全绿也发现不了。同类坑今晚第二次（上次是 `_wdv`）。
         _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+
+        # ---- 视频模型原生音频（2026-11-16）：有就不起 TTS ----
+        _na = self._video_native_audio()
+        self._voice_native = _na
+        if getattr(self, "voice_enabled", False) and _na.get("nativeAudio"):
+            self._voice_rows = []
+            self._voice_plan = {
+                "kind": "voice.plan", "skipped": True,
+                "source": "video-native-audio",
+                "model": _na.get("modelId", ""),
+                "reason": "视频模型原生输出音轨，不需要外部 TTS",
+            }
+            print(f"  配音：跳过外部 TTS（{_na.get('modelId')} 原生音频）")
+            return
 
         # 配音前探活（2026-11-11）：EF26/EF28 各有 1~2 句失败，
         # 事后**手动重调同一句就成功** —— 是 TTS 后端瞬时不可用。
@@ -2764,6 +2798,12 @@ class EpisodeRunner:
         wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
         if not wd:
             rep["error"] = "没有 workdir"
+            return
+        _na_ls = self._video_native_audio()
+        if _na_ls.get("nativeAudio"):
+            rep["error"] = (f"视频模型 {_na_ls.get('modelId')} 原生输出音轨，"
+                            "口型由视频通道负责，不走 TTS 口型通道")
+            print("  口型通道：跳过（视频原生音频）")
             return
         try:
             from little_crew.runtime import lipsync as _ls
@@ -3426,10 +3466,13 @@ class EpisodeRunner:
                  "reasons": []} for s in picked]
         print(f"  云端整集：{len(rows)} 镜 · 锚点 {len(anchors)} 个"
               + (f" · 画风「{style}」" if style else ""))
+        _cloud_mid = (str(getattr(self, "cloud_model", "") or "")
+                      or _cr.DEFAULT_MODEL)
+        # A3（2026-11-16）：记下**实际用的云端模型**，交付素材登记才能覆盖它
+        self.cloud_model = _cloud_mid
         res = _cr.render_plan(
             picked, rows, anchors, out_dir,
-            model=str(getattr(self, "cloud_model", "") or "") or _cr.DEFAULT_MODEL,
-            extra=style, workers=4)
+            model=_cloud_mid, extra=style, workers=4)
         outcomes: list[CacheOutcome] = []
         prefix = f"G-{self.episode_id}-"
         by_id = {r.get("shotId"): r for r in (res.get("records") or [])}

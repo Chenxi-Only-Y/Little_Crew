@@ -494,6 +494,24 @@ def _image_models() -> list[ModelSpec]:
 # 视频模型
 # ==========================================================================
 
+def native_audio_for(model_id: str = "") -> dict:
+    """视频模型是否**原生输出音轨**（有则不需要外部 TTS）。
+
+    返回 `{modelId, nativeAudio, checked}`；未知模型 `nativeAudio=False, checked=False`
+    —— **不猜**：拿不到证据就按"需要外部音频"处理。
+    """
+    mid = str(model_id or "").strip()
+    if not mid:
+        return {"modelId": "", "nativeAudio": False, "checked": False}
+    for m in _video_models():
+        if str(getattr(m, "model_id", "")) == mid:
+            cap = getattr(m, "capability", None)
+            return {"modelId": mid,
+                    "nativeAudio": bool(getattr(cap, "native_audio", False)),
+                    "checked": True}
+    return {"modelId": mid, "nativeAudio": False, "checked": False}
+
+
 def _video_models() -> list[ModelSpec]:
     return [
         ModelSpec(

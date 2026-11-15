@@ -829,6 +829,9 @@ def main(argv: list[str] | None = None) -> int:
     runner.force_accept_script = bool(args.accept_script)
     runner.video_mode = bool(args.video_mode)
     runner.video_seconds = float(args.video_mode_seconds)
+    # 2026-11-16：视频模型决定"是否需要外部 TTS"（H3 原生音频 → 不起 TTS）
+    runner.video_model = ("minimax-h3" if getattr(args, "h3", False)
+                          else "wan22-5b-ti2v")
     runner._workdir = work
     # ---- 白模（2026-10-19）----
     runner.stop_after = str(args.stop_after or "")

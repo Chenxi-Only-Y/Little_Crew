@@ -137,8 +137,11 @@ def prompt_tables(lang: "PromptLanguage | str") -> tuple[
 
 def _zh_negative() -> str:
     """中文负向提示。"""
+    # 2026-11-16 B2 实测：模型会在画面里**画对话气泡与字幕文字** →
+    # 必须显式禁止（否则"AI 生成的台词气泡"会印进成片）。
     return ("多手, 多指, 肢体畸形, 脸部崩坏, 五官错位, 服装变色, "
-            "画面出现文字, 水印, 签名, 低分辨率, 模糊, 过曝")
+            "画面出现文字, 字幕, 对话气泡, 气泡框, 漫画对话框, "
+            "水印, 签名, 低分辨率, 模糊, 过曝")
 
 
 def _clean_description(text: str) -> str:
@@ -167,8 +170,8 @@ def default_negative_prompt() -> str:
     文本编码器的一致性变差）。内容针对漫剧最常见的崩坏：
     多手多指、脸崩、服装变色、画面出现文字水印。
     """
-    return ("多手, 多指, 肢体畸形, 脸部崩坏, 五官错位, 服装变色, "
-            "画面出现文字, 水印, 签名, 低分辨率, 模糊, 过曝")
+    # 与 `_zh_negative()` 共用一份 —— 拆两处必然漂移（2026-11-16 实测就漂了）
+    return _zh_negative()
 
 
 def _character_ids(shots_ids: Iterable[str]) -> tuple[str, ...]:
