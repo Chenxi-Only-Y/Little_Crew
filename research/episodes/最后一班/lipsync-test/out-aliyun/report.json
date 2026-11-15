@@ -1,0 +1,66 @@
+{
+  "kind": "lipsync.test",
+  "provider": "dashscope",
+  "model": "wan2.2-s2v",
+  "resolution": "480P",
+  "image": "research\\episodes\\最后一班\\lipsync-test\\face.png",
+  "audio": "research\\episodes\\最后一班\\lipsync-test\\line.wav",
+  "startedAt": "2026-11-15T18:04:07",
+  "audioSeconds": 4.96,
+  "estCostCny": 2.48,
+  "detect": {
+    "output": {
+      "check_pass": true,
+      "humanoid": true
+    },
+    "usage": {
+      "image_count": 1
+    },
+    "request_id": "b718635c-0e78-9b57-bd84-4c9ce4ddc0cf",
+    "_http": 200
+  },
+  "imageUrl": "oss://dashscope-instant/d0c370ad505c7f6d528a144c865cb20e/2026-11-15/8cefaa1e-5b26-9c79-a222-047d09cdc9c2/face.png",
+  "audioUrl": "oss://dashscope-instant/d0c370ad505c7f6d528a144c865cb20e/2026-11-15/531bef2c-89f8-976a-a6ce-abadfddb12ba/line.wav",
+  "createTask": {
+    "request_id": "5241c9ac-7b75-92b2-b3a0-3e67afae411f",
+    "output": {
+      "task_id": "d2100e7c-1b6f-4076-80ba-44cbf079b0a5",
+      "task_status": "PENDING"
+    },
+    "_http": 200
+  },
+  "taskResult": {
+    "request_id": "b3a7492f-663a-94c5-aa74-4ba5b0c894e6",
+    "model": "wan2.2-s2v",
+    "output": {
+      "task_id": "d2100e7c-1b6f-4076-80ba-44cbf079b0a5",
+      "task_status": "SUCCEEDED",
+      "submit_time": "2026-11-15 18:04:05.726",
+      "scheduled_time": "2026-11-15 18:04:15.419",
+      "end_time": "2026-11-15 18:04:59.645",
+      "results": {
+        "video_url": "http://dashscope-result-hz.oss-cn-hangzhou.aliyuncs.com/1d/f4/20261115/default/b1dfd10acd86495193e78e5b6cbb22c4_wologo.mp4?Expires=1794823499&OSSAccessKeyId=LTAI5tGx7yvUcG32VzcwNgQ6&Signature=ge1vy5%2FGFXhtd3OFybMkskL13Xg%3D"
+      }
+    },
+    "usage": {
+      "duration": 4.75,
+      "size": "512*640",
+      "fps": 16,
+      "video_count": 1,
+      "SR": 480
+    }
+  },
+  "ok": true,
+  "videoUrl": "http://dashscope-result-hz.oss-cn-hangzhou.aliyuncs.com/1d/f4/20261115/default/b1dfd10acd86495193e78e5b6cbb22c4_wologo.mp4?Expires=1794823499&OSSAccessKeyId=LTAI5tGx7yvUcG32VzcwNgQ6&Signature=ge1vy5%2FGFXhtd3OFybMkskL13Xg%3D",
+  "out": "research\\episodes\\最后一班\\lipsync-test\\out-aliyun\\lipsync.mp4",
+  "bytes": 168774,
+  "usage": {
+    "duration": 4.75,
+    "size": "512*640",
+    "fps": 16,
+    "video_count": 1,
+    "SR": 480
+  },
+  "costCny": 2.38,
+  "finishedAt": "2026-11-15T18:05:12"
+}
