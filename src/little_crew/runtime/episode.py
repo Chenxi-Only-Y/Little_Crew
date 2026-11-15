@@ -289,6 +289,9 @@ class EpisodeResult:
     #: 角色定妆表（文字半）—— 交付物的一部分
     characters: Any = None
 
+    #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
+    camera: dict[str, Any] = field(default_factory=dict)
+
     #: 口型通道结论（2026-11-15）：`{enabled, targets, rows, costCny}`；未开启时为空。
     #:
     #: 为什么必须进报告：口型是**按秒计费**的增强能力 ——
@@ -338,6 +341,7 @@ class EpisodeResult:
             "cacheHits": self.cache_hits,
             "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
             "lipsync": dict(getattr(self, "lipsync", {}) or {}),
+            "camera": dict(getattr(self, "camera", {}) or {}),
             "failed": self.failed,
             "coverage": round(self.coverage, 4),
             "totalSeconds": round(self.total_seconds, 2),
@@ -1910,6 +1914,12 @@ class EpisodeRunner:
 
                 _o0 = Path(str(_wd0)) / "delivery"
                 _o0.mkdir(parents=True, exist_ok=True)
+                if getattr(self, "_camera_plan", None):
+                    (_o0 / "camera_plan.json").write_text(_j0.dumps(
+                        {"kind": "camera.plan",
+                         "default": dict(getattr(self, "camera_default", None) or {}),
+                         "perShot": dict(sorted(self._camera_plan.items()))},
+                        ensure_ascii=False, indent=2), encoding="utf-8")
                 (_o0 / "anchors_used.json").write_text(_j0.dumps(
                     {"kind": "anchors.used",
                      "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
@@ -2011,6 +2021,7 @@ class EpisodeRunner:
             rendered=len(batch.rendered), cache_hits=len(batch.cache_hits),
             image_calls=dict(getattr(self, "_image_calls", {}) or {}),
             lipsync=dict(getattr(self, "_lipsync_report", {}) or {}),
+            camera=dict(getattr(self, "_camera_plan", {}) or {}),
             failed=len(failed), total_seconds=manifest.total_seconds,
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
@@ -3738,6 +3749,13 @@ class EpisodeRunner:
     lipsync_poll_seconds: float = 15.0
     lipsync_timeout_seconds: float = 1200.0
 
+    # ---- 相机/光学参数（2026-11-15）-----------------------------------
+    #: 全片默认相机参数：`{focal, aperture, body, lens, angle}`。
+    #: 由 `ir.camera_lexicon` 查表拼进提示词（确定性、可复现、进 IR 哈希）。
+    camera_default: Any = None
+    #: 按镜头/场次覆盖：`{shotId 或 sceneId: {focal: ...}}`（覆盖默认）。
+    camera_map: Any = None
+
     # ---- 空间控制：白模 ------------------------------------------------
 
     #: **L3 跨模型族盲读器**（`agent.blind.BlindReader`）。`None` = 不做盲读。
@@ -4215,6 +4233,7 @@ class EpisodeRunner:
         except Exception as _e_anc:                        # noqa: BLE001
             _sets = {}
             print(f"  ⚠️ 角色锚点未生效：{type(_e_anc).__name__}: {_e_anc}")
+        _cam = self._camera_for_shot(shot)
         ir = shot_to_ir(
             text, episode_id=self.episode_id,
             anchor_sets=dict(_sets) if _sets else None,
@@ -4223,9 +4242,44 @@ class EpisodeRunner:
             scheduler=self.engine_scheduler,
             resolution=self.engine_resolution,
             style_suffix=self.engine_style,
-            prompt_language=self.engine_language)
+            prompt_language=self.engine_language,
+            camera=_cam or None)
+        if _cam:
+            try:
+                if getattr(self, "_camera_plan", None) is None:
+                    self._camera_plan = {}
+                self._camera_plan[str(getattr(shot, "shot_id", ""))] = dict(_cam)
+            except Exception:                                 # noqa: BLE001
+                pass
         # 空间控制：白模预演 -> ControlNet
         return self._apply_white_model(ir, shot)
+
+    def _camera_for_shot(self, shot: Any) -> dict[str, str]:
+        """解析该镜的相机参数：默认值 <- 按镜头/场次覆盖。
+
+        返回**已归一化**的字典（`{focal: "85mm", ...}`）；没有则返回 `{}`。
+        坏值会让 `canonical_camera` 抛 ValueError —— 在 `_bridge` 处暴露成明确
+        错误，而不是"我明明设了 85mm，其实没生效"。
+        """
+        from little_crew.ir.camera_lexicon import canonical_camera
+
+        base: dict = {}
+        d = getattr(self, "camera_default", None)
+        if isinstance(d, dict) and d:
+            base.update(d)
+        m = getattr(self, "camera_map", None)
+        if isinstance(m, dict) and m:
+            sid = str(getattr(shot, "shot_id", ""))
+            scene = str(getattr(shot, "scene_id", ""))
+            for k in (sid, scene):
+                ov = m.get(k)
+                if isinstance(ov, dict) and ov:
+                    base.update(ov)
+        try:
+            return canonical_camera(base)
+        except ValueError as exc:
+            print(f"  ⚠️ 相机参数无效（{getattr(shot, 'shot_id', '?')}）：{exc}")
+            return {}
 
     def _with_appearance(self, shot: Any) -> Any:
         """把出场角色的外观片段并进镜头描述。

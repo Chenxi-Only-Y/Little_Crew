@@ -57,6 +57,47 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.39] — 2026-11-15（**相机参数 → 提示词：确定性镜头语言**）
+
+### 新增 `ir/camera_lexicon.py`
+
+把「机身/镜头/焦距/光圈/机位角度」查表翻译成提示词片段（**零模型调用**）：
+
+| 字段 | 示例取值 |
+|---|---|
+`focal` | 14 / 24 / 35 / 50 / 85 / 135mm |
+`aperture` | f1.4 / f2 / f2.8 / f4 / f8 / f11 |
+`body` | digital8k / 70mm / 16mm / s35 |
+`lens` | anamorphic / macro / vintage / tilt_shift / swirl / clinical |
+`angle` | eye_level / low / high / dutch / overhead |
+
+- **确定性**：字段顺序固定 → 同参数同文本 → IR 哈希稳定、缓存可命中
+- **严格校验**：未知字段/取值报错并列出允许值（不静默忽略）
+- **双语**：中文原生模型（Z-Image）得中文片段；SDXL/云端得英文
+- 别名归一：`85`/`85mm`、`F1.4`/`f/1.4`、`70`/`70mm_film`
+
+### 接线
+
+- `shot_to_ir(..., camera=...)`：片段进 `prompt.text`，`camera` 写进 IR 顶层（进哈希/证据）
+- `EpisodeRunner._camera_for_shot`：**默认值 <- 按镜头/场次覆盖**（坏值返回空并告警，不塞进 IR）
+- 证据：`delivery/camera_plan.json`；`run.report.camera`
+- 入口：demo/CLI `--camera-focal/aperture/body/lens/angle --camera-map`；
+  API `cameraFocal/.../cameraMap`
+
+### 测试
+
+`camera_lexicon_check` **14 项**（归一/严格校验/顺序/双语/空值）
++ `ir_bridge_check` **70/70**（+I1~I5：片段进 prompt、IR 带 camera、换参数哈希变、中文片段、非法报错）
++ `episode_check` **95/95**（+K1~K3：默认/镜头/场次覆盖合并、坏值不落 IR）
++ 全量 **2761/2748 + 架构守卫 PASS**
+
+### 顺带修的架构违规
+
+`ir/camera_lexicon_check.py` 原来 import 了 `agent.ir_bridge` → **R2 反向依赖**被守卫拦下；
+等价检查已移到 `agent/ir_bridge_check.py`（分层纪律：ir 层不能依赖 agent 层）。
+
+---
+
 ## [0.4.0-beta.38] — 2026-11-15（**口型接成平台视频通道 `--lipsync`**）
 
 ### 新增能力（默认关）

@@ -175,6 +175,24 @@ def main(argv: list[str] | None = None) -> int:
                     help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带；brush=竖排行楷）")
     ap.add_argument("--cover-subtitle", default="",
                     help="封面英文副标题（字距自动拉开，如 THE LAST TRAIN）")
+    ap.add_argument("--camera-focal", default="",
+                    choices=("", "14mm", "24mm", "35mm", "50mm", "85mm", "135mm"),
+                    dest="camera_focal", help="全片默认焦距（查表→提示词）")
+    ap.add_argument("--camera-aperture", default="",
+                    choices=("", "f1.4", "f2", "f2.8", "f4", "f8", "f11"),
+                    dest="camera_aperture")
+    ap.add_argument("--camera-body", default="",
+                    choices=("", "digital8k", "70mm", "16mm", "s35"),
+                    dest="camera_body", help="成像格式（8K数字/70mm胶片/16mm/S35）")
+    ap.add_argument("--camera-lens", default="",
+                    choices=("", "anamorphic", "macro", "vintage",
+                             "tilt_shift", "swirl", "clinical"),
+                    dest="camera_lens")
+    ap.add_argument("--camera-angle", default="",
+                    choices=("", "eye_level", "low", "high", "dutch", "overhead"),
+                    dest="camera_angle")
+    ap.add_argument("--camera-map", default="", dest="camera_map",
+                    help="按镜头/场次覆盖的相机 JSON（{shotId: {focal:...}}）")
     ap.add_argument("--lipsync", action="store_true",
                     help="口型视频通道：给「静帧+对白」的镜头生成说话视频（¥0.5/秒 @480P）")
     ap.add_argument("--lipsync-resolution", default="480P", choices=("480P", "720P"),
@@ -733,6 +751,26 @@ def main(argv: list[str] | None = None) -> int:
     runner.cover_subtitle = str(getattr(args, "cover_subtitle", "") or "")
     runner.cover_badge = str(getattr(args, "cover_badge", "") or "")
     # ---- 口型视频通道（2026-11-15）----
+    # ---- 相机参数（2026-11-15）----
+    from little_crew.runtime.run_options import (
+        _camera_of as _cam_of, _load_camera_map as _load_cmap,
+    )
+
+    try:
+        runner.camera_default = _cam_of(
+            str(getattr(args, "camera_focal", "") or ""),
+            str(getattr(args, "camera_aperture", "") or ""),
+            str(getattr(args, "camera_body", "") or ""),
+            str(getattr(args, "camera_lens", "") or ""),
+            str(getattr(args, "camera_angle", "") or "")) or None
+        runner.camera_map = _load_cmap(str(getattr(args, "camera_map", "") or "")) or None
+        if runner.camera_default:
+            print(f"  相机参数：{runner.camera_default}（查表→提示词）")
+        if runner.camera_map:
+            print(f"  相机覆盖：{len(runner.camera_map)} 条（按镜头/场次）")
+    except Exception as _e_cam:                              # noqa: BLE001
+        print(f"  ⚠️ 相机参数无效：{_e_cam}")
+
     runner.lipsync_enabled = bool(getattr(args, "lipsync", False))
     runner.lipsync_resolution = str(getattr(args, "lipsync_resolution", "480P") or "480P")
     runner.lipsync_max_shots = int(getattr(args, "lipsync_max_shots", 0) or 0)

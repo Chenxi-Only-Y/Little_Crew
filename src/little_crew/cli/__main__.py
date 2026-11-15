@@ -156,6 +156,19 @@ def build_parser() -> argparse.ArgumentParser:
                     help="标题艺术字风格（默认 banner：横排粗体+金描边+缎带）")
     se.add_argument("--cover-subtitle", default="", dest="cover_subtitle")
     se.add_argument("--cover-badge", default="", dest="cover_badge")
+    se.add_argument("--camera-focal", default="", dest="camera_focal",
+                    choices=("", "14mm", "24mm", "35mm", "50mm", "85mm", "135mm"))
+    se.add_argument("--camera-aperture", default="", dest="camera_aperture",
+                    choices=("", "f1.4", "f2", "f2.8", "f4", "f8", "f11"))
+    se.add_argument("--camera-body", default="", dest="camera_body",
+                    choices=("", "digital8k", "70mm", "16mm", "s35"))
+    se.add_argument("--camera-lens", default="", dest="camera_lens",
+                    choices=("", "anamorphic", "macro", "vintage",
+                             "tilt_shift", "swirl", "clinical"))
+    se.add_argument("--camera-angle", default="", dest="camera_angle",
+                    choices=("", "eye_level", "low", "high", "dutch", "overhead"))
+    se.add_argument("--camera-map", default="", dest="camera_map",
+                    help="按镜头/场次覆盖的相机 JSON 文件")
     se.add_argument("--lipsync", action="store_true",
                     help="口型视频通道（¥0.5/秒@480P；需要 DASHSCOPE_API_KEY）")
     se.add_argument("--lipsync-resolution", default="480P", choices=("480P", "720P"),

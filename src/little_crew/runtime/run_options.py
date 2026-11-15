@@ -52,6 +52,8 @@ _RUNNER_ATTRS: dict[str, Any] = {
     "lipsync_style": "",
     "lipsync_max_shots": 0,
     "lipsync_all_shots": False,
+    "camera_default": None,
+    "camera_map": None,
     "character_sheets_enabled": False,
     "character_sheet_style": "",
     "character_sheet_proportion": "adult",
@@ -141,6 +143,37 @@ def set_script_threshold(value: float) -> float:
     return th
 
 
+def _camera_of(focal: str = "", aperture: str = "", body: str = "",
+               lens: str = "", angle: str = "") -> dict[str, str]:
+    """把 CLI/API 的散字段拼成相机参数字典并**校验归一**（2026-11-15）。"""
+    from little_crew.ir.camera_lexicon import canonical_camera
+
+    raw = {"focal": focal, "aperture": aperture, "body": body,
+           "lens": lens, "angle": angle}
+    return canonical_camera({k: v for k, v in raw.items() if str(v or "").strip()})
+
+
+def _load_camera_map(value: Any) -> dict[str, Any]:
+    """加载按镜头/场次覆盖的相机表（dict 或 JSON 文件路径）。"""
+    from little_crew.ir.camera_lexicon import canonical_camera
+
+    if not value:
+        return {}
+    data: Any = value
+    if isinstance(value, (str, Path)):
+        p = Path(str(value))
+        if not p.is_file():
+            raise FileNotFoundError(f"camera-map 不存在：{p}")
+        data = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("camera-map 必须是 {shotId/sceneId: {相机字段}} 的对象")
+    out: dict[str, Any] = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            out[str(k)] = canonical_camera(v)
+    return out
+
+
 def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               style_hint: str = "",
               render_path: str = "local",
@@ -154,6 +187,9 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               lipsync: bool = False, lipsync_resolution: str = "480P",
               lipsync_style: str = "", lipsync_max_shots: int = 0,
               lipsync_all_shots: bool = False,
+              camera_focal: str = "", camera_aperture: str = "",
+              camera_body: str = "", camera_lens: str = "",
+              camera_angle: str = "", camera_map: Any = None,
               char_sheets: bool = False, char_sheet_style: str = "",
               char_sheet_proportion: str = "adult",
               char_sheet_refine: bool = False, char_sheet_qc: bool = False,
@@ -190,6 +226,9 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
         "lipsync_style": str(lipsync_style or ""),
         "lipsync_max_shots": int(lipsync_max_shots or 0),
         "lipsync_all_shots": bool(lipsync_all_shots),
+        "camera_default": _camera_of(camera_focal, camera_aperture,
+                                    camera_body, camera_lens, camera_angle),
+        "camera_map": _load_camera_map(camera_map),
         "character_sheets_enabled": bool(char_sheets),
         "character_sheet_style": str(char_sheet_style or ""),
         "character_sheet_proportion": str(char_sheet_proportion or "adult"),
@@ -208,6 +247,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
             continue
     # 角色锚点（覆盖/补充库里发现的锚点）
     runner.cast_anchors = dict(opts.get("cast_anchors") or {})
+    runner.camera_default = dict(opts.get("camera_default") or {}) or None
+    runner.camera_map = dict(opts.get("camera_map") or {}) or None
     # 剧本阈值：只放宽分数线（阻断级意见/硬约束照旧阻断）
     th = float(opts.get("script_threshold") or 0.0)
     if th > 0:
@@ -223,7 +264,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
             "charSheets": bool(opts.get("character_sheets_enabled")),
             "scriptThreshold": th,
             "lipsync": {"enabled": bool(opts.get("lipsync_enabled")),
-                        "resolution": str(opts.get("lipsync_resolution") or "480P")}}
+                        "resolution": str(opts.get("lipsync_resolution") or "480P")},
+            "camera": dict(opts.get("camera_default") or {})}
 
 
 def pick_main_spec(render_model: str = "",

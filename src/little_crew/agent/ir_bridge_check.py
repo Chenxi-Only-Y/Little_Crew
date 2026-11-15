@@ -119,6 +119,38 @@ def main() -> int:
     _anchors()
     _cast_constraint()
     _section_scheduler_default()
+    _camera()
+
+def _camera() -> None:
+    """相机参数（2026-11-15）：查表→提示词，且进 IR（可哈希/可复核）。"""
+    print(); print("I. 相机/光学参数（确定性查表）")
+    ir = shot_to_ir(_shot(), camera={"focal": "85", "aperture": "f1.4",
+                                     "body": "70mm"})
+    prompt = next(n for n in ir["nodes"] if n["kind"] == "prompt.text")["params"]["text"]
+    check("I1 ★★★ 相机片段写进提示词（焦距/光圈/胶片）",
+          "85mm portrait lens" in prompt and "f/1.4" in prompt
+          and "70mm film" in prompt, prompt[-110:])
+    check("I2 ★★★ IR 顶层带 camera（进哈希，缓存不会误命中）",
+          ir.get("camera") == {"focal": "85mm", "aperture": "f1.4",
+                               "body": "70mm"}, str(ir.get("camera")))
+    ir2 = shot_to_ir(_shot(), camera={"focal": "24"})
+    check("I3 ★★★ 换焦距 -> IR 哈希变化",
+          __import__("little_crew.ir.canonical", fromlist=["content_hash"])
+          .content_hash(ir) != __import__("little_crew.ir.canonical",
+                                          fromlist=["content_hash"])
+          .content_hash(ir2), "")
+    ir_zh = shot_to_ir(_shot(), prompt_language="zh",
+                       camera={"focal": "85", "aperture": "f1.4"})
+    p_zh = next(n for n in ir_zh["nodes"] if n["kind"] == "prompt.text")["params"]["text"]
+    check("I4 ★★★ 中文模型得到中文片段（不混英文）",
+          "85mm 人像镜头" in p_zh and "portrait lens" not in p_zh, p_zh[-90:])
+    try:
+        shot_to_ir(_shot(), camera={"focal": "500mm"})
+        bad = False
+    except ValueError:
+        bad = True
+    check("I5 ★★★ 非法相机取值 -> 明确报错（不静默忽略）", bad, "")
+
 
     print()
     npass = sum(1 for _, ok, _ in _results if ok)

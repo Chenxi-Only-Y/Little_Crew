@@ -326,6 +326,23 @@ def main() -> int:
     check("J3 ★★ 非法值不会被当成云端",
           ("cloud" if "cloudx" == "cloud" else "local") == "local", "")
 
+    print()
+    print("K. 相机参数合并（2026-11-15：默认 <- 按镜头/场次覆盖）")
+    from types import SimpleNamespace as _SNS
+
+    _r_cam = EpisodeRunner.__new__(EpisodeRunner)
+    _r_cam.camera_default = {"focal": "85mm", "aperture": "f1.4"}
+    _r_cam.camera_map = {"S1": {"aperture": "f8"}, "SC1": {"body": "70mm"}}
+    _c1 = _r_cam._camera_for_shot(_SNS(shot_id="S1", scene_id="SC1"))
+    check("K1 ★★★ 默认 + 镜头覆盖 + 场次覆盖正确合并",
+          _c1 == {"focal": "85mm", "aperture": "f8", "body": "70mm"}, str(_c1))
+    _c2 = _r_cam._camera_for_shot(_SNS(shot_id="S9", scene_id="SC9"))
+    check("K2 ★★★ 无覆盖时用默认值",
+          _c2 == {"focal": "85mm", "aperture": "f1.4"}, str(_c2))
+    _r_cam.camera_default = {"focal": "500mm"}   # 坏值
+    _c3 = _r_cam._camera_for_shot(_SNS(shot_id="S2", scene_id="SC2"))
+    check("K3 ★★★ 坏值 -> 返回空（不把坏参数塞进 IR）", _c3 == {}, str(_c3))
+
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
         print(f" [{'v' if ok else 'X'}] {name}")

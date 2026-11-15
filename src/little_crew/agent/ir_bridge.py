@@ -209,6 +209,10 @@ def shot_to_ir(
     filename_prefix: str = "",
     anchor_sets: Mapping[str, str] | None = None,
     prompt_language: PromptLanguage | str = PromptLanguage.EN,
+    #: 相机/光学参数（2026-11-15）：`{focal, aperture, body, lens, angle}`。
+    #: **确定性查表**成提示词片段（见 `ir.camera_lexicon`）——
+    #: 同样的参数永远得到同样的文本，所以 IR 哈希稳定、缓存可命中。
+    camera: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """把一个镜头编译成统一 IR。
 
@@ -241,6 +245,19 @@ def shot_to_ir(
     act_txt = act_tbl.get(shot.action, "")
     if act_txt:
         parts.append(act_txt)
+    # ---- 相机/光学参数（2026-11-15）：确定性查表 → 提示词片段 ----
+    _cam: dict[str, str] = {}
+    _cam_txt = ""
+    if camera:
+        from little_crew.ir.camera_lexicon import (
+            camera_prompt as _cam_prompt,
+            canonical_camera as _cam_canon,
+        )
+
+        _cam = _cam_canon(camera)
+        _cam_txt = _cam_prompt(_cam, language=str(lang.value))
+        if _cam_txt:
+            parts.append(_cam_txt)
     if style_suffix:
         parts.append(style_suffix.strip())
     sep = "，" if lang is PromptLanguage.ZH else ", "
@@ -463,6 +480,7 @@ def shot_to_ir(
         "nodes": nodes,
         "edges": [],
         "constraints": constraints,
+        **({"camera": dict(_cam)} if _cam else {}),
         "provenance": {
             "generator": "little_crew.agent.ir_bridge",
             "shotId": shot.shot_id,
