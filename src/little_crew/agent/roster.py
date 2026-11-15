@@ -567,16 +567,24 @@ def _specs() -> list[AgentSpec]:
             crew_title_en="Clearance & Compliance",
             department=Department.PRODUCTION,
             stage=Stage.ASSEMBLE,
-            execution=ExecutionKind.ASSEMBLY,
+            # 2026-11-15：内容审查改为 **VLM 初审 + 人工/法务复审**（初审绝不宣布通过），
+            # 授权/交付两腿仍是确定性工具 —— 所以执行方式记 VLM（因为有视觉调用）。
+            execution=ExecutionKind.VLM,
             capabilities=("compliance.check",),
             produces=("compliance.report",),
             requires=("episode.master",),
-            tools=("gate.assert",),
+            # 2026-11-15：**LicenseGate 归口为本职位的职能工具**（`license.audit`）。
+            # 注意「归口」≠「搬家」：引擎仍在 `governance/license.py`，
+            # 由 **router 在路由期**调用做硬门禁（还没花钱就拒）；这里声明的是
+            # **权责归属** —— 合规官名下的工具，交付报告的授权部分由它汇总。
+            tools=("license.audit", "gate.assert"),
             max_reasoning_steps=2,
             real_world_duty="版权清理、内容审查、署名规范",
-            notes=("**不调模型** —— 核对归属标注是否已注入产品界面、"
-                   "授权是否覆盖当前部署地区。与 governance.LicenseGate 分工："
-                   "门禁在**路由期**拒绝不可用模型；本职位在**交付前**核对标注。"),
+            notes=("**三腿**：①授权硬门禁（`LicenseGate` 引擎，归口为本职位工具 "
+                   "`license.audit`，路由期执行）②交付审计（代码：AI 标识/署名/素材登记）"
+                   "③内容 **VLM 初审 + 人工/法务复审**。"
+                   "审核结论只有 `blocked`（硬规则没过）或 `needs_human_review`（等人工签字），"
+                   "**永远不产生 `signed`** —— 不可自签收。"),
         ),
 
         # ================= 审片组（1 人）=================

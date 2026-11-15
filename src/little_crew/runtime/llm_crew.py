@@ -48,6 +48,7 @@ def bind_llm_crew(
     gaffer: bool = False,
     critics: bool = False,
     qc: bool = False,
+    compliance: bool = False,
 ) -> dict[str, Any]:
     """把 `stubs` 里的桩替换成真实 LLM 实现（原地修改并返回摘要）。
 
@@ -148,6 +149,16 @@ def bind_llm_crew(
             out["bound"].append("continuity_supervisor")
         except Exception as exc:                              # noqa: BLE001
             out["qcError"] = f"{type(exc).__name__}: {exc}"
+
+    # ---- 合规官内容初审（2026-11-15）：有视觉客户端才做，否则如实标"未做" ----
+    if compliance:
+        try:
+            from little_crew.agent.compliance_audit import ComplianceAudit
+
+            stubs["compliance_officer"] = ComplianceAudit(client=reviewer)
+            out["bound"].append("compliance_officer")
+        except Exception as exc:                              # noqa: BLE001
+            out["complianceError"] = f"{type(exc).__name__}: {exc}"
 
     # ---- 电影整体审（review_board）用审核方 ----
     try:

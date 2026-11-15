@@ -32,6 +32,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from little_crew.agent.scene_designer_llm import SceneDesignerRules
+from little_crew.agent.compliance_audit import ComplianceAudit
 from little_crew.agent.messages import (
     MAX_SHOT_SECONDS,
     COMPLETENESS_PENALTY_PER_SCENE,
@@ -725,7 +726,7 @@ class ReviewBoardRules:
 # 装配
 # ==========================================================================
 
-#: 6 个核心职位的规则桩（agent_id -> 类）
+#: 7 个核心职位的规则桩（agent_id -> 类）
 #:
 #: 2026-11-15 加 `scene_designer`：场景会跨镜头/跨集重复出现，
 #: 必须有一份**逐字稳定**的场景卡进 IR —— 否则"同一场戏每镜各写各的"。
@@ -736,6 +737,8 @@ CORE_CREW_STUBS: Mapping[str, type] = {
     "storyboard_artist": StoryboardArtistRules,
     "review_board": ReviewBoardRules,
     "scene_designer": SceneDesignerRules,
+    # 2026-11-15：合规官接进链路（默认无视觉客户端 → 内容初审如实标"未做"）
+    "compliance_officer": ComplianceAudit,
 }
 
 

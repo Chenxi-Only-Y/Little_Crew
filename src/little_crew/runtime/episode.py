@@ -299,6 +299,10 @@ class EpisodeResult:
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
+    #: 合规官结论（2026-11-15）：授权归口 + 交付审计 + 内容初审；
+    #: `status` 只会是 `blocked` / `needs_human_review`（**永不 `signed`**）。
+    compliance: dict[str, Any] = field(default_factory=dict)
+
     #: 口型通道结论（2026-11-15）：`{enabled, targets, rows, costCny}`；未开启时为空。
     #:
     #: 为什么必须进报告：口型是**按秒计费**的增强能力 ——
@@ -348,6 +352,7 @@ class EpisodeResult:
             "cacheHits": self.cache_hits,
             "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
             "lipsync": dict(getattr(self, "lipsync", {}) or {}),
+            "compliance": dict(getattr(self, "compliance", {}) or {}),
             "camera": dict(getattr(self, "camera", {}) or {}),
             "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
             "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
@@ -1901,6 +1906,10 @@ class EpisodeRunner:
 
         self._stage_image_review(picked, per_shot_artifacts, artifact_hashes)
 
+        # ---- 合规官（2026-11-15）：授权归口 + 交付审计 + 内容 VLM 初审 ----
+        # 放在**交付物已齐**之后、manifest 之前：报告里才能核对"标识/署名有没有写进交付物"。
+        self._stage_compliance(picked, per_shot_artifacts)
+
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
             shots=[s.as_dict() for s in picked],
@@ -2062,6 +2071,7 @@ class EpisodeRunner:
             art=art_info,
             schedule=sched_info,
             previs=previs_info,
+            compliance=dict(getattr(self, "_compliance_report", {}) or {}),
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -3490,6 +3500,72 @@ class EpisodeRunner:
                     o.artifacts = clean_map
                 except Exception:                             # noqa: BLE001
                     pass
+
+    def _stage_compliance(self, picked: Sequence[Any],
+                          per_shot_artifacts: Mapping[str, Any]) -> dict[str, Any]:
+        """跑合规官：授权（LicenseGate 归口工具）+ 交付审计 + 内容 VLM 初审。
+
+        **不阻断交付**（除非硬规则 DENY，此时报告 `blocking=True` 由上层决定是否发）；
+        内容终审永远交人工/法务 —— 本阶段只产 `needs_human_review`。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "compliance_officer" not in impls:
+            return {}
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        imgs: dict[str, str] = {}
+        descs: dict[str, str] = {}
+        for s in picked:
+            sid = str(getattr(s, "shot_id", ""))
+            descs[sid] = str(getattr(s, "description", "") or "")
+            names = list(per_shot_artifacts.get(sid) or ())
+            if not names or not wd:
+                continue
+            hit: list[Path] = []
+            try:
+                hit = list(Path(str(wd)).rglob(str(names[0])))
+            except Exception:                                 # noqa: BLE001
+                hit = []
+            if hit:
+                imgs[sid] = str(hit[0])
+        models = [str(getattr(self, "engine_checkpoint", "") or ""),
+                  str(getattr(self, "cloud_model", "") or "")]
+        models = [m for m in dict.fromkeys(models) if m]
+        payload = {
+            "shot.image": imgs,
+            "descriptions": descs,
+            "modelsUsed": models,
+            # 交付物元数据：标识/署名/素材登记目前还没自动写入 →
+            # 如实为空，报告会列成"待人工补齐"（不是假装通过）。
+            "delivery": dict(getattr(self, "_delivery_meta", None) or {}),
+        }
+        try:
+            out = self.orch.run_stage("compliance_officer", "compliance.check", payload)
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 合规官调用失败：{type(e).__name__}: {e}")
+            return {}
+        report = self.orch.blackboard.value("compliance.report")
+        if not isinstance(report, Mapping):
+            res_o = getattr(out, "result", None)
+            report = ((getattr(res_o, "output", None) or {})
+                      .get("compliance.report"))
+        if not isinstance(report, Mapping):
+            return {"ok": False, "reason": "合规官未产出 compliance.report"}
+        self._compliance_report = dict(report)
+        try:
+            if wd:
+                (_outc := Path(str(wd)) / "delivery").mkdir(parents=True,
+                                                            exist_ok=True)
+                import json as _jc
+
+                (_outc / "compliance.json").write_text(
+                    _jc.dumps(dict(report), ensure_ascii=False,
+                              indent=2, default=str), encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        human = len(report.get("humanReview") or ())
+        print(f"  合规官：{report.get('status')}"
+              f"（人工复审 {human} 项；blocking={bool(report.get('blocking'))}）")
+        return {"ok": True, "report": dict(report)}
 
     def _stage_image_review(self, picked, per_shot_artifacts, artifact_hashes):
         """渲染产物可数审片（2026-11-10 抽出）。

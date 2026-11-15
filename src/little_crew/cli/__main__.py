@@ -202,6 +202,8 @@ def build_parser() -> argparse.ArgumentParser:
     se.add_argument("--llm-director", action="store_true", dest="llm_director")
     se.add_argument("--llm-previs", action="store_true", dest="llm_previs")
     se.add_argument("--llm-art", action="store_true", dest="llm_art")
+    se.add_argument("--llm-compliance", action="store_true", dest="llm_compliance",
+                    help="合规官用视觉模型做内容初审（默认只做授权+交付审计）")
     se.add_argument("--llm-scene", action="store_true", dest="llm_scene",
                     help="场景设计师用真实 LLM（默认规则桩）")
     se.add_argument("--llm-schedule", action="store_true", dest="llm_schedule")

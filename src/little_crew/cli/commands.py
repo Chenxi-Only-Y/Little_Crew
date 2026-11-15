@@ -468,6 +468,7 @@ def cmd_episode(args: Any) -> int:
         gaffer=bool(getattr(args, "llm_gaffer", False)),
         critics=bool(getattr(args, "llm_critics", False)),
         qc=bool(getattr(args, "llm_qc", False)),
+        compliance=bool(getattr(args, "llm_compliance", False)),
     )
     if not _binfo["ok"]:
         print(f"[X] {_binfo['error']}", file=sys.stderr)

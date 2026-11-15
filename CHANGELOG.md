@@ -57,6 +57,45 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.42] — 2026-11-15（**合规官接入：三腿 = 授权归口 / 交付审计 / 内容初审**）
+
+### 定位
+
+合规官不是第二个判定者，而是合规的**归口与升级通道**：
+
+| 腿 | 谁判 | 能否阻断 | 说明 |
+|---|---|---|---|
+| ① 授权 | `LicenseGate` 引擎（**归口为本职位工具 `license.audit`**） | ✅ | 非商用/排除地区/营收门槛 → DENY |
+| ② 交付 | `agent/compliance_audit.py` 代码 | ✅ | AI 标识（显式+隐式）/署名/素材登记 |
+| ③ 内容 | **VLM 初审 + 人工/法务复审** | ❌ 初审不能 | 初审只产"待人工复核清单" |
+
+### 关键设计：不可自签收
+
+- `status` 三值：`blocked`（硬规则没过）/ `needs_human_review`（等内容签字）/ `signed`（**本模块永不产生**）
+- 只有 `DENY` 令 `blocking=True`；`NEEDS_REVIEW`（未核实/无记录）转人工项 ——
+  不把"未核实"伪装成"违规"，也不把"接受风险"伪装成"合规"
+- 没有视觉客户端时，内容初审**如实标"未做"**（不是通过）
+
+### 实现
+
+- `agent/compliance_audit.py`：`audit()` 纯函数 + `ComplianceAudit`（impl 契约）
+- `episode._stage_compliance`：交付物齐后、manifest 前跑；落 `delivery/compliance.json` + `run.report.compliance`
+- 默认桩注册（每次交付必跑，零模型成本）；`--llm-compliance` / `bind_llm_crew(compliance=True)` 启用 VLM 初审
+- 名册：合规官 `execution=VLM`，`tools=("license.audit","gate.assert")`（LicenseGate 归口）
+
+### 测试
+
+新增 `review/compliance_audit_check` **20 项**（归口/硬规则阻断/未核实现人工/交付缺项/初审三态/永不 signed/编排器接线）
++ `crew_stubs_check` 82/82（7 个核心桩）· `episode_check` 99/99 · `test_agent_collab` 49/49 · `surface_check` 19/19
++ 全量 **2817/2804 + 架构守卫 PASS**
+
+### 文档
+
+`docs/00 §3.4.1`（执行分布：视觉 3）/ `§5.10.6b`（合规官真跑，Q1 改为"为什么 0 个未接"）·
+`docs/01` / `docs/12` / `docs/16` / `docs/README` / `附录B` / `docs/20` 同步为 **19/19/19/0**。
+
+---
+
 ## [0.4.0-beta.41] — 2026-11-15（**名册收敛：质检员并入场记**）
 
 ### 为什么合并

@@ -295,6 +295,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm-art", action="store_true",
                     help="跑**美术指导**产出 `art.bible`，把每场的空间/材质/道具"
                          "写进分镜提示词。需要 --llm")
+    ap.add_argument("--llm-compliance", action="store_true",
+                    help="合规官内容初审用视觉模型（默认只做授权+交付审计）")
     ap.add_argument("--llm-scene", action="store_true",
                     help="跑**场景设计师**产出 `scene.library`（默认规则桩："
                          "从剧本原文逐字取场景，保证跨镜一致）。需要 --llm")
@@ -432,6 +434,11 @@ def main(argv: list[str] | None = None) -> int:
 
             stubs["line_producer"] = LineProducerLlm(client=writer)
             print("  制片主任：**真实 LLM**（按实测单价排期 + 标风险镜）")
+        if getattr(args, "llm_compliance", False):
+            from little_crew.agent.compliance_audit import ComplianceAudit as _CA
+
+            stubs["compliance_officer"] = _CA(client=reviewer)
+            print("  合规官：**视觉初审已启用**（授权+交付审计照常，终审仍交人工/法务）")
         if args.llm_gaffer:
             from little_crew.agent.gaffer_llm import GafferLlm
 
