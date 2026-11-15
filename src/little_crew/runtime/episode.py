@@ -1920,14 +1920,6 @@ class EpisodeRunner:
 
         self._stage_image_review(picked, per_shot_artifacts, artifact_hashes)
 
-        # ---- 交付元数据（2026-11-15）：AI 标识/署名/素材登记 ----
-        # 必须在合规官**之前**：合规官要核对"这些标识有没有真的写进交付物"。
-        self._stage_delivery_meta(picked, per_shot_artifacts)
-
-        # ---- 合规官（2026-11-15）：授权归口 + 交付审计 + 内容 VLM 初审 ----
-        # 放在**交付物已齐**之后、manifest 之前：报告里才能核对"标识/署名有没有写进交付物"。
-        self._stage_compliance(picked, per_shot_artifacts)
-
         manifest, evidence = self.assembler.assemble(
             episode_id=self.episode_id, title=self.title,
             shots=[s.as_dict() for s in picked],
@@ -2030,6 +2022,12 @@ class EpisodeRunner:
             if clips.get("path") and self._clip_audio.get("ok") is False:
                 ok = False
                 reason = str(self._clip_audio.get("reason") or "片段缺音轨")
+
+        # ---- 交付标识 + 合规（2026-11-15）----
+        # ⚠️ **必须在成片落盘之后**：隐式标识要写进 mp4 容器；
+        # 之前放在 step5，master 还没生成 -> `implicit` 永远是 False（B2 实测抓到）。
+        self._stage_delivery_meta(picked, per_shot_artifacts)
+        self._stage_compliance(picked, per_shot_artifacts)
 
         # ---- 人工 Gate（2026-11-08）----
         #
@@ -2838,11 +2836,26 @@ class EpisodeRunner:
                     poll_s=float(getattr(self, "lipsync_poll_seconds", 15.0) or 15.0),
                     on_progress=lambda st, status, _sid=sid: print(
                         f"    {_sid} 轮询 HTTP {st} · {status}"))
+                # ⚠️ 口型片段时长由**音频**决定（1.5s），镜头时长由**分镜计划**决定（6s）。
+                # 不对齐的话整集会被缩短、音轨却按原计划 —— B2 实测 24s 变 19.5s。
+                _shot_sec = float(getattr(s, "duration_sec", 0.0) or 0.0)
+                _fit = {}
+                if row.get("ok") and _shot_sec > 0 and row.get("out"):
+                    try:
+                        _fit = _ls.fit_duration(row.get("out"), _shot_sec)
+                    except Exception as _e_fit:               # noqa: BLE001
+                        _fit = {"ok": False, "error": str(_e_fit)[:80]}
+                    if _fit.get("ok") and _fit.get("method") != "noop":
+                        print(f"    对齐 {_fit.get('before', 0):.2f}s -> "
+                              f"{_fit.get('after', 0):.2f}s（{_fit.get('method')}）")
                 rows.append({"shotId": sid, "ok": bool(row.get("ok")),
                              "out": row.get("out"), "seconds": row.get("seconds"),
                              "costCny": float(row.get("costCny") or 0.0),
                              "error": row.get("error"),
-                             "linesOnShot": audios[sid]["lines"]})
+                             "linesOnShot": audios[sid]["lines"],
+                             "shotSeconds": _shot_sec,
+                             "clipSeconds": float(_fit.get("after") or 0.0),
+                             "fit": _fit})
                 if row.get("ok"):
                     self._lipsync_clips[sid] = str(row.get("out"))
                     total_cost += float(row.get("costCny") or 0.0)

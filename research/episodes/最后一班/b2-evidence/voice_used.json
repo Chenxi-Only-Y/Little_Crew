@@ -1,0 +1,212 @@
+{
+  "kind": "voice.track",
+  "utterances": [
+    {
+      "shotId": "SH-B2-LIPSYNC2-001-001",
+      "character": "低声",
+      "text": "最后一班车了。",
+      "source": "regex",
+      "ok": true,
+      "audioSeconds": 1.7,
+      "shotSeconds": 6.0,
+      "voice": "",
+      "instruction": "",
+      "wav": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_B2LIPSYNC2\\delivery\\voice\\voice_01_低声.wav",
+      "sha256": "",
+      "speechSegments": 1,
+      "pauseSeconds": 0.0,
+      "error": "",
+      "retried": 0,
+      "attempts": 1,
+      "exitHash": "5a90997d488bd0b24609c008a0fa581976b3f2cf660b84ff3c3a8ebf7377987d",
+      "align": {
+        "action": "trim",
+        "error": -4.3,
+        "rate": 0.0,
+        "newShotSeconds": 2.2,
+        "reason": "音频短 4.30s，镜头可收紧"
+      }
+    },
+    {
+      "shotId": "SH-B2-LIPSYNC2-001-003",
+      "character": "轻声",
+      "text": "我等的人，好像不会来了。",
+      "source": "regex",
+      "ok": true,
+      "audioSeconds": 2.34,
+      "shotSeconds": 6.0,
+      "voice": "",
+      "instruction": "",
+      "wav": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_B2LIPSYNC2\\delivery\\voice\\voice_02_轻声.wav",
+      "sha256": "",
+      "speechSegments": 1,
+      "pauseSeconds": 0.0,
+      "error": "",
+      "retried": 0,
+      "attempts": 1,
+      "exitHash": "bd493f643de0fe5d85a1a45f6ea175320f182a9b1cc6b03182562990c25d60d3",
+      "align": {
+        "action": "trim",
+        "error": -3.66,
+        "rate": 0.0,
+        "newShotSeconds": 2.84,
+        "reason": "音频短 3.66s，镜头可收紧"
+      }
+    },
+    {
+      "shotId": "SH-B2-LIPSYNC2-002-001",
+      "character": "说",
+      "text": "我一直在。",
+      "source": "regex",
+      "ok": true,
+      "audioSeconds": 1.78,
+      "shotSeconds": 6.0,
+      "voice": "",
+      "instruction": "",
+      "wav": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_B2LIPSYNC2\\delivery\\voice\\voice_03_说.wav",
+      "sha256": "",
+      "speechSegments": 1,
+      "pauseSeconds": 0.0,
+      "error": "",
+      "retried": 0,
+      "attempts": 1,
+      "exitHash": "1c5096f74b7e81de5945b2bdfa24e683ebe94a5114da798407ce34b427cbc588",
+      "align": {
+        "action": "trim",
+        "error": -4.22,
+        "rate": 0.0,
+        "newShotSeconds": 2.28,
+        "reason": "音频短 4.22s，镜头可收紧"
+      }
+    },
+    {
+      "shotId": "SH-B2-LIPSYNC2-002-003",
+      "character": "说",
+      "text": "你怎么才来。",
+      "source": "regex",
+      "ok": true,
+      "audioSeconds": 1.22,
+      "shotSeconds": 6.0,
+      "voice": "",
+      "instruction": "",
+      "wav": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_B2LIPSYNC2\\delivery\\voice\\voice_04_说.wav",
+      "sha256": "",
+      "speechSegments": 1,
+      "pauseSeconds": 0.0,
+      "error": "",
+      "retried": 0,
+      "attempts": 1,
+      "exitHash": "c5297ee6172cca1b5ac0dc8fef49b54751d20322dd3bcaf80d2955e4414e13e1",
+      "align": {
+        "action": "trim",
+        "error": -4.78,
+        "rate": 0.0,
+        "newShotSeconds": 1.72,
+        "reason": "音频短 4.78s，镜头可收紧"
+      }
+    }
+  ],
+  "dropped": [],
+  "report": {
+    "kind": "voice.check",
+    "total": 4,
+    "failed": 0,
+    "failureRate": 0.0,
+    "align": {
+      "meanAbs": 4.24,
+      "maxAbs": 4.78,
+      "overTolerance": 4,
+      "tolerance": 0.5
+    },
+    "voiceConsistency": {
+      "characters": 3,
+      "inconsistent": 0
+    },
+    "rows": [
+      {
+        "shotId": "SH-B2-LIPSYNC2-001-001",
+        "character": "低声",
+        "ok": true,
+        "audioSeconds": 1.7,
+        "shotSeconds": 6.0,
+        "error": -4.3,
+        "overTolerance": true,
+        "voice": "",
+        "instruction": "",
+        "error_msg": ""
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-001-003",
+        "character": "轻声",
+        "ok": true,
+        "audioSeconds": 2.34,
+        "shotSeconds": 6.0,
+        "error": -3.66,
+        "overTolerance": true,
+        "voice": "",
+        "instruction": "",
+        "error_msg": ""
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-002-001",
+        "character": "说",
+        "ok": true,
+        "audioSeconds": 1.78,
+        "shotSeconds": 6.0,
+        "error": -4.22,
+        "overTolerance": true,
+        "voice": "",
+        "instruction": "",
+        "error_msg": ""
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-002-003",
+        "character": "说",
+        "ok": true,
+        "audioSeconds": 1.22,
+        "shotSeconds": 6.0,
+        "error": -4.78,
+        "overTolerance": true,
+        "voice": "",
+        "instruction": "",
+        "error_msg": ""
+      }
+    ],
+    "findings": [
+      {
+        "shotId": "SH-B2-LIPSYNC2-001-001",
+        "kind": "align.over-tolerance",
+        "severity": "warn",
+        "reason": "音频 1.7s vs 镜头 6.0s，差 -4.30s"
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-001-003",
+        "kind": "align.over-tolerance",
+        "severity": "warn",
+        "reason": "音频 2.34s vs 镜头 6.0s，差 -3.66s"
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-002-001",
+        "kind": "align.over-tolerance",
+        "severity": "warn",
+        "reason": "音频 1.78s vs 镜头 6.0s，差 -4.22s"
+      },
+      {
+        "shotId": "SH-B2-LIPSYNC2-002-003",
+        "kind": "align.over-tolerance",
+        "severity": "warn",
+        "reason": "音频 1.22s vs 镜头 6.0s，差 -4.78s"
+      }
+    ],
+    "notChecked": [
+      "口型同步（lip-sync；2026-11-15 起为可选能力 --lipsync，默认不做）",
+      "情感贴切度（需要人耳/模型判断）",
+      "背景音与 BGM（尚未接入）"
+    ]
+  },
+  "notDone": [
+    "混流（对白 + 环境音 + BGM）",
+    "口型同步（2026-11-15 起为可选能力：--lipsync；默认不做）",
+    "跨集音色一致性（需多集样本，目前只有映射规则）"
+  ]
+}

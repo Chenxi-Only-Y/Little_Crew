@@ -545,3 +545,26 @@ Workflow Studio | 节点式多步流水线 | 职位编排（约束更强、无 U
 - 工具：`tools/dashscope_lipsync.py`（上传→检测→建任务→轮询→下载；只用标准库）
 
 > 证据：`research/episodes/最后一班/lipsync-test/out-aliyun/{lipsync.mp4, frames_strip.jpg, mouth_strip2.jpg, report.json}`
+
+### 11.6.1 端到端实测：整集链路（2026-11-16）
+
+> 验证 `--voice`（本地 Breeze TTS）→ 对白轨 → `--lipsync`（百炼 wan2.2-s2v）→ 成片替换的**完整链路**。
+
+| 项 | 结果 |
+|---|---|
+脚本 | `research/episodes/最后一班/b2_dialogue.txt`（2 场 · 4 句对白） |
+分镜 | 4 镜 × 6s = 24s（云端生图 4 张，**¥0.20**） |
+配音 | Breeze TTS server · **4 句全部成功** · 对齐均差 4.24s（镜头 6s 对比台词较短） |
+口型 | 1 镜成功（SH-…-001-001）· 建任务→成功 **79.7s** · **¥0.75**（1.5s 音频 @480P） |
+**时长对齐** | 音频 1.5s vs 镜头 6s → **尾帧冻结补到 6.0s**（`pad_freeze`），成片 **24.0s 保持计划** |
+成片 | 4/4 镜 · **24.0s** · 含音轨/字幕；口型片段替换 1/4 镜 |
+标识 | 显式=True（片尾卡+封面角标）· 隐式=True（mp4 `comment` 可 ffprobe 读回）· 素材登记 ✓ |
+合规 | `needs_human_review`（1 项人工复审）· **不阻断** |
+
+**这轮抓到的真问题**：口型片段时长由**音频**决定、镜头时长由**分镜计划**决定；
+不做对齐时 4×6s 的成片会变成 **19.5s**（后续镜头全部提前、音轨仍按 24s → 音画错位）。
+修复：`lipsync.fit_duration()` —— 短补尾帧、长截尾、差值<0.08s 不动。
+
+> 证据：`research/episodes/最后一班/b2-evidence/{lipsync.json, ai_labels.json, compliance.json, frame_0.8s/2.6s/4.4s.png}` +
+> `b2_lipsync_evidence.jpg`（原静帧 vs 口型后三帧）。
+> 成本口径：整条链路 **≈¥0.95**（4 张图 ¥0.20 + 口型 ¥0.75），墙钟 **105s**（含生图缓存命中）。

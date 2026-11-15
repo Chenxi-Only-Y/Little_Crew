@@ -196,6 +196,41 @@ def main() -> int:
         check("D4 ★★★ 无 video -> 保持原 Ken Burns 路径（-loop 1）",
               cmd2[:6][-2:] == ["-loop", "1"] or "-loop" in cmd2, " ".join(map(str, cmd2[:7])))
 
+    print(); print("H. 时长对齐（2026-11-15：片段时长≠镜头时长会让整集变短）")
+    import subprocess as _sp
+    import tempfile as _tf
+
+    from pathlib import Path
+
+    from little_crew.runtime import lipsync as _ls2
+
+    _ff = _ls2._ffmpeg_path()
+    try:
+        with _tf.TemporaryDirectory() as td:
+            src = Path(td) / "clip.mp4"
+            _sp.run([_ff, "-y", "-hide_banner", "-loglevel", "error",
+                     "-f", "lavfi", "-i", "color=c=gray:s=96x64:d=1.2",
+                     "-pix_fmt", "yuv420p", str(src)], check=True,
+                    capture_output=True, timeout=120)
+            before = _ls2.probe_seconds(src)
+            r1 = _ls2.fit_duration(src, 6.0)
+            check("H1 ★★★ 短片段 -> 尾帧冻结补到镜头时长",
+                  r1.get("ok") and abs(_ls2.probe_seconds(src) - 6.0) < 0.2,
+                  f"{before:.2f} -> {r1.get('after')}")
+            r2 = _ls2.fit_duration(src, 2.0)
+            check("H2 ★★★ 长片段 -> 截断到镜头时长",
+                  r2.get("ok") and abs(_ls2.probe_seconds(src) - 2.0) < 0.2,
+                  f"{r2.get('after')}")
+            r3 = _ls2.fit_duration(src, 2.02)
+            check("H3 ★★ 差值极小 -> 不重编码（noop）",
+                  r3.get("method") == "noop", str(r3.get("method")))
+    except Exception as _e_ff:                                 # noqa: BLE001
+        # 没有 ffmpeg 也不能假装通过：如实失败并说明
+        check("H1 ★★★ 短片段 -> 尾帧冻结补到镜头时长", False,
+              f"ffmpeg 不可用：{_e_ff}")
+        check("H2 ★★★ 长片段 -> 截断到镜头时长", False, "同上")
+        check("H3 ★★ 差值极小 -> 不重编码（noop）", False, "同上")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

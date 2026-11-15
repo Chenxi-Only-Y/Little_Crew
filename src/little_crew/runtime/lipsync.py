@@ -37,6 +37,7 @@ import mimetypes
 import os
 import pathlib
 import sys
+from pathlib import Path
 import time
 import urllib.error
 import urllib.parse
@@ -325,3 +326,98 @@ def synth(image: str | pathlib.Path, audio: str | pathlib.Path, *,
         return {**rep, "ok": False,
                 "error": f"{type(exc).__name__}: {exc}",
                 "seconds": round(time.time() - t0, 1)}
+
+# ==========================================================================
+# 时长对齐（2026-11-15 实测抓到）
+# ==========================================================================
+#
+# 口型片段时长由**音频**决定（如 1.5s），而镜头时长是**分镜计划**（如 6s）。
+# 直接拿去合成会让整集变短：B2 实测 4×6s 的成片变成 19.5s，
+# 之后的镜头全部提前、音轨还按 24s 计划 -> **音画错位**。
+#
+# 对齐规则（确定性）：
+#   · 片段短于镜头 -> **尾帧冻结**补足（tpad clone），嘴停住但时间轴不动
+#   · 片段长于镜头 -> 截断到镜头时长（宁可切掉尾巴，也不让整集错位）
+#   · 差值 < 0.08s -> 不动（避免无意义重编码）
+
+FIT_EPSILON = 0.08
+
+
+def _ffmpeg_path() -> str:
+    try:
+        from little_crew.config import env_value
+
+        return str(env_value("FFMPEG", "") or "") or "ffmpeg"
+    except Exception:                                         # noqa: BLE001
+        return "ffmpeg"
+
+
+def probe_seconds(path) -> float:
+    """用 ffprobe 读时长（读不到返回 0）。"""
+    import shutil
+    import subprocess
+
+    ff = _ffmpeg_path()
+    probe = str(Path(ff).with_name("ffprobe" + Path(ff).suffix)) if Path(ff).is_file() else "ffprobe"
+    if not (Path(probe).is_file() or shutil.which(probe)):
+        probe = "ffprobe"
+    try:
+        p = subprocess.run([probe, "-v", "error", "-show_entries",
+                            "format=duration", "-of",
+                            "default=nw=1:nk=1", str(path)],
+                           capture_output=True, text=True, timeout=60)
+        return float((p.stdout or "0").strip() or 0.0)
+    except Exception:                                         # noqa: BLE001
+        return 0.0
+
+
+def fit_duration(video, seconds: float, *, out: str = "") -> dict:
+    """把视频对齐到 `seconds`。短补尾帧、长截尾；返回实际时长与方式。"""
+    import subprocess
+
+    src = Path(str(video))
+    dst = Path(str(out)) if out else src
+    target = max(0.1, float(seconds or 0))
+    before = probe_seconds(src)
+    if not src.is_file():
+        return {"ok": False, "before": 0.0, "after": 0.0,
+                "error": "文件不存在"}
+    if abs(before - target) < FIT_EPSILON:
+        return {"ok": True, "before": before, "after": before,
+                "method": "noop"}
+    ff = _ffmpeg_path()
+    tmp = dst.with_name(dst.stem + ".fit.mp4")
+    if before < target:
+        pad = target - before + 0.2
+        vf = f"tpad=stop_mode=clone:stop_duration={pad:.3f}"
+        method = "pad_freeze"
+    else:
+        vf = None
+        method = "trim"
+    cmd = [ff, "-y", "-hide_banner", "-loglevel", "error", "-i", str(src)]
+    if vf:
+        cmd += ["-vf", vf]
+    cmd += ["-t", f"{target:.3f}", "-an", "-c:v", "libx264",
+            "-preset", "veryfast", "-crf", "20",
+            "-pix_fmt", "yuv420p", str(tmp)]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           timeout=300, encoding="utf-8", errors="replace")
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "before": before, "after": before,
+                "error": f"{type(e).__name__}: {e}"}
+    if r.returncode != 0 or not tmp.is_file():
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:                                     # noqa: BLE001
+            pass
+        return {"ok": False, "before": before, "after": before,
+                "method": method, "error": (r.stderr or "")[-200:]}
+    try:
+        if str(tmp) != str(dst):
+            tmp.replace(dst)
+    except Exception as e:                                    # noqa: BLE001
+        return {"ok": False, "before": before, "after": before,
+                "method": method, "error": f"替换失败:{e}"}
+    after = probe_seconds(dst)
+    return {"ok": True, "before": before, "after": after, "method": method}

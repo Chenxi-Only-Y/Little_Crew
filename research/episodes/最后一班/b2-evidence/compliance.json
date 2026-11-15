@@ -1,0 +1,50 @@
+{
+  "kind": "compliance.report",
+  "licenseAudit": {
+    "models": [
+      "z-image-turbo"
+    ],
+    "checked": 1,
+    "denied": [],
+    "needsReview": [],
+    "verdicts": [
+      {
+        "verdict": "ALLOW",
+        "modelId": "z-image-turbo",
+        "reason": "授权**未核实**，但用户显式接受风险（LITTLE_CREW_ALLOW_UNVERIFIED=1）：⚠️ 待核实：Z-Image 权重许可证与所用 4bit 量化版的再分发条款",
+        "attributionText": "",
+        "triggeredRule": "UNVERIFIED_ACCEPTED_RISK"
+      }
+    ],
+    "attributions": [],
+    "blocked": false
+  },
+  "deliveryAudit": {
+    "ok": true,
+    "labels": {
+      "explicit": true,
+      "implicit": true
+    },
+    "credits": "本片由 AI 生成合成",
+    "missing": []
+  },
+  "contentFirstPass": {
+    "performed": false,
+    "reason": "未绑定视觉模型（初审未做）",
+    "reviewed": 0,
+    "items": [],
+    "highRisk": 0
+  },
+  "humanReview": [
+    {
+      "type": "content",
+      "owner": "人工/法务复审",
+      "item": "contentFirstPass",
+      "why": "未绑定视觉模型（初审未做）"
+    }
+  ],
+  "blocking": false,
+  "status": "needs_human_review",
+  "signedBy": null,
+  "note": "硬规则（授权/标识/署名）由代码判定；内容合规只做 VLM 初审，终审由人工/法务签字 —— 本报告不宣称已合规。"
+}

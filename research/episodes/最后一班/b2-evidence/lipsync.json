@@ -1,0 +1,32 @@
+{
+  "kind": "lipsync.report",
+  "enabled": true,
+  "available": {
+    "ok": true,
+    "why": "DASHSCOPE_API_KEY 已配置"
+  },
+  "targets": [
+    "SH-B2-LIPSYNC2-001-001"
+  ],
+  "okCount": 1,
+  "rows": [
+    {
+      "shotId": "SH-B2-LIPSYNC2-001-001",
+      "ok": true,
+      "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_B2LIPSYNC2\\assets\\lipsync\\SH-B2-LIPSYNC2-001-001.mp4",
+      "seconds": 79.7,
+      "costCny": 0.75,
+      "error": null,
+      "linesOnShot": 1,
+      "shotSeconds": 6.0,
+      "clipSeconds": 6.0,
+      "fit": {
+        "ok": true,
+        "before": 1.5,
+        "after": 6.0,
+        "method": "pad_freeze"
+      }
+    }
+  ],
+  "costCny": 0.75
+}

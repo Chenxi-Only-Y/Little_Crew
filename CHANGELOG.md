@@ -57,6 +57,42 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.46] — 2026-11-16（**B2 口型端到端 + 时长对齐修复**）
+
+### B2：`--voice` + `--lipsync` 整集链路真跑
+
+| 项 | 结果 |
+|---|---|
+脚本 | `research/episodes/最后一班/b2_dialogue.txt`（2 场 · 4 句） |
+成片 | 4 镜 · **24.0s** · 4 句 TTS 全成功 · 口型 1 镜 |
+口型 | ¥0.75（1.5s 音频 @480P，79.7s） |
+整链成本 | **≈¥0.95**（4 张云端图 ¥0.20 + 口型 ¥0.75） |
+标识 | 显式/隐式 **双 True**（片尾卡 + mp4 `comment` 可 ffprobe 读回） |
+合规 | `needs_human_review`（1 项人工复审，不阻断） |
+
+### 抓到并修复的真问题：口型片段 ≠ 镜头时长
+
+- 口型片段时长由**音频**决定（实测 1.5s），镜头时长由**分镜计划**决定（6s）
+- 不对齐时：4×6s 成片会变成 **19.5s**（后续镜头提前、音轨仍按 24s → 音画错位）
+- 修复：`lipsync.fit_duration()` —— 短补尾帧（`pad_freeze`）/ 长截尾 / 差值<0.08s 不动
+- `lipsync.report` 新增 `shotSeconds / clipSeconds / fit`；`lipsync_check` **24/24**
+
+### 顺带修
+
+- **交付标识/合规移到成片之后**（原来在 step5，master 尚未生成 → 隐式标识永远 False）
+- B2 首跑暴露：TTS 服务未启动时"配音 0 句"但流程继续 —— 已如实记录（`--voice` 前需启动 Breeze server）
+
+### 测试
+
+全量 **2855/2842 + 架构守卫 PASS**
+
+### 证据
+
+`research/episodes/最后一班/b2-evidence/{lipsync.json, ai_labels.json, compliance.json,
+frame_0.8s/2.6s/4.4s.png}` + `b2_lipsync_evidence.jpg`（原静帧 vs 口型后三帧）
+
+---
+
 ## [0.4.0-beta.45] — 2026-11-15（**C1 造型版本化：换装是角色设计的事**）
 
 ### 为什么不是"多参考图"
