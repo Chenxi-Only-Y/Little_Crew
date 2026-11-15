@@ -1,4 +1,4 @@
-"""5 个核心职位的**规则桩**实现 —— 把协作链路跑通。
+"""6 个核心职位的**规则桩**实现 —— 把协作链路跑通。
 
 为什么先做桩，不直接接 LLM
 -------------------------
@@ -31,6 +31,7 @@ import hashlib
 import re
 from typing import Any, Mapping, Sequence
 
+from little_crew.agent.scene_designer_llm import SceneDesignerRules
 from little_crew.agent.messages import (
     MAX_SHOT_SECONDS,
     COMPLETENESS_PENALTY_PER_SCENE,
@@ -724,13 +725,17 @@ class ReviewBoardRules:
 # 装配
 # ==========================================================================
 
-#: 5 个核心职位的规则桩（agent_id -> 类）
+#: 6 个核心职位的规则桩（agent_id -> 类）
+#:
+#: 2026-11-15 加 `scene_designer`：场景会跨镜头/跨集重复出现，
+#: 必须有一份**逐字稳定**的场景卡进 IR —— 否则"同一场戏每镜各写各的"。
 CORE_CREW_STUBS: Mapping[str, type] = {
     "screenwriter": ScreenwriterRules,
     "dramaturge": DramaturgeRules,
     "story_editor": StoryEditorRules,
     "storyboard_artist": StoryboardArtistRules,
     "review_board": ReviewBoardRules,
+    "scene_designer": SceneDesignerRules,
 }
 
 

@@ -43,6 +43,7 @@ def bind_llm_crew(
     director: bool = False,
     previs: bool = False,
     art: bool = False,
+    scene: bool = False,
     schedule: bool = False,
     gaffer: bool = False,
     critics: bool = False,
@@ -109,6 +110,11 @@ def bind_llm_crew(
 
         stubs["production_designer"] = ProductionDesignerLlm(client=writer)
         out["bound"].append("production_designer")
+    if scene:
+        from little_crew.agent.scene_designer_llm import SceneDesignerLlm
+
+        stubs["scene_designer"] = SceneDesignerLlm(client=writer)
+        out["bound"].append("scene_designer")
     if schedule:
         from little_crew.agent.line_producer_llm import LineProducerLlm
 

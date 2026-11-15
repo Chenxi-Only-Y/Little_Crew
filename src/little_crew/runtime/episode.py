@@ -289,6 +289,13 @@ class EpisodeResult:
     #: 角色定妆表（文字半）—— 交付物的一部分
     characters: Any = None
 
+    #: 场景设计师产物（2026-11-15）：`{scenes: [...], throughLine}`（空 = 未启用）。
+    scene_design: dict[str, Any] = field(default_factory=dict)
+
+    #: 场景卡使用台账（2026-11-15）：`{shotId: {sceneId, fingerprint}}`。
+    #: 用来核对"同一场戏的镜头是不是拿到了同一张卡"。
+    scene_cards: dict[str, Any] = field(default_factory=dict)
+
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
@@ -342,6 +349,8 @@ class EpisodeResult:
             "imageCalls": dict(getattr(self, "image_calls", {}) or {}),
             "lipsync": dict(getattr(self, "lipsync", {}) or {}),
             "camera": dict(getattr(self, "camera", {}) or {}),
+            "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
+            "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
             "failed": self.failed,
             "coverage": round(self.coverage, 4),
             "totalSeconds": round(self.total_seconds, 2),
@@ -1345,6 +1354,7 @@ class EpisodeRunner:
         director_info = self._run_director(script_draft)
         # 美术指导：定空间与材质（在灯光之前 —— 先有"东西"，再谈"光怎么打"）
         art_info = self._run_designer(script_draft)
+        scene_info = self._run_scene_designer(script_draft)
         # 角色设计师·图像半（2026-11-13）：把文字角色表画成锚点图集。
         # **默认关闭**（按张计费）；失败不阻断整集，只留痕。
         self._run_character_sheets(script_draft)
@@ -1914,6 +1924,13 @@ class EpisodeRunner:
 
                 _o0 = Path(str(_wd0)) / "delivery"
                 _o0.mkdir(parents=True, exist_ok=True)
+                if getattr(self, "_scene_cards_used", None):
+                    (_o0 / "scene_cards.json").write_text(_j0.dumps(
+                        {"kind": "scene.cards",
+                         "cards": {str(k): v for k, v in
+                                   ((getattr(self, "scene_cards", None) or {}).items())},
+                         "perShot": dict(sorted(self._scene_cards_used.items()))},
+                        ensure_ascii=False, indent=2, default=str), encoding="utf-8")
                 if getattr(self, "_camera_plan", None):
                     (_o0 / "camera_plan.json").write_text(_j0.dumps(
                         {"kind": "camera.plan",
@@ -2022,6 +2039,8 @@ class EpisodeRunner:
             image_calls=dict(getattr(self, "_image_calls", {}) or {}),
             lipsync=dict(getattr(self, "_lipsync_report", {}) or {}),
             camera=dict(getattr(self, "_camera_plan", {}) or {}),
+            scene_cards=dict(getattr(self, "_scene_cards_used", {}) or {}),
+            scene_design=dict(getattr(self, "_scene_library", {}) or {}),
             failed=len(failed), total_seconds=manifest.total_seconds,
             manifest=manifest, evidence=evidence, reason=reason,
             failures=failed, video=video, video_path=video_path,
@@ -3756,6 +3775,11 @@ class EpisodeRunner:
     #: 按镜头/场次覆盖：`{shotId 或 sceneId: {focal: ...}}`（覆盖默认）。
     camera_map: Any = None
 
+    # ---- 场景卡（2026-11-15）-------------------------------------------
+    #: 显式场景卡：`{sceneId: {space, materials, props, palette, era}}`。
+    #: 优先于美术指导产物；用于"跨集复用同一场景"或手工固定。
+    scene_cards: Any = None
+
     # ---- 空间控制：白模 ------------------------------------------------
 
     #: **L3 跨模型族盲读器**（`agent.blind.BlindReader`）。`None` = 不做盲读。
@@ -4234,6 +4258,7 @@ class EpisodeRunner:
             _sets = {}
             print(f"  ⚠️ 角色锚点未生效：{type(_e_anc).__name__}: {_e_anc}")
         _cam = self._camera_for_shot(shot)
+        _scene_card = self._scene_card_for(shot)
         ir = shot_to_ir(
             text, episode_id=self.episode_id,
             anchor_sets=dict(_sets) if _sets else None,
@@ -4243,7 +4268,8 @@ class EpisodeRunner:
             resolution=self.engine_resolution,
             style_suffix=self.engine_style,
             prompt_language=self.engine_language,
-            camera=_cam or None)
+            camera=_cam or None,
+            scene_card=_scene_card or None)
         if _cam:
             try:
                 if getattr(self, "_camera_plan", None) is None:
@@ -4251,8 +4277,75 @@ class EpisodeRunner:
                 self._camera_plan[str(getattr(shot, "shot_id", ""))] = dict(_cam)
             except Exception:                                 # noqa: BLE001
                 pass
+        if _scene_card:
+            try:
+                from little_crew.ir.scene_card import scene_fingerprint as _sc_fp
+
+                if getattr(self, "_scene_cards_used", None) is None:
+                    self._scene_cards_used = {}
+                self._scene_cards_used[str(getattr(shot, "shot_id", ""))] = {
+                    "sceneId": str(getattr(shot, "scene_id", "") or ""),
+                    "fingerprint": _sc_fp(_scene_card)}
+            except Exception:                                 # noqa: BLE001
+                pass
         # 空间控制：白模预演 -> ControlNet
         return self._apply_white_model(ir, shot)
+
+    def _scene_card_for(self, shot: Any) -> dict:
+        """解析该镜的场景卡：显式 `scene_cards` 优先，其次美术指导的 `art.bible.scenes`。
+
+        匹配规则：先按 `sceneId` 精确匹配；再按**尾部数字**模糊匹配
+        （剧本场次号与镜头 sceneId 常常写法不同：`S01` vs `S01-1` / `SC-E100-001`）。
+        没有卡片就返回 `{}` —— 不凭空生成场景描述。
+        """
+        import re as _re
+
+        from little_crew.ir.scene_card import canonical_scene_card
+
+        buckets: list[dict] = []
+        sc = getattr(self, "scene_cards", None)
+        if isinstance(sc, dict) and sc:
+            buckets.append({str(k): v for k, v in sc.items()
+                            if isinstance(v, dict)})
+        # 2026-11-15：场景设计师的产物优先于美术 bible 的旁证
+        for attr in ("_scene_library", "_art_bible"):
+            lib = getattr(self, attr, None)
+            if isinstance(lib, dict):
+                scenes = lib.get("scenes")
+                if isinstance(scenes, list):
+                    buckets.append({str(x.get("sceneId") or ""): x
+                                    for x in scenes if isinstance(x, dict)})
+        sid = str(getattr(shot, "scene_id", "") or "")
+        if not sid or not buckets:
+            return {}
+        def _tail(v: str) -> str:
+            # ⚠️ 必须**按整数归一**：`SC-E100-002` 的 "002" 与 `S02` 的 "02"
+            # 是同一个场次号，直接比字符串会漏匹配（2026-11-15 测试抓到）。
+            nums = _re.findall(r"\d+", str(v))
+            if not nums:
+                return ""
+            try:
+                return str(int(nums[-1]))
+            except ValueError:
+                return nums[-1]
+
+        tail = _tail(sid)
+        for bucket in buckets:
+            if sid in bucket:
+                try:
+                    return canonical_scene_card(bucket[sid])
+                except ValueError as exc:
+                    print(f"  ⚠️ 场景卡无效（{sid}）：{exc}")
+                    return {}
+            if tail:
+                for key, card in bucket.items():
+                    if _tail(key) == tail:
+                        try:
+                            return canonical_scene_card(card)
+                        except ValueError as exc:
+                            print(f"  ⚠️ 场景卡无效（{key}）：{exc}")
+                            return {}
+        return {}
 
     def _camera_for_shot(self, shot: Any) -> dict[str, str]:
         """解析该镜的相机参数：默认值 <- 按镜头/场次覆盖。
@@ -4782,6 +4875,44 @@ class EpisodeRunner:
                        else f"{len(failures or ())} 个镜头失败"),
         }
 
+    def _run_scene_designer(self, script: Any) -> dict[str, Any]:
+        """跑**场景设计师**产出 `scene.library`（场景卡），供 IR 确定性注入。
+
+        **顺序**：美术指导之后、灯光/分镜之前 —— 场景定空间，灯定光，分镜切镜头。
+        失败不阻断（没有场景卡 → IR 不注入场景段，但会如实记录）。
+        """
+        impls = getattr(self.orch, "_impls", {}) or {}
+        if "scene_designer" not in impls:
+            return {}
+        try:
+            out = self.orch.run_stage("scene_designer", "scene.design",
+                                      {"script.draft": script})
+        except Exception as e:                                # noqa: BLE001
+            return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
+        if not getattr(out, "ok", False):
+            return {"ok": False,
+                    "reason": str(getattr(out, "error_message", "")
+                                  or getattr(out, "error", ""))[:160]}
+        lib = self.orch.blackboard.value("scene.library")
+        if not isinstance(lib, Mapping):
+            return {"ok": False, "reason": "场景设计师没有产出 scene.library"}
+        self._scene_library = dict(lib)
+        try:
+            wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if wd:
+                (Path(str(wd)) / "delivery").mkdir(parents=True, exist_ok=True)
+                import json as _j_sc
+
+                (Path(str(wd)) / "delivery" / "scene.library.json").write_text(
+                    _j_sc.dumps({"kind": "scene.library", **dict(lib)},
+                                ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
+        n = len(lib.get("scenes") or ())
+        print(f"  场景设计师：{n} 场场景卡（确定性注入 IR）")
+        return {"ok": True, "library": dict(lib)}
+
     def _run_designer(self, script: Any) -> dict[str, Any]:
         """跑**美术指导**产出 `art.bible`，并注入分镜师。
 
@@ -4808,6 +4939,21 @@ class EpisodeRunner:
                 sb.art = dict(bible)
             except Exception:                                 # noqa: BLE001
                 pass
+        # 2026-11-15：美术设定要**留存**（之前只在 run.report 里，文件层没有）
+        try:
+            self._art_bible = dict(bible)
+            _wd_art = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_art:
+                (_o_art := Path(str(_wd_art)) / "delivery").mkdir(
+                    parents=True, exist_ok=True)
+                import json as _j_art
+
+                (_o_art / "art.bible.json").write_text(
+                    _j_art.dumps({"kind": "art.bible", **dict(bible)},
+                                 ensure_ascii=False, indent=2, default=str),
+                    encoding="utf-8")
+        except Exception:                                     # noqa: BLE001
+            pass
         return {"ok": True, "bible": dict(bible)}
 
     def _run_line_producer(self) -> dict[str, Any]:

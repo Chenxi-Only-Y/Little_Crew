@@ -54,6 +54,7 @@ _RUNNER_ATTRS: dict[str, Any] = {
     "lipsync_all_shots": False,
     "camera_default": None,
     "camera_map": None,
+    "scene_cards": None,
     "character_sheets_enabled": False,
     "character_sheet_style": "",
     "character_sheet_proportion": "adult",
@@ -174,6 +175,38 @@ def _load_camera_map(value: Any) -> dict[str, Any]:
     return out
 
 
+def _load_scene_cards(value: Any) -> dict[str, Any]:
+    """加载场景卡表（dict 或 JSON 文件）：`{sceneId: {space, materials, ...}}`。
+
+    每张卡都过 `canonical_scene_card` 校验（era 封闭集等）——
+    坏卡直接报错，避免"场景卡看起来配了，其实没生效"。
+    """
+    from little_crew.ir.scene_card import canonical_scene_card
+
+    if not value:
+        return {}
+    data: Any = value
+    if isinstance(value, (str, Path)):
+        p = Path(str(value))
+        if not p.is_file():
+            raise FileNotFoundError(f"scene-cards 不存在：{p}")
+        data = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("scene-cards 必须是 {sceneId: {字段}} 的对象")
+    # 兼容 {"scenes": {...}} 或 {"scenes": [...]}
+    if "scenes" in data and isinstance(data["scenes"], (dict, list)):
+        inner = data["scenes"]
+        if isinstance(inner, list):
+            data = {str(x.get("sceneId") or ""): x for x in inner if isinstance(x, dict)}
+        else:
+            data = inner
+    out: dict[str, Any] = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            out[str(k)] = canonical_scene_card(v)
+    return {k: v for k, v in out.items() if v}
+
+
 def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               style_hint: str = "",
               render_path: str = "local",
@@ -190,6 +223,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               camera_focal: str = "", camera_aperture: str = "",
               camera_body: str = "", camera_lens: str = "",
               camera_angle: str = "", camera_map: Any = None,
+              scene_cards: Any = None,
               char_sheets: bool = False, char_sheet_style: str = "",
               char_sheet_proportion: str = "adult",
               char_sheet_refine: bool = False, char_sheet_qc: bool = False,
@@ -229,6 +263,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
         "camera_default": _camera_of(camera_focal, camera_aperture,
                                     camera_body, camera_lens, camera_angle),
         "camera_map": _load_camera_map(camera_map),
+        "scene_cards": _load_scene_cards(scene_cards),
         "character_sheets_enabled": bool(char_sheets),
         "character_sheet_style": str(char_sheet_style or ""),
         "character_sheet_proportion": str(char_sheet_proportion or "adult"),
@@ -249,6 +284,7 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
     runner.cast_anchors = dict(opts.get("cast_anchors") or {})
     runner.camera_default = dict(opts.get("camera_default") or {}) or None
     runner.camera_map = dict(opts.get("camera_map") or {}) or None
+    runner.scene_cards = dict(opts.get("scene_cards") or {}) or None
     # 剧本阈值：只放宽分数线（阻断级意见/硬约束照旧阻断）
     th = float(opts.get("script_threshold") or 0.0)
     if th > 0:
@@ -265,7 +301,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
             "scriptThreshold": th,
             "lipsync": {"enabled": bool(opts.get("lipsync_enabled")),
                         "resolution": str(opts.get("lipsync_resolution") or "480P")},
-            "camera": dict(opts.get("camera_default") or {})}
+            "camera": dict(opts.get("camera_default") or {}),
+            "sceneCards": len(opts.get("scene_cards") or {})}
 
 
 def pick_main_spec(render_model: str = "",

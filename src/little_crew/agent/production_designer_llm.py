@@ -50,7 +50,7 @@ class ProductionDesignerLlm:
     """把 `production_designer` 实现为真实 LLM 职位。"""
 
     agent_id = "production_designer"
-    capability = "scene.design"
+    capability = "art.direction"
     #: **产物键**是名册声明的 `produces`，不是 capability 名
     produces_key = "art.bible"
     consumes_key = "script.draft"

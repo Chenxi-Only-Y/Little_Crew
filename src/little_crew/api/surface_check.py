@@ -30,10 +30,10 @@ def main() -> int:
 
     print(); print("A. 能力清单")
     st, cap = srv.route("GET", "/v1/capabilities", {})
-    check("A1 ★★★ 200 且带名册规模", st == 200 and cap.get("roster") == 19,
+    check("A1 ★★★ 200 且带名册规模", st == 200 and cap.get("roster") == 20,
           f"{st} {cap.get('roster')}")
     check("A2 ★★★ 给出「在链路」数量（不许只给名册数）",
-          cap.get("inChain") == 10, str(cap.get("inChain")))
+          cap.get("inChain") == 11, str(cap.get("inChain")))
     check("A3 ★★ 列出任务→模型（4 类）",
           len(cap.get("modelsByTask") or {}) == 4, str(cap.get("modelsByTask")))
     check("A4 ★★ 列出端点与 API 清单",

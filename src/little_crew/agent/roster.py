@@ -322,7 +322,7 @@ def _specs() -> list[AgentSpec]:
             notes="与剧本顾问并行；两者意见由导演合并。",
         ),
 
-        # ================= 美术组（3 人）=================
+        # ================= 美术组（4 人）=================
         AgentSpec(
             agent_id="production_designer",
             crew_title="美术指导",
@@ -330,14 +330,36 @@ def _specs() -> list[AgentSpec]:
             department=Department.ART,
             stage=Stage.ASSET,
             execution=ExecutionKind.TEXT_LLM,
-            capabilities=("scene.design",),
-            produces=("scene.library", "art.bible"),
+            # 2026-11-15：**资产生产与美术裁决分离**。
+            # 角色资产由角色设计师产出、场景资产由场景设计师产出；
+            # 美术指导只管总体基调与一致性裁决（不再下场产场景资产）。
+            capabilities=("art.direction",),
+            produces=("art.bible",),
             requires=("script.final",),
             task_profile="shot.image.final",
             prompt_template="crew.production_designer.v1",
             max_reasoning_steps=3,
-            real_world_duty="总体视觉风格、场景设计、美术 bible",
-            notes="产出场景库与视觉基调，供分镜与摄影复用。",
+            real_world_duty="总体视觉风格与美术 bible，裁决角色/场景资产的一致性",
+            notes=("产出视觉基调（art.bible）；**不直接产场景资产** —— "
+                   "场景卡归场景设计师（`scene.library`），资产层保持对称。"),
+        ),
+        AgentSpec(
+            agent_id="scene_designer",
+            crew_title="场景设计师",
+            crew_title_en="Scene Designer",
+            department=Department.ART,
+            stage=Stage.ASSET,
+            execution=ExecutionKind.TEXT_LLM,
+            capabilities=("scene.design",),
+            produces=("scene.library",),
+            requires=("script.final",),
+            task_profile="script.structured",
+            prompt_template="crew.scene_designer.v1",
+            max_reasoning_steps=3,
+            real_world_duty="逐场设计空间/材质/道具/色板/年代，产出场景库（场景卡）",
+            notes=("**与角色设计师同级、同组**：角色资产是『图+外观』，"
+                   "场景资产是『场景卡（+可选场景概念图）』。"
+                   "场景卡以**逐字稳定**的文本进入 IR → 跨镜/跨集不漂移。"),
         ),
         AgentSpec(
             agent_id="character_designer",

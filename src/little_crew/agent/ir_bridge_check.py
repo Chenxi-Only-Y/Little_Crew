@@ -120,6 +120,8 @@ def main() -> int:
     _cast_constraint()
     _section_scheduler_default()
     _camera()
+    _scene_card()
+    _camera()
 
 def _camera() -> None:
     """相机参数（2026-11-15）：查表→提示词，且进 IR（可哈希/可复核）。"""
@@ -150,6 +152,36 @@ def _camera() -> None:
     except ValueError:
         bad = True
     check("I5 ★★★ 非法相机取值 -> 明确报错（不静默忽略）", bad, "")
+
+
+def _scene_card() -> None:
+    """场景卡（2026-11-15）：同一场戏的镜头拿到**逐字相同**的场景片段。"""
+    print(); print("J. 场景卡（确定性，跨镜一致）")
+    card = {"space": "地下站台，金属立柱", "materials": ["拉丝不锈钢"],
+            "props": ["长椅"], "palette": ["冷青"], "era": "当代"}
+    s1 = _shot(shot_id="SH-E001-001-001", scene_id="S01", description="雨中等待",
+               shot_size="wide", action="stand")
+    s2 = _shot(shot_id="SH-E001-001-002", scene_id="S01", description="列车进站",
+               shot_size="close", action="walk")
+    ir1 = shot_to_ir(s1, episode_id="E001", prompt_language="zh", scene_card=card)
+    ir2 = shot_to_ir(s2, episode_id="E001", prompt_language="zh", scene_card=card)
+    p1 = next(n for n in ir1["nodes"] if n["kind"] == "prompt.text")["params"]["text"]
+    p2 = next(n for n in ir2["nodes"] if n["kind"] == "prompt.text")["params"]["text"]
+    from little_crew.ir.scene_card import scene_prompt as _sp
+
+    frag = _sp(card, "zh")
+    check("J1 ★★★ 两个不同镜头拿到逐字相同的场景片段",
+          frag in p1 and frag in p2, frag[:80])
+    check("J2 ★★★ IR 顶层带 scene + sceneFingerprint（可审计）",
+          ir1.get("scene") and ir1.get("sceneFingerprint"), str(ir1.get("sceneFingerprint")))
+    ir3 = shot_to_ir(s1, episode_id="E001", prompt_language="zh",
+                     scene_card={"space": "另一个场景", "era": "未来"})
+    check("J3 ★★★ 换场景卡 -> IR 哈希变化",
+          __import__("little_crew.ir.canonical", fromlist=["content_hash"])
+          .content_hash(ir1) != __import__("little_crew.ir.canonical",
+                                           fromlist=["content_hash"]).content_hash(ir3), "")
+    check("J4 ★★ 不给场景卡 -> IR 不出现 scene（不塞空对象）",
+          "scene" not in shot_to_ir(s1, episode_id="E001"), "")
 
 
     print()

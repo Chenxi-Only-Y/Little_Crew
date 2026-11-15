@@ -191,6 +191,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--camera-angle", default="",
                     choices=("", "eye_level", "low", "high", "dutch", "overhead"),
                     dest="camera_angle")
+    ap.add_argument("--scene-cards", default="", dest="scene_cards",
+                    help="场景卡文件（{sceneId:{space,materials,props,palette,era}}）；"
+                         "跨集复用/手工固定场景用")
     ap.add_argument("--camera-map", default="", dest="camera_map",
                     help="按镜头/场次覆盖的相机 JSON（{shotId: {focal:...}}）")
     ap.add_argument("--lipsync", action="store_true",
@@ -292,6 +295,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--llm-art", action="store_true",
                     help="跑**美术指导**产出 `art.bible`，把每场的空间/材质/道具"
                          "写进分镜提示词。需要 --llm")
+    ap.add_argument("--llm-scene", action="store_true",
+                    help="跑**场景设计师**产出 `scene.library`（默认规则桩："
+                         "从剧本原文逐字取场景，保证跨镜一致）。需要 --llm")
     ap.add_argument("--llm-schedule", action="store_true",
                     help="跑**制片主任**产出 `production.schedule`"
                          "（排期 + 风险镜）。需要 --llm")
@@ -415,7 +421,12 @@ def main(argv: list[str] | None = None) -> int:
             )
 
             stubs["production_designer"] = ProductionDesignerLlm(client=writer)
-            print("  美术指导：**真实 LLM**（定每场的空间/材质/道具）")
+            print("  美术指导：**真实 LLM**（定总体基调与美术 bible）")
+        if args.llm_scene:
+            from little_crew.agent.scene_designer_llm import SceneDesignerLlm
+
+            stubs["scene_designer"] = SceneDesignerLlm(client=writer)
+            print("  场景设计师：**真实 LLM**（逐场场景卡：空间/材质/道具/色板/年代）")
         if args.llm_schedule:
             from little_crew.agent.line_producer_llm import LineProducerLlm
 
@@ -764,6 +775,12 @@ def main(argv: list[str] | None = None) -> int:
             str(getattr(args, "camera_lens", "") or ""),
             str(getattr(args, "camera_angle", "") or "")) or None
         runner.camera_map = _load_cmap(str(getattr(args, "camera_map", "") or "")) or None
+        from little_crew.runtime.run_options import _load_scene_cards as _load_scenes
+
+        runner.scene_cards = _load_scenes(
+            str(getattr(args, "scene_cards", "") or "")) or None
+        if runner.scene_cards:
+            print(f"  场景卡：{len(runner.scene_cards)} 张（确定性注入）")
         if runner.camera_default:
             print(f"  相机参数：{runner.camera_default}（查表→提示词）")
         if runner.camera_map:

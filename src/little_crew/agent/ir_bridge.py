@@ -213,6 +213,10 @@ def shot_to_ir(
     #: **确定性查表**成提示词片段（见 `ir.camera_lexicon`）——
     #: 同样的参数永远得到同样的文本，所以 IR 哈希稳定、缓存可命中。
     camera: Mapping[str, Any] | None = None,
+    #: 场景卡（2026-11-15）：`{space, materials, props, palette, era}`。
+    #: **同一场戏的每个镜头都会拿到逐字相同的场景片段** —— 这是"重复场景不漂移"的保证。
+    #: 由美术指导产物（`art.bible.scenes[]`）或 `--scene-cards` 文件提供。
+    scene_card: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """把一个镜头编译成统一 IR。
 
@@ -236,6 +240,21 @@ def shot_to_ir(
     if shot.description:
         # 清掉 @角色名 这类解析标记 —— 它们不是画面内容
         parts.append(_clean_description(shot.description))
+    # ---- 场景卡（2026-11-15）：确定性片段，跨镜逐字一致 ----
+    _scene: dict = {}
+    _scene_fp = ""
+    if scene_card:
+        from little_crew.ir.scene_card import (
+            canonical_scene_card as _sc_canon,
+            scene_fingerprint as _sc_fp,
+            scene_prompt as _sc_prompt,
+        )
+
+        _scene = _sc_canon(scene_card)
+        _scene_txt = _sc_prompt(_scene, language=str(lang.value))
+        _scene_fp = _sc_fp(_scene)
+        if _scene_txt:
+            parts.append(_scene_txt)
     size_txt = size_tbl.get(shot.shot_size, shot.shot_size)
     if size_txt:
         parts.append(size_txt)
@@ -481,6 +500,8 @@ def shot_to_ir(
         "edges": [],
         "constraints": constraints,
         **({"camera": dict(_cam)} if _cam else {}),
+        **({"scene": dict(_scene),
+            "sceneFingerprint": _scene_fp} if _scene else {}),
         "provenance": {
             "generator": "little_crew.agent.ir_bridge",
             "shotId": shot.shot_id,

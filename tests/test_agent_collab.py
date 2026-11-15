@@ -79,7 +79,7 @@ def main() -> int:
     # ==================================================================
     # A. 剧组名册
     # ==================================================================
-    check("A1 名册为 19 个剧组职位", len(DEFAULT_ROSTER) == 19,
+    check("A1 名册为 20 个剧组职位", len(DEFAULT_ROSTER) == 20,
           f"{len(DEFAULT_ROSTER)} 个")
 
     check("A2 名册静态校验零问题", validate_roster() == [],
@@ -100,7 +100,7 @@ def main() -> int:
     crew_titles = {s.crew_title for s in DEFAULT_ROSTER}
     expected_crew = {
         "导演", "编剧", "剧本顾问", "文学策划",
-        "美术指导", "角色设计师", "场记",
+        "美术指导", "角色设计师", "场景设计师", "场记",
         "分镜师", "白模预演师", "灯光师", "摄影师",
         "对白剪辑", "作曲",
         "制片主任", "版权与合规", "审片", "质检员", "封面设计师", "后期统筹",
@@ -170,7 +170,7 @@ def main() -> int:
     # 执行方式分布合理：确定性职责不该混进来
     kinds = execution_kind_counts()
     check("A12 执行方式分布：无纯确定性职位残留（它们应是工具）",
-          kinds.get("assembly", 0) >= 1 and sum(kinds.values()) == 19,
+          kinds.get("assembly", 0) >= 1 and sum(kinds.values()) == 20,
           json.dumps(kinds, ensure_ascii=False))
 
     tools = {t for t in reg._tools}  # noqa: SLF001

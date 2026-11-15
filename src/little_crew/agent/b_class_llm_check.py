@@ -171,7 +171,7 @@ def _call_path() -> None:
           (envelope=_env("scene.design", {}), runtime=None).ok)
     check("D6 ★ 美术指导空正文 -> 失败（不产空白术）",
           not ProductionDesignerLlm(client=_FakeClient({}))
-          (envelope=_env("scene.design", {"script.draft": "  "}),
+          (envelope=_env("art.direction", {"script.draft": "  "}),
            runtime=None).ok)
     check("D7 ★ 制片主任空镜头表 -> 失败（不排空期）",
           not LineProducerLlm(client=_FakeClient({}))
@@ -189,7 +189,7 @@ def _integration() -> None:
     o.bind_many(default_crew_stubs())
     o.bind("production_designer", ProductionDesignerLlm(
         client=_FakeClient({"scenes": [{"sceneId": "S01", "era": "近代"}]})))
-    out = o.run_stage("production_designer", "scene.design",
+    out = o.run_stage("production_designer", "art.direction",
                       {"script.draft": TEXT})
     check("E1 ★ 美术指导能被编排器驱动", out.ok, str(getattr(out, "error", ""))[:100])
     check("E2 产物落 art.bible", o.blackboard.value("art.bible") is not None)

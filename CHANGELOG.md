@@ -57,6 +57,44 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.40] — 2026-11-15（**新增场景设计师：资产层对称**）
+
+### 为什么加
+
+场景会**跨镜头、跨集重复出现**。此前场景设计塞在美术指导能力里、只产文字
+`art.bible`，且 `scene.library` 是"声明了但没人接线"的空话 ——
+结果是同一场戏每镜各写各的，前后不一致。
+
+### 名册 19 → 20（美术组 3 → 4 人）
+
+| 职位 | 变化 |
+|---|---|
+`production_designer` 美术指导 | capability `scene.design` → **`art.direction`**；只产 `art.bible`（**资产与裁决分离**） |
+**`scene_designer` 场景设计师（新）** | 与角色设计师**同级同组**；capability `scene.design`；产 **`scene.library`（场景卡）** |
+
+> 口径：**20 名册 / 20 有实现 / 18 真跑 / 2 有实现未接（场记、合规官）**
+
+### 实现
+
+- `agent/scene_designer_llm.py`
+  - **`SceneDesignerRules`（默认桩）**：从剧本场景原文**逐字**取 `space`、按关键词推 `era`、**不编**材质/道具 → 零成本、完全确定
+  - **`SceneDesignerLlm`（`--llm-scene`）**：真实 LLM 补全材质/道具/色板；`normalize_scene_library` 严格校验 `era` 封闭集
+- `EpisodeRunner._run_scene_designer`：顺序「美术指导 → **场景设计师** → 灯光 → 分镜」；落盘 `delivery/scene.library.json`
+- **IR 确定性注入**：`shot_to_ir(scene_card=...)` 把场景卡拼成**逐字稳定**片段（`sceneFingerprint` 进 IR 哈希）
+- 场景卡优先级：`--scene-cards` 显式 > 场景设计师产物 > 美术 bible 旁证
+- 修复：场次号模糊匹配按**整数归一**（`SC-E100-002` ↔ `S02`）
+- 入口：demo/CLI `--llm-scene`、`--scene-cards`；`llm_crew.bind_llm_crew(scene=...)`
+
+### 测试
+
+新增 `agent/scene_designer_check` **16 项**（名册对称/确定性/不编造/LLM 解析/封闭集）
++ `episode_check` **99/99**（+L2 场次号归一、+L4 场景库优先）
++ `crew_stubs_check` H1/H2（6 个核心桩）、`b_class_llm_check` 33/33（capability 改名）、
+`test_agent_collab` 49/49（名册 20 / 职位名 / 执行分布）、`surface_check` 19/19（roster 20 / inChain 11）
++ 全量 **2797/2784 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.39] — 2026-11-15（**相机参数 → 提示词：确定性镜头语言**）
 
 ### 新增 `ir/camera_lexicon.py`

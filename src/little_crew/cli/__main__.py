@@ -167,6 +167,8 @@ def build_parser() -> argparse.ArgumentParser:
                              "tilt_shift", "swirl", "clinical"))
     se.add_argument("--camera-angle", default="", dest="camera_angle",
                     choices=("", "eye_level", "low", "high", "dutch", "overhead"))
+    se.add_argument("--scene-cards", default="", dest="scene_cards",
+                    help="场景卡 JSON 文件（跨集复用/手工固定场景）")
     se.add_argument("--camera-map", default="", dest="camera_map",
                     help="按镜头/场次覆盖的相机 JSON 文件")
     se.add_argument("--lipsync", action="store_true",
@@ -200,6 +202,8 @@ def build_parser() -> argparse.ArgumentParser:
     se.add_argument("--llm-director", action="store_true", dest="llm_director")
     se.add_argument("--llm-previs", action="store_true", dest="llm_previs")
     se.add_argument("--llm-art", action="store_true", dest="llm_art")
+    se.add_argument("--llm-scene", action="store_true", dest="llm_scene",
+                    help="场景设计师用真实 LLM（默认规则桩）")
     se.add_argument("--llm-schedule", action="store_true", dest="llm_schedule")
     se.add_argument("--llm-gaffer", action="store_true", dest="llm_gaffer")
     se.add_argument("--llm-critics", action="store_true", dest="llm_critics")

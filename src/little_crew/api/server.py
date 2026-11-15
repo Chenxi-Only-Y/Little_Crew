@@ -275,7 +275,8 @@ class _Handlers:
         from little_crew.agent.roster import DEFAULT_ROSTER
         from little_crew.governance.model_routing import ROUTES
 
-        chain = {"screenwriter", "director", "production_designer", "previs",
+        chain = {"screenwriter", "director", "production_designer",
+                 "scene_designer", "previs",
                  "storyboard_artist", "gaffer", "line_producer",
                  "dialogue_editor", "composer", "review_board"}
         return {
@@ -560,6 +561,7 @@ class _Handlers:
                 camera_lens=str(body.get("cameraLens") or ""),
                 camera_angle=str(body.get("cameraAngle") or ""),
                 camera_map=body.get("cameraMap") or None,
+                scene_cards=body.get("sceneCards") or None,
                 lipsync=bool(body.get("lipsync", False)),
                 lipsync_resolution=str(body.get("lipsyncResolution") or "480P"),
                 lipsync_style=str(body.get("lipsyncStyle") or ""),

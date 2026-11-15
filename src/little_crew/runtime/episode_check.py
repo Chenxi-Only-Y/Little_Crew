@@ -343,6 +343,29 @@ def main() -> int:
     _c3 = _r_cam._camera_for_shot(_SNS(shot_id="S2", scene_id="SC2"))
     check("K3 ★★★ 坏值 -> 返回空（不把坏参数塞进 IR）", _c3 == {}, str(_c3))
 
+    print()
+    print("L. 场景卡解析（2026-11-15：显式优先 / 尾部数字模糊匹配）")
+    _r_sc = EpisodeRunner.__new__(EpisodeRunner)
+    _r_sc.scene_cards = {"S01": {"space": "站台A", "era": "当代"}}
+    _r_sc._art_bible = {"scenes": [{"sceneId": "S02", "space": "车厢B",
+                                    "era": "当代"}]}
+    _sc1 = _r_sc._scene_card_for(_SNS(shot_id="X1", scene_id="S01"))
+    check("L1 ★★★ 显式场景卡优先（精确 sceneId）",
+          _sc1.get("space") == "站台A", str(_sc1))
+    _sc2 = _r_sc._scene_card_for(_SNS(shot_id="X2", scene_id="SC-E100-002"))
+    check("L2 ★★★ 尾部数字模糊匹配到 art.bible（SC-...-002 -> S02）",
+          _sc2.get("space") == "车厢B", str(_sc2))
+    _r_sc.scene_cards = {"S01": {"era": "赛博"}}
+    _sc3 = _r_sc._scene_card_for(_SNS(shot_id="X3", scene_id="S01"))
+    check("L3 ★★★ 坏场景卡 -> 返回空（不把非法卡塞进 IR）", _sc3 == {}, str(_sc3))
+
+    _r_sc.scene_cards = None
+    _r_sc._scene_library = {"scenes": [{"sceneId": "S02", "space": "场景库卡"}]}
+    _r_sc._art_bible = {"scenes": [{"sceneId": "S02", "space": "美术bible卡"}]}
+    _sc4 = _r_sc._scene_card_for(_SNS(shot_id="X4", scene_id="S02"))
+    check("L4 ★★★ 场景设计师产物优先于美术 bible 旁证",
+          _sc4.get("space") == "场景库卡", str(_sc4))
+
     npass = sum(1 for _, ok, _ in _results if ok)
     for name, ok, detail in _results:
         print(f" [{'v' if ok else 'X'}] {name}")

@@ -435,11 +435,11 @@ def _pipeline() -> None:
 # ==========================================================================
 
 def _contract() -> None:
-    check("H1 注册了恰好 5 个核心职位桩", len(CORE_CREW_STUBS) == 5,
+    check("H1 注册了恰好 6 个核心职位桩", len(CORE_CREW_STUBS) == 6,
           str(sorted(CORE_CREW_STUBS)))
     expect = {"screenwriter", "dramaturge", "story_editor",
-              "storyboard_artist", "review_board"}
-    check("H2 覆盖的正是名册里的 5 个核心职位",
+              "storyboard_artist", "review_board", "scene_designer"}
+    check("H2 覆盖的正是名册里的 6 个核心职位",
           set(CORE_CREW_STUBS) == expect, str(sorted(set(CORE_CREW_STUBS) ^ expect)))
 
     # 所有桩都必须是 impl(*, envelope, runtime) 签名
