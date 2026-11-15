@@ -217,6 +217,10 @@ def shot_to_ir(
     #: **同一场戏的每个镜头都会拿到逐字相同的场景片段** —— 这是"重复场景不漂移"的保证。
     #: 由美术指导产物（`art.bible.scenes[]`）或 `--scene-cards` 文件提供。
     scene_card: Mapping[str, Any] | None = None,
+    #: 造型版本（2026-11-15）：换装是**角色设计**的事，IR 只负责把
+    #: 选中的那套造型（id + 外观文字）确定性写进提示词与哈希。
+    costume: str = "",
+    costume_appearance: str = "",
 ) -> dict[str, Any]:
     """把一个镜头编译成统一 IR。
 
@@ -255,6 +259,11 @@ def shot_to_ir(
         _scene_fp = _sc_fp(_scene)
         if _scene_txt:
             parts.append(_scene_txt)
+    # ---- 造型（2026-11-15）：逐字稳定的外观片段 ----
+    _costume_txt = ""
+    if costume and costume_appearance:
+        _costume_txt = ("造型：" if str(lang.value).startswith("zh") else "costume: ")             + str(costume_appearance).strip()
+        parts.append(_costume_txt)
     size_txt = size_tbl.get(shot.shot_size, shot.shot_size)
     if size_txt:
         parts.append(size_txt)
@@ -306,6 +315,9 @@ def shot_to_ir(
              "characters": list(shot.characters),
              "shotSize": shot.shot_size,
              "cameraMovement": shot.camera_movement,
+             **({"costume": {"id": costume,
+                             "appearance": costume_appearance}}
+                if costume else {}),
          }},
         {"id": "n_latent", "kind": "latent.empty",
          "params": {"width": w, "height": h, "batch_size": 1}},
@@ -502,6 +514,8 @@ def shot_to_ir(
         **({"camera": dict(_cam)} if _cam else {}),
         **({"scene": dict(_scene),
             "sceneFingerprint": _scene_fp} if _scene else {}),
+        **({"costume": {"id": costume, "appearance": costume_appearance}}
+           if costume else {}),
         "provenance": {
             "generator": "little_crew.agent.ir_bridge",
             "shotId": shot.shot_id,

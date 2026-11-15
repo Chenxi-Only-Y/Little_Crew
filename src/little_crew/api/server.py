@@ -562,6 +562,7 @@ class _Handlers:
                 camera_angle=str(body.get("cameraAngle") or ""),
                 camera_map=body.get("cameraMap") or None,
                 scene_cards=body.get("sceneCards") or None,
+                costume_map=body.get("costumeMap") or None,
                 lipsync=bool(body.get("lipsync", False)),
                 lipsync_resolution=str(body.get("lipsyncResolution") or "480P"),
                 lipsync_style=str(body.get("lipsyncStyle") or ""),

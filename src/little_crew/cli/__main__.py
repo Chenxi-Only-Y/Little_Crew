@@ -167,6 +167,8 @@ def build_parser() -> argparse.ArgumentParser:
                              "tilt_shift", "swirl", "clinical"))
     se.add_argument("--camera-angle", default="", dest="camera_angle",
                     choices=("", "eye_level", "low", "high", "dutch", "overhead"))
+    se.add_argument("--costume-map", default="", dest="costume_map",
+                    help="造型覆盖 JSON（{shotId/sceneId: variant}）")
     se.add_argument("--scene-cards", default="", dest="scene_cards",
                     help="场景卡 JSON 文件（跨集复用/手工固定场景）")
     se.add_argument("--camera-map", default="", dest="camera_map",

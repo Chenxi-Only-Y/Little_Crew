@@ -55,6 +55,7 @@ _RUNNER_ATTRS: dict[str, Any] = {
     "camera_default": None,
     "camera_map": None,
     "scene_cards": None,
+    "costume_map": None,
     "character_sheets_enabled": False,
     "character_sheet_style": "",
     "character_sheet_proportion": "adult",
@@ -175,6 +176,22 @@ def _load_camera_map(value: Any) -> dict[str, Any]:
     return out
 
 
+def _load_costume_map(value: Any) -> dict[str, str]:
+    """加载造型覆盖表：`{shotId 或 sceneId: 造型 variant}`。"""
+    if not value:
+        return {}
+    data: Any = value
+    if isinstance(value, (str, Path)):
+        p = Path(str(value))
+        if not p.is_file():
+            raise FileNotFoundError(f"costume-map 不存在：{p}")
+        data = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("costume-map 必须是 {shotId/sceneId: variant} 的对象")
+    return {str(k): str(v).strip() for k, v in data.items()
+            if str(v or "").strip()}
+
+
 def _load_scene_cards(value: Any) -> dict[str, Any]:
     """加载场景卡表（dict 或 JSON 文件）：`{sceneId: {space, materials, ...}}`。
 
@@ -223,7 +240,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               camera_focal: str = "", camera_aperture: str = "",
               camera_body: str = "", camera_lens: str = "",
               camera_angle: str = "", camera_map: Any = None,
-              scene_cards: Any = None,
+              scene_cards: Any = None, costume_map: Any = None,
               char_sheets: bool = False, char_sheet_style: str = "",
               char_sheet_proportion: str = "adult",
               char_sheet_refine: bool = False, char_sheet_qc: bool = False,
@@ -264,6 +281,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
                                     camera_body, camera_lens, camera_angle),
         "camera_map": _load_camera_map(camera_map),
         "scene_cards": _load_scene_cards(scene_cards),
+        "costume_map": _load_costume_map(costume_map),
         "character_sheets_enabled": bool(char_sheets),
         "character_sheet_style": str(char_sheet_style or ""),
         "character_sheet_proportion": str(char_sheet_proportion or "adult"),
@@ -285,6 +303,7 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
     runner.camera_default = dict(opts.get("camera_default") or {}) or None
     runner.camera_map = dict(opts.get("camera_map") or {}) or None
     runner.scene_cards = dict(opts.get("scene_cards") or {}) or None
+    runner.costume_map = dict(opts.get("costume_map") or {}) or None
     # 剧本阈值：只放宽分数线（阻断级意见/硬约束照旧阻断）
     th = float(opts.get("script_threshold") or 0.0)
     if th > 0:
@@ -302,7 +321,8 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
             "lipsync": {"enabled": bool(opts.get("lipsync_enabled")),
                         "resolution": str(opts.get("lipsync_resolution") or "480P")},
             "camera": dict(opts.get("camera_default") or {}),
-            "sceneCards": len(opts.get("scene_cards") or {})}
+            "sceneCards": len(opts.get("scene_cards") or {}),
+            "costumes": len(opts.get("costume_map") or {})}
 
 
 def pick_main_spec(render_model: str = "",

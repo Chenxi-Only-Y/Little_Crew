@@ -299,6 +299,9 @@ class EpisodeResult:
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
+    #: 造型使用台账（2026-11-15）：`{shotId: {variant, characters, anchors}}`。
+    costumes: dict[str, Any] = field(default_factory=dict)
+
     #: 交付元数据（2026-11-15）：AI 标识/署名/素材登记的实际落地情况。
     delivery_meta: dict[str, Any] = field(default_factory=dict)
 
@@ -361,6 +364,7 @@ class EpisodeResult:
             "compliance": dict(getattr(self, "compliance", {}) or {}),
             "continuity": dict(getattr(self, "continuity", {}) or {}),
             "deliveryMeta": dict(getattr(self, "delivery_meta", {}) or {}),
+            "costumes": dict(getattr(self, "costumes", {}) or {}),
             "camera": dict(getattr(self, "camera", {}) or {}),
             "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
             "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
@@ -1947,6 +1951,11 @@ class EpisodeRunner:
 
                 _o0 = Path(str(_wd0)) / "delivery"
                 _o0.mkdir(parents=True, exist_ok=True)
+                if getattr(self, "_outfits_used", None):
+                    (_o0 / "outfits_used.json").write_text(_j0.dumps(
+                        {"kind": "outfits.used",
+                         "perShot": dict(sorted(self._outfits_used.items()))},
+                        ensure_ascii=False, indent=2, default=str), encoding="utf-8")
                 if getattr(self, "_scene_cards_used", None):
                     (_o0 / "scene_cards.json").write_text(_j0.dumps(
                         {"kind": "scene.cards",
@@ -2088,6 +2097,7 @@ class EpisodeRunner:
             compliance=dict(getattr(self, "_compliance_report", {}) or {}),
             continuity=dict(getattr(self, "_continuity_report", {}) or {}),
             delivery_meta=dict(getattr(self, "_delivery_meta", {}) or {}),
+            costumes=dict(getattr(self, "_outfits_used", {}) or {}),
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -3994,6 +4004,12 @@ class EpisodeRunner:
     #: 优先于美术指导产物；用于"跨集复用同一场景"或手工固定。
     scene_cards: Any = None
 
+    #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
+    #: 换装是角色设计的事；这里只做"这一镜用哪套造型"的选择。
+    costume_map: Any = None
+    #: 造型资产表（惰性发现）：`{角色: {variant: {image, appearance, name}}}`。
+    outfit_table: Any = None
+
     # ---- 空间控制：白模 ------------------------------------------------
 
     #: **L3 跨模型族盲读器**（`agent.blind.BlindReader`）。`None` = 不做盲读。
@@ -4471,6 +4487,28 @@ class EpisodeRunner:
         except Exception as _e_anc:                        # noqa: BLE001
             _sets = {}
             print(f"  ⚠️ 角色锚点未生效：{type(_e_anc).__name__}: {_e_anc}")
+        # ---- 造型版本（2026-11-15）：按镜选服装，锚点也换成该版本 ----
+        _costume = self._costume_for(shot)
+        _costume_id = str(_costume.get("variant") or "")
+        _costume_txt = str(_costume.get("appearance") or "")
+        if _costume_id:
+            for _cid, _ent in (_costume.get("characters") or {}).items():
+                if isinstance(_ent, dict) and _ent.get("image"):
+                    _sets[str(_cid)] = str(_ent["image"])
+            try:
+                if getattr(self, "_outfits_used", None) is None:
+                    self._outfits_used = {}
+                self._outfits_used[str(getattr(shot, "shot_id", ""))] = {
+                    "variant": _costume_id,
+                    "characters": {str(k): _costume_id
+                                   for k in (_costume.get("characters") or {})},
+                    "anchors": {str(k): str(v.get("image"))
+                                for k, v in (_costume.get("characters") or {}).items()
+                                if isinstance(v, dict) and v.get("image")},
+                    "appearance": _costume_txt,
+                }
+            except Exception:                                 # noqa: BLE001
+                pass
         _cam = self._camera_for_shot(shot)
         _scene_card = self._scene_card_for(shot)
         ir = shot_to_ir(
@@ -4483,7 +4521,9 @@ class EpisodeRunner:
             style_suffix=self.engine_style,
             prompt_language=self.engine_language,
             camera=_cam or None,
-            scene_card=_scene_card or None)
+            scene_card=_scene_card or None,
+            costume=_costume_id,
+            costume_appearance=_costume_txt)
         if _cam:
             try:
                 if getattr(self, "_camera_plan", None) is None:
@@ -4504,6 +4544,58 @@ class EpisodeRunner:
                 pass
         # 空间控制：白模预演 -> ControlNet
         return self._apply_white_model(ir, shot)
+
+    def _outfits(self) -> dict:
+        """惰性发现造型资产：工作目录 `assets/` 优先，其次仓库级 `assets/`。"""
+        if getattr(self, "outfit_table", None) is not None:
+            return dict(self.outfit_table or {})
+        from little_crew.runtime import anchors as _anc
+
+        table: dict = {}
+        wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+        for root in ([Path(str(wd)) / "assets"] if wd else []) + [
+                Path(__file__).resolve().parents[3] / "assets"]:
+            try:
+                found = _anc.discover_outfits(root)
+            except Exception:                                 # noqa: BLE001
+                found = {}
+            for cid, variants in (found or {}).items():
+                table.setdefault(cid, {}).update(variants)
+        self.outfit_table = table
+        return table
+
+    def _costume_for(self, shot: Any) -> dict:
+        """解析该镜的造型：`shotId` > `sceneId` > 不换装。
+
+        返回 `{"variant": 版本id, "appearance": 合并外观文本,
+        "characters": {角色: {image, appearance, name}}}`；没有则 `{}`。
+        """
+        m = getattr(self, "costume_map", None)
+        if not isinstance(m, Mapping) or not m:
+            return {}
+        sid = str(getattr(shot, "shot_id", "") or "")
+        scene = str(getattr(shot, "scene_id", "") or "")
+        variant = str(m.get(sid) or m.get(scene) or "").strip()
+        if not variant:
+            return {}
+        table = self._outfits()
+        if not table:
+            print(f"  ⚠️ 造型 {variant!r} 未生效：没有 outfits/ 资产")
+            return {}
+        from little_crew.runtime import anchors as _anc
+
+        chars = _anc.outfits_for(getattr(shot, "characters", ()) or (),
+                                 table, variant)
+        if not chars:
+            print(f"  ⚠️ 造型 {variant!r} 未生效：出场角色没有该版本")
+            return {}
+        parts = []
+        for cid, ent in chars.items():
+            app = str(ent.get("appearance") or "").strip()
+            if app:
+                parts.append(f"{cid}：{app}")
+        return {"variant": variant, "appearance": "；".join(parts),
+                "characters": chars}
 
     def _scene_card_for(self, shot: Any) -> dict:
         """解析该镜的场景卡：显式 `scene_cards` 优先，其次美术指导的 `art.bible.scenes`。

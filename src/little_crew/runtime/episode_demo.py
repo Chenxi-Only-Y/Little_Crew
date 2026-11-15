@@ -191,6 +191,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--camera-angle", default="",
                     choices=("", "eye_level", "low", "high", "dutch", "overhead"),
                     dest="camera_angle")
+    ap.add_argument("--costume-map", default="", dest="costume_map",
+                    help="造型覆盖 JSON（{shotId 或 sceneId: outfits/<variant>}）；"
+                         "资产放 assets/characters/<角色>/outfits/<variant>/")
     ap.add_argument("--scene-cards", default="", dest="scene_cards",
                     help="场景卡文件（{sceneId:{space,materials,props,palette,era}}）；"
                          "跨集复用/手工固定场景用")
@@ -786,6 +789,12 @@ def main(argv: list[str] | None = None) -> int:
 
         runner.scene_cards = _load_scenes(
             str(getattr(args, "scene_cards", "") or "")) or None
+        from little_crew.runtime.run_options import _load_costume_map as _load_cm
+
+        runner.costume_map = _load_cm(
+            str(getattr(args, "costume_map", "") or "")) or None
+        if runner.costume_map:
+            print(f"  造型覆盖：{len(runner.costume_map)} 条（按镜头/场次选造型）")
         if runner.scene_cards:
             print(f"  场景卡：{len(runner.scene_cards)} 张（确定性注入）")
         if runner.camera_default:

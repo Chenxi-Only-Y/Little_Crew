@@ -521,6 +521,7 @@ def cmd_episode(args: Any) -> int:
             camera_angle=str(getattr(args, "camera_angle", "") or ""),
             camera_map=str(getattr(args, "camera_map", "") or ""),
             scene_cards=str(getattr(args, "scene_cards", "") or ""),
+            costume_map=str(getattr(args, "costume_map", "") or ""),
             lipsync=bool(getattr(args, "lipsync", False)),
             lipsync_resolution=str(getattr(args, "lipsync_resolution", "480P") or "480P"),
             lipsync_style=str(getattr(args, "lipsync_style", "") or ""),

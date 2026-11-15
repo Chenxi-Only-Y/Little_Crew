@@ -57,6 +57,32 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.45] — 2026-11-15（**C1 造型版本化：换装是角色设计的事**）
+
+### 为什么不是"多参考图"
+
+换装的根因是**资产没有版本**（角色只出一套造型），不是参考图数量。
+所以先做：角色设计师可产出**多套造型**，按镜选择、逐字注入、锚点同步替换。
+
+### 实现
+
+- `runtime/anchors.py`：`discover_outfits(root)` / `outfits_for(characters, outfits, variant)`
+  - 资产：`assets/characters/<角色>/outfits/<variant>/{anchor.png|sheet.png, outfit.json}`
+- `EpisodeRunner._costume_for(shot)`：`shotId` 优先于 `sceneId`；没有版本落回默认；
+  角色没有该造型 -> **不生效并告警**（不硬套）
+- `_bridge`：外观文字合并（`角色：外观`）→ `shot_to_ir(costume=, costume_appearance=)`；
+  `anchor_sets` 换成该版本图；`delivery/outfits_used.json` + `run.report.costumes`
+- `shot_to_ir`：提示词加"造型：…"；IR 顶层 `costume{id,appearance}` → **换装必重渲**
+- 入口：demo/CLI `--costume-map`；API `costumeMap`；`run_options.costume_map`
+
+### 测试
+
+新增 `runtime/outfit_check` **16/16**（资产发现/缺图不编造/按镜优先/外观合并/
+锚点替换/IR 注入与哈希）
++ 全量 **2852/2839 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.44] — 2026-11-15（**A2 交付元数据：AI 标识 / 署名 / 素材登记**）
 
 ### 补的是什么

@@ -40,6 +40,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("质检员", [sys.executable, "-m", "little_crew.review.qc_inspector_check"], 21),
     ("合规官（授权/交付/内容初审）", [sys.executable, "-m", "little_crew.agent.compliance_audit_check"], 20),
     ("交付元数据（AI标识/署名/素材）", [sys.executable, "-m", "little_crew.runtime.delivery_meta_check"], 12),
+    ("造型版本化（换装）", [sys.executable, "-m", "little_crew.runtime.outfit_check"], 16),
     ("设定板质检", [sys.executable, "-m", "little_crew.review.sheet_qc_check"], 19),
     ("封面设计师", [sys.executable, "-m", "little_crew.review.cover_designer_check"], 38),
     ("后期统筹", [sys.executable, "-m", "little_crew.runtime.post_production_check"], 14),
