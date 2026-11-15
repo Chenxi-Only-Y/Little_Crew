@@ -1,4 +1,4 @@
-"""质检员（`qc_inspector`）：逐镜抽检画面，判「崩没崩」，并**下返工指令**（2026-11-12）。
+"""场记的**质检实现**（2026-11-12 建立，2026-11-15 并入「场记」职位）。
 
 **为什么放在 `review/` 而不是 `agent/`**：它调用 `review.vision_review` 与
 `agent.llm`。若放在 `agent/`，就成了 `agent -> review` 的**反向依赖**
@@ -10,7 +10,7 @@
 视觉闸（`review/vision_review.py`）是**看图的本事**；本职位是**把它变成职位**：
 - 之前：`episode._stage_vision` **直接** `new LlmClient()` 调模型 →
   24 次调用**不进预算账本、不进调用树**、也没有跨族检查。
-- 现在：走 `run_stage("qc_inspector", "shot.qc", …)` →
+- 现在：走 `run_stage("continuity_supervisor", "shot.qc", …)` →
   **自动**进 `BudgetLedger`（`reserve/settle`）、进 `_spans`、走编排器的授权与自签收检查。
 
 ## 职责边界（重要）

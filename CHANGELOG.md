@@ -57,6 +57,43 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.41] — 2026-11-15（**名册收敛：质检员并入场记**）
+
+### 为什么合并
+
+- 两者**都以画面为对象、都要看图**（场记声明 `review.vlm_blind` 却未接；质检员 VLM 已接）
+- 场记现有实现是 `CriticLlm` 审文字，与文学策划同层；真正的跨镜比对从未实现
+- 分开会让**返工通道出现两个来源**（质检员可下令、场记只能建议）
+- 同一原则的历史先例：摄影指导删除（变相机词表）、剪辑师并入后期统筹、技术质检/授权降为工具
+
+### 合并后
+
+| 项 | 前 | 后 |
+|---|---|---|
+| 职位 | 20 | **19** |
+| 有实现 | 20 | 19 |
+| 真跑 | 18 | **18** |
+| 有实现未接 | 2（场记、合规官） | **1（合规官）** |
+
+- `continuity_supervisor`：**VLM**；capabilities `continuity.check` + `shot.qc`；
+  produces `continuity.report` / `continuity.sheet` / `qc.report`
+- 职责：**单镜质检=唯一权威（可下返工指令）**；**跨镜审计=只报警、不进裁定**
+- `qc_inspector` 职位删除；实现 `review/qc_inspector.QcInspector` 保留并改绑到场记
+  （`run_stage("continuity_supervisor","shot.qc")`）
+- 统一：`llm_crew.bind_llm_crew(qc=True)`、demo `--llm-qc`、episode `_stage_vision` 全部改绑场记
+
+### 测试
+
+`qc_inspector_check` **14/14**（改绑场记后仍全绿）· `test_agent_collab` 49/49（名册 19 / 职位名 / 执行分布）
+· `surface_check` 19/19（roster 19）· 全量 **2797/2784 + 架构守卫 PASS**
+
+### 文档
+
+`docs/00 §3.4.1` 剧组建制表与 `§5.10.6b` 台账重写（19 行，含场景设计师、场记合并说明）；
+`docs/01` / `docs/12` / `docs/16` / `docs/README` / `附录B` / `STRUCTURE` / `docs/20` 同步为 **19/19/18/1**。
+
+---
+
 ## [0.4.0-beta.40] — 2026-11-15（**新增场景设计师：资产层对称**）
 
 ### 为什么加

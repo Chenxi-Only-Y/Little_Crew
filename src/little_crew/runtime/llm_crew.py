@@ -144,8 +144,8 @@ def bind_llm_crew(
         try:
             from little_crew.review.qc_inspector import QcInspector
 
-            stubs["qc_inspector"] = QcInspector(client=reviewer)
-            out["bound"].append("qc_inspector")
+            stubs["continuity_supervisor"] = QcInspector(client=reviewer)
+            out["bound"].append("continuity_supervisor")
         except Exception as exc:                              # noqa: BLE001
             out["qcError"] = f"{type(exc).__name__}: {exc}"
 

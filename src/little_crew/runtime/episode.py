@@ -2529,17 +2529,17 @@ class EpisodeRunner:
                 _vrres = None
                 # ---- 优先走**职位**（2026-11-12）----
                 # 以前这里直接 `new LlmClient()` 调模型：24 次调用**不进预算账本、
-                # 不进调用树、没有跨族检查**。现在先问编排器有没有 `qc_inspector`；
+                # 不进调用树、没有跨族检查**。现在先问编排器有没有 `continuity_supervisor`（场记）；
                 # 绑了就按职位调（自动进账/进 span），没绑才退回直调。
                 try:
-                    if "qc_inspector" in (getattr(self.orch, "_impls", {}) or {}):
+                    if "continuity_supervisor" in (getattr(self.orch, "_impls", {}) or {}):
                         _qc_payload = {
                             "shot.image": dict(_imgs),
                             "descriptions": {str(getattr(_s9, "shot_id", "")):
                                              str(getattr(_s9, "description", ""))
                                              for _s9 in picked},
                         }
-                        _qc_out = self.orch.run_stage("qc_inspector", "shot.qc",
+                        _qc_out = self.orch.run_stage("continuity_supervisor", "shot.qc",
                                                       _qc_payload)
                         if getattr(_qc_out, "ok", False):
                             _rep = self.orch.blackboard.value("qc.report")
@@ -2550,9 +2550,9 @@ class EpisodeRunner:
                                 _vrres = ((getattr(_res_o, "output", None) or {})
                                           .get("qc.report"))
                         if _vrres is None:
-                            print("  ⚠️ 质检员未产出 qc.report，退回直调视觉闸")
+                            print("  ⚠️ 场记（质检）未产出 qc.report，退回直调视觉闸")
                 except Exception as _e_qc:                        # noqa: BLE001
-                    print(f"  ⚠️ 质检员调用失败，退回直调：{type(_e_qc).__name__}: {_e_qc}")
+                    print(f"  ⚠️ 场记（质检）调用失败，退回直调：{type(_e_qc).__name__}: {_e_qc}")
                     _vrres = None
                 if _vrres is None:
                     _vrres = _vr.review(

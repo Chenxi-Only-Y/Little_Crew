@@ -591,7 +591,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("  质检员：未绑（没有 LLM 客户端，视觉闸退回直调）")
         if _qc_client is not None:
-            stubs["qc_inspector"] = _QC(client=_qc_client,
+            stubs["continuity_supervisor"] = _QC(client=_qc_client,
                                         max_shots=int(getattr(args, "vision_max", 12) or 12))
     except Exception as _e_qc0:                                # noqa: BLE001
         print(f"  ⚠️ 质检员装配失败：{type(_e_qc0).__name__}: {_e_qc0}")

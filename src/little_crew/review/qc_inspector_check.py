@@ -85,7 +85,7 @@ def main() -> int:
     # ⚠️ 这里**不** import `runtime.vision_rework`：`review` 层不得依赖 `runtime` 层
     # （R1 反向依赖，架构守卫会拦 —— 实测抓到过）。
     # 两边词表是否一致，由 `runtime/vision_rework_check.py` 断言（它能向下依赖 review）。
-    check("C1 ★★★ 质检员声明了重画词表（非空）",
+    check("C1 ★★★ 场记（质检）声明了重画词表（非空）",
           bool(tuple(qc.RERENDER_KINDS)), str(qc.RERENDER_KINDS))
 
     print(); print("D. 走编排器：进黑板 + 进账本")
@@ -96,8 +96,8 @@ def main() -> int:
         d3 = Path(td3)
         imgs3 = {"SH1": _png(d3 / "a.png")}
         o = CrewOrchestrator(budget=Budget(steps=100, wall_ms=60_000))
-        o.bind("qc_inspector", QcInspector(client=_Client("ok")))
-        out = o.run_stage("qc_inspector", "shot.qc",
+        o.bind("continuity_supervisor", QcInspector(client=_Client("ok")))
+        out = o.run_stage("continuity_supervisor", "shot.qc",
                           {"shot.image": imgs3, "descriptions": {"SH1": "少女"}})
         check("D1 ★★★ 职位调用成功", out.ok, str(getattr(out, "reason", ""))[:60])
         check("D2 ★★★ qc.report 进了黑板",
@@ -105,15 +105,15 @@ def main() -> int:
               str(type(o.blackboard.value("qc.report")).__name__))
         check("D3 ★★★ 这次调用**进了预算账本**（steps >= 1）",
               o.ledger.spent_steps >= 1, str(o.ledger.spent_steps))
-        check("D4 ★★ 也进了调用树（span 里能看到 qc_inspector）",
-              any(str(s.get("callee")) == "qc_inspector" for s in o.runtime.spans()),
+        check("D4 ★★ 也进了调用树（span 里能看到 continuity_supervisor）",
+              any(str(s.get("callee")) == "continuity_supervisor" for s in o.runtime.spans()),
               str([s.get("callee") for s in o.runtime.spans()][:3]))
 
     print(); print("E. 没有图 -> 明确失败（不假装通过）")
     from little_crew.agent.protocol import CallEnvelope
 
     inst = QcInspector(client=_Client("ok"))
-    env = CallEnvelope.root("qc_inspector", "shot.qc", {}, None)
+    env = CallEnvelope.root("continuity_supervisor", "shot.qc", {}, None)
     res = inst(envelope=env, runtime=None)
     check("E1 ★★★ payload 没有图 -> F-NO-IMAGES",
           not res.ok and res.error_code == "F-NO-IMAGES", str(res.error_code))

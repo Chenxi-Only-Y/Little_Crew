@@ -56,8 +56,8 @@ def main() -> int:
           "scene.library" in tuple(by_id["scene_designer"].produces), "")
     check("A3 ★★★ 美术指导不再产出 scene.library（资产与裁决分离）",
           "scene.library" not in tuple(by_id["production_designer"].produces), "")
-    check("A4 ★★ 名册规模 20（19 + 场景设计师）",
-          len(DEFAULT_ROSTER) == 20, str(len(DEFAULT_ROSTER)))
+    check("A4 ★★ 名册规模 19（含场景设计师；质检员已并入场记）",
+          len(DEFAULT_ROSTER) == 19, str(len(DEFAULT_ROSTER)))
     check("A5 ★★ 默认桩里注册了场景设计师",
           "scene_designer" in CORE_CREW_STUBS, str(sorted(CORE_CREW_STUBS)))
 

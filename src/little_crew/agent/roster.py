@@ -385,16 +385,22 @@ def _specs() -> list[AgentSpec]:
             crew_title_en="Continuity Supervisor",
             department=Department.ART,
             stage=Stage.GATE,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("continuity.check",),
-            produces=("continuity.report", "continuity.sheet"),
+            # 2026-11-15 合并：原「质检员」并入场记（**同一维度只留一个权威**）。
+            # 单镜质检要**看图**判崩没崩 → 执行方式必须是 VLM（文本 LLM 做不了）。
+            execution=ExecutionKind.VLM,
+            capabilities=("continuity.check", "shot.qc"),
+            produces=("continuity.report", "continuity.sheet", "qc.report"),
             requires=("character.anchor_set", "shot.image"),
             task_profile="review.vlm_blind",
             prompt_template="crew.continuity_supervisor.v1",
             max_reasoning_steps=3,
-            real_world_duty="记录并核对镜头间的连贯性（服装/道具/轴线/视线）",
-            notes=("真实剧组里场记就是干这个的。**跨模型族盲读**的落点之一 —— "
-                   "审核模型必须与生成模型不同族，否则等于自我签收。"),
+            real_world_duty=("单镜质检（崩坏判定 + 返工指令）+ 跨镜连贯性审计"
+                             "（服装/道具/轴线/视线）"),
+            notes=("**合并说明（2026-11-15）**：原「质检员」并入本职位 —— "
+                   "两者都以画面为对象、都要看图，分开只会让返工通道出现两个来源。"
+                   "分工：**单镜崩坏=唯一权威（可下返工指令）**；"
+                   "跨镜一致性=审计模式（只报警，不进裁定）。"
+                   "**跨模型族盲读**的落点之一：审核模型必须与生成模型不同族。"),
         ),
 
         # ================= 摄影组（5 人）=================
@@ -611,26 +617,6 @@ def _specs() -> list[AgentSpec]:
                    "②`generate` 以**角色设定图 + 美术/剧情设定**为输入做图生图，产出海报感封面。"
                    "默认 select（可追溯）；generate 会引入新内容，需显式开。"
                    "宁可不出封面（模型回「不选」）也不选有硬伤的一张。"),
-        ),
-        AgentSpec(
-            agent_id="qc_inspector",
-            crew_title="质检员",
-            crew_title_en="QC Inspector",
-            department=Department.REVIEW,
-            stage=Stage.GATE,
-            # **看图**判定，所以是 VLM；文本 LLM 做不了这件事（2026-11-12）
-            execution=ExecutionKind.VLM,
-            capabilities=("shot.qc",),
-            produces=("qc.report",),
-            # 只看图，不看剧本：它判的是"这张图崩没崩"，不是"这段文字好不好"
-            requires=("shot.image",),
-            task_profile="review.vlm_blind",
-            prompt_template="crew.qc_inspector.v1",
-            max_reasoning_steps=1,
-            real_world_duty="逐镜抽检画面质量，判「崩没崩」，并下返工指令",
-            notes=("**只判 + 下指令，不负责重画**：真实 QC 也是打回单，不是自己上手重做。"
-                   "产物 `qc.report` 由 `run()` 读取后执行定向重渲（`vision_rework`）。"
-                   "抽样默认 12 镜（成本可控），0 镜可判时**必须记为「等于没审」**。"),
         ),
     ]
 
