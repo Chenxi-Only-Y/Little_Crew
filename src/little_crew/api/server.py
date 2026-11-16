@@ -586,6 +586,7 @@ class _Handlers:
                 char_sheet_qc=bool(body.get("charSheetQc", False)),
                 vision_max=int(body.get("visionMax") or 12),
                 script_threshold=float(body.get("scriptThreshold") or 0.0),
+                scene_views=bool(body.get("sceneViews", False)),
             )
             _eff2 = _apply_run_opts2(runner, _opts2)
             run.emit("运行选项", **{k: v for k, v in _eff2.items() if v})

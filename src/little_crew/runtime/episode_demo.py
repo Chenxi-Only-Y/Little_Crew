@@ -194,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--costume-map", default="", dest="costume_map",
                     help="造型覆盖 JSON（{shotId 或 sceneId: outfits/<variant>}）；"
                          "资产放 assets/characters/<角色>/outfits/<variant>/")
+    ap.add_argument("--scene-views", action="store_true", dest="scene_views",
+                    help="场景空间视图（Tier1 空景锚点 / Tier2 四视图；按上游信号自动选档）")
     ap.add_argument("--scene-cards", default="", dest="scene_cards",
                     help="场景卡文件（{sceneId:{space,materials,props,palette,era}}）；"
                          "跨集复用/手工固定场景用")
@@ -848,6 +850,9 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as _e_cam:                              # noqa: BLE001
         print(f"  ⚠️ 相机参数无效：{_e_cam}")
 
+    runner.scene_views_enabled = bool(getattr(args, "scene_views", False))
+    if runner.scene_views_enabled:
+        print("  场景空间视图：开（按导演/镜头信号自动选 Tier1/Tier2）")
     runner.lipsync_enabled = bool(getattr(args, "lipsync", False))
     runner.lipsync_resolution = str(getattr(args, "lipsync_resolution", "480P") or "480P")
     runner.lipsync_max_shots = int(getattr(args, "lipsync_max_shots", 0) or 0)

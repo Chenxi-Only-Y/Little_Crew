@@ -1,0 +1,81 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "SC-CONCEPT-001": {
+      "sceneId": "SC-CONCEPT-001",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 4,
+        "factors": [
+          "该场 2 镜（多机位）",
+          "导演标为「高潮」",
+          "优先级 5≥4"
+        ]
+      },
+      "shots": 2,
+      "anchors": [
+        "地铁站台，冷白灯带，金属立柱，纵深站台",
+        "拉丝不锈钢",
+        "湿沥青",
+        "长椅",
+        "车灯"
+      ],
+      "sceneHash": "bf840478284b",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "1f092f22610d",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\base.png",
+          "seconds": 30.4,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "reverse",
+          "promptHash": "846841b6aa29",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\reverse.png",
+          "seconds": 43.1,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\oblique45.png",
+          "seconds": 42.8,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_QC\\assets\\scene_views\\SC-CONCEPT-001\\topdown.png",
+          "seconds": 36.4,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    }
+  },
+  "costCny": 0.2,
+  "generated": 4,
+  "failed": 0,
+  "peopleWarnings": 0
+}

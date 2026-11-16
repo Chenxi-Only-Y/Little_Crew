@@ -1673,6 +1673,13 @@ class EpisodeRunner:
             pass
 
 
+        # ---- 2.7) 场景空间视图（2026-11-17）----
+        # 位置：镜头表定稿之后、桥接/渲染之前。
+        # 档位不是人选的：由导演计划（role/priority/allowLong）+ 该场镜数 + 复用信号决定，
+        # 决策依据写进 delivery/scene_views.json。
+        self._mark("scene_views")
+        self.scene_views_report = self._run_scene_views(picked, director_info)
+
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
         #
@@ -4106,6 +4113,9 @@ class EpisodeRunner:
     #: 显式场景卡：`{sceneId: {space, materials, props, palette, era}}`。
     #: 优先于美术指导产物；用于"跨集复用同一场景"或手工固定。
     scene_cards: Any = None
+    #: 场景空间视图（2026-11-17）：Tier1/Tier2 由上游信号自动选
+    scene_views_enabled: bool = False
+    scene_views_report: dict[str, Any] = None  # type: ignore[assignment]
 
     #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
     #: 换装是角色设计的事；这里只做"这一镜用哪套造型"的选择。
@@ -5414,6 +5424,45 @@ class EpisodeRunner:
             return {"ok": False, "reason": str(getattr(out, "error", ""))[:160]}
         sched = self.orch.blackboard.value("production.schedule")
         return {"ok": True, "schedule": dict(sched) if isinstance(sched, Mapping) else {}}
+
+    def _run_scene_views(self, picked: Sequence[Any],
+                         director_info: Mapping[str, Any] | None = None) -> dict:
+        """生成场景空间视图（Tier1 空景锚点 / Tier2 四视图），失败不阻断。"""
+        if not bool(getattr(self, "scene_views_enabled", False)):
+            return {}
+        try:
+            from little_crew.runtime import scene_views as _sv
+
+            wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if not wd:
+                return {"kind": "scene.views", "enabled": True,
+                        "error": "没有 workdir，跳过"}
+            cards: dict[str, dict] = {}
+            seen: set[str] = set()
+            for s in picked or ():
+                sid = str(getattr(s, "scene_id", "") or "")
+                if not sid or sid in seen:
+                    continue
+                seen.add(sid)
+                try:
+                    cards[sid] = dict(self._scene_card_for(s) or {})
+                except Exception:                            # noqa: BLE001
+                    cards[sid] = {}
+            plan = (director_info or {}).get("plan") or {}
+            rep = _sv.generate(scene_cards=cards, shots=picked,
+                               director_plan=plan, workdir=wd, enabled=True,
+                               verify=True)   # 空景 QC：模型常无视"无人物"
+            _sv.write_report(wd, rep)
+            _t2 = sum(1 for v in (rep.get("scenes") or {}).values()
+                      if int(v.get("tier") or 1) >= 2)
+            print(f"  场景视图：{len(rep.get('scenes') or {})} 场"
+                  f"（Tier2 {_t2} 场）· 图 {rep.get('generated')} 张"
+                  f" · ¥{rep.get('costCny')}")
+            return rep
+        except Exception as e:                                # noqa: BLE001
+            print(f"  ⚠️ 场景视图失败（不阻断）：{type(e).__name__}: {e}")
+            return {"kind": "scene.views", "enabled": True,
+                    "error": f"{type(e).__name__}: {e}"}
 
     def _run_director(self, script: Any) -> dict[str, Any]:
         """跑**导演**产出 `episode.plan`，并把它交给分镜师。

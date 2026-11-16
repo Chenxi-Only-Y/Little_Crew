@@ -57,6 +57,32 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.7] — 2026-11-17（**场景空间视图：Tier1/Tier2 由上游自己选 + 空景 QC**）
+
+### 两档（"2 合 1"）
+
+| 档 | 产物 | 触发（上游信号） |
+|---|---|---|
+Tier1 | 1 张空景锚点 | 普通场/一次性过场 |
+Tier2 | 4 张：基准 + 反向平视 + 45° 斜俯 + 90° 正交俯视 | ≥2 镜 + 高潮/抒情/优先级≥4/允许长镜头/复用 |
+
+- 决策依据写进 `delivery/scene_views.json.decision.factors`（不是人选的）
+- **正俯只作空间草图/ControlNet 输入**，不回灌 img2img
+- **空景 QC**：VLM 判人物 → 检出则硬约束重试一次 → 仍检出记 `peopleWarnings`（报告显式警告）
+- 开关：`--scene-views` / API `sceneViews`；默认关，不改变既有成本
+
+### 实跑（2026-11-17）
+
+- 《最后一班》12 镜 4 场：**4 场全 Tier2**（3 镜/场+复用）· 16/16 图 · **¥0.80**
+- 单场 QC 验证：4/4 图无人 · ¥0.20
+- 证据：`research/experiments/2026-11-17-scene-views/`（四视图 + 联系表 + 两份 json）
+
+### 测试
+
+新增 `runtime/scene_views_check` **28/28**；全量 **3069/3056 + 架构守卫 PASS**
+
+---
+
 ## [0.4.6] — 2026-11-16（**镜头语言吸收 + cameraDefaults + 按视角选图**）
 
 ### 词表（`ir/shot_lexicon.py`，吸收 4 张提示词大全 + 公开资料）

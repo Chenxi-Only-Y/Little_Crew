@@ -1,0 +1,238 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "SC-SCENEVIEWS-001": {
+      "sceneId": "SC-SCENEVIEWS-001",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 3,
+        "factors": [
+          "该场 3 镜（多机位）",
+          "跨场/跨集复用"
+        ]
+      },
+      "shots": 3,
+      "anchors": [
+        "@少女 快步穿过夜街，玻璃门反光掠过她的脸，手机屏幕亮着 23:58。\n她低头看了一眼时间，脚步加快，跑向地铁口。\n她甩开他的手，别过脸去，没有回答。\n代价是她再也回不到从前那种笃定里了。\n忽然，她转身走进雨里，反而笑了一下。"
+      ],
+      "sceneHash": "68aff6033375",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "f81374c3521a",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\base.png",
+          "seconds": 45.8,
+          "error": ""
+        },
+        {
+          "view": "reverse",
+          "promptHash": "9f44d1bd76ce",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\reverse.png",
+          "seconds": 48.5,
+          "error": ""
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\oblique45.png",
+          "seconds": 52.9,
+          "error": ""
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-001\\topdown.png",
+          "seconds": 42.2,
+          "error": ""
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    },
+    "SC-SCENEVIEWS-002": {
+      "sceneId": "SC-SCENEVIEWS-002",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 3,
+        "factors": [
+          "该场 3 镜（多机位）",
+          "跨场/跨集复用"
+        ]
+      },
+      "shots": 3,
+      "anchors": [
+        "@少女 刷卡穿过闸机，冲下空荡的扶梯。\n站台灯带一排排亮起，远处隧道里亮起一束车灯。\n她甩开他的手，别过脸去，没有回答。\n代价是她再也回不到从前那种笃定里了。\n忽然，她转身走进雨里，反而笑了一下。"
+      ],
+      "sceneHash": "603b365824a9",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "ebd96a48f953",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\base.png",
+          "seconds": 42.0,
+          "error": ""
+        },
+        {
+          "view": "reverse",
+          "promptHash": "fadcace8da62",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\reverse.png",
+          "seconds": 48.2,
+          "error": ""
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\oblique45.png",
+          "seconds": 48.8,
+          "error": ""
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-002\\topdown.png",
+          "seconds": 65.9,
+          "error": ""
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    },
+    "SC-SCENEVIEWS-003": {
+      "sceneId": "SC-SCENEVIEWS-003",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 3,
+        "factors": [
+          "该场 3 镜（多机位）",
+          "跨场/跨集复用"
+        ]
+      },
+      "shots": 3,
+      "anchors": [
+        "@少女 停在安全线前，松了一口气，抬头看向进站的列车。\n车门合上的那一瞬，她的表情从放松变成怔住。\n她甩开他的手，别过脸去，没有回答。\n代价是她再也回不到从前那种笃定里了。\n忽然，她转身走进雨里，反而笑了一下。"
+      ],
+      "sceneHash": "3d08717d806b",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "a44a6116ba8b",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\base.png",
+          "seconds": 42.7,
+          "error": ""
+        },
+        {
+          "view": "reverse",
+          "promptHash": "6655ed971922",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\reverse.png",
+          "seconds": 61.2,
+          "error": ""
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\oblique45.png",
+          "seconds": 56.9,
+          "error": ""
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-003\\topdown.png",
+          "seconds": 31.1,
+          "error": ""
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    },
+    "SC-SCENEVIEWS-004": {
+      "sceneId": "SC-SCENEVIEWS-004",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 3,
+        "factors": [
+          "该场 3 镜（多机位）",
+          "跨场/跨集复用"
+        ]
+      },
+      "shots": 3,
+      "anchors": [
+        "@少女 看着列车驶离，灯带的光从她脸上扫过。\n她背靠柱子慢慢坐下。\n玻璃倒影里的自己，轻轻笑了一下。\n她起身走向出口，身后站台的灯一排排熄灭。\n她甩开他的手，别过脸去，没有回答。\n代价是她再也回不到从前那种笃定里了。\n忽然，她转身走进雨里，反而笑了一下。"
+      ],
+      "sceneHash": "6c5ff1b7efd3",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "a272f2c8c356",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\base.png",
+          "seconds": 33.2,
+          "error": ""
+        },
+        {
+          "view": "reverse",
+          "promptHash": "8ad149d2851e",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\reverse.png",
+          "seconds": 46.9,
+          "error": ""
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\oblique45.png",
+          "seconds": 48.2,
+          "error": ""
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\base.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS\\assets\\scene_views\\SC-SCENEVIEWS-004\\topdown.png",
+          "seconds": 38.2,
+          "error": ""
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    }
+  },
+  "costCny": 0.8,
+  "generated": 16,
+  "failed": 0
+}

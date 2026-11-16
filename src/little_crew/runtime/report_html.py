@@ -260,6 +260,7 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
     lipsync = _read_json(delivery / "lipsync.json")
     cam_plan = _read_json(delivery / "camera_plan.json")
     scene_cards = _read_json(delivery / "scene_cards.json")
+    scene_views = _read_json(delivery / "scene_views.json")
     outfits = _read_json(delivery / "outfits_used.json")
     image_calls = _read_json(delivery / "image_calls.json")
     token_usage = _read_json(delivery / "token_usage.json")
@@ -519,6 +520,43 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
                 A(f"<div class='box'><h3>{_esc(c.name)}</h3>"
                   f"<img class='thumb' loading='lazy' src='{_esc(_rel(c, outdir))}' "
                   f"alt='cover'></div>")
+        A("</div>")
+
+    # ---- 场景空间视图（Tier1 空景锚点 / Tier2 四视图，2026-11-17）----
+    if scene_views and isinstance(scene_views.get("scenes"), Mapping) and scene_views["scenes"]:
+        _sv = scene_views["scenes"]
+        A("<h2>场景空间视图</h2>")
+        A("<div class='box'><h3>档位由上游信号决定</h3>"
+          "<div class='kv'><span>场景数</span>"
+          f"<b>{_esc(len(_sv))}</b></div>"
+          f"<div class='kv'><span>Tier2（四视图）</span><b>"
+          f"{_esc(sum(1 for v in _sv.values() if int(v.get('tier') or 1) >= 2))}</b></div>"
+          f"<div class='kv'><span>成本</span><b>¥{_esc(scene_views.get('costCny') or 0)}</b></div>"
+          f"<div class='kv'><span>含人物警告（QC）</span><b>{_esc(scene_views.get('peopleWarnings') or 0)}</b></div>"
+          "<div class='kv'><span>说明</span><b>Tier1=空景锚点；Tier2=+反向/45°/正俯"
+          "（正俯只作空间草图，不回灌渲染）</b></div></div>")
+        A("<div class='grid'>")
+        for _sid, _sc in sorted(_sv.items()):
+            if not isinstance(_sc, Mapping):
+                continue
+            A("<div class='card'><div class='hd'>")
+            A(f"<span class='id'>{_esc(_sid)}</span>")
+            A(f"<span class='tag {'ok' if int(_sc.get('tier') or 1) >= 2 else ''}'>"
+              f"Tier{_esc(_sc.get('tier') or 1)}</span>")
+            A(f"<span class='tag'>{_esc(len(_sc.get('anchors') or ()))} 锚点</span>")
+            A("</div>")
+            _imgs = [r for r in (_sc.get("images") or ())
+                     if isinstance(r, Mapping) and r.get("ok") and r.get("out")]
+            for _r in _imgs[:4]:
+                _p = Path(str(_r.get("out")))
+                if _p.is_file():
+                    A(f"<img class='thumb' loading='lazy' "
+                      f"src='{_esc(_rel(_p, outdir))}' alt='{_esc(_r.get('view'))}'>")
+                    A(f"<div class='kv'><span>{_esc(_r.get('view'))}</span>"
+                      f"<b>{_esc(_p.name)}</b></div>")
+            _f = (_sc.get("decision") or {}).get("factors") or []
+            A(f"<div class='kv'><span>决策</span><b>{_esc('；'.join(str(x) for x in _f))}</b></div>")
+            A("</div>")
         A("</div>")
 
     # ---- 失败镜（置顶）----

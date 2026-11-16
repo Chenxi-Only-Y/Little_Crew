@@ -246,6 +246,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
               char_sheet_refine: bool = False, char_sheet_qc: bool = False,
               vision_max: int = 12, script_threshold: float = 0.0,
               compare_local: bool = False,
+              scene_views: bool = False,
               ) -> dict[str, Any]:
     """解析 + 校验 + （锚点存在时）**自动注入外观**。返回可直接应用的选择字典。"""
     path = str(render_path or "local").strip().lower() or "local"
@@ -263,6 +264,7 @@ def normalize(*, cast_anchors: Iterable[str] | Mapping[str, str] | None = None,
         "render_path": path,
         "cloud_model": str(render_model or ""),
         "compare_local": bool(compare_local),
+        "scene_views": bool(scene_views),
         "vision_max_shots": int(vision_max or 12),
         "cover_enabled": bool(cover),
         "cover_mode": str(cover_mode or "poster"),
@@ -303,6 +305,7 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
     runner.camera_default = dict(opts.get("camera_default") or {}) or None
     runner.camera_map = dict(opts.get("camera_map") or {}) or None
     runner.scene_cards = dict(opts.get("scene_cards") or {}) or None
+    runner.scene_views_enabled = bool(opts.get("scene_views"))
     runner.costume_map = dict(opts.get("costume_map") or {}) or None
     # 剧本阈值：只放宽分数线（阻断级意见/硬约束照旧阻断）
     th = float(opts.get("script_threshold") or 0.0)
@@ -322,6 +325,7 @@ def apply_options(runner: Any, opts: Mapping[str, Any]) -> dict[str, Any]:
                         "resolution": str(opts.get("lipsync_resolution") or "480P")},
             "camera": dict(opts.get("camera_default") or {}),
             "sceneCards": len(opts.get("scene_cards") or {}),
+            "sceneViews": bool(opts.get("scene_views")),
             "costumes": len(opts.get("costume_map") or {})}
 
 
