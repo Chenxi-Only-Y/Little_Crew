@@ -77,6 +77,26 @@ git config http.sslBackend openssl
 - `qwen3-max` / `qwen3-vl-max` 请求体补上 `temperature`+`top_p`（**VL 此前完全没发参数**）
 - **非 Qwen 厂商不发 top_p**（避免不支持该参数导致 400）
 
+### 真机冒烟（2026-11-16，6/6 通过）
+
+`附加脚本/scripts/20261116_真LLM冒烟.py` → 证据 `research/demo/2026-11-16/llm_smoke.json`
+
+| 族 | 模型 | 温度 | 结果 |
+|---|---|---|---|
+DeepSeek 创意 | deepseek-flash | 1.5 | ✅ |
+DeepSeek 分析 | deepseek-flash | 1.0 | ✅ |
+MiMo Agent | mimo-v2.6-flash | 0.7 | ✅ |
+GLM 官方 | GLM-5.3-flash | 1.0 | ✅ |
+Qwen3 文本 | qwen3-max（实发 qwen3.8-max） | 0.7 + top_p 0.8 | ✅ |
+Qwen3 视觉 | vlm-judge-cloud（实发 qwen3-vl-plus） | 0.7 + top_p 0.8 | ✅（识别出红/绿） |
+
+冒烟**抓到并修掉两个真 bug**：
+
+1. `qwen3-max` / `qwen3-vl-max` 在兼容模式已 **404** → 实际发 `qwen3.8-max` / `qwen3-vl-plus`
+   （registry 别名不变，只改请求体里的真实名）
+2. `chat_image` 以前把 **registry 别名**当模型名发、且**完全没发温度/top_p**
+   → 改为从模板提取真实模型名 + 补 `temperature`/`top_p`
+
 ### 测试
 
 新增 `agent/temperature_check` **18/18**；全量 **3000/2987 + 架构守卫 PASS**

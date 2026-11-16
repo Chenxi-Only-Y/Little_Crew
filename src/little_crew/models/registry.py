@@ -165,7 +165,10 @@ def _text_models() -> list[ModelSpec]:
                 api_key_env="DASHSCOPE_API_KEY",
                 path="/compatible-mode/v1/chat/completions",
                 body_template=(
-                    '{"model": "qwen3-max",'
+                    # ⚠️ 2026-11-16 实测：兼容模式已无 `qwen3-max`（HTTP 404），
+                    # 可用的是 `qwen3.8-max` —— registry 别名保持 qwen3-max，
+                    # 只把**发出去的模型名**改成真实名。
+                    '{"model": "qwen3.8-max",'
                     ' "messages": [{"role": "user", "content": "{prompt}"}],'
                     ' "temperature": {temperature},'
                     # Qwen3 论文评测：思考 0.6/0.95；非思考 0.7/0.8
@@ -323,7 +326,9 @@ def _text_models() -> list[ModelSpec]:
                 api_key_env="DASHSCOPE_API_KEY",
                 path="/compatible-mode/v1/chat/completions",
                 body_template=(
-                    '{"model": "qwen3-vl-max",'
+                    # ⚠️ 2026-11-16 实测：`qwen3-vl-max` 不可用（404），
+                    # 兼容模式可用的是 `qwen3-vl-plus`。
+                    '{"model": "qwen3-vl-plus",'
                     ' "messages": [{"role": "user", "content": ['
                     '{"type": "text", "text": "{prompt}"},'
                     '{"type": "image_url", "image_url": {"url": "{image_url}"}}]}],'

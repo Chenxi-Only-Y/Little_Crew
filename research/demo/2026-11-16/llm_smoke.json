@@ -1,0 +1,66 @@
+{
+  "kind": "llm.smoke",
+  "date": "2026-11-16",
+  "results": [
+    {
+      "name": "DeepSeek·创意",
+      "model": "deepseek-flash",
+      "temperature": 1.5,
+      "ok": true,
+      "chars": 4,
+      "sample": "冒烟通过",
+      "elapsedS": 1.1,
+      "retries": 0
+    },
+    {
+      "name": "DeepSeek·分析",
+      "model": "deepseek-flash",
+      "temperature": 1.0,
+      "ok": true,
+      "chars": 4,
+      "sample": "冒烟通过",
+      "elapsedS": 0.8,
+      "retries": 0
+    },
+    {
+      "name": "MiMo·Agent",
+      "model": "mimo-v2.6-flash",
+      "temperature": 0.7,
+      "ok": true,
+      "chars": 4,
+      "sample": "冒烟通过",
+      "elapsedS": 3.1,
+      "retries": 0
+    },
+    {
+      "name": "GLM·官方",
+      "model": "GLM-5.3-flash",
+      "temperature": 1.0,
+      "ok": true,
+      "chars": 4,
+      "sample": "冒烟通过",
+      "elapsedS": 5.0,
+      "retries": 0
+    },
+    {
+      "name": "Qwen3·文本（top_p 0.8）",
+      "model": "qwen3-max",
+      "temperature": 0.7,
+      "ok": true,
+      "chars": 4,
+      "sample": "冒烟通过",
+      "elapsedS": 1.5,
+      "retries": 0
+    },
+    {
+      "name": "Qwen3·视觉（top_p 0.8）",
+      "model": "vlm-judge-cloud",
+      "temperature": 0.7,
+      "ok": true,
+      "chars": 5,
+      "sample": "红色、绿色",
+      "elapsedS": 0.7,
+      "retries": 0
+    }
+  ]
+}

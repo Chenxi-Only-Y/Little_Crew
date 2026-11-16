@@ -424,6 +424,7 @@ class LlmClient:
             resolved_top_p = QWEN_TOP_P
         values = {
             "messages": messages,
+            "prompt": prompt,
             "temperature": (self.temperature if temperature is None
                             else temperature),
             "top_p": (1.0 if resolved_top_p is None else resolved_top_p),
@@ -530,8 +531,15 @@ class LlmClient:
         if backend is None:
             raise LLMError("no-backend", f"模型 {self.model_id!r} 没有后端")
         url = backend.endpoint.rstrip("/") + backend.path
+        # 服务端要的是**真实模型名**（如 qwen3-vl-max），不是 registry 别名。
+        # 模板里已经写死了真实名，这里从模板取；取不到才退回 model_id。
+        api_model = self.model_id
+        tpl_text = str(getattr(backend, "body_template", "") or "")
+        m = re.search(r'"model"\s*:\s*"([^"]+)"', tpl_text)
+        if m:
+            api_model = m.group(1)
         body = {
-            "model": self.model_id,
+            "model": api_model,
             "max_tokens": int(max_tokens),
             "messages": [{"role": "user", "content": [
                 {"type": "text", "text": prompt},
@@ -539,8 +547,15 @@ class LlmClient:
                  "image_url": {"url": f"data:{mime};base64,{image_b64}"}},
             ]}],
         }
-        if temperature is not None:
-            body["temperature"] = float(temperature)
+        # 温度：显式 > 实例默认（以前这里**完全没发温度**，视觉判定一直用服务端默认值）
+        body["temperature"] = float(self.temperature if temperature is None
+                                    else temperature)
+        # top_p：Qwen3 视觉模型按非思考 0.8；其它族不发
+        resolved_top_p = self.top_p
+        if resolved_top_p is None and "qwen" in self.model_id.lower():
+            resolved_top_p = QWEN_TOP_P
+        if resolved_top_p is not None:
+            body["top_p"] = float(resolved_top_p)
         reply = self._post_with_retry(url, body, self.timeout_s)
         note_usage(self.model_id, getattr(reply, "usage", {}) or {},
                    f"vision:{what}")
@@ -550,7 +565,9 @@ class LlmClient:
             note_reply(kind=f"vision:{what}",
                        provider=_provider_of(backend), model=self.model_id,
                        served_model=str(getattr(reply, "served_model", "") or ""),
-                       params={"max_tokens": max_tokens},
+                       params={"max_tokens": max_tokens,
+                               "temperature": body.get("temperature"),
+                               "top_p": body.get("top_p")},
                        request=prompt + "|" + image_b64[:64])
         except Exception:                                       # noqa: BLE001
             pass
