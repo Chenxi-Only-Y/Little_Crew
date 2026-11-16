@@ -120,7 +120,7 @@ class StoryboardArtistLlm:
     agent_id = "storyboard_artist"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.6, max_shots: int = 40,
+                 temperature: float = 1.3, max_shots: int = 40,
                  plan: Mapping[str, Any] | None = None,
                  lighting: Mapping[str, Any] | None = None,
                  art: Mapping[str, Any] | None = None) -> None:

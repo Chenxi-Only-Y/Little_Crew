@@ -167,7 +167,9 @@ def _text_models() -> list[ModelSpec]:
                 body_template=(
                     '{"model": "qwen3-max",'
                     ' "messages": [{"role": "user", "content": "{prompt}"}],'
-                    ' "temperature": {temperature}}'
+                    ' "temperature": {temperature},'
+                    # Qwen3 论文评测：思考 0.6/0.95；非思考 0.7/0.8
+                    ' "top_p": {top_p}}'
                 ),
                 response_path="choices.0.message.content",
             ),),
@@ -324,7 +326,10 @@ def _text_models() -> list[ModelSpec]:
                     '{"model": "qwen3-vl-max",'
                     ' "messages": [{"role": "user", "content": ['
                     '{"type": "text", "text": "{prompt}"},'
-                    '{"type": "image_url", "image_url": {"url": "{image_url}"}}]}]}'
+                    '{"type": "image_url", "image_url": {"url": "{image_url}"}}]}],'
+                    # 视觉判定：Qwen3 非思考 0.7 / top_p 0.8（此前完全没发参数）
+                    ' "temperature": {temperature},'
+                    ' "top_p": {top_p}}'
                 ),
                 response_path="choices.0.message.content",
             ),),

@@ -175,7 +175,7 @@ class ScreenwriterLlm:
     agent_id = "screenwriter"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 max_scenes: int = 8, temperature: float = 0.8) -> None:
+                 max_scenes: int = 8, temperature: float = 1.5) -> None:
         self.client = client or LlmClient()
         self.max_scenes = max_scenes
         self.temperature = temperature
@@ -415,11 +415,11 @@ class DramaturgeLlm:
     agent_id = "dramaturge"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.2) -> None:
+                 temperature: float = 0.7) -> None:
         self.client = client or LlmClient("mimo-v2.6-flash")
-        # 审核要**稳**，不要发挥 —— 温度调低。
-        # 高温度会让"同一份稿子两次审查给出不同结论"，
-        # 而那正好毁掉门禁最需要的性质：可复现。
+        # 审核要**稳**：0.7 = Qwen3 论文评测的**非思考**设置。
+        # 比创作类（1.5）低得多，但仍高于早期 0.2 —— 0.2 会把评审变成
+        # "只会挑最明显的错"，可复现性由 rubric/跨族/缓存保证，不靠极低温度。
         self.temperature = temperature
         self.calls = 0
         self.last_raw: dict[str, Any] = {}

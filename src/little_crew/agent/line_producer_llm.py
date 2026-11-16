@@ -60,7 +60,7 @@ class LineProducerLlm:
                  seconds_per_shot: float = DEFAULT_SECONDS_PER_SHOT,
                  seconds_per_still: float = DEFAULT_SECONDS_PER_STILL,
                  cny_per_shot: float = 0.0,
-                 temperature: float = 0.2) -> None:
+                 temperature: float = 1.0) -> None:
         self.client = client or LlmClient("deepseek-flash")
         self.seconds_per_shot = float(seconds_per_shot)
         self.seconds_per_still = float(seconds_per_still)

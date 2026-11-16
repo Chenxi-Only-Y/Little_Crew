@@ -152,7 +152,7 @@ class SceneDesignerLlm:
     produces_key = "scene.library"
     consumes_key = "script.draft"
 
-    def __init__(self, *, client: Any = None, temperature: float = 0.3) -> None:
+    def __init__(self, *, client: Any = None, temperature: float = 1.5) -> None:
         if client is None:
             from little_crew.agent.llm import LlmClient
 

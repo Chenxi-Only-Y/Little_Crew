@@ -56,7 +56,7 @@ class ProductionDesignerLlm:
     consumes_key = "script.draft"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.3) -> None:
+                 temperature: float = 1.5) -> None:
         self.client = client or LlmClient("deepseek-flash")
         self.temperature = temperature
 

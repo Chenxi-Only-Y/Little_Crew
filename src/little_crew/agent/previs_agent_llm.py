@@ -72,7 +72,7 @@ class PrevisAgentLlm:
     def __init__(self, *, client: LlmClient | None = None,
                  aspect: float = 640 / 384,
                  max_retry: int = 1,
-                 temperature: float = 0.3) -> None:
+                 temperature: float = 1.0) -> None:
         self.client = client or LlmClient("deepseek-flash")
         self.aspect = aspect
         self.max_retry = max_retry

@@ -112,7 +112,7 @@ class CriticLlm:
     """
 
     def __init__(self, agent_id: str, *, client: LlmClient | None = None,
-                 temperature: float = 0.2) -> None:
+                 temperature: float = 0.7) -> None:
         if agent_id not in CRITIC_CHECKS:
             raise ValueError(
                 f"{agent_id!r} 不是 A 类审查职位；"

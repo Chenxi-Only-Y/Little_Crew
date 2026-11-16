@@ -50,7 +50,8 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 __all__ = ["LLMError", "LLMReply", "LlmClient", "extract_json",
-           "resolve_api_key", "model_spec_for", "DEFAULT_MODEL_ID"]
+           "resolve_api_key", "model_spec_for", "DEFAULT_MODEL_ID",
+           "QWEN_TOP_P", "QWEN_TOP_P_THINKING"]
 
 
 #: 本机默认使用的模型条目（`models/registry.py` 的 model_id）。
@@ -59,6 +60,13 @@ __all__ = ["LLMError", "LLMReply", "LlmClient", "extract_json",
 #: 上下文长度与结构化输出评分 —— **重复声明会产生第二份真相**，
 #: 而两份真相迟早会不一致。
 DEFAULT_MODEL_ID = "deepseek-flash"
+
+#: **Qwen3 论文评测设置**（用户提供，2026-11-16）：
+#: 思考 0.6 / top-p 0.95；非思考 0.7 / 0.8。
+#: 我们没有"思考模式"开关 → 默认按**非思考**走：top_p = 0.8。
+#: 温度由各职位显式给出（见 `docs/01 §9.11`）；这里只管 top_p。
+QWEN_TOP_P = 0.8
+QWEN_TOP_P_THINKING = 0.95
 
 
 
@@ -312,11 +320,14 @@ class LlmClient:
     def __init__(self, model_id: str = DEFAULT_MODEL_ID, *,
                  api_key: str | None = None, timeout_s: int = 120,
                  temperature: float = 0.7,
+                 top_p: float | None = None,
                  max_retries: int = 2, backoff_s: float = 0.8) -> None:
         self.spec = model_spec_for(model_id)
         self.model_id = model_id
         self.timeout_s = timeout_s
         self.temperature = temperature
+        #: top_p（None = 用模型族默认；Qwen3 非思考 0.8，其它厂商不传）
+        self.top_p = top_p
         #: **仅对 `retryable=True` 的失败**重试这么多次（0 = 不重试）。
         #:
         #: ## 为什么必须重试（2026-10-17 实测）
@@ -373,6 +384,7 @@ class LlmClient:
 
     def chat(self, prompt: str, *, system: str = "",
              temperature: float | None = None,
+             top_p: float | None = None,
              timeout_s: int | None = None,
              json_mode: bool = False) -> LLMReply:
         """发一次 chat completion。
@@ -406,10 +418,15 @@ class LlmClient:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
+        # top_p：显式参数 > 实例值 > Qwen 族默认（非思考 0.8）；其它厂商 no-op
+        resolved_top_p = self.top_p if top_p is None else top_p
+        if resolved_top_p is None and "qwen" in self.model_id.lower():
+            resolved_top_p = QWEN_TOP_P
         values = {
             "messages": messages,
             "temperature": (self.temperature if temperature is None
                             else temperature),
+            "top_p": (1.0 if resolved_top_p is None else resolved_top_p),
             # 输出上限：不设就吃服务商默认值，而默认值会截断长输出
             # （实测：分镜一次写 6~8 场时 JSON 不闭合 / 后几场 0 镜）
             "max_tokens": MAX_OUTPUT_TOKENS,
