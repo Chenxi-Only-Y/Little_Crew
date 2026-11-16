@@ -672,6 +672,8 @@ class EpisodeRunner:
         #: 于是 `_bridge` 里赋值抛 AttributeError，被外层 except 吞掉，
         #: 结果是"接了但一个锚点都没用上"—— 又是一次静默失败。
         self._anchors_used: dict[str, list[str]] = {}
+        #: 按视角选图结果（2026-11-16）：shotId -> {角色: {path, view, source, box}}
+        self._anchor_views: dict[str, dict[str, dict]] = {}
         #: 锚点图发现结果缓存（名字 -> 路径）
         self._anchor_table: dict[str, str] | None = None
         #: 场景越权是否构成**否决**（severity=error 时置 True）。
@@ -1967,12 +1969,14 @@ class EpisodeRunner:
                     (_o0 / "camera_plan.json").write_text(_j0.dumps(
                         {"kind": "camera.plan",
                          "default": dict(getattr(self, "camera_default", None) or {}),
+                         "source": str(getattr(self, "_camera_default_source", "") or ""),
                          "perShot": dict(sorted(self._camera_plan.items()))},
                         ensure_ascii=False, indent=2), encoding="utf-8")
                 (_o0 / "anchors_used.json").write_text(_j0.dumps(
                     {"kind": "anchors.used",
                      "table": sorted((getattr(self, "_anchor_table", {}) or {}).keys()),
-                     "perShot": dict(sorted(self._anchors_used.items()))},
+                     "perShot": dict(sorted(self._anchors_used.items())),
+                     "views": dict(sorted((getattr(self, "_anchor_views", {}) or {}).items()))},
                     ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:                                    # noqa: BLE001
             pass
@@ -4590,6 +4594,30 @@ class EpisodeRunner:
         except Exception as _e_anc:                        # noqa: BLE001
             _sets = {}
             print(f"  ⚠️ 角色锚点未生效：{type(_e_anc).__name__}: {_e_anc}")
+        # ---- 按视角选图（2026-11-16）----
+        # 定妆板是多视图（正面特写/正面全身/侧面/背面）；按镜头机位+景别裁最接近的视图，
+        # 比"一律拿正脸图"更贴近过肩/侧身/全景镜头。**启发式**，不宣称身份度量。
+        _cam = self._camera_for_shot(shot)
+        try:
+            from little_crew.runtime import anchors as _anc3
+
+            _wd_v = (Path(str(getattr(self, "_workdir", None)
+                              or getattr(self, "workdir", "")))
+                     / "assets" / "anchors" / "views")
+            _views: dict[str, dict] = {}
+            for _nm, _ap in list(_sets.items()):
+                _sel = _anc3.select_reference(
+                    str(_nm), str(_ap),
+                    angle=str((_cam or {}).get("angle", "")),
+                    shot_size=str(getattr(shot, "shot_size", "")),
+                    out_dir=_wd_v)
+                if _sel.get("path") and _sel.get("source") != "single":
+                    _sets[_nm] = str(_sel["path"])
+                    _views[str(_nm)] = dict(_sel)
+            if _views:
+                self._anchor_views[str(getattr(shot, "shot_id", ""))] = _views
+        except Exception as _e_view:                       # noqa: BLE001
+            print(f"  ⚠️ 按视角选图失败（不阻断）：{type(_e_view).__name__}: {_e_view}")
         # ---- 造型版本（2026-11-15）：按镜选服装，锚点也换成该版本 ----
         _costume = self._costume_for(shot)
         _costume_id = str(_costume.get("variant") or "")
@@ -4612,7 +4640,6 @@ class EpisodeRunner:
                 }
             except Exception:                                 # noqa: BLE001
                 pass
-        _cam = self._camera_for_shot(shot)
         _scene_card = self._scene_card_for(shot)
         ir = shot_to_ir(
             text, episode_id=self.episode_id,
@@ -5423,6 +5450,15 @@ class EpisodeRunner:
         plan = self.orch.blackboard.value("episode.plan")
         if not isinstance(plan, Mapping):
             return {"ok": False, "reason": "导演没有产出 episode.plan"}
+        # 导演默认机位（cameraDefaults）：**CLI 显式设置优先**；
+        # 否则整集继承导演默认（单镜 camera_map 仍可覆盖）。
+        _cd = plan.get("cameraDefaults") or {}
+        if isinstance(_cd, Mapping) and _cd:
+            if not (getattr(self, "camera_default", None) or {}):
+                self.camera_default = dict(_cd)
+                self._camera_default_source = "director.plan"
+            else:
+                self._camera_default_source = "cli"
 
         # 注入分镜师（它有 plan 属性才设；别硬塞陌生属性）
         sb = impls.get("storyboard_artist")

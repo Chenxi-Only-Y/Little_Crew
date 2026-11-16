@@ -57,6 +57,41 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.6] — 2026-11-16（**镜头语言吸收 + cameraDefaults + 按视角选图**）
+
+### 词表（`ir/shot_lexicon.py`，吸收 4 张提示词大全 + 公开资料）
+
+| 词表 | 规模 | 归属 |
+|---|---|---|
+景别 | 14（含双人/群像/插入/反应/定场/空镜） | 分镜师 |
+运镜 | 25（推拉摇移跟升降甩/环绕/变焦/斯坦尼康/航拍/手持/慢动作/长镜头…） | 分镜师 |
+机位 | 7（新增**主观 / 过肩**） | 导演默认 / 摄影师 |
+特殊镜头 | 11（子弹时间/延时/定格/分屏/匹配/跳切/焦点转移…） | 摄影师 |
+动态幅度 | 3（小/中/大） | 分镜师 |
+
+中文别名自动归一，未知值报错不静默；IR bridge 已接入（中文"推镜头/特写"可直接用）。
+
+### cameraDefaults 进导演计划
+
+- `episode.plan.cameraDefaults`（focal/aperture/body/lens/angle）严格校验
+- 合并优先级：**单镜 camera_map > 导演默认**；CLI 显式优先于导演默认
+- `delivery/camera_plan.json` 记录 `source=director.plan/cli`
+- 非法值 → 导演这一步 `F-PLAN` 失败（不静默）
+
+### 按视角选图
+
+- `runtime/anchors.select_reference`：多视图定妆板按机位+景别裁切
+  （特写+平视→正面特写 / 过肩·主观→侧面 / 全景→正面全身）
+- 裁切 `view/box/source` 写进 `delivery/anchors_used.json`
+- 单视图资产回退原图；**启发式**，不宣称身份度量
+
+### 测试
+
+新增 `shot_lexicon_check` 15 · `anchors_view_check` 12 · `camera_defaults_check` 12；
+全量 **3041/3028 + 架构守卫 PASS**
+
+---
+
 ## [0.4.5] — 2026-11-16（**A 组实验：约束消融 / 相机词表 / 温度敏感性**）
 
 ### 结果（机器指标；人工评分待补）

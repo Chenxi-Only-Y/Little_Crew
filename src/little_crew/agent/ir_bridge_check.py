@@ -294,7 +294,7 @@ def _prompt() -> None:
 
     ir_zh = shot_to_ir(_shot(), prompt_language=PromptLanguage.ZH)
     t_zh = next(n for n in ir_zh["nodes"] if n["id"] == "n_prompt")["params"]["text"]
-    check("B11 中文模式下片段为中文", "中近景" in t_zh and "medium close-up" not in t_zh,
+    check("B11 中文模式下片段为中文", "近景" in t_zh and "medium close-up" not in t_zh,
           t_zh[:64])
     check("B12 中文模式用中文分隔符（，而非 ,）",
           "，" in t_zh, t_zh[:50])

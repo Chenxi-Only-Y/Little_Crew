@@ -266,7 +266,8 @@ def _specs() -> list[AgentSpec]:
             max_reasoning_steps=8,
             real_world_duty="把握全片艺术方向，做最终创作决策，协调各部门",
             notes=("调度枢纽。持有全局预算，按阶段推进并把失败路由到返工链。"
-                   "**不得直调 L3** —— 由 CapabilityRegistry.audit() 强制（R2 禁止跳层）。"),
+                   "**不得直调 L3** —— 由 CapabilityRegistry.audit() 强制（R2 禁止跳层）。"
+                   "可在 `episode.plan.cameraDefaults` 给**整集默认机位/光学**（景别/运镜仍归分镜师）。"),
         ),
 
         # ================= 编剧组（3 人）=================
@@ -449,7 +450,7 @@ def _specs() -> list[AgentSpec]:
             task_profile="script.structured",
             prompt_template="crew.storyboard_artist.v1",
             max_reasoning_steps=4,
-            real_world_duty="把剧本拆解为镜头表（景别/机位/运动）",
+            real_world_duty="把剧本拆解为镜头表：**景别 + 运镜**（机位由导演默认/摄影师覆盖）",
             notes=("**每镜时长硬上限 10 秒** —— H3 实测 12 秒必 OOM，"
                    "且降分辨率无效（瓶颈是注意力序列长度）。"),
         ),
@@ -483,7 +484,8 @@ def _specs() -> list[AgentSpec]:
             task_profile="shot.video.identity_locked",
             prompt_template="crew.camera_operator.v1",
             max_reasoning_steps=2,
-            real_world_duty="实际拍摄（把静帧变成运动镜头）",
+            real_world_duty="机位与光学执行 + 特殊镜头（手持/航拍/长镜头）；\n"
+                            "景别/运镜由分镜师定，默认机位由导演 `cameraDefaults` 给",
             notes=("图生视频。本机 H3 实测 442~518 秒/5 秒片段 —— "
                    "**渲染时间是真正的瓶颈**。"),
         ),

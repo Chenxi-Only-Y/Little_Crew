@@ -130,3 +130,81 @@ def summary(anchors) -> dict:
     """给报告用的一句话摘要。"""
     names = sorted((anchors or {}).keys())
     return {"count": len(names), "names": names}
+
+# ==========================================================================
+# 按视角选图（2026-11-16）
+# ==========================================================================
+#
+# 角色定妆板通常是**多视图**（正面特写 / 正面全身 / 侧面 / 背面）。
+# 之前一律拿整张 `sheet.png` 当身份锚点 —— 拍过肩/侧身/背影时会"用正脸图去锁脸"，
+# 参考图与镜头视角不匹配。这里按镜头视角/景别从定妆板裁出最接近的视图。
+#
+# 纪律：
+# - **启发式**，不是身份度量；裁切结果记录 `source/view/box` 进证据
+# - 单视图资产（只有 anchor.png）不裁，直接返回原图
+# - 裁切缓存到工作目录，按 `<char>__<view>.png` 复用
+
+#: 四视图定妆板的近似列范围（x1, x2），按 cover_lead 实测布局归纳
+_VIEW_BOXES: dict[str, tuple[float, float]] = {
+    "face": (0.00, 0.49),     # 正面特写（左半幅）
+    "front": (0.49, 0.785),   # 正面全身
+    "side": (0.785, 0.90),    # 侧面
+    "back": (0.90, 1.00),     # 背面
+}
+
+#: 景别/机位 → 视图
+_CLOSE_SIZES = {"extreme_close", "close", "medium_close"}
+_FULL_SIZES = {"full", "long", "extreme_long", "establishing", "empty"}
+
+
+def view_for(*, angle: str = "", shot_size: str = "") -> str:
+    """按机位/景别选视图（启发式）：close+平视→face；过肩/主观→side；全景→front。"""
+    ang = str(angle or "").strip().lower()
+    size = str(shot_size or "").strip().lower()
+    if ang in ("subjective", "over_shoulder"):
+        return "side"
+    if size in _CLOSE_SIZES and ang in ("", "eye_level", "low", "high", "dutch"):
+        return "face"
+    if ang in ("low", "high", "dutch", ""):
+        return "front"
+    if size in _FULL_SIZES:
+        return "front"
+    return "front"
+
+
+def select_reference(name: str, anchor_path: str, *, angle: str = "",
+                     shot_size: str = "", out_dir: str | Path | None = None) -> dict:
+    """按视角返回参考图：多视图裁切 / 独立视图文件 / 单图回退。
+
+    返回 `{path, view, source, box?}`；**不抛**。
+    """
+    from pathlib import Path as _P
+
+    p = _P(str(anchor_path or ""))
+    if not p.is_file():
+        return {"path": "", "view": "", "source": "missing"}
+    view = view_for(angle=angle, shot_size=shot_size)
+    # ① 独立视图文件：assets/characters/<id>/views/<view>.png
+    vp = p.parent / "views" / f"{view}.png"
+    if vp.is_file():
+        return {"path": str(vp), "view": view, "source": "views_dir"}
+    # ② 多视图定妆板：宽高比 >= 1.5 且宽度 >= 1200 才裁
+    try:
+        from PIL import Image
+
+        with Image.open(p) as im:
+            w, h = im.size
+            if w / max(h, 1) < 1.5 or w < 1200:
+                return {"path": str(p), "view": "original", "source": "single"}
+            x1, x2 = _VIEW_BOXES.get(view, (0.0, 1.0))
+            crop = im.crop((int(w * x1), 0, int(w * x2), h)).convert("RGB")
+            dst_dir = _P(str(out_dir)) if out_dir else (p.parent / "views_crop")
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            dst = dst_dir / f"{name}__{view}.png"
+            crop.save(dst)
+            return {"path": str(dst), "view": view, "source": "crop",
+                    "box": [round(x1, 3), 0.0, round(x2, 3), 1.0],
+                    "size": list(crop.size)}
+    except Exception as e:                                    # noqa: BLE001
+        return {"path": str(p), "view": "original",
+                "source": f"fallback:{type(e).__name__}"}

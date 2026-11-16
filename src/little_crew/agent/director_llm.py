@@ -90,7 +90,10 @@ class DirectorLlm:
             '             "allowLong": false,\n'
             '             "sceneSeconds": 24,\n'
             '             "focus": "这场必须保住什么"}],\n'
-            ' "motifs": ["反复出现的视觉动机"]}\n\n'
+            ' "motifs": ["反复出现的视觉动机"],\n'
+            ' "cameraDefaults": {"focal": "35mm", "aperture": "f2.8",\n'
+            '                    "body": "s35", "lens": "vintage",\n'
+            '                    "angle": "eye_level"}}\n\n'
             "规则：\n"
             "  · **`scenes` 必须覆盖剧本的每一场**，不能漏场\n"
             "  · **`shotBudget` 之和应等于或接近"
@@ -104,7 +107,10 @@ class DirectorLlm:
             "      `allowLong` 是否允许超过 8 秒的长镜头\n"
             "      `sceneSeconds` 这场总时长上限（秒），**高潮/重场给大，过场给小**\n"
             "  · ⚠️ **不许每场都一样** —— 全片场场 2 镜 12 秒等于没有节奏\n"
-            "  · **不要写分镜、不要写景别、不要改剧情**"
+            "  · `cameraDefaults` 可选：给整集**默认机位/光学**（焦距/光圈/机身/镜头/机位），\n"
+            "    必须是词表规范值（如 35mm / f2.8 / s35 / vintage / eye_level）；\n"
+            "    单镜可由摄影师覆盖。**不要写景别/运镜（归分镜师）**\n"
+            "  · **不要写分镜、不要改剧情**"
         )
         return prompt, _SYSTEM
 
@@ -136,7 +142,12 @@ class DirectorLlm:
         except Exception as e:                                # noqa: BLE001
             return CallResult.fail("F-LLM", f"director 解析失败: {e}")
 
-        plan = normalize_plan(data, total_shots=self.total_shots)
+        try:
+            plan = normalize_plan(data, total_shots=self.total_shots)
+        except ValueError as e:
+            # 不静默丢字段：cameraDefaults 非法直接让导演这一步失败
+            return CallResult.fail("F-PLAN", f"导演计划不可用：{e}",
+                                   escalate=False)
         return CallResult.success({self.produces_key: plan})
 
 
@@ -257,11 +268,24 @@ def normalize_plan(data: Mapping[str, Any], *,
 
     motifs = [str(m)[:60] for m in (data.get("motifs") or ())
               if str(m).strip()][:6]
+    # ---- cameraDefaults（2026-11-16）----
+    # 导演给整集默认机位/光学；**严格校验**：未知字段/取值直接报错，
+    # 否则"设了 35mm 其实没生效"这类问题会静默滑过去。
+    camera_defaults: dict[str, str] = {}
+    raw_cam = data.get("cameraDefaults") or data.get("camera_defaults") or {}
+    if isinstance(raw_cam, Mapping):
+        from little_crew.ir.camera_lexicon import canonical_camera
+
+        try:
+            camera_defaults = canonical_camera(raw_cam)
+        except ValueError as exc:
+            raise ValueError(f"cameraDefaults 无效：{exc}") from exc
     return {
         "tone": str(data.get("tone") or "")[:200],
         "pacing": str(data.get("pacing") or "")[:200],
         "scenes": scenes,
         "motifs": motifs,
+        "cameraDefaults": camera_defaults,
         # 便于报告直接读
         "totalShotBudget": sum(x["shotBudget"] for x in scenes),
     }

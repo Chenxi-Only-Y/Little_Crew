@@ -49,8 +49,8 @@ def _legal_vocab() -> dict[str, tuple[str, ...]]:
     已把权威表**下移到 `messages.py`**（它定义的就是 `Shot.action` 的取值），
     `episode.py` 改为从那里引用。
     """
-    from little_crew.agent.crew_stubs import StoryboardArtistRules
     from little_crew.agent.messages import PREVIS_ACTIONS
+    from little_crew.ir.shot_lexicon import CAMERA_MOVES, SHOT_SIZES
 
     # 用 dict.fromkeys 去重并**保序**：轮换表里有重复项
     # （`MOVE_CYCLE` 的 `static` 出现两次），直接喂给提示词会让
@@ -58,9 +58,11 @@ def _legal_vocab() -> dict[str, tuple[str, ...]]:
     def uniq(seq: Any) -> tuple[str, ...]:
         return tuple(dict.fromkeys(str(x) for x in seq))
 
+    # 2026-11-16：景别/运镜改用**吸收后的完整词表**（含双人/群像/插入/反应/空镜、
+    # 甩镜头/升降/环绕/跟拍/变焦/斯坦尼康/航拍/特殊镜头），不再只给 5 项轮换表。
     return {
-        "shotSize": uniq(StoryboardArtistRules.SIZE_CYCLE),
-        "cameraMovement": uniq(StoryboardArtistRules.MOVE_CYCLE),
+        "shotSize": tuple(SHOT_SIZES),
+        "cameraMovement": tuple(CAMERA_MOVES),
         "action": uniq(PREVIS_ACTIONS),
     }
 
@@ -85,7 +87,9 @@ def _system_prompt() -> str:
 
 · 对白密集处用 `medium` / `medium_close`，情绪高点用 `close`。
 · 交代环境用 `full` / `medium_full`。
-· 关键动作给 `dolly_in` 或 `truck_left`；静场用 `static`。
+· 关键动作给 `push_in` / `truck_left` / `handoff`；静场用 `static`；
+  紧张用 `whip_pan` / `handheld`，抒情用 `slow_motion` / `orbit`，
+  空间揭示用 `rise` / `crane_up` / `aerial`。
 · `description` 是**给文生图模型的画面描述**：写清景别、光线、人物动作、
   环境细节。**不要写镜头术语**（那些已经由字段表达了），要写**看得见的东西**。
 · 人物名必须与剧本里出现的一致。

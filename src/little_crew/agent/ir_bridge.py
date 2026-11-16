@@ -267,12 +267,27 @@ def shot_to_ir(
     if costume and costume_appearance:
         _costume_txt = ("造型：" if str(lang.value).startswith("zh") else "costume: ")             + str(costume_appearance).strip()
         parts.append(_costume_txt)
-    size_txt = size_tbl.get(shot.shot_size, shot.shot_size)
+    # ---- 景别 / 运镜（2026-11-16 吸收扩充词表）----
+    # 词表统一在 `ir/shot_lexicon.py`：中文别名（推镜头/特写/空镜…）先归一，
+    # 再取片段；未知值保留原文（不静默丢字段）。
+    from little_crew.ir.shot_lexicon import (
+        amplitude_prompt as _amp_prompt,
+        canonical_move as _canon_move,
+        canonical_shot_size as _canon_size,
+        move_prompt as _move_prompt,
+        shot_size_prompt as _size_prompt,
+    )
+
+    size_txt = _size_prompt(shot.shot_size, language=str(lang.value))
     if size_txt:
         parts.append(size_txt)
-    move_txt = move_tbl.get(shot.camera_movement, "")
+    move_txt = _move_prompt(shot.camera_movement, language=str(lang.value))
     if move_txt:
         parts.append(move_txt)
+    _amp_raw = str(getattr(shot, "motion_amplitude", "") or "")
+    amp_txt = _amp_prompt(_amp_raw, language=str(lang.value)) if _amp_raw else ""
+    if amp_txt:
+        parts.append(amp_txt)
     act_txt = act_tbl.get(shot.action, "")
     if act_txt:
         parts.append(act_txt)

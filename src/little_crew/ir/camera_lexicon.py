@@ -83,6 +83,10 @@ CAMERA_TABLES: dict[str, dict[str, tuple[str, str]]] = {
         "high": ("high camera angle, subject vulnerable", "高机位俯拍，主体弱小"),
         "dutch": ("dutch angle, tilted horizon, unease", "荷兰角，地平线倾斜，不安感"),
         "overhead": ("overhead top-down angle", "正俯拍，顶视"),
+        "subjective": ("subjective POV shot, first-person eyeline",
+                       "主观镜头，第一人称视点"),
+        "over_shoulder": ("over-the-shoulder shot, foreground shoulder",
+                          "过肩镜头，前景带肩"),
     },
 }
 
@@ -105,7 +109,10 @@ _ALIASES: dict[str, dict[str, str]] = {
         "tilt": "tilt_shift", "swirl_bokeh": "swirl"},
     "angle": {k: k for k in CAMERA_TABLES["angle"]} | {
         "eye": "eye_level", "low_angle": "low", "high_angle": "high",
-        "dutch_angle": "dutch", "top": "overhead", "top_down": "overhead"},
+        "dutch_angle": "dutch", "top": "overhead", "top_down": "overhead",
+        "pov": "subjective", "first_person": "subjective", "主观": "subjective",
+        "ots": "over_shoulder", "over-shoulder": "over_shoulder",
+        "过肩": "over_shoulder"},
 }
 
 LANGUAGES = ("en", "zh")
