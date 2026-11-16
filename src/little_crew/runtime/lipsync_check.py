@@ -231,6 +231,29 @@ def main() -> int:
         check("H2 ★★★ 长片段 -> 截断到镜头时长", False, "同上")
         check("H3 ★★ 差值极小 -> 不重编码（noop）", False, "同上")
 
+    print(); print("I. 密钥解析（不能只读 os.environ）")
+    import os as _os
+
+    from little_crew import config as _cfg
+    from little_crew.runtime import lipsync as _ls3
+
+    _saved = _os.environ.pop("DASHSCOPE_API_KEY", None)
+    _orig = _cfg.env_value
+    try:
+        _cfg.env_value = lambda k, d=None: ("smoke-key" if k == "DASHSCOPE_API_KEY"
+                                            else (d if d is not None else ""))
+        check("I1 ★★★ 进程环境没有 key 时，_key() 仍能从 config 解析",
+              _ls3._key() == "smoke-key", str(_ls3._key())[:12])
+        _os.environ["DASHSCOPE_API_KEY"] = "env-key"
+        _cfg.env_value = _orig        # 还原真实解析：进程环境 > config/.env > 秘密文件
+        check("I2 ★★★ 显式进程环境优先于 secret 文件",
+              _ls3._key() == "env-key", str(_ls3._key())[:12])
+    finally:
+        _cfg.env_value = _orig
+        _os.environ.pop("DASHSCOPE_API_KEY", None)
+        if _saved is not None:
+            _os.environ["DASHSCOPE_API_KEY"] = _saved
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

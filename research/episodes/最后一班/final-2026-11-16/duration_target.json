@@ -1,0 +1,70 @@
+{
+  "kind": "duration.target",
+  "targetSeconds": 60.0,
+  "originalSeconds": 72.0,
+  "adjustedSeconds": 60.0,
+  "factor": 0.8333,
+  "perShot": [
+    {
+      "shotId": "SH-FINAL-LAST60-001-001",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-001-002",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-001-004",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-001",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-002",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-004",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-001",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-002",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-004",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-001",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-002",
+      "old": 6.0,
+      "new": 5.0
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-004",
+      "old": 6.0,
+      "new": 5.0
+    }
+  ],
+  "note": "成比例缩放（不删镜头）；每镜夹在 2~10s；残差由最后一镜吸收"
+}

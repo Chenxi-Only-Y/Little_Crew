@@ -1,0 +1,69 @@
+{
+  "kind": "compliance.report",
+  "licenseAudit": {
+    "models": [
+      "z-image-turbo",
+      "gpt-image-2.6-sunburst"
+    ],
+    "checked": 2,
+    "denied": [],
+    "needsReview": [],
+    "verdicts": [
+      {
+        "verdict": "ALLOW",
+        "modelId": "z-image-turbo",
+        "reason": "授权**未核实**，但用户显式接受风险（LITTLE_CREW_ALLOW_UNVERIFIED=1）：⚠️ 待核实：Z-Image 权重许可证与所用 4bit 量化版的再分发条款",
+        "attributionText": "",
+        "triggeredRule": "UNVERIFIED_ACCEPTED_RISK"
+      },
+      {
+        "verdict": "ALLOW",
+        "modelId": "gpt-image-2.6-sunburst",
+        "reason": "模型 'gpt-image-2.6-sunburst' 无授权记录，但用户显式接受风险（LITTLE_CREW_ALLOW_UNVERIFIED=1）",
+        "attributionText": "",
+        "triggeredRule": "NO_RECORD_ACCEPTED_RISK"
+      }
+    ],
+    "attributions": [],
+    "blocked": false
+  },
+  "deliveryAudit": {
+    "ok": false,
+    "labels": {
+      "explicit": true,
+      "implicit": true
+    },
+    "credits": "本片由 AI 生成合成",
+    "missing": [
+      {
+        "item": "sourceRegistry",
+        "why": "素材来源未登记（BGM/字体/参考图）"
+      }
+    ]
+  },
+  "contentFirstPass": {
+    "performed": false,
+    "reason": "未绑定视觉模型（初审未做）",
+    "reviewed": 0,
+    "items": [],
+    "highRisk": 0
+  },
+  "humanReview": [
+    {
+      "type": "delivery",
+      "owner": "交付负责人",
+      "item": "sourceRegistry",
+      "why": "素材来源未登记（BGM/字体/参考图）"
+    },
+    {
+      "type": "content",
+      "owner": "人工/法务复审",
+      "item": "contentFirstPass",
+      "why": "未绑定视觉模型（初审未做）"
+    }
+  ],
+  "blocking": false,
+  "status": "needs_human_review",
+  "signedBy": null,
+  "note": "硬规则（授权/标识/署名）由代码判定；内容合规只做 VLM 初审，终审由人工/法务签字 —— 本报告不宣称已合规。"
+}

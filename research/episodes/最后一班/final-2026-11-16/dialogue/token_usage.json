@@ -1,0 +1,18 @@
+{
+  "kind": "token.usage",
+  "models": {
+    "deepseek-flash": {
+      "calls": 3,
+      "input": 844,
+      "output": 1439,
+      "cached": 0,
+      "kinds": {
+        "llm": 1,
+        "vision:画面审查": 2
+      }
+    }
+  },
+  "totalCalls": 3,
+  "totalInput": 844,
+  "totalOutput": 1439
+}

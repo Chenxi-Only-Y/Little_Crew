@@ -1,0 +1,113 @@
+{
+  "kind": "post.plan",
+  "audioStrategy": "tts+bgm",
+  "audioNativeNote": "静帧路径：TTS 对白 + BGM，无环境音（H3 才有原生音效）",
+  "subtitle": {
+    "style": "burned",
+    "maxCharsPerLine": 16,
+    "maxLines": 2,
+    "safeAreaBottom": 0.08,
+    "estimatedCount": 0
+  },
+  "bgm": {
+    "gainDb": -22.0,
+    "fadeInS": 2.0,
+    "fadeOutS": 3.0,
+    "duckingDb": -6.0
+  },
+  "transitions": {
+    "rules": {
+      "sameScene": "cut",
+      "sceneChange": "fade",
+      "timeJump": "dissolve"
+    },
+    "sequence": [
+      {
+        "index": 1,
+        "type": "cut",
+        "fromScene": null,
+        "toScene": "SC-FINAL-LAST60-001"
+      },
+      {
+        "index": 2,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-001",
+        "toScene": "SC-FINAL-LAST60-001"
+      },
+      {
+        "index": 3,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-001",
+        "toScene": "SC-FINAL-LAST60-001"
+      },
+      {
+        "index": 4,
+        "type": "fade",
+        "fromScene": "SC-FINAL-LAST60-001",
+        "toScene": "SC-FINAL-LAST60-002"
+      },
+      {
+        "index": 5,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-002",
+        "toScene": "SC-FINAL-LAST60-002"
+      },
+      {
+        "index": 6,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-002",
+        "toScene": "SC-FINAL-LAST60-002"
+      },
+      {
+        "index": 7,
+        "type": "fade",
+        "fromScene": "SC-FINAL-LAST60-002",
+        "toScene": "SC-FINAL-LAST60-003"
+      },
+      {
+        "index": 8,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-003",
+        "toScene": "SC-FINAL-LAST60-003"
+      },
+      {
+        "index": 9,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-003",
+        "toScene": "SC-FINAL-LAST60-003"
+      },
+      {
+        "index": 10,
+        "type": "fade",
+        "fromScene": "SC-FINAL-LAST60-003",
+        "toScene": "SC-FINAL-LAST60-004"
+      },
+      {
+        "index": 11,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-004",
+        "toScene": "SC-FINAL-LAST60-004"
+      },
+      {
+        "index": 12,
+        "type": "cut",
+        "fromScene": "SC-FINAL-LAST60-004",
+        "toScene": "SC-FINAL-LAST60-004"
+      }
+    ],
+    "counts": {
+      "fade": 3,
+      "cut": 9
+    }
+  },
+  "loudness": {
+    "targetLufs": -16.0,
+    "approach": "EBU R128 两遍（先扫后归）"
+  },
+  "colorGrade": {
+    "executed": false,
+    "note": "调色暂不执行；本字段只记录目标，供后续接 LUT"
+  },
+  "shotCount": 12,
+  "engine": ""
+}

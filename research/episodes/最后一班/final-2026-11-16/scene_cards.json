@@ -1,0 +1,54 @@
+{
+  "kind": "scene.cards",
+  "cards": {},
+  "perShot": {
+    "SH-FINAL-LAST60-001-001": {
+      "sceneId": "SC-FINAL-LAST60-001",
+      "fingerprint": "68aff6033375"
+    },
+    "SH-FINAL-LAST60-001-002": {
+      "sceneId": "SC-FINAL-LAST60-001",
+      "fingerprint": "68aff6033375"
+    },
+    "SH-FINAL-LAST60-001-004": {
+      "sceneId": "SC-FINAL-LAST60-001",
+      "fingerprint": "68aff6033375"
+    },
+    "SH-FINAL-LAST60-002-001": {
+      "sceneId": "SC-FINAL-LAST60-002",
+      "fingerprint": "603b365824a9"
+    },
+    "SH-FINAL-LAST60-002-002": {
+      "sceneId": "SC-FINAL-LAST60-002",
+      "fingerprint": "603b365824a9"
+    },
+    "SH-FINAL-LAST60-002-004": {
+      "sceneId": "SC-FINAL-LAST60-002",
+      "fingerprint": "603b365824a9"
+    },
+    "SH-FINAL-LAST60-003-001": {
+      "sceneId": "SC-FINAL-LAST60-003",
+      "fingerprint": "3d08717d806b"
+    },
+    "SH-FINAL-LAST60-003-002": {
+      "sceneId": "SC-FINAL-LAST60-003",
+      "fingerprint": "3d08717d806b"
+    },
+    "SH-FINAL-LAST60-003-004": {
+      "sceneId": "SC-FINAL-LAST60-003",
+      "fingerprint": "3d08717d806b"
+    },
+    "SH-FINAL-LAST60-004-001": {
+      "sceneId": "SC-FINAL-LAST60-004",
+      "fingerprint": "6c5ff1b7efd3"
+    },
+    "SH-FINAL-LAST60-004-002": {
+      "sceneId": "SC-FINAL-LAST60-004",
+      "fingerprint": "6c5ff1b7efd3"
+    },
+    "SH-FINAL-LAST60-004-004": {
+      "sceneId": "SC-FINAL-LAST60-004",
+      "fingerprint": "6c5ff1b7efd3"
+    }
+  }
+}

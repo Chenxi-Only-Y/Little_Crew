@@ -1,0 +1,14 @@
+{
+  "kind": "scene.cards",
+  "cards": {},
+  "perShot": {
+    "SH-FINAL-DIALOGUE4-001-001": {
+      "sceneId": "SC-FINAL-DIALOGUE4-001",
+      "fingerprint": "a4ed80259f77"
+    },
+    "SH-FINAL-DIALOGUE4-001-003": {
+      "sceneId": "SC-FINAL-DIALOGUE4-001",
+      "fingerprint": "a4ed80259f77"
+    }
+  }
+}

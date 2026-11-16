@@ -1,0 +1,66 @@
+{
+  "enabled": true,
+  "kind": "cover.select",
+  "episodeTitle": "最后一班",
+  "candidates": [
+    "SH-FINAL-LAST60-001-001",
+    "SH-FINAL-LAST60-001-002",
+    "SH-FINAL-LAST60-002-001",
+    "SH-FINAL-LAST60-002-002",
+    "SH-FINAL-LAST60-003-001",
+    "SH-FINAL-LAST60-003-002",
+    "SH-FINAL-LAST60-004-001",
+    "SH-FINAL-LAST60-004-002"
+  ],
+  "dropped": [
+    {
+      "shotId": "SH-FINAL-LAST60-001-004",
+      "reason": "未抽样（超出候选上限）"
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-004",
+      "reason": "未抽样（超出候选上限）"
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-004",
+      "reason": "未抽样（超出候选上限）"
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-004",
+      "reason": "未抽样（超出候选上限）"
+    }
+  ],
+  "ok": true,
+  "contactSheet": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\delivery\\cover_candidates.jpg",
+  "judge": {
+    "ok": true,
+    "pick": 6,
+    "reason": "特写清晰无切头，信息集中",
+    "bad": [
+      2,
+      7,
+      8
+    ]
+  },
+  "shotId": "SH-FINAL-LAST60-003-002",
+  "source": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\assets\\shots\\SH-FINAL-LAST60-003-002\\SH-FINAL-LAST60-003-002-SH-FINAL-LAST60-003-002-SH-FINAL-LAST60-003-002.png",
+  "cover": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\delivery\\cover.png",
+  "reason": "特写清晰无切头，信息集中",
+  "mode": "select",
+  "titleMode": "overlay",
+  "title": {
+    "ok": true,
+    "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\delivery\\cover.png",
+    "shape": "poster",
+    "style": "banner",
+    "font": "STHUPO.TTF",
+    "size": 91,
+    "title": "最后一班",
+    "card": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\delivery\\title_card.png",
+    "subtitle": "",
+    "badge": ""
+  },
+  "titleText": "最后一班",
+  "titleStyle": "banner",
+  "coverRaw": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\delivery\\cover_raw.png"
+}

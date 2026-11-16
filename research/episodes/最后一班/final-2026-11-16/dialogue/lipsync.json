@@ -1,0 +1,32 @@
+{
+  "kind": "lipsync.report",
+  "enabled": true,
+  "available": {
+    "ok": true,
+    "why": "DASHSCOPE_API_KEY 已配置"
+  },
+  "targets": [
+    "SH-FINAL-DIALOGUE4-001-003"
+  ],
+  "okCount": 1,
+  "rows": [
+    {
+      "shotId": "SH-FINAL-DIALOGUE4-001-003",
+      "ok": true,
+      "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL_DIALOGUE4\\assets\\lipsync\\SH-FINAL-DIALOGUE4-001-003.mp4",
+      "seconds": 79.5,
+      "costCny": 1.065,
+      "error": null,
+      "linesOnShot": 1,
+      "shotSeconds": 6.0,
+      "clipSeconds": 6.0,
+      "fit": {
+        "ok": true,
+        "before": 2.125,
+        "after": 6.0,
+        "method": "pad_freeze"
+      }
+    }
+  ],
+  "costCny": 1.06
+}

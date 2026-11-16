@@ -149,7 +149,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     # ⚠️ 这一套用**假通道**：H3 单镜约 340 秒，真打服务的测试没人会跑，
     # 而没人跑的测试等于没有。
     ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 31),
-    ("口型视频通道", [sys.executable, "-m", "little_crew.runtime.lipsync_check"], 24),
+    ("口型视频通道", [sys.executable, "-m", "little_crew.runtime.lipsync_check"], 26),
     ("音频来源（原生音频/TTS）", [sys.executable, "-m", "little_crew.runtime.voice_source_check"], 9),
     ("剧组编制（职业可选）", [sys.executable, "-m", "little_crew.runtime.crew_profile_check"], 22),
     ("无限画布后端（依赖图）", [sys.executable, "-m", "little_crew.runtime.pipeline_graph_check"], 17),

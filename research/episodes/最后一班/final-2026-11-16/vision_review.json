@@ -1,0 +1,157 @@
+{
+  "kind": "vision.review",
+  "rows": [
+    {
+      "shotId": "SH-FINAL-LAST60-001-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "快步动态不明显",
+        "玻璃反光未掠过脸"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-001-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 5,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-001-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "同一少女重复出现，拼接感明显",
+        "刷卡与冲下扶梯被并置为两个分身",
+        "扶梯下行方向不够明确"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "画面主体为人物，站台灯带偏背景",
+        "远处车灯不够突出"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-002-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "描述较抽象，仅能对应忧郁沉思氛围"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 5,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "缺少车门合上的明确动作",
+        "表情变化较克制"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-003-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "灯带扫过脸部的动态感较弱"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-002",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 5,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-LAST60-004-004",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [
+        "缺少灯一排排熄灭",
+        "起身动作不明显",
+        "出口方向不明确"
+      ],
+      "attempts": 1,
+      "error": ""
+    }
+  ],
+  "findings": [],
+  "reviewedCount": 12,
+  "total": 12,
+  "skipped": 0,
+  "errors": 0,
+  "notJudged": [
+    "美不美",
+    "角色像不像同一个人（需相似度模型）",
+    "构图是否有意图"
+  ],
+  "kindCounts": {}
+}

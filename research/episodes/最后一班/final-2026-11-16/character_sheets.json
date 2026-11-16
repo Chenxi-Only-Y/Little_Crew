@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "kind": "character.sheets",
+  "model": "gpt-image-2.6-sunburst",
+  "outDir": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL60\\assets\\characters",
+  "painted": [],
+  "failed": [],
+  "skipped": [],
+  "limit": 1,
+  "refine": false,
+  "refined": [],
+  "refineFailed": [],
+  "qc": false,
+  "qcAttempts": 1,
+  "qcReports": [],
+  "qcFailed": [],
+  "license": {
+    "allowed": true,
+    "reason": "模型 'gpt-image-2.6-sunburst' 无授权记录，但用户显式接受风险（LITTLE_CREW_ALLOW_UNVERIFIED=1）",
+    "rule": "NO_RECORD_ACCEPTED_RISK"
+  },
+  "count": 0,
+  "ok": true
+}

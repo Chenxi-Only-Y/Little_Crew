@@ -1,0 +1,20 @@
+{
+  "kind": "final.delivery",
+  "name": "对白 + 配音 + 口型（_FINAL_DIALOGUE4）",
+  "episodeId": "FINAL-DIALOGUE4",
+  "ok": true,
+  "shots": 2,
+  "coverage": 1.0,
+  "wallSeconds": 186.81,
+  "imageCny": 0.1,
+  "lipsyncCny": 1.06,
+  "crew": {
+    "preset": "full",
+    "level": "full",
+    "active": 19,
+    "skipped": 0
+  },
+  "contactSheetShots": 4,
+  "reportPreview": true,
+  "master": true
+}

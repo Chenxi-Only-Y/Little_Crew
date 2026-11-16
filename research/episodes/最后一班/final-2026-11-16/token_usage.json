@@ -1,0 +1,27 @@
+{
+  "kind": "token.usage",
+  "models": {
+    "deepseek-flash": {
+      "calls": 13,
+      "input": 4996,
+      "output": 3702,
+      "cached": 0,
+      "kinds": {
+        "llm": 1,
+        "vision:画面审查": 12
+      }
+    },
+    "mimo-v2.6-flash": {
+      "calls": 1,
+      "input": 2030,
+      "output": 170,
+      "cached": 0,
+      "kinds": {
+        "vision:封面选帧": 1
+      }
+    }
+  },
+  "totalCalls": 14,
+  "totalInput": 7026,
+  "totalOutput": 3872
+}

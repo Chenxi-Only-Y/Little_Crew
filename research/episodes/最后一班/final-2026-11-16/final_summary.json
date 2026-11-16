@@ -1,0 +1,46 @@
+{
+  "kind": "final.summary",
+  "date": "2026-11-16",
+  "runs": [
+    {
+      "kind": "final.delivery",
+      "name": "60s 全特性（full 编制 + 封面 + 定妆板）",
+      "episodeId": "FINAL-LAST60",
+      "ok": true,
+      "shots": 12,
+      "coverage": 1.0,
+      "wallSeconds": 153.57,
+      "imageCny": 0.6,
+      "lipsyncCny": 0.0,
+      "crew": {
+        "preset": "full",
+        "level": "full",
+        "active": 19,
+        "skipped": 0
+      },
+      "contactSheetShots": 24,
+      "reportPreview": true,
+      "master": true
+    },
+    {
+      "kind": "final.delivery",
+      "name": "对白 + 配音 + 口型（_FINAL_DIALOGUE4）",
+      "episodeId": "FINAL-DIALOGUE4",
+      "ok": true,
+      "shots": 2,
+      "coverage": 1.0,
+      "wallSeconds": 186.81,
+      "imageCny": 0.1,
+      "lipsyncCny": 1.06,
+      "crew": {
+        "preset": "full",
+        "level": "full",
+        "active": 19,
+        "skipped": 0
+      },
+      "contactSheetShots": 4,
+      "reportPreview": true,
+      "master": true
+    }
+  ]
+}

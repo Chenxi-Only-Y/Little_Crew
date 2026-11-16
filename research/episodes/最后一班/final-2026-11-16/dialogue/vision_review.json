@@ -1,0 +1,38 @@
+{
+  "kind": "vision.review",
+  "rows": [
+    {
+      "shotId": "SH-FINAL-DIALOGUE4-001-001",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 4,
+      "problems": [
+        "静态图无法验证台词与声音"
+      ],
+      "attempts": 1,
+      "error": ""
+    },
+    {
+      "shotId": "SH-FINAL-DIALOGUE4-001-003",
+      "reviewed": true,
+      "blank": false,
+      "faces": "ok",
+      "matches": 3,
+      "problems": [],
+      "attempts": 1,
+      "error": ""
+    }
+  ],
+  "findings": [],
+  "reviewedCount": 2,
+  "total": 2,
+  "skipped": 0,
+  "errors": 0,
+  "notJudged": [
+    "美不美",
+    "角色像不像同一个人（需相似度模型）",
+    "构图是否有意图"
+  ],
+  "kindCounts": {}
+}

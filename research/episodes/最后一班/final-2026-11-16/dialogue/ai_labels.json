@@ -1,0 +1,51 @@
+{
+  "kind": "delivery.meta",
+  "episodeId": "FINAL-DIALOGUE4",
+  "aiLabels": {
+    "explicit": true,
+    "implicit": true,
+    "where": [
+      "delivery\\ai_label_endcard.png",
+      "delivery\\episode.master.mp4"
+    ]
+  },
+  "credits": "本片由 AI 生成合成",
+  "attributions": [],
+  "sources": [
+    {
+      "kind": "model",
+      "name": "z-image-turbo",
+      "source": "models 授权目录（governance/license.py）",
+      "license": "Apache-2.0（未核实）",
+      "licenseVerified": false
+    },
+    {
+      "kind": "model",
+      "name": "gpt-image-2.6-sunburst",
+      "source": "运行时使用",
+      "license": "UNKNOWN",
+      "licenseVerified": false
+    },
+    {
+      "kind": "reference",
+      "name": "少女",
+      "path": "D:\\AI\\ds.8\\Little_Crew\\assets\\characters\\少女\\anchor.png",
+      "source": "项目自产（角色设定板/锚点）",
+      "license": "project-owned"
+    },
+    {
+      "kind": "audio",
+      "name": "mix.wav",
+      "path": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_FINAL_DIALOGUE4\\delivery\\mix.wav",
+      "source": "程序生成（ffmpeg 合成/垫音）或项目素材",
+      "license": "project-owned / see file"
+    }
+  ],
+  "sourceRegistryOk": false,
+  "endcard": "delivery\\ai_label_endcard.png",
+  "labeledCovers": [],
+  "metadataInjected": [
+    "delivery\\episode.master.mp4"
+  ],
+  "errors": []
+}

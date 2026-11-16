@@ -1,0 +1,3 @@
+AI 标识：本片由 AI 生成 / AI-GENERATED
+署名：本片由 AI 生成合成
+素材清单：delivery/sources.json

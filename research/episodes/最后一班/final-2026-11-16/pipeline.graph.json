@@ -1,0 +1,693 @@
+{
+  "kind": "pipeline.graph",
+  "episodeId": "FINAL-LAST60",
+  "crew": {
+    "preset": "full",
+    "hash": "120b3d5b2161",
+    "commercial": false,
+    "active": [
+      "camera_operator",
+      "character_designer",
+      "compliance_officer",
+      "composer",
+      "continuity_supervisor",
+      "cover_designer",
+      "dialogue_editor",
+      "director",
+      "dramaturge",
+      "gaffer",
+      "line_producer",
+      "post_production",
+      "previs",
+      "production_designer",
+      "review_board",
+      "scene_designer",
+      "screenwriter",
+      "story_editor",
+      "storyboard_artist"
+    ],
+    "skipped": [],
+    "autoAdded": []
+  },
+  "nodes": [
+    {
+      "id": "director",
+      "type": "position",
+      "title": "导演",
+      "agent": "director",
+      "department": "director",
+      "stage": "script",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "episode.direct"
+      ],
+      "produces": [
+        "episode.plan"
+      ],
+      "requires": [
+        "script.final",
+        "character.anchor_set",
+        "scene.library",
+        "shot.list",
+        "shot.image",
+        "shot.video"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "screenwriter",
+      "type": "position",
+      "title": "编剧",
+      "agent": "screenwriter",
+      "department": "screenplay",
+      "stage": "script",
+      "execution": "text_llm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "script.draft",
+        "script.revise"
+      ],
+      "produces": [
+        "script.draft",
+        "script.final"
+      ],
+      "requires": [
+        "source.novel"
+      ],
+      "evidence": [
+        "delivery/script.rounds.json"
+      ]
+    },
+    {
+      "id": "dramaturge",
+      "type": "position",
+      "title": "剧本顾问",
+      "agent": "dramaturge",
+      "department": "screenplay",
+      "stage": "gate",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "script.critique"
+      ],
+      "produces": [
+        "script.critique"
+      ],
+      "requires": [
+        "script.draft"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "story_editor",
+      "type": "position",
+      "title": "文学策划",
+      "agent": "story_editor",
+      "department": "screenplay",
+      "stage": "gate",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "style.guard"
+      ],
+      "produces": [
+        "style.guard"
+      ],
+      "requires": [
+        "script.draft"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "production_designer",
+      "type": "position",
+      "title": "美术指导",
+      "agent": "production_designer",
+      "department": "art",
+      "stage": "asset",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "art.direction"
+      ],
+      "produces": [
+        "art.bible"
+      ],
+      "requires": [
+        "script.final"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "scene_designer",
+      "type": "position",
+      "title": "场景设计师",
+      "agent": "scene_designer",
+      "department": "art",
+      "stage": "asset",
+      "execution": "text_llm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "scene.design"
+      ],
+      "produces": [
+        "scene.library"
+      ],
+      "requires": [
+        "script.final"
+      ],
+      "evidence": [
+        "delivery/run.report.json",
+        "delivery/scene.library.json"
+      ]
+    },
+    {
+      "id": "character_designer",
+      "type": "position",
+      "title": "角色设计师",
+      "agent": "character_designer",
+      "department": "art",
+      "stage": "asset",
+      "execution": "image_gen",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "character.design"
+      ],
+      "produces": [
+        "character.anchor_set",
+        "character.sheet"
+      ],
+      "requires": [
+        "script.final"
+      ],
+      "evidence": [
+        "delivery/anchors_used.json"
+      ]
+    },
+    {
+      "id": "continuity_supervisor",
+      "type": "position",
+      "title": "场记",
+      "agent": "continuity_supervisor",
+      "department": "art",
+      "stage": "gate",
+      "execution": "vlm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "continuity.check",
+        "shot.qc"
+      ],
+      "produces": [
+        "continuity.report",
+        "continuity.sheet",
+        "qc.report"
+      ],
+      "requires": [
+        "character.anchor_set",
+        "shot.image"
+      ],
+      "evidence": [
+        "delivery/vision_review.json"
+      ]
+    },
+    {
+      "id": "previs",
+      "type": "position",
+      "title": "白模预演师",
+      "agent": "previs",
+      "department": "camera",
+      "stage": "script",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "previs.layouts"
+      ],
+      "produces": [
+        "previs.layouts"
+      ],
+      "requires": [
+        "shot.list",
+        "script.final"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "storyboard_artist",
+      "type": "position",
+      "title": "分镜师",
+      "agent": "storyboard_artist",
+      "department": "camera",
+      "stage": "storyboard",
+      "execution": "text_llm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "shot.list"
+      ],
+      "produces": [
+        "shot.list",
+        "shot.breakdown"
+      ],
+      "requires": [
+        "script.final",
+        "character.anchor_set",
+        "scene.library"
+      ],
+      "evidence": [
+        "delivery/shot_selection.json"
+      ]
+    },
+    {
+      "id": "gaffer",
+      "type": "position",
+      "title": "灯光师",
+      "agent": "gaffer",
+      "department": "camera",
+      "stage": "storyboard",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "lighting.plan"
+      ],
+      "produces": [
+        "lighting.plan"
+      ],
+      "requires": [
+        "scene.library"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "camera_operator",
+      "type": "position",
+      "title": "摄影师",
+      "agent": "camera_operator",
+      "department": "camera",
+      "stage": "render",
+      "execution": "video_gen",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "shot.video"
+      ],
+      "produces": [
+        "shot.video"
+      ],
+      "requires": [
+        "shot.image"
+      ],
+      "evidence": [
+        "delivery/video_plan.json"
+      ]
+    },
+    {
+      "id": "dialogue_editor",
+      "type": "position",
+      "title": "对白剪辑",
+      "agent": "dialogue_editor",
+      "department": "sound",
+      "stage": "render",
+      "execution": "audio_gen",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "shot.voice"
+      ],
+      "produces": [
+        "shot.voice"
+      ],
+      "requires": [
+        "script.final"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "composer",
+      "type": "position",
+      "title": "作曲",
+      "agent": "composer",
+      "department": "sound",
+      "stage": "render",
+      "execution": "audio_gen",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "shot.music"
+      ],
+      "produces": [
+        "shot.music"
+      ],
+      "requires": [
+        "shot.list"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "post_production",
+      "type": "position",
+      "title": "后期统筹",
+      "agent": "post_production",
+      "department": "editorial",
+      "stage": "assemble",
+      "execution": "assembly",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "post.plan"
+      ],
+      "produces": [
+        "post.plan"
+      ],
+      "requires": [
+        "shot.list",
+        "script.final"
+      ],
+      "evidence": [
+        "delivery/post.plan.json"
+      ]
+    },
+    {
+      "id": "line_producer",
+      "type": "position",
+      "title": "制片主任",
+      "agent": "line_producer",
+      "department": "production",
+      "stage": "storyboard",
+      "execution": "text_llm",
+      "active": true,
+      "status": "pending",
+      "capabilities": [
+        "production.schedule"
+      ],
+      "produces": [
+        "production.schedule"
+      ],
+      "requires": [
+        "shot.list"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "compliance_officer",
+      "type": "position",
+      "title": "版权与合规",
+      "agent": "compliance_officer",
+      "department": "production",
+      "stage": "assemble",
+      "execution": "vlm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "compliance.check"
+      ],
+      "produces": [
+        "compliance.report"
+      ],
+      "requires": [
+        "episode.master"
+      ],
+      "evidence": [
+        "delivery/compliance.json"
+      ]
+    },
+    {
+      "id": "review_board",
+      "type": "position",
+      "title": "审片",
+      "agent": "review_board",
+      "department": "review",
+      "stage": "gate",
+      "execution": "text_llm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "review.board"
+      ],
+      "produces": [
+        "review.verdict"
+      ],
+      "requires": [
+        "shot.image",
+        "shot.video"
+      ],
+      "evidence": [
+        "delivery/shotlist_review.json"
+      ]
+    },
+    {
+      "id": "cover_designer",
+      "type": "position",
+      "title": "封面设计师",
+      "agent": "cover_designer",
+      "department": "review",
+      "stage": "gate",
+      "execution": "vlm",
+      "active": true,
+      "status": "done",
+      "capabilities": [
+        "cover.select",
+        "cover.generate"
+      ],
+      "produces": [
+        "cover.image"
+      ],
+      "requires": [
+        "shot.image"
+      ],
+      "evidence": [
+        "delivery/run.report.json"
+      ]
+    },
+    {
+      "id": "code:shot.image",
+      "type": "channel",
+      "title": "渲染通道（出图）",
+      "agent": "",
+      "department": "channel",
+      "stage": "render",
+      "execution": "image",
+      "active": true,
+      "status": "done",
+      "capabilities": [],
+      "produces": [
+        "shot.image"
+      ],
+      "requires": [],
+      "evidence": [
+        "delivery/image_calls.json"
+      ]
+    },
+    {
+      "id": "code:episode.master",
+      "type": "channel",
+      "title": "合成通道（成片）",
+      "agent": "",
+      "department": "channel",
+      "stage": "render",
+      "execution": "assembly",
+      "active": true,
+      "status": "done",
+      "capabilities": [],
+      "produces": [
+        "episode.master"
+      ],
+      "requires": [],
+      "evidence": [
+        "delivery/episode.master.mp4"
+      ]
+    },
+    {
+      "id": "code:delivery.evidence",
+      "type": "channel",
+      "title": "交付证据链",
+      "agent": "",
+      "department": "channel",
+      "stage": "render",
+      "execution": "evidence",
+      "active": true,
+      "status": "pending",
+      "capabilities": [],
+      "produces": [
+        "delivery.evidence"
+      ],
+      "requires": [],
+      "evidence": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "screenwriter",
+      "to": "director",
+      "artifact": "script.final"
+    },
+    {
+      "from": "character_designer",
+      "to": "director",
+      "artifact": "character.anchor_set"
+    },
+    {
+      "from": "scene_designer",
+      "to": "director",
+      "artifact": "scene.library"
+    },
+    {
+      "from": "storyboard_artist",
+      "to": "director",
+      "artifact": "shot.list"
+    },
+    {
+      "from": "code:shot.image",
+      "to": "director",
+      "artifact": "shot.image"
+    },
+    {
+      "from": "camera_operator",
+      "to": "director",
+      "artifact": "shot.video"
+    },
+    {
+      "from": "screenwriter",
+      "to": "dramaturge",
+      "artifact": "script.draft"
+    },
+    {
+      "from": "screenwriter",
+      "to": "story_editor",
+      "artifact": "script.draft"
+    },
+    {
+      "from": "screenwriter",
+      "to": "production_designer",
+      "artifact": "script.final"
+    },
+    {
+      "from": "screenwriter",
+      "to": "scene_designer",
+      "artifact": "script.final"
+    },
+    {
+      "from": "screenwriter",
+      "to": "character_designer",
+      "artifact": "script.final"
+    },
+    {
+      "from": "character_designer",
+      "to": "continuity_supervisor",
+      "artifact": "character.anchor_set"
+    },
+    {
+      "from": "code:shot.image",
+      "to": "continuity_supervisor",
+      "artifact": "shot.image"
+    },
+    {
+      "from": "storyboard_artist",
+      "to": "previs",
+      "artifact": "shot.list"
+    },
+    {
+      "from": "screenwriter",
+      "to": "previs",
+      "artifact": "script.final"
+    },
+    {
+      "from": "screenwriter",
+      "to": "storyboard_artist",
+      "artifact": "script.final"
+    },
+    {
+      "from": "character_designer",
+      "to": "storyboard_artist",
+      "artifact": "character.anchor_set"
+    },
+    {
+      "from": "scene_designer",
+      "to": "storyboard_artist",
+      "artifact": "scene.library"
+    },
+    {
+      "from": "scene_designer",
+      "to": "gaffer",
+      "artifact": "scene.library"
+    },
+    {
+      "from": "code:shot.image",
+      "to": "camera_operator",
+      "artifact": "shot.image"
+    },
+    {
+      "from": "screenwriter",
+      "to": "dialogue_editor",
+      "artifact": "script.final"
+    },
+    {
+      "from": "storyboard_artist",
+      "to": "composer",
+      "artifact": "shot.list"
+    },
+    {
+      "from": "storyboard_artist",
+      "to": "post_production",
+      "artifact": "shot.list"
+    },
+    {
+      "from": "screenwriter",
+      "to": "post_production",
+      "artifact": "script.final"
+    },
+    {
+      "from": "storyboard_artist",
+      "to": "line_producer",
+      "artifact": "shot.list"
+    },
+    {
+      "from": "code:episode.master",
+      "to": "compliance_officer",
+      "artifact": "episode.master"
+    },
+    {
+      "from": "code:shot.image",
+      "to": "review_board",
+      "artifact": "shot.image"
+    },
+    {
+      "from": "camera_operator",
+      "to": "review_board",
+      "artifact": "shot.video"
+    },
+    {
+      "from": "code:shot.image",
+      "to": "cover_designer",
+      "artifact": "shot.image"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source:source.novel",
+      "title": "源素材/小说",
+      "artifact": "source.novel"
+    }
+  ],
+  "costs": {
+    "imageCny": 0.6
+  },
+  "summary": {
+    "positions": 19,
+    "active": 19,
+    "done": 12,
+    "pending": 10,
+    "skipped": 0,
+    "edges": 29
+  }
+}

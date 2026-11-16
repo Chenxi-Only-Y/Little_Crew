@@ -57,7 +57,10 @@ MAX_AUDIO_BYTES = 15 * 1024 * 1024
 
 
 def _key() -> str:
-    k = str(os.environ.get("DASHSCOPE_API_KEY") or "").strip()
+    # ⚠️ 不能只读 os.environ：密钥已迁到项目外秘密文件（D:\AI\ds.8\api key）。
+    # 统一走 config.env_value —— 它按"进程环境 > config/.env > 秘密文件"解析。
+    from little_crew.config import env_value
+    k = str(env_value("DASHSCOPE_API_KEY", "") or "").strip()
     if k:
         return k
     # 项目内 config/.env（gitignored）
