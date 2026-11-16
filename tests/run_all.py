@@ -69,6 +69,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("工作室编辑", [sys.executable, "-m", "little_crew.runtime.studio_check"], 31),
     # 半成品报告：中途停下时把「到哪了」落成文件。纯文件读写。
     ("半成品报告", [sys.executable, "-m", "little_crew.runtime.partial_report_check"], 29),
+    ("报告页（新产物+静态图）", [sys.executable, "-m", "little_crew.runtime.report_html_check"], 17),
     # 资产库：角色定妆表落盘 + 读回复用。纯文件。
     ("资产库", [sys.executable, "-m", "little_crew.runtime.assets_check"], 26),
     # 后端选择：把"用哪个后端"从入口脚本搬出来。含源码守卫（不再写死 HTTP）。

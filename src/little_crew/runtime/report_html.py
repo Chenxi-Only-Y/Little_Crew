@@ -134,7 +134,116 @@ th{color:var(--dim);font-weight:600}
 .note{background:#1a1f27;border:1px solid var(--line);border-left:3px solid var(--warn);
 border-radius:6px;padding:10px 14px;color:#c8d0dc;font-size:12.5px;margin:14px 0}
 a{color:var(--accent)}
+
+.graphwrap{overflow:auto;background:#101318;border:1px solid var(--line);
+border-radius:10px;padding:6px}
+.graphwrap svg{display:block;min-width:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--dim);font-size:11.5px;
+margin:8px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;
+margin-right:5px;vertical-align:middle}
+.badge{display:inline-block;font-size:11.5px;border-radius:5px;padding:1px 7px;
+border:1px solid var(--line);color:var(--dim)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}
+.badge.warn{color:var(--warn);border-color:var(--warn)}
+.badge.bad{color:var(--bad);border-color:var(--bad)}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.box h3{margin:0 0 8px;font-size:12.5px;color:var(--dim);font-weight:600}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;
+border-bottom:1px dashed rgba(255,255,255,.06);padding:2px 0}
+.kv b{font-weight:600;color:#dfe5ee}
+.thumb{max-width:100%;border-radius:8px;border:1px solid var(--line)}
+ul.tight{margin:4px 0 0 18px;padding:0;color:#c4ccd9;font-size:12px}
 """
+
+
+
+#: 画布图里的阶段先后顺序（决定列）
+_STAGE_ORDER = ("script", "asset", "storyboard", "render", "gate", "assemble")
+_STAGE_CN = {"script": "剧本", "asset": "资产", "storyboard": "分镜",
+             "render": "渲染", "gate": "门禁/审片", "assemble": "合成交付"}
+_STATUS = {"done": ("#4ade80", "已完成"), "pending": ("#fbbf24", "启用但无证据"),
+           "skipped": ("#6b7280", "编制未启用"), "blocked": ("#f87171", "被门禁阻断")}
+
+
+def graph_svg(graph: Mapping[str, Any]) -> str:
+    """把 `pipeline.graph.json` 画成**内联 SVG**（无 JS、无 CDN，离线可看）。"""
+    nodes = [n for n in (graph.get("nodes") or []) if isinstance(n, Mapping)]
+    if not nodes:
+        return "<div class='miss'>没有 pipeline.graph.json（旧版本运行或未启用画布后端）</div>"
+    cols: dict[str, list[Mapping[str, Any]]] = {}
+    for n in nodes:
+        stage = str(n.get("stage") or "")
+        key = stage if stage in _STAGE_ORDER else "gate"
+        cols.setdefault(key, []).append(n)
+    order = [s for s in _STAGE_ORDER if s in cols]
+    srcs = list(graph.get("sources") or [])
+    if srcs:
+        order = ["__src__"] + order
+
+    NW, NH, GAP, COLW, ROWH, PAD = 150, 40, 22, 196, 58, 20
+    max_rows = max([len(cols.get(s) or []) for s in _STAGE_ORDER] + [len(srcs), 1])
+    width = PAD * 2 + COLW * len(order)
+    height = 40 + max_rows * ROWH + PAD
+    pos: dict[str, tuple[int, int]] = {}
+    out: list[str] = [
+        f"<svg width='{max(width, 640)}' height='{height}' "
+        f"viewBox='0 0 {max(width, 640)} {height}' "
+        "xmlns='http://www.w3.org/2000/svg' font-family='ui-sans-serif,system-ui'>",
+        "<defs><marker id='ar' viewBox='0 0 8 8' refX='7' refY='4' "
+        "markerWidth='6' markerHeight='6' orient='auto'>"
+        "<path d='M0,0 L8,4 L0,8 z' fill='#3b4250'/></marker></defs>",
+    ]
+    for ci, key in enumerate(order):
+        x = PAD + ci * COLW
+        label = ("来源" if key == "__src__" else _STAGE_CN.get(key, key))
+        out.append(f"<text x='{x}' y='18' fill='#8b95a6' font-size='12'>{_esc(label)}</text>")
+        if key == "__src__":
+            for ri, s in enumerate(srcs):
+                y = 34 + ri * ROWH
+                pos[f"source:{s.get('artifact')}"] = (x, y)
+                out.append(
+                    f"<rect x='{x}' y='{y}' width='{NW}' height='{NH}' rx='7' "
+                    "fill='#1a1e26' stroke='#394150' stroke-dasharray='4 3'/>")
+                out.append(f"<text x='{x+10}' y='{y+18}' fill='#aab3c2' "
+                           f"font-size='12'>{_esc(str(s.get('title') or '')[:14])}</text>")
+                out.append(f"<text x='{x+10}' y='{y+33}' fill='#6d7788' "
+                           f"font-size='10'>{_esc(str(s.get('artifact') or '')[:20])}</text>")
+            continue
+        col = cols.get(key) or []
+        for ri, n in enumerate(col):
+            y = 34 + ri * ROWH
+            nid = str(n.get("id") or "")
+            pos[nid] = (x, y)
+            status = str(n.get("status") or "pending")
+            color = _STATUS.get(status, ("#6b7280", status))[0]
+            active = bool(n.get("active", True))
+            dash = " stroke-dasharray='5 4'" if not active else ""
+            out.append(
+                f"<rect x='{x}' y='{y}' width='{NW}' height='{NH}' rx='7' "
+                f"fill='#1b2028' stroke='{color}'{dash}/>")
+            out.append(f"<text x='{x+9}' y='{y+17}' fill='#e2e7ef' font-size='11.5'>"
+                       f"{_esc(str(n.get('title') or nid)[:13])}</text>")
+            out.append(f"<text x='{x+10}' y='{y+33}' fill='#77808f' font-size='10'>"
+                       f"{_esc(nid[:22])}</text>")
+            out.append(f"<circle cx='{x+NW-11}' cy='{y+11}' r='4' fill='{color}'/>")
+    # 边（贝塞尔）
+    for e in (graph.get("edges") or []):
+        if not isinstance(e, Mapping):
+            continue
+        a, b = pos.get(str(e.get("from") or "")), pos.get(str(e.get("to") or ""))
+        if not a or not b:
+            continue
+        x1, y1 = a[0] + NW, a[1] + NH / 2
+        x2, y2 = b[0], b[1] + NH / 2
+        mx = (x1 + x2) / 2
+        out.append(
+            f"<path d='M{x1},{y1} C{mx},{y1} {mx},{y2} {x2},{y2}' "
+            "fill='none' stroke='#394150' stroke-width='1.2' marker-end='url(#ar)'>"
+            f"<title>{_esc(str(e.get('artifact') or ''))}</title></path>")
+    out.append("</svg>")
+    return "".join(out)
 
 
 def build_report(workdir: Path, *, title: str = "") -> Path:
@@ -144,6 +253,18 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
     rep = _read_json(delivery / "run.report.json")
     man = _read_json(delivery / "episode.master.json")
     evidence = _read_json(delivery / "delivery.evidence.json")
+    # ---- 2026-11-16 新增产物（缺了也不能崩：全部走 _read_json）----
+    graph = _read_json(delivery / "pipeline.graph.json")
+    compliance = _read_json(delivery / "compliance.json")
+    ai_labels = _read_json(delivery / "ai_labels.json")
+    lipsync = _read_json(delivery / "lipsync.json")
+    cam_plan = _read_json(delivery / "camera_plan.json")
+    scene_cards = _read_json(delivery / "scene_cards.json")
+    outfits = _read_json(delivery / "outfits_used.json")
+    image_calls = _read_json(delivery / "image_calls.json")
+    token_usage = _read_json(delivery / "token_usage.json")
+    post_plan = _read_json(delivery / "post.plan.json")
+    continuity = _read_json(delivery / "continuity_audit.json")
 
     outdir = workdir / "report"
     outdir.mkdir(parents=True, exist_ok=True)
@@ -201,6 +322,25 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
     A(kpi(rep.get("rendered") or 0, "实算镜数"))
     A(kpi(rep.get("cacheHits") or 0, "缓存命中"))
     A(kpi(len(previs), "白模镜头"))
+    _crew = rep.get("crew") if isinstance(rep.get("crew"), Mapping) else {}
+    if _crew.get("active"):
+        A(kpi(f"{len(_crew.get('active') or [])}/"
+              f"{len(_crew.get('active') or []) + len(_crew.get('skipped') or [])}",
+              f"编制·{_crew.get('preset') or '?'}"))
+    if isinstance(compliance, Mapping) and compliance.get("status"):
+        _st = str(compliance.get("status"))
+        _cls = "ok" if _st == "signed" else ("bad" if _st == "blocked" else "warn")
+        A(kpi(_st, "合规状态", _cls))
+    _lab = (ai_labels.get("aiLabels") or {}) if isinstance(ai_labels, Mapping) else {}
+    if _lab:
+        A(kpi(f"显式{'✓' if _lab.get('explicit') else '✗'} · "
+              f"隐式{'✓' if _lab.get('implicit') else '✗'}", "AI 标识"))
+    _costs = image_calls.get("cloud") if isinstance(image_calls, Mapping) else None
+    if isinstance(_costs, Mapping):
+        _ic = float(_costs.get("estCostCny") or 0.0)
+        _lc = float((lipsync or {}).get("costCny") or 0.0) if isinstance(lipsync, Mapping) else 0.0
+        if _ic or _lc:
+            A(kpi(f"¥{_ic + _lc:.2f}", "生成费用"))
     A("</div></header><main>")
 
     # ---- 需要说明的事 ----
@@ -218,6 +358,168 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
                      "报告只展示能读到的部分。")
     for n in notes:
         A(f"<div class='note'>{n}</div>")
+
+    # ---- 剧组编制 + 静态流水线图（2026-11-16）----
+    A("<h2>剧组编制与流水线</h2>")
+    _graph = graph if isinstance(graph, Mapping) else {}
+    if _crew:
+        _ver = _crew.get("verification") or {}
+        _lvl = _crew.get("level") or "?"
+        _lv_cls = {"full": "ok", "reduced": "warn", "draft": "warn"}.get(str(_lvl), "")
+        A("<div class='cols'>")
+        A("<div class='box'><h3>编制口径</h3>")
+        for k, v in (("模板", _crew.get("preset")), ("指纹", _crew.get("hash")),
+                     ("启用", len(_crew.get("active") or ())),
+                     ("跳过", len(_crew.get("skipped") or ())),
+                     ("自动补齐", "、".join(map(str, (_crew.get("autoAdded") or [])[:6])) or "—")):
+            A(f"<div class='kv'><span>{_esc(k)}</span><b>{_esc(v)}</b></div>")
+        A(f"<div class='kv'><span>验证级别</span><span class='badge {_lv_cls}'>"
+          f"{_esc(_lvl)}</span></div>")
+        if _crew.get("unverified"):
+            A("<div class='kv'><span>未验证</span><b style='color:var(--warn)'>"
+              + _esc("、".join(map(str, _crew.get("unverified") or ()))) + "</b></div>")
+        A("</div>")
+        A("<div class='box'><h3>质量关键位</h3>")
+        for key, cn in (("reviewed", "审片"), ("qualityChecked", "质检（场记）"),
+                        ("complianceAudited", "合规")):
+            okv = _ver.get(key)
+            A(f"<div class='kv'><span>{cn}</span>"
+              f"<span class='badge {'ok' if okv else 'badwarn'}' "
+              f"style='{'color:var(--ok)' if okv else 'color:var(--warn)'}'>"
+              f"{'已启用' if okv else '未启用（报告不标通过）'}</span></div>")
+        A("</div></div>")
+    else:
+        A("<div class='note'>本次运行没有记录剧组编制（旧版本或直接调用 EpisodeRunner）。</div>")
+    A("<div class='graphwrap'>" + graph_svg(_graph) + "</div>")
+    A("<div class='legend'><span><i style='background:#4ade80'></i>done（有证据）</span>"
+      "<span><i style='background:#fbbf24'></i>pending（启用但无证据）</span>"
+      "<span><i style='background:#6b7280'></i>skipped（编制未启用）</span>"
+      "<span>悬停连线可看产物名</span></div>")
+    if _graph.get("summary"):
+        _s = _graph.get("summary") or {}
+        A(f"<div class='sub' style='margin-top:8px'>图：{_esc(_s.get('positions'))} 职位 · "
+          f"启用 {_esc(_s.get('active'))} · done {_esc(_s.get('done'))} · "
+          f"pending {_esc(_s.get('pending'))} · skipped {_esc(_s.get('skipped'))} · "
+          f"边 {_esc(_s.get('edges'))}</div>")
+
+    # ---- 合规与交付标识 ----
+    A("<h2>合规与交付标识</h2><div class='cols'>")
+    if compliance:
+        _cst = str(compliance.get("status") or "?")
+        _cc = "ok" if _cst == "signed" else ("bad" if _cst == "blocked" else "warn")
+        A("<div class='box'><h3>合规官</h3>")
+        A(f"<div class='kv'><span>状态</span><span class='badge {_cc}'>{_esc(_cst)}</span></div>")
+        A(f"<div class='kv'><span>是否阻断交付</span><b>{_esc(compliance.get('blocking'))}</b></div>")
+        _la = compliance.get("licenseAudit") or {}
+        A(f"<div class='kv'><span>授权：拒绝 / 待人工</span>"
+          f"<b>{_esc(len(_la.get('denied') or ()))} / "
+          f"{_esc(len(_la.get('needsReview') or ()))}</b></div>")
+        _da = compliance.get("deliveryAudit") or {}
+        A(f"<div class='kv'><span>交付审计</span>"
+          f"<b>{'通过' if _da.get('ok') else '缺项'}</b></div>")
+        _cf = compliance.get("contentFirstPass") or {}
+        A(f"<div class='kv'><span>内容初审</span>"
+          f"<b>{'已做（' + str(_cf.get('reviewed')) + ' 张）' if _cf.get('performed') else '未做'}</b></div>")
+        _hr = compliance.get("humanReview") or []
+        A(f"<div class='kv'><span>人工/法务复审</span><b>{_esc(len(_hr))} 项</b></div>")
+        if _hr:
+            A("<ul class='tight'>")
+            for it in _hr[:8]:
+                A(f"<li>{_esc(it.get('why') or it.get('item') or it.get('modelId') or '')}</li>")
+            A("</ul>")
+        A("</div>")
+    else:
+        A("<div class='box'><h3>合规官</h3><div class='miss'>本次无 compliance.json</div></div>")
+    if ai_labels:
+        A("<div class='box'><h3>交付标识 / 署名</h3>")
+        for k, v in (("显式标识", _lab.get("explicit")), ("隐式标识（mp4 元数据）", _lab.get("implicit")),
+                     ("署名", ai_labels.get("credits")),
+                     ("素材登记", "✓ " + str(len(ai_labels.get("sources") or ())) + " 项"
+                      if ai_labels.get("sourceRegistryOk") else "✗ 缺项")):
+            A(f"<div class='kv'><span>{_esc(k)}</span><b>{_esc(v)}</b></div>")
+        _where = ai_labels.get("aiLabels", {}).get("where") or []
+        if _where:
+            A("<ul class='tight'>" + "".join(f"<li>{_esc(w)}</li>" for w in _where[:5]) + "</ul>")
+        A("</div>")
+    else:
+        A("<div class='box'><h3>交付标识</h3><div class='miss'>本次无 ai_labels.json</div></div>")
+    A("</div>")
+
+    # ---- 增强能力（口型/相机/场景卡/造型/后期）----
+    A("<h2>增强能力</h2><div class='cols'>")
+    if lipsync:
+        A("<div class='box'><h3>口型通道</h3>")
+        A(f"<div class='kv'><span>启用的镜头</span>"
+          f"<b>{_esc(len(lipsync.get('targets') or ()))}</b></div>")
+        A(f"<div class='kv'><span>成功</span><b>{_esc(lipsync.get('okCount'))}</b></div>")
+        A(f"<div class='kv'><span>费用</span>"
+          f"<b>¥{float(lipsync.get('costCny') or 0):.2f}</b></div>")
+        for r in (lipsync.get("rows") or [])[:4]:
+            _fit = r.get("fit") or {}
+            A(f"<div class='kv'><span>{_esc(r.get('shotId'))}</span>"
+              f"<b>{_esc(r.get('clipSeconds'))}s / 镜 {_esc(r.get('shotSeconds'))}s "
+              f"（{_esc(_fit.get('method') or '—')}）</b></div>")
+        A("</div>")
+    if cam_plan:
+        A("<div class='box'><h3>相机参数（确定性注入）</h3>")
+        _def = cam_plan.get("default") or {}
+        A(f"<div class='kv'><span>全片默认</span><b>"
+          + _esc("、".join(f"{k}={v}" for k, v in _def.items()) or "—") + "</b></div>")
+        A(f"<div class='kv'><span>按镜覆盖</span>"
+          f"<b>{_esc(len(cam_plan.get('perShot') or ()))} 镜</b></div>")
+        A("</div>")
+    if scene_cards:
+        A("<div class='box'><h3>场景卡</h3>")
+        _cards = (scene_cards.get("cards") or {}) if isinstance(scene_cards, Mapping) else {}
+        A(f"<div class='kv'><span>场景卡数</span><b>{_esc(len(_cards))}</b></div>")
+        A(f"<div class='kv'><span>使用镜头</span>"
+          f"<b>{_esc(len(scene_cards.get('perShot') or ()))}</b></div>")
+        A("</div>")
+    if outfits:
+        A("<div class='box'><h3>造型（换装）</h3>")
+        A(f"<div class='kv'><span>使用造型的镜头</span>"
+          f"<b>{_esc(len(outfits.get('perShot') or ()))}</b></div>")
+        _vs = sorted({str(v.get("variant") or "") for v in (outfits.get("perShot") or {}).values()
+                      if isinstance(v, Mapping)})
+        A(f"<div class='kv'><span>造型版本</span><b>{_esc('、'.join(_vs) or '—')}</b></div>")
+        A("</div>")
+    if post_plan:
+        def _short(v: Any, n: int = 100) -> str:
+            if isinstance(v, Mapping):
+                parts = [f"{k}={_short(vv, 30)}" for k, vv in list(v.items())[:4]]
+                s = "；".join(parts)
+            elif isinstance(v, (list, tuple)):
+                s = f"{len(v)} 项"
+            else:
+                s = str(v)
+            return s[:n] + ("…" if len(s) > n else "")
+
+        A("<div class='box'><h3>后期统筹</h3>")
+        _pp = [k for k in ("audio", "subtitle", "loudness", "transitions")
+               if k in post_plan]
+        for k in _pp:
+            A(f"<div class='kv'><span>{_esc(k)}</span>"
+              f"<b>{_esc(_short(post_plan.get(k)))}</b></div>")
+        A("</div>")
+    if token_usage:
+        A("<div class='box'><h3>Token / 模型用量</h3>")
+        _tot = token_usage.get("total") or token_usage.get("totals") or token_usage
+        if isinstance(_tot, Mapping):
+            for k in ("promptTokens", "completionTokens", "calls"):
+                if k in _tot:
+                    A(f"<div class='kv'><span>{_esc(k)}</span><b>{_esc(_tot.get(k))}</b></div>")
+        A("</div>")
+    A("</div>")
+    # 封面缩略图
+    _covers = sorted(delivery.glob("cover*"))
+    if _covers:
+        A("<h2>封面</h2><div class='cols'>")
+        for c in _covers[:2]:
+            if c.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                A(f"<div class='box'><h3>{_esc(c.name)}</h3>"
+                  f"<img class='thumb' loading='lazy' src='{_esc(_rel(c, outdir))}' "
+                  f"alt='cover'></div>")
+        A("</div>")
 
     # ---- 失败镜（置顶）----
     fails = rep.get("failures") or []
@@ -237,6 +539,11 @@ def build_report(workdir: Path, *, title: str = "") -> Path:
         sid = str(s.get("shotId") or "")
         pv = previs.get(sid)
         art = resolve_artifact(workdir, (s.get("artifacts") or [""])[0])
+        if art is None:
+            # 与合成器同一套兜底：名字不可靠，文件在 assets/shots/<sid>/ 里
+            _sd = workdir / "assets" / "shots" / sid
+            _hits = sorted(_sd.glob("*.png")) if _sd.is_dir() else []
+            art = _hits[0] if _hits else None
         A("<div class='card'><div class='hd'>")
         A(f"<span class='id'>{_esc(sid)}</span>")
         for tag in (s.get("shotSize"), s.get("cameraMovement"),

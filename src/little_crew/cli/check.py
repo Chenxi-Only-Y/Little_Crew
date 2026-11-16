@@ -165,6 +165,13 @@ class _Srv:
 
 
 def _d_http_contract() -> None:
+    # ⚠️ 测试隔离（2026-11-16）：服务会持久化 run 列表（默认 outputs/.api-runs）。
+    # 不隔离的话，**第二次跑** D10「初始为空列表」必挂 —— 上一次的 run 还在。
+    import os as _os_iso
+    import tempfile as _tf_iso
+
+    _old_runs_env = _os_iso.environ.get("LITTLE_CREW_RUNS_DIR")
+    _os_iso.environ["LITTLE_CREW_RUNS_DIR"] = _tf_iso.mkdtemp(prefix="lc-runs-")
     s = _Srv()
     try:
         # ---- healthz ----
