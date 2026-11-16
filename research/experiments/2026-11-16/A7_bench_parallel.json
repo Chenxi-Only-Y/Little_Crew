@@ -1,0 +1,35 @@
+{
+  "kind": "experiment.A7.parallel",
+  "date": "2026-11-16",
+  "model": "gpt-image-2.6-sunburst",
+  "n": 4,
+  "serial": {
+    "ok": 4,
+    "shots": 4,
+    "wallS": 248.7,
+    "perImageS": 62.175
+  },
+  "parallel4": {
+    "ok": 4,
+    "shots": 4,
+    "wallS": 44.2,
+    "perImageS": 39.125
+  },
+  "speedup": 5.63,
+  "costCny": 0.4,
+  "resume": {
+    "first": {
+      "wallS": 71.2,
+      "computed": 2,
+      "cacheHits": 0,
+      "costCny": 0.1
+    },
+    "second": {
+      "wallS": 10.0,
+      "computed": 0,
+      "cacheHits": 2,
+      "costCny": 0.0
+    }
+  },
+  "note": "串行/4 路各用独立缓存；续跑复用同一 workdir"
+}

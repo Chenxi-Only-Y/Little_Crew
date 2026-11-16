@@ -1,0 +1,12 @@
+{
+  "kind": "experiment.A6.local_cloud",
+  "episode": "FINAL-LAST60",
+  "shots": 2,
+  "localFirstLoadS": 71.7,
+  "localWarmS": 7.6,
+  "wallS": 79.3,
+  "localCostCny": 0.0,
+  "compareImage": "outputs\\_FINAL60\\delivery\\render_compare_1.jpg",
+  "vlmJudge": "{\n  \"sameCharacter\": 2,\n  \"sameScene\": 1,\n  \"qualityLeft\": 5,\n  \"qualityRight\": 4\n}",
+  "note": "并排对照图 + 机器判定；人工质量评分 pending"
+}

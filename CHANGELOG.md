@@ -85,10 +85,22 @@ git config http.sslBackend openssl
 - 裁切 `view/box/source` 写进 `delivery/anchors_used.json`
 - 单视图资产回退原图；**启发式**，不宣称身份度量
 
+### B 组验证（2026-11-16）
+
+| 项 | 结果 |
+|---|---|
+B1 云端 vs 本地（A6） | 同 IR 2 镜：本地 **¥0**；首镜 71.7s（含加载）+ 温跑 7.6s，墙钟 79.3s；机器判定 角色 2/场景 1，质量 5 vs 4；并排对照图 `render_compare_1.jpg` |
+B2 并发/续跑（A7） | 串行 248.7s → 4 路 **44.2s（5.63×）**，8 张 ¥0.40；**续跑 10.0s / 命中 2 / ¥0** |
+B3 清单收口 | `docs/20` 10 条未勾已处理（5 条完成 · 多参考图判定不做 · refined26 不入库）；`library/report` 4 个新旧 workdir 兼容 OK |
+
+证据：`research/experiments/2026-11-16/{A6_local_cloud,A7_bench_parallel}.json` ·
+`outputs/_FINAL60/delivery/render_compare_1.jpg`
+
 ### 测试
 
 新增 `shot_lexicon_check` 15 · `anchors_view_check` 12 · `camera_defaults_check` 12；
 全量 **3041/3028 + 架构守卫 PASS**
+
 
 ---
 
