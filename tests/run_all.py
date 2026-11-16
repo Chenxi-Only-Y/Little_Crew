@@ -172,6 +172,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("命令行与 HTTP 接口", [sys.executable, "-m", "little_crew.cli.check"], 71),
     ("运维 CLI（doctor/library/report）", [sys.executable, "-m", "little_crew.cli.ops_check"], 16),
     ("部署边界（镜像/外部服务）", [sys.executable, "-m", "little_crew.cli.deploy_check"], 23),
+    ("20 集批量回归（语料/汇总）", [sys.executable, "-m", "little_crew.cli.regression_check"], 14),
     ("对外接口面", [sys.executable, "-m", "little_crew.api.surface_check"], 19),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]

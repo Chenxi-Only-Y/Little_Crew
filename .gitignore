@@ -111,3 +111,6 @@ research/audio-track/*.partial.json
 # 证据留在各目录的 `*.json` 与顶层产物里，缓存不入库。
 research/**/cache/
 research/**/async-probe/cache/
+
+# 回归产物（每集工作目录很大）：只提交 stories/summary，工作目录放 outputs
+research/regression/*/eps/
