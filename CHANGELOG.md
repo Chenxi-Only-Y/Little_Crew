@@ -91,6 +91,7 @@ git config http.sslBackend openssl
 |---|---|
 B1 云端 vs 本地（A6） | 同 IR 2 镜：本地 **¥0**；首镜 71.7s（含加载）+ 温跑 7.6s，墙钟 79.3s；机器判定 角色 2/场景 1，质量 5 vs 4；并排对照图 `render_compare_1.jpg` |
 B2 并发/续跑（A7） | 串行 248.7s → 4 路 **44.2s（5.63×）**，8 张 ¥0.40；**续跑 10.0s / 命中 2 / ¥0** |
+B4 Server API 真机一集 | 起 `serve :8787` → `POST /v1/episode`（202+runId）→ 轮询 `succeeded`；2 镜/覆盖 1.0/41.96s/26 产物；缺 script/非法集号 → 400（`A9_api_episode.json`）
 B3 清单收口 | `docs/20` 10 条未勾已处理（5 条完成 · 多参考图判定不做 · refined26 不入库）；`library/report` 4 个新旧 workdir 兼容 OK |
 
 证据：`research/experiments/2026-11-16/{A6_local_cloud,A7_bench_parallel}.json` ·

@@ -1,0 +1,37 @@
+{
+  "kind": "experiment.A9.api_episode",
+  "date": "2026-11-16",
+  "server": "python -m little_crew.cli serve --host 127.0.0.1 --port 8787",
+  "healthz": {
+    "ok": true,
+    "version": "0.4.6"
+  },
+  "capabilities": {
+    "roster": 19,
+    "inChain": 11
+  },
+  "submit": {
+    "endpoint": "POST /v1/episode",
+    "http": 202,
+    "runId": "2543609047bf"
+  },
+  "poll": {
+    "finalState": "succeeded",
+    "wallS": 41.96
+  },
+  "result": {
+    "ok": true,
+    "rendered": 2,
+    "coverage": 1.0,
+    "cacheHits": 0
+  },
+  "artifacts": {
+    "count": 26,
+    "dir": "outputs\\_API_EPISODE\\delivery"
+  },
+  "boundaries": {
+    "missingScriptHttp": 400,
+    "invalidEpisodeIdHttp": 400
+  },
+  "note": "真实 HTTP + 真实云端渲染（2 镜）；不是假通道契约测试"
+}
