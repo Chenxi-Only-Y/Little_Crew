@@ -50,6 +50,7 @@ def main() -> int:
     print(); print("B. 演示素材")
     need = ["README.md", "01-报告页总览.jpg", "02-流水线图.jpg",
             "03-20集回归.jpg", "04-doctor.jpg", "05-交付物清单.jpg",
+            "06-容器冒烟.jpg",
             "demo_slideshow.mp4"]
     missing = [n for n in need if not (demo / n).is_file()]
     check("B1 ★★★ 素材目录齐全（6 张/段 + README）", not missing, str(missing))

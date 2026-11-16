@@ -23,7 +23,12 @@
 #
 # 注意：Windows 宿主上用 host.docker.internal 访问本机服务。
 
-FROM python:3.12-slim
+# 构建参数（国内网络可换镜像源；默认官方源）：
+#   docker build --build-arg APK_MIRROR=mirrors.aliyun.com \
+#                --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple .
+# 基础镜像用 Alpine：平台是纯 Python（零第三方运行依赖），Alpine 体积更小、apk 源更稳。
+ARG BASE_IMAGE=python:3.12-alpine
+FROM ${BASE_IMAGE}
 
 LABEL org.opencontainers.image.title="Little Crew" \
       org.opencontainers.image.description="AIGC 漫剧生成平台（API 与 CLI）" \
@@ -37,15 +42,22 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # 只装运行期依赖（零第三方依赖的核心层不需要额外包）
+ARG PIP_INDEX_URL=""
 COPY pyproject.toml README.md LICENSE /app/
 COPY src/ /app/src/
-RUN pip install --no-cache-dir -e . && \
-    python -c "import little_crew; print('little_crew import OK')"
+RUN if [ -n "$PIP_INDEX_URL" ]; then \
+        pip install --no-cache-dir --index-url "$PIP_INDEX_URL" -e . ; \
+    else \
+        pip install --no-cache-dir -e . ; \
+    fi && python -c "import little_crew; print('little_crew import OK')"
 
-# 可选：把 ffmpeg 带上（成片合成需要）
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg && \
-    rm -rf /var/lib/apt/lists/*
+# 可选：把 ffmpeg 带上（成片合成需要）。
+# `APK_MIRROR` 用于国内网络（默认官方源）：只替换源域名，不改任何依赖版本。
+ARG APK_MIRROR=""
+RUN if [ -n "$APK_MIRROR" ]; then \
+        sed -i "s|dl-cdn.alpinelinux.org|$APK_MIRROR|g" /etc/apk/repositories ; \
+    fi && \
+    apk add --no-cache ffmpeg
 
 COPY tools/ /app/tools/
 RUN mkdir -p /app/outputs

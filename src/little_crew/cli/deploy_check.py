@@ -35,7 +35,8 @@ def main() -> int:
 
     print(); print("A. Dockerfile：只装平台本体")
     check("A1 ★★★ 基础镜像与入口是平台 API",
-          "FROM python:" in docker and "little_crew.cli" in docker
+          ("FROM ${BASE_IMAGE}" in docker or "FROM python:" in docker)
+          and "little_crew.cli" in docker
           and "serve" in docker and "EXPOSE 8787" in docker, "")
     check("A2 ★★★ 装 FFmpeg（成片合成的平台依赖）",
           "ffmpeg" in docker, "")
@@ -50,6 +51,10 @@ def main() -> int:
           "HEALTHCHECK" in docker and "/healthz" in docker, "")
     check("A6 ★★ 注释里写明外置服务边界（不计入平台交付物）",
           "外置服务" in docker and "不计入平台交付物" in docker, "")
+    check("A7 ★★★ 基镜像用 Alpine（平台纯 Python，体积小）",
+          "python:3.12-alpine" in docker, "")
+    check("A8 ★★★ 支持国内镜像参数（APK_MIRROR / PIP_INDEX_URL，只换源不改依赖）",
+          "APK_MIRROR" in docker and "PIP_INDEX_URL" in docker, "")
 
     print(); print("B. .dockerignore：密钥/数据不进构建上下文")
     check("B1 ★★★ 排除 config 与 .env",

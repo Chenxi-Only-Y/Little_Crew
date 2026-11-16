@@ -57,6 +57,38 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-rc.6] — 2026-11-16（**Docker 实构建 + 冒烟通过；镜像 268MB**）
+
+### 实构建结果（本机 Docker 29.6.1）
+
+| 项 | 结果 |
+|---|---|
+基镜像 | `python:3.12-alpine`（平台纯 Python → 体积小、apk 源稳） |
+构建参数 | `--build-arg APK_MIRROR=mirrors.aliyun.com`（国内网络只换源域名） |
+构建耗时 | **269s** |
+**镜像大小** | **268 MB**（无模型/无外置服务） |
+容器 | `healthy`（镜像自带 `HEALTHCHECK /healthz`） |
+`/healthz` | **200** `{"ok": true, "version": "0.4.0-rc.5"}` |
+`/v1/capabilities` | roster=**19** · inChain=**11** |
+容器内 `doctor` | **blocking=0**；本地 5 项 ✅；local-gen/ComfyUI/TTS 全 ✗ 但 `external=True/blocking=False` |
+
+### Dockerfile 改进（部署可用性）
+
+- 基镜像改 **Alpine**（平台零第三方运行依赖）
+- 新增构建参数：`BASE_IMAGE` / `APK_MIRROR` / `PIP_INDEX_URL`（国内网络可构建，**只换镜像源、不改依赖版本**）
+
+### 测试
+
+`deploy_check` **25/25**（+Alpine 基镜像 / +国内镜像参数）
++ 全量 **2969/2956 + 架构守卫 PASS**
+
+### 证据
+
+`docs/21 §五`（实测表）· `research/demo/2026-11-16/06-容器冒烟.jpg` ·
+日志 `D:\AI\ds.8\附加脚本\logs\20261116_docker_{build,smoke}.log`
+
+---
+
 ## [0.4.0-rc.5] — 2026-11-16（**文档图重绘 + 演示素材**；0.4.0 门槛收尾）
 
 ### 文档图（13/14 重绘，不再写旧名册）
