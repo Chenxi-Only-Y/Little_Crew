@@ -57,6 +57,26 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.2] — 2026-11-16（密钥目录迁到 `D:\AI\ds.8\api key`）
+
+### 变更
+
+| 项 | 旧 | 新 |
+|---|---|---|
+秘密文件 | `D:\AI\_secrets\little-crew.env` | **`D:\AI\ds.8\api key\little-crew.env`** |
+
+- `config.py` 默认路径同步更新（仍可用 `LC_SECRETS_FILE` 覆盖）
+- 旧 `_secrets` 目录已删除（含空 backup）；文件迁移后 `env_value()` 全部正常
+- `secrets_check` **13/13** 仍通过（密钥在仓库外、受控文件无真实值、镜像不含 config）
+- **镜像不重建**：按策略只保留 `little-crew:0.4.1`，项目结束/里程碑统一更新（`docs/21 §八`）
+
+### ⚠️ 同步提醒
+
+`D:\AI\ds.8\api key` 与项目同属 `D:\AI\ds.8` 之下 ——
+**只同步 `Little_Crew/` 项目目录**；`api key` 文件夹本身**不要加入云同步/网盘备份**。
+
+---
+
 ## [0.4.1] — 2026-11-16（**安全补丁：API key 移出项目目录**）
 
 ### 为什么发这个补丁

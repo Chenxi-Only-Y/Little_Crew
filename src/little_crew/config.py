@@ -27,7 +27,7 @@
 
 项目外那份**从位置上就不可能进版本库**，不依赖任何规则记得写。
 
-默认路径 `D:\\AI\\_secrets\\little-crew.env`，可用 `LC_SECRETS_FILE`
+默认路径 `D:\\AI\\ds.8\\api key\\little-crew.env`，可用 `LC_SECRETS_FILE`
 环境变量指向别处（换机器/多项目共用时用得上）。
 
 **顺序说明**：`config/.env` 在秘密文件**之前** ——
@@ -210,7 +210,7 @@ def masked(keys: Iterable[str], root: Path | None = None) -> list[dict[str, str]
 #:
 #: 为什么不放 `config/`：那样"不进版本库"就只靠 `.gitignore` 记得写对。
 #: 放在项目外，从**位置**上就不可能被提交。
-_DEFAULT_SECRETS = Path(r"D:\AI\_secrets\little-crew.env")
+_DEFAULT_SECRETS = Path(r"D:\AI\ds.8\api key\little-crew.env")
 
 
 def secrets_path(root: Path | None = None) -> Path:
