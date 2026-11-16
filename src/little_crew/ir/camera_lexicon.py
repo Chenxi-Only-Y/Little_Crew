@@ -50,13 +50,20 @@ CAMERA_TABLES: dict[str, dict[str, tuple[str, str]]] = {
                   "135mm 长焦压缩，背景强分离"),
     },
     "aperture": {
+        # 2026-11-16 补常用档：真实 LLM 导演会写 f/1.8 / f/5.6 / f/16，
+        # 词表缺档会让"合法直觉"变成 F-PLAN 失败（实测踩到）。
+        "f1.2": ("f/1.2 aperture, ultra shallow depth of field, dreamy bokeh",
+                 "f/1.2 超大光圈，极浅景深，梦幻虚化"),
+        "f1.8": ("f/1.8 aperture, shallow depth of field", "f/1.8 光圈，浅景深"),
         "f1.4": ("f/1.4 aperture, shallow depth of field, creamy bokeh",
                  "f/1.4 大光圈，浅景深，柔和虚化"),
         "f2": ("f/2 aperture, shallow depth of field", "f/2 光圈，浅景深"),
         "f2.8": ("f/2.8 aperture, moderate background blur", "f/2.8 光圈，背景适度虚化"),
         "f4": ("f/4 aperture, balanced depth of field", "f/4 光圈，景深均衡"),
         "f8": ("f/8 aperture, deep focus, sharp environment", "f/8 光圈，深景深，环境清晰"),
+        "f5.6": ("f/5.6 aperture, moderate depth of field", "f/5.6 光圈，中景深"),
         "f11": ("f/11 aperture, deep focus", "f/11 光圈，深景深"),
+        "f16": ("f/16 aperture, very deep focus", "f/16 光圈，超深景深"),
     },
     "body": {
         "digital8k": ("shot on 8K digital cinema camera, clean detail",
