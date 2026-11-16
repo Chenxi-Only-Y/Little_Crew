@@ -42,8 +42,11 @@ def main() -> int:
     check("A1 ★★★ 覆盖六项（服务/key/模型/磁盘/ffmpeg）",
           set(names) >= {"ComfyUI", "TTS", "LLM key", "模型矩阵", "输出目录", "FFmpeg"},
           str(names))
-    check("A2 ★★★ 服务不通 -> 标记为阻塞",
-          any(c["name"] == "ComfyUI" and c["blocking"] for c in checks),
+    check("A2 ★★★ 外置服务（ComfyUI/local-gen）不通 -> 不阻塞",
+          any(c["name"] == "ComfyUI" and c.get("external")
+              and not c["blocking"] for c in checks)
+          and any(c["name"] == "local-gen" and c.get("external")
+                  and not c["blocking"] for c in checks),
           str([c for c in checks if c["name"] == "ComfyUI"])[:80])
     check("A3 ★★ 模型矩阵不该阻塞（只是提示）",
           not any(c["name"] == "模型矩阵" and c["blocking"] for c in checks), "")

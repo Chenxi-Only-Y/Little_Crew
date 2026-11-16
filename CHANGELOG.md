@@ -57,6 +57,41 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-rc.3] — 2026-11-16（**部署检查：镜像只装平台；local-gen 等为外置服务**）
+
+### 边界（本版核心口径）
+
+> **镜像只包含平台本体**。local-gen（本地出图 HTTP）/ ComfyUI / Breeze TTS / 模型权重
+> 都是**外置服务，不计入平台交付物**，按环境变量指过去。
+
+### doctor 按边界重做
+
+| 类别 | 阻塞？ |
+|---|---|
+**平台本体**（导入/名册/授权目录/输出目录/FFmpeg） | ✅ 必须 |
+**外置服务**（local-gen / ComfyUI / TTS） | ❌ 默认不阻塞，标 `[外置]` |
+**按需能力**（LLM key / 云端渲染 key / 配音） | 仅"这次要用"时（`LITTLE_CREW_NEED_*` / `RENDER_PATH`） |
+
+- 新增 `云端渲染 key` 检查（按 `LITTLE_CREW_RENDER_PATH=cloud` 才阻塞）
+- TTS 阻塞条件：`LITTLE_CREW_NEED_VOICE=1` **且**视频模型无原生音频
+- 摘要行：`外置服务 3 个（不计入平台交付物）：local-gen✗, ComfyUI✗, TTS✓`
+
+### 部署产物
+
+- `Dockerfile`：边界注释（外置服务清单）+ **HEALTHCHECK /healthz**；不 COPY 任何外部服务
+- `.dockerignore`：新增 `config` / `.env*` / `tests`（密钥与测试不进构建上下文）
+- `Makefile`：新增 `build` / `deploy-check`；episode 走 `--crew-profile`；help 数字更新
+- 新文档 `docs/21-部署与外部服务.md`（边界表 / 运行命令 / 外置服务清单 / doctor 语义）
+
+### 测试
+
+新增 `cli/deploy_check` **23/23**（镜像不含外部服务/健康检查/密钥不进上下文/
+Makefile 目标/文档边界/doctor 外置不阻塞/按需阻塞）
++ `ops_check` 更新为"外置服务不阻塞" 16/16
++ 全量 **2943/2930 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-rc.2] — 2026-11-16（**B1 报告页：新产物 + 静态流水线图**）
 
 ### 新增（报告页，`runtime/report_html.py`）

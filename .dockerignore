@@ -2,6 +2,17 @@
 # 平台本体只需要 src/ + pyproject + tools；其余是产物、存档与本地环境。
 .git
 .gitignore
+# 密钥/配置不进构建上下文（容器用环境变量注入）
+config
+config/**
+.env
+.env.*
+*.env
+# 测试与本地数据
+tests
+tests/**
+assets/cache
+assets/cache/**
 .venv
 .venv/**
 .idea

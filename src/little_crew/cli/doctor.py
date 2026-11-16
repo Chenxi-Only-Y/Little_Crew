@@ -123,21 +123,115 @@ def _llm_keys() -> tuple[bool, str]:
     return bool(have), ("有：" + ", ".join(have)) if have else "一个都没有（--llm 跑不了）"
 
 
+def _platform_ok() -> tuple[bool, str]:
+    """平台本体：导入 + 版本（**这是唯一必装的**）。"""
+    try:
+        from little_crew.version import PEP440_VERSION, VERSION
+
+        return True, f"little_crew {VERSION}（PEP440 {PEP440_VERSION}）"
+    except Exception as exc:                                  # noqa: BLE001
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def _roster_ok() -> tuple[bool, str]:
+    """名册契约：19 位 + 依赖闭合（平台本体的一部分）。"""
+    try:
+        from little_crew.agent.roster import DEFAULT_ROSTER, validate_roster
+
+        errs = validate_roster(DEFAULT_ROSTER)
+        return (not errs), (f"{len(DEFAULT_ROSTER)} 位" if not errs
+                            else f"校验失败：{'; '.join(errs[:2])}")
+    except Exception as exc:                                  # noqa: BLE001
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def _license_ok() -> tuple[bool, str]:
+    """授权目录可读（平台内置；不联网）。"""
+    try:
+        from little_crew.governance.license import LICENSE_CATALOG
+
+        n = len(LICENSE_CATALOG)
+        unv = sum(1 for v in LICENSE_CATALOG.values() if not v.verified)
+        return True, f"{n} 条（未核实 {unv} 条；未核实需显式接受风险）"
+    except Exception as exc:                                  # noqa: BLE001
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def _need(env: str, default: bool = False) -> bool:
+    """按需阻塞开关：`LITTLE_CREW_NEED_LLM=1` / `LITTLE_CREW_NEED_VOICE=1`。
+
+    外置服务（TTS/local-gen/ComfyUI）默认**不阻塞**：它们不计入平台交付物，
+    只在"这次真的要用"时才要求可达（否则容器里永远 doctor 不过）。
+    """
+    v = str(_cfg(env, "") or os.environ.get(env, "") or "").strip().lower()
+    if not v:
+        return default
+    return v not in ("0", "false", "no", "off")
+
+
+def _external(name: str, url: str, path: str, *,
+              blocking: bool = False, hint: str = "") -> dict[str, Any]:
+    ok, why = _http_ok(url)
+    detail = f"{url} · {why}"
+    if hint:
+        detail += f" · {hint}"
+    return {"name": name, "ok": ok, "blocking": bool(blocking and not ok),
+            "external": True, "path": path, "detail": detail}
+
+
 def run_checks() -> list[dict[str, Any]]:
-    root = Path(os.environ.get("LITTLE_CREW_OUTPUTS") or "outputs")
+    """环境自检。
+
+    ## 分层（2026-11-16 按部署边界重做）
+
+    | 类别 | 阻塞？ | 例子 |
+    |---|---|---|
+    **平台本体** | ✅ 必须 | 导入/版本、名册契约、输出目录、FFmpeg、授权目录 |
+    **外置服务** | ❌ 默认不阻塞 | local-gen（出图）、ComfyUI、Breeze TTS —— **不计入平台交付物** |
+    **按需能力** | 仅"这次要用"时 | 云端渲染 key、LLM key、配音（`_NEED_*` 开关） |
+
+    外置服务挂了只影响对应路径；平台本体应该能独立部署与升级。
+    """
+    from pathlib import Path
+
+    root = Path(os.environ.get("LITTLE_CREW_OUTPUTS_DIR")
+                or os.environ.get("OUTPUTS_DIR") or "outputs")
     comfy = (_cfg("COMFYUI_ENDPOINT", "http://127.0.0.1:8188")
              or "http://127.0.0.1:8188").rstrip("/")
     tts = (_cfg("BREEZE_TTS_ENDPOINT", "http://127.0.0.1:8110")
            or "http://127.0.0.1:8110").rstrip("/")
+    localgen = (_cfg("LITTLE_CREW_IMAGE_ENDPOINT", "")
+                or _cfg("IMAGE_API_ENDPOINT", "")
+                or "http://127.0.0.1:8100").rstrip("/")
 
     checks: list[dict[str, Any]] = []
 
-    ok, why = _http_ok(comfy + "/system_stats")
-    checks.append({"name": "ComfyUI", "ok": ok, "blocking": ok is False,
-                   "detail": f"{comfy} · {why}"})
+    # ---- 平台本体（阻塞项）----
+    ok, why = _platform_ok()
+    checks.append({"name": "平台导入", "ok": ok, "blocking": not ok,
+                   "external": False, "detail": why})
+    ok, why = _roster_ok()
+    checks.append({"name": "名册契约", "ok": ok, "blocking": not ok,
+                   "external": False, "detail": why})
+    ok, why = _license_ok()
+    checks.append({"name": "授权目录", "ok": ok, "blocking": not ok,
+                   "external": False, "detail": why})
+    ok, why = _disk_ok(root)
+    checks.append({"name": "输出目录", "ok": ok, "blocking": not ok,
+                   "external": False, "detail": f"{root} · {why}"})
+    ok, why = _ffmpeg_ok()
+    checks.append({"name": "FFmpeg", "ok": ok, "blocking": not ok,
+                   "external": False, "detail": why})
 
-    ok2, why2 = _http_ok(tts + "/health")
-    # 2026-11-16：**TTS 是兜底** —— 视频模型原生有音轨就不需要它。
+    # ---- 外置服务（默认不阻塞，不计入平台交付物）----
+    checks.append(_external(
+        "local-gen", localgen, "render.image",
+        hint="外置出图服务（不计入平台）；--render-path local 时需要"))
+    checks.append(_external(
+        "ComfyUI", comfy + "/system_stats", "render.comfyui",
+        hint="外置可选（不计入平台）"))
+
+    # ---- 按需能力 ----
     _vmid = (_cfg("LITTLE_CREW_VIDEO_MODEL", "") or "")
     _na = False
     try:
@@ -146,41 +240,41 @@ def run_checks() -> list[dict[str, Any]]:
         _na = bool(native_audio_for(str(_vmid)).get("nativeAudio"))
     except Exception:                                         # noqa: BLE001
         _na = False
-    if _na:
-        checks.append({"name": "TTS", "ok": True, "blocking": False,
-                       "detail": (f"视频模型 {_vmid} 原生输出音轨 → 不需要 TTS；"
-                                  f"{tts} · {why2}（可选）")})
-    else:
-        _hint = ("启动：D:\AI\local-ai\tts\bin\breeze-tts-2-v0.1.6-windows-x64-vulkan"
-                 "\breeze-server.exe models\breeze-tts-2-q8_0.gguf --port 8110")
-        checks.append({"name": "TTS", "ok": ok2, "blocking": ok2 is False,
-                       "detail": f"{tts} · {why2}"
-                                 + ("" if ok2 else f" · 需要配音时请启动：{_hint}")})
+    _need_voice = _need("LITTLE_CREW_NEED_VOICE") and not _na
+    checks.append(_external(
+        "TTS", tts + "/health", "audio.tts", blocking=_need_voice,
+        hint=("视频模型原生音轨 → 不需要 TTS"
+              if _na else
+              ("需要外部配音（LITTLE_CREW_NEED_VOICE=1）" if _need_voice
+               else "外置可选（不计入平台）；需要外部配音时设 LITTLE_CREW_NEED_VOICE=1"))))
 
     ok3, why3 = _llm_keys()
-    checks.append({"name": "LLM key", "ok": ok3, "blocking": ok3 is False,
-                   "detail": why3})
+    checks.append({"name": "LLM key", "ok": ok3,
+                   "blocking": (_need("LITTLE_CREW_NEED_LLM") and not ok3),
+                   "external": False, "detail": why3})
+
+    # 云端渲染：用户选定云端路径时才要求 key（否则只是提示）
+    _rp = str(_cfg("LITTLE_CREW_RENDER_PATH", "") or "").strip().lower()
+    _cloud_key = bool(_cfg("DASHSCOPE_API_KEY") or _cfg("SUDORELAY_API_KEY"))
+    checks.append({"name": "云端渲染 key", "ok": _cloud_key,
+                   "blocking": (_rp == "cloud" and not _cloud_key),
+                   "external": False,
+                   "detail": (("已配置" if _cloud_key else
+                               "未配置（--render-path cloud 需要 DASHSCOPE/SUDORELAY key）")
+                              + (f" · 当前路径={_rp}" if _rp else " · 未固定渲染路径"))})
 
     ok4, why4 = _registry_matrix()
     checks.append({"name": "模型矩阵", "ok": ok4, "blocking": False,
-                   "detail": why4})
+                   "external": False, "detail": why4})
 
-    ok5, why5 = _disk_ok(root)
-    checks.append({"name": "输出目录", "ok": ok5, "blocking": ok5 is False,
-                   "detail": f"{root} · {why5}"})
-
-    ok6, why6 = _ffmpeg_ok()
-    checks.append({"name": "FFmpeg", "ok": ok6, "blocking": ok6 is False,
-                   "detail": why6})
-
-    # 自定义供应商（2026-11-13）：**不阻塞**（用户可选），但必须列出来 ——
-    # 否则"我配了怎么没生效"只能靠猜。
+    # 自定义供应商（2026-11-13）：不阻塞，但必须列出来
     try:
         from little_crew.models.custom_providers import describe as _desc
 
         info = _desc()
         if not info["exists"]:
             checks.append({"name": "自定义供应商", "ok": True, "blocking": False,
+                           "external": False,
                            "detail": f"未配置（{info['path']}）"})
         else:
             parts = []
@@ -193,9 +287,10 @@ def run_checks() -> list[dict[str, Any]]:
             if bad:
                 detail += f" · ⚠️ {len(bad)} 条问题"
             checks.append({"name": "自定义供应商", "ok": not bad, "blocking": False,
-                           "detail": detail[:160]})
+                           "external": False, "detail": detail[:160]})
     except Exception as exc:                                  # noqa: BLE001
         checks.append({"name": "自定义供应商", "ok": False, "blocking": False,
+                       "external": False,
                        "detail": f"读取失败：{type(exc).__name__}: {exc}"})
     return checks
 
@@ -219,8 +314,13 @@ def main(argv=None) -> int:
     print("=" * 66)
     for c in checks:
         mark = "✅" if c["ok"] else ("⛔" if c["blocking"] else "⚠️")
-        print(f"  {mark} {c['name']:<10} {c['detail']}")
+        tag = " [外置]" if c.get("external") else ""
+        print(f"  {mark} {c['name']:<10}{tag} {c['detail']}")
     print("=" * 66)
+    _ext = [c for c in checks if c.get("external")]
+    if _ext:
+        print(f"  外置服务 {len(_ext)} 个（不计入平台交付物）："
+              + ", ".join(f"{c['name']}{'✓' if c['ok'] else '✗'}" for c in _ext))
     if blocking:
         print(f"  阻塞项 {len(blocking)} 个：{', '.join(c['name'] for c in blocking)}")
         print("  起服务：见 docs/16「开工检查」；端口不对用环境变量改")

@@ -1,8 +1,15 @@
-# 平台 API 容器（2026-11-12）
+# 平台 API 容器（2026-11-12，2026-11-16 明确外部服务边界）
 #
-# 说明（重要）：**这个镜像只包含平台本体**，不含 ComfyUI / TTS / 模型权重。
-# 那三样是外部服务，按下面的环境变量指过去：
-#   COMFYUI_ENDPOINT / BREEZE_TTS_ENDPOINT / IMAGE_API_ENDPOINT ...
+# 说明（重要）：**这个镜像只包含平台本体**，不含任何生成/语音服务与模型权重。
+#
+# 外置服务（**不计入平台交付物**，按环境变量指过去）：
+#   local-gen（本地出图）   LITTLE_CREW_IMAGE_ENDPOINT=http://host.docker.internal:8100
+#   ComfyUI（可选）        COMFYUI_ENDPOINT=http://host.docker.internal:8188
+#   Breeze TTS（可选）     BREEZE_TTS_ENDPOINT=http://host.docker.internal:8110
+#   （视频模型原生音频时不需要 TTS；云端渲染只需 DASHSCOPE/SUDORELAY key）
+#
+# 为什么这样切：模型与服务动辄几十 GB，塞进镜像既不可维护，也和
+# "本地/云端可切换"的通道设计冲突 —— 平台本体必须能独立部署与升级。
 # 这样做是有意的：模型动辄几十 GB，塞进镜像既不可维护，也和"本地/云端可切换"的
 # 通道设计冲突 —— 平台本体应当能独立部署与升级。
 #
@@ -42,6 +49,10 @@ RUN apt-get update && \
 
 COPY tools/ /app/tools/
 RUN mkdir -p /app/outputs
+
+# 健康检查（平台本体不依赖外置服务，容器能起就算健康）
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8787/healthz', timeout=3).status==200 else 1)"
 
 EXPOSE 8787
 
