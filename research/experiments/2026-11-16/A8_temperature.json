@@ -1,0 +1,66 @@
+{
+  "kind": "experiment.A8.temperature",
+  "date": "2026-11-16",
+  "model": "deepseek-flash",
+  "promptChars": 140,
+  "note": "n=2/温度；只是稳定性代理，非质量评分",
+  "results": {
+    "0.7": [
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 268,
+        "latencyS": 2.5,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头看列车进站\"},{\"size\":\"medium\",\"desc\":\"人群在黄线后等待，风吹动她的发梢\"}]},{\"scene_id\":\"S02\",\"heading\":\"街道·雨夜\",\"shots\":[{\"size\":\"full\",\"desc\":\"少女独自撑伞走过湿漉漉的街道\"},{\"size\":\"close\",\"desc\":\"伞沿滴下水珠，她看向远处霓虹\"}]}]}"
+      },
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 283,
+        "latencyS": 1.9,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头望向进站列车，眼中映出灯光\"},{\"size\":\"medium\",\"desc\":\"她握紧书包带，人群从身后匆匆经过\"}]},{\"scene_id\":\"S02\",\"heading\":\"公寓客厅·清晨\",\"shots\":[{\"size\":\"full\",\"desc\":\"少年独自坐在沙发上，晨光铺满凌乱桌面\"},{\"size\":\"close\",\"desc\":\"手机屏幕亮起，显示一条未读消息\"}]}]}"
+      },
+      {
+        "repeatSimilarity": 0.711
+      }
+    ],
+    "1.0": [
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 243,
+        "latencyS": 2.0,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头看列车\"},{\"size\":\"medium\",\"desc\":\"人群在黄线后等待\"}]},{\"scene_id\":\"S02\",\"heading\":\"街道·雨\",\"shots\":[{\"size\":\"full\",\"desc\":\"少年撑伞跑过积水\"},{\"size\":\"close\",\"desc\":\"伞沿雨滴落下\"}]}]}"
+      },
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 244,
+        "latencyS": 2.2,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头看列车\"},{\"size\":\"medium\",\"desc\":\"列车进站带起风\"}]},{\"scene_id\":\"S02\",\"heading\":\"街道·雨夜\",\"shots\":[{\"size\":\"full\",\"desc\":\"少女撑伞站在路灯下\"},{\"size\":\"close\",\"desc\":\"雨滴落在伞沿\"}]}]}"
+      },
+      {
+        "repeatSimilarity": 0.821
+      }
+    ],
+    "1.5": [
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 277,
+        "latencyS": 2.0,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头看向进站列车，眼神紧张\"},{\"size\":\"medium\",\"desc\":\"她握紧书包带，站台灯影在身后拉长\"}]},{\"scene_id\":\"S02\",\"heading\":\"空旷街道·深夜\",\"shots\":[{\"size\":\"full\",\"desc\":\"少女独自跑过昏黄路灯下的街道\"},{\"size\":\"close\",\"desc\":\"她回头张望，手机屏幕在掌中亮起\"}]}]}"
+      },
+      {
+        "ok": true,
+        "jsonValid": true,
+        "chars": 252,
+        "latencyS": 1.6,
+        "text": "{\"scenes\":[{\"scene_id\":\"S01\",\"heading\":\"地铁站台·夜\",\"shots\":[{\"size\":\"close\",\"desc\":\"少女抬头看列车\"},{\"size\":\"medium\",\"desc\":\"男人穿过人群望向她\"}]},{\"scene_id\":\"S02\",\"heading\":\"旧公寓走廊·清晨\",\"shots\":[{\"size\":\"full\",\"desc\":\"少女推开门走入长廊\"},{\"size\":\"close\",\"desc\":\"她握紧钥匙停住脚步\"}]}]}"
+      },
+      {
+        "repeatSimilarity": 0.473
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "kind": "experiment.A2.camera",
+  "date": "2026-11-16",
+  "note": "灰度相关代理；构图人工评分 pending",
+  "arms": {
+    "free_text": {
+      "ok": 2,
+      "total": 2,
+      "promptHasCamera": true,
+      "cameraText": "镜头用近景，稍微推近一点，景深浅一些，像是人眼平视的感觉。",
+      "costCny": 0.1,
+      "records": [
+        {
+          "shotId": "A2_站台_1_free_text",
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A2_站台_1_free_text_cloud.png"
+        },
+        {
+          "shotId": "A2_站台_2_free_text",
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A2_站台_2_free_text_cloud.png"
+        }
+      ]
+    },
+    "lexicon": {
+      "ok": 2,
+      "total": 2,
+      "promptHasCamera": true,
+      "cameraText": "50mm 定焦，f/1.8，全画幅，35mm 等效，平视。",
+      "costCny": 0.1,
+      "records": [
+        {
+          "shotId": "A2_站台_1_lexicon",
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A2_站台_1_lexicon_cloud.png"
+        },
+        {
+          "shotId": "A2_站台_2_lexicon",
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A2_站台_2_lexicon_cloud.png"
+        }
+      ]
+    },
+    "crossArmSim": [
+      0.11,
+      0.101
+    ],
+    "crossArmSimMean": 0.106
+  }
+}

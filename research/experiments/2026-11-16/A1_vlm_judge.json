@@ -1,0 +1,101 @@
+{
+  "kind": "experiment.A1.vlm_judge",
+  "date": "2026-11-16",
+  "model": "vlm-judge-cloud(qwen3-vl-plus)",
+  "temperature": 0.2,
+  "note": "机器判定，非人工盲评",
+  "arms": {
+    "no_injection": {
+      "scores": [
+        {
+          "sameCharacter": 0,
+          "sameScene": 1,
+          "sameOutfit": 0,
+          "scene": "站台",
+          "composite": "outputs\\_AEXP\\A1vlm_no_injection_站台.jpg"
+        },
+        {
+          "sameCharacter": 2,
+          "sameScene": 1,
+          "sameOutfit": 2,
+          "scene": "走廊",
+          "composite": "outputs\\_AEXP\\A1vlm_no_injection_走廊.jpg"
+        }
+      ],
+      "means": {
+        "sameCharacter": 1.0,
+        "sameScene": 1.0,
+        "sameOutfit": 1.0
+      }
+    },
+    "anchor_only": {
+      "scores": [
+        {
+          "sameCharacter": 2,
+          "sameScene": 1,
+          "sameOutfit": 2,
+          "scene": "站台",
+          "composite": "outputs\\_AEXP\\A1vlm_anchor_only_站台.jpg"
+        },
+        {
+          "sameCharacter": 2,
+          "sameScene": 1,
+          "sameOutfit": 2,
+          "scene": "走廊",
+          "composite": "outputs\\_AEXP\\A1vlm_anchor_only_走廊.jpg"
+        }
+      ],
+      "means": {
+        "sameCharacter": 2.0,
+        "sameScene": 1.0,
+        "sameOutfit": 2.0
+      }
+    },
+    "anchor_scene": {
+      "scores": [
+        {
+          "sameCharacter": 2,
+          "sameScene": 2,
+          "sameOutfit": 2,
+          "scene": "站台",
+          "composite": "outputs\\_AEXP\\A1vlm_anchor_scene_站台.jpg"
+        },
+        {
+          "sameCharacter": 2,
+          "sameScene": 2,
+          "sameOutfit": 1,
+          "scene": "走廊",
+          "composite": "outputs\\_AEXP\\A1vlm_anchor_scene_走廊.jpg"
+        }
+      ],
+      "means": {
+        "sameCharacter": 2.0,
+        "sameScene": 2.0,
+        "sameOutfit": 1.5
+      }
+    },
+    "full": {
+      "scores": [
+        {
+          "sameCharacter": 2,
+          "sameScene": 2,
+          "sameOutfit": 2,
+          "scene": "站台",
+          "composite": "outputs\\_AEXP\\A1vlm_full_站台.jpg"
+        },
+        {
+          "sameCharacter": 2,
+          "sameScene": 2,
+          "sameOutfit": 2,
+          "scene": "走廊",
+          "composite": "outputs\\_AEXP\\A1vlm_full_走廊.jpg"
+        }
+      ],
+      "means": {
+        "sameCharacter": 2.0,
+        "sameScene": 2.0,
+        "sameOutfit": 2.0
+      }
+    }
+  }
+}

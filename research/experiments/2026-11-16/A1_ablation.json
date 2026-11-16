@@ -1,0 +1,177 @@
+{
+  "kind": "experiment.A1.ablation",
+  "date": "2026-11-16",
+  "note": "灰度相关代理（n=2 对）；人工一致性评分 pending",
+  "arms": {
+    "no_injection": {
+      "ok": 4,
+      "total": 4,
+      "scenePairSim": [
+        -0.056,
+        0.038
+      ],
+      "scenePairSimMean": -0.009,
+      "sceneTextIdentical": false,
+      "costCny": 0.2,
+      "seconds": 131.8
+    },
+    "anchor_only": {
+      "ok": 4,
+      "total": 4,
+      "scenePairSim": [
+        0.029,
+        -0.106
+      ],
+      "scenePairSimMean": -0.038,
+      "sceneTextIdentical": false,
+      "costCny": 0.2,
+      "seconds": 165.1
+    },
+    "anchor_scene": {
+      "ok": 4,
+      "total": 4,
+      "scenePairSim": [
+        -0.037,
+        0.056
+      ],
+      "scenePairSimMean": 0.01,
+      "sceneTextIdentical": true,
+      "costCny": 0.2,
+      "seconds": 197.7
+    },
+    "full": {
+      "ok": 4,
+      "total": 4,
+      "scenePairSim": [
+        -0.063,
+        0.141
+      ],
+      "scenePairSimMean": 0.039,
+      "sceneTextIdentical": true,
+      "costCny": 0.2,
+      "seconds": 171.7
+    }
+  },
+  "records": {
+    "no_injection": [
+      {
+        "shotId": "A1_站台_1_no_injection",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_1_no_injection_cloud.png",
+        "anchorUsed": false,
+        "secondsWall": 35.1
+      },
+      {
+        "shotId": "A1_站台_2_no_injection",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_2_no_injection_cloud.png",
+        "anchorUsed": false,
+        "secondsWall": 32.7
+      },
+      {
+        "shotId": "A1_走廊_1_no_injection",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_1_no_injection_cloud.png",
+        "anchorUsed": false,
+        "secondsWall": 32.6
+      },
+      {
+        "shotId": "A1_走廊_2_no_injection",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_2_no_injection_cloud.png",
+        "anchorUsed": false,
+        "secondsWall": 31.4
+      }
+    ],
+    "anchor_only": [
+      {
+        "shotId": "A1_站台_1_anchor_only",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_1_anchor_only_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 42.3
+      },
+      {
+        "shotId": "A1_站台_2_anchor_only",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_2_anchor_only_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 48.7
+      },
+      {
+        "shotId": "A1_走廊_1_anchor_only",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_1_anchor_only_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 36.4
+      },
+      {
+        "shotId": "A1_走廊_2_anchor_only",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_2_anchor_only_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 37.7
+      }
+    ],
+    "anchor_scene": [
+      {
+        "shotId": "A1_站台_1_anchor_scene",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_1_anchor_scene_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 55.1
+      },
+      {
+        "shotId": "A1_站台_2_anchor_scene",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_2_anchor_scene_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 45.0
+      },
+      {
+        "shotId": "A1_走廊_1_anchor_scene",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_1_anchor_scene_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 43.8
+      },
+      {
+        "shotId": "A1_走廊_2_anchor_scene",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_2_anchor_scene_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 53.8
+      }
+    ],
+    "full": [
+      {
+        "shotId": "A1_站台_1_full",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_1_full_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 37.4
+      },
+      {
+        "shotId": "A1_站台_2_full",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_站台_2_full_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 40.0
+      },
+      {
+        "shotId": "A1_走廊_1_full",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_1_full_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 47.5
+      },
+      {
+        "shotId": "A1_走廊_2_full",
+        "ok": true,
+        "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_AEXP\\A1_走廊_2_full_cloud.png",
+        "anchorUsed": true,
+        "secondsWall": 46.8
+      }
+    ]
+  }
+}
