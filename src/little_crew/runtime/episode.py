@@ -299,6 +299,12 @@ class EpisodeResult:
     #: 相机参数台账（2026-11-15）：`{shotId: {focal,...}}`（空 = 未启用）。
     camera: dict[str, Any] = field(default_factory=dict)
 
+    #: 剧组编制（2026-11-16）：`{preset,hash,active,skipped,autoAdded,verification,level}`。
+    crew: dict[str, Any] = field(default_factory=dict)
+
+    #: 无限画布后端图（2026-11-16）：`delivery/pipeline.graph.json` 的相对路径。
+    pipeline_graph: str = ""
+
     #: 造型使用台账（2026-11-15）：`{shotId: {variant, characters, anchors}}`。
     costumes: dict[str, Any] = field(default_factory=dict)
 
@@ -365,6 +371,8 @@ class EpisodeResult:
             "continuity": dict(getattr(self, "continuity", {}) or {}),
             "deliveryMeta": dict(getattr(self, "delivery_meta", {}) or {}),
             "costumes": dict(getattr(self, "costumes", {}) or {}),
+            "crew": dict(getattr(self, "crew", {}) or {}),
+            "pipelineGraph": str(getattr(self, "pipeline_graph", "") or ""),
             "camera": dict(getattr(self, "camera", {}) or {}),
             "sceneCards": dict(getattr(self, "scene_cards", {}) or {}),
             "sceneDesign": dict(getattr(self, "scene_design", {}) or {}),
@@ -2029,6 +2037,23 @@ class EpisodeRunner:
         self._stage_delivery_meta(picked, per_shot_artifacts)
         self._stage_compliance(picked, per_shot_artifacts)
 
+        # ---- 无限画布后端（2026-11-16）：依赖图落盘 ----
+        # 放在合规之后：图里要带"这轮到底产出了哪些证据"。
+        try:
+            from little_crew.agent.roster import DEFAULT_ROSTER as _ROSTER_G
+            from little_crew.runtime import pipeline_graph as _pg
+
+            _wd_g = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _wd_g:
+                _g = _pg.build_graph(
+                    roster=_ROSTER_G,
+                    crew=dict(getattr(self, "crew_profile", None) or {}),
+                    workdir=_wd_g, episode_id=self.episode_id)
+                _pg.write_graph(_wd_g, _g)
+                self._pipeline_graph_path = "delivery/pipeline.graph.json"
+        except Exception as _e_g:                             # noqa: BLE001
+            print(f"  ⚠️ 画布依赖图未生成：{type(_e_g).__name__}: {_e_g}")
+
         # ---- 人工 Gate（2026-11-08）----
         #
         # 机器只判"有没有/崩没崩"，判不了"能不能给人看"。
@@ -2096,6 +2121,8 @@ class EpisodeRunner:
             continuity=dict(getattr(self, "_continuity_report", {}) or {}),
             delivery_meta=dict(getattr(self, "_delivery_meta", {}) or {}),
             costumes=dict(getattr(self, "_outfits_used", {}) or {}),
+            crew=dict(getattr(self, "crew_profile", None) or {}),
+            pipeline_graph=str(getattr(self, "_pipeline_graph_path", "") or ""),
             wall_seconds=time.perf_counter() - t0)
 
     # ---- 视频合成 ------------------------------------------------------
@@ -4065,6 +4092,10 @@ class EpisodeRunner:
     costume_map: Any = None
     #: 造型资产表（惰性发现）：`{角色: {variant: {image, appearance, name}}}`。
     outfit_table: Any = None
+
+    #: 剧组编制（2026-11-16）：`resolve()` 的结果；由入口在绑定前注入。
+    #: 报告里会带 `active/skipped/autoAdded/hash/verification/level`。
+    crew_profile: Any = None
 
     # ---- 空间控制：白模 ------------------------------------------------
 

@@ -252,6 +252,15 @@ def main(argv: list[str] | None = None) -> int:
                     help="云端整集跑完后，用同一批 IR 本地再渲一遍做同镜对照（B3）")
     ap.add_argument("--style-hint", default="",
                     help="统一画风提示（拼进每镜云端提示词，保证一集风格一致）")
+    ap.add_argument("--crew-profile", default="standard", dest="crew_profile",
+                    choices=("minimal", "standard", "full", "custom"),
+                    help="剧组编制模板：minimal/standard/full/custom（职业可选）")
+    ap.add_argument("--crew-add", default="", dest="crew_add",
+                    help="逗号分隔：额外启用的职位")
+    ap.add_argument("--crew-remove", default="", dest="crew_remove",
+                    help="逗号分隔：要移除的职位（核心/商用合规不可移）")
+    ap.add_argument("--commercial", action="store_true", dest="commercial",
+                    help="商用模式：强制启用合规官（版权/授权/标识）")
     ap.add_argument("--render-path", default="local",
                     choices=("local", "cloud"),
                     help="渲染路径（用户显式选）：local=本地；cloud=整集云端图生图（需 --cast-anchor 锁脸）")
@@ -374,6 +383,38 @@ def main(argv: list[str] | None = None) -> int:
     # 为什么一次只换一个：接真模型的问题几乎都出在提示词与输出结构上，
     # 而"五个一起换"会让归因变成猜 —— 出了问题不知道是谁的。
     stubs = default_crew_stubs()
+
+    # ---- 剧组编制（2026-11-16）：职业可选 + 依赖闭包 ----
+    from little_crew.runtime import crew_profile as _cp
+
+    _crew = _cp.resolve(
+        profile=str(getattr(args, "crew_profile", "standard") or "standard"),
+        add=[x for x in str(getattr(args, "crew_add", "") or "").split(",")
+             if x.strip()],
+        remove=[x for x in str(getattr(args, "crew_remove", "") or "").split(",")
+                if x.strip()],
+        commercial=bool(getattr(args, "commercial", False)))
+    if not _crew["ok"]:
+        print("  ❌ 编制不可用：" + "；".join(_crew["errors"]))
+        raise SystemExit(2)
+    print(f"  剧组编制：{_crew['preset']} · 启用 {len(_crew['active'])} 位"
+          + (f" · 自动补齐 {','.join(_crew['autoAdded'])}" if _crew["autoAdded"] else "")
+          + f" · 验证级别 {_crew['level']}")
+    if _crew["unverified"]:
+        print("  ⚠️ 未验证项：" + ",".join(_crew["unverified"])
+              + "（报告标 unverified，不当通过）")
+    # 功能开关与编制联动：职位没选，对应功能也关（不许"偷偷跑"）
+    if not _cp.feature_allowed(_crew, "character_designer"):
+        args.char_sheets = False
+    if not _cp.feature_allowed(_crew, "cover_designer"):
+        args.cover = False
+    if not _cp.feature_allowed(_crew, "dialogue_editor"):
+        args.voice = False
+    if not _cp.feature_allowed(_crew, "camera_operator"):
+        args.video_mode = False
+    if not _cp.feature_allowed(_crew, "previs"):
+        args.llm_previs = False
+
     if args.llm:
         from little_crew.agent.crew_llm import DramaturgeLlm, ScreenwriterLlm
         from little_crew.agent.llm import LlmClient
@@ -606,6 +647,9 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as _e_qc0:                                # noqa: BLE001
         print(f"  ⚠️ 质检员装配失败：{type(_e_qc0).__name__}: {_e_qc0}")
 
+    _rm = _cp.apply_to_stubs(stubs, _crew)["removed"]
+    if _rm:
+        print("  编制裁剪：未绑定 " + ",".join(_rm))
     orch.bind_many(stubs)
 
     # ---------- 装配渲染 ----------
@@ -824,6 +868,7 @@ def main(argv: list[str] | None = None) -> int:
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.workdir = work
+    runner.crew_profile = _crew
     # ⚠️ 调试开关：只为验证下游链路，**正式跑不要开**。
     # 开了之后 `scriptVerdict` 仍会如实显示 REVISE —— 不掩盖剧本没过这一事实。
     runner.force_accept_script = bool(args.accept_script)

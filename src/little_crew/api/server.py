@@ -519,7 +519,18 @@ class _Handlers:
                                         episode_id=ep_id))
 
         orch = CrewOrchestrator(max_rounds=3, model_families={})
-        orch.bind_many(default_crew_stubs())
+        _stubs0 = default_crew_stubs()
+        from little_crew.runtime import crew_profile as _cp0
+
+        _crew0 = _cp0.resolve(
+            profile=str(body.get("crewProfile") or "standard"),
+            add=body.get("crewAdd") or (),
+            remove=body.get("crewRemove") or (),
+            commercial=bool(body.get("commercial", False)))
+        if not _crew0["ok"]:
+            raise RuntimeError("编制不可用：" + "；".join(_crew0["errors"]))
+        _cp0.apply_to_stubs(_stubs0, _crew0)
+        orch.bind_many(_stubs0)
 
         class _R(EpisodeRunner):
             def engine_backend(self) -> Any:
@@ -527,6 +538,7 @@ class _Handlers:
 
         runner = _R(orch, renderer, episode_id=ep_id, title=f"API {ep_id}")
         runner.workdir = out
+        runner.crew_profile = _crew0
         runner.engine_steps = steps
         runner.engine_seed = seed
         runner.verify_artifacts = gate

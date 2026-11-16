@@ -57,6 +57,37 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-beta.48] — 2026-11-16（**剧组编制（职业可选）+ 无限画布后端**）
+
+### ① 职业可选：crew profile
+
+| 模板 | 内容 | 验证级别 |
+|---|---|---|
+`minimal` | 编剧+分镜（闭包补角色/场景设计） | **draft** |
+`standard` | +美术/角色/场景/灯光/作曲/后期/审片/场记 | reduced |
+`full` | 全部 19 位 | full |
+`custom` | `--crew-add/--crew-remove` | 按缺席项 |
+
+- **硬规则**：编剧/分镜不可移除；商用必须带合规官
+- **依赖闭包**：按名册 `requires→produces` 自动补齐并记 `autoAdded`
+- **跳过 ≠ 通过**：缺席审片/质检/合规 → `unverified[]` + `level != full`
+- 入口：demo/CLI `--crew-profile/--crew-add/--crew-remove/--commercial`；API 同名 camelCase
+
+### ② 无限画布后端：`delivery/pipeline.graph.json`
+
+- 节点：19 职位 + 通道节点（渲染/合成/证据）+ 外部来源
+- 边：按产物契约（from→to: artifact）
+- 状态：`done`（有证据）/`pending`（启用但无证据）/`skipped`（编制未启用）
+- 每节点带证据文件路径；`costs` 只汇总可对账项；`crew` 带 preset/hash/active/skipped
+- 口径：画布是**制作台**不是**编排器**
+
+### 测试
+
+`crew_profile_check` **19/19** · `pipeline_graph_check` **14/14**
++ 全量 **2897/2884 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.47] — 2026-11-16（**A1/A2/A3：B2 暴露问题修复；TTS 改为兜底**）
 
 ### A2（口径修正）：TTS 取决于视频模型有没有原生音频

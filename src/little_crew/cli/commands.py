@@ -452,6 +452,21 @@ def cmd_episode(args: Any) -> int:
     )
 
     _stubs = default_crew_stubs()
+    from little_crew.runtime import crew_profile as _cp
+
+    _crew = _cp.resolve(
+        profile=str(getattr(args, "crew_profile", "standard") or "standard"),
+        add=[x for x in str(getattr(args, "crew_add", "") or "").split(",")
+             if x.strip()],
+        remove=[x for x in str(getattr(args, "crew_remove", "") or "").split(",")
+                if x.strip()],
+        commercial=bool(getattr(args, "commercial", False)))
+    if not _crew["ok"]:
+        print("[X] 编制不可用：" + "；".join(_crew["errors"]), file=sys.stderr)
+        return ExitCode.ENVIRONMENT
+    print(f"  剧组编制：{_crew['preset']} · 启用 {len(_crew['active'])} 位"
+          + (f" · 自动补齐 {','.join(_crew['autoAdded'])}" if _crew["autoAdded"] else "")
+          + f" · 验证级别 {_crew['level']}")
     _binfo = _bind_llm(
         _stubs,
         llm=bool(getattr(args, "llm", False)),
@@ -475,6 +490,7 @@ def cmd_episode(args: Any) -> int:
         return ExitCode.ENVIRONMENT
     for _line in _describe_bind(_binfo):
         print(f"  {_line}")
+    _cp.apply_to_stubs(_stubs, _crew)
     orch.bind_many(_stubs)
 
     class _R(EpisodeRunner):
@@ -483,6 +499,7 @@ def cmd_episode(args: Any) -> int:
 
     runner = _R(orch, renderer, episode_id=ep_id, title=title)
     runner.workdir = work
+    runner.crew_profile = _crew
     runner.engine_seed = args.seed
     runner.engine_steps = args.steps
     runner.verify_artifacts = not args.no_gate

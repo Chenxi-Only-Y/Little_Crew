@@ -127,6 +127,15 @@ def build_parser() -> argparse.ArgumentParser:
     se.add_argument("--allow-reuse", action="store_true",
                     help="允许往已有**别的集**的工作目录里写（默认拒绝）")
     # ---- 2026-11-14（A1）：与 episode_demo 对齐的能力开关 ----
+    se.add_argument("--crew-profile", default="standard", dest="crew_profile",
+                    choices=("minimal", "standard", "full", "custom"),
+                    help="剧组编制模板（职业可选）")
+    se.add_argument("--crew-add", default="", dest="crew_add",
+                    help="逗号分隔：额外启用的职位")
+    se.add_argument("--crew-remove", default="", dest="crew_remove",
+                    help="逗号分隔：要移除的职位")
+    se.add_argument("--commercial", action="store_true", dest="commercial",
+                    help="商用模式：强制启用合规官")
     se.add_argument("--render-path", default="local", choices=("local", "cloud"),
                     dest="render_path",
                     help="渲染路径（用户显式选）：local / cloud（整集云端图生图）")
