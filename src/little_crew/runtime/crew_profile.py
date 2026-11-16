@@ -83,6 +83,18 @@ def _hash_of(preset: str, active: Sequence[str]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
 
 
+def _as_ids(value: Any) -> list[str]:
+    """把 `"a,b"` / `["a","b"]` / None 统一成 id 列表（服务端可能传字符串）。"""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [x.strip() for x in value.split(",") if x.strip()]
+    try:
+        return [str(x).strip() for x in value if str(x).strip()]
+    except TypeError:
+        return [str(value).strip()]
+
+
 def resolve(*, profile: str = "standard",
             add: Iterable[str] = (), remove: Iterable[str] = (),
             commercial: bool = False,
@@ -98,8 +110,8 @@ def resolve(*, profile: str = "standard",
         roster = DEFAULT_ROSTER
     by_id, producers = _roster_maps(roster)
     all_ids = [str(a.agent_id) for a in roster]
-    add_set = {str(x).strip() for x in add if str(x).strip()}
-    remove_set = {str(x).strip() for x in remove if str(x).strip()}
+    add_set = set(_as_ids(add))
+    remove_set = set(_as_ids(remove))
     name = str(profile or "standard").strip().lower()
     errors: list[str] = []
 
@@ -147,7 +159,12 @@ def resolve(*, profile: str = "standard",
                     # 没有生产者、也不是外部输入 -> 契约断裂（如源小说），交给门禁/来源校验
                     continue
                 pick = cands[0]
-                if pick not in active and pick not in remove_set:
+                if pick in remove_set:
+                    # ⚠️ 不能静默跳过：用户移除了依赖的生产者 -> 契约断裂，必须拒绝
+                    errors.append(
+                        f"职位 {aid} 需要产物 {art}，但其生产者 {pick} 已被移除")
+                    continue
+                if pick not in active:
                     active.add(pick)
                     auto_added.append(pick)
                     changed = True

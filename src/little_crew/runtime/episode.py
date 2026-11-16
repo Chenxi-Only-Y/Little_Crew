@@ -2045,10 +2045,26 @@ class EpisodeRunner:
 
             _wd_g = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
             if _wd_g:
+                _stage_ev: dict[str, list[str]] = {}
+                _stage_map = {
+                    "director": locals().get("director_info"),
+                    "production_designer": locals().get("art_info"),
+                    "scene_designer": locals().get("scene_info"),
+                    "gaffer": locals().get("lighting_info"),
+                    "line_producer": locals().get("sched_info"),
+                    "previs": locals().get("previs_info"),
+                }
+                for _aid, _info in _stage_map.items():
+                    if isinstance(_info, Mapping) and _info.get("ok"):
+                        _stage_ev[_aid] = ["delivery/run.report.json"]
+                if isinstance(getattr(self, "_cover_report", None), Mapping) \
+                        and self._cover_report.get("enabled"):
+                    _stage_ev["cover_designer"] = ["delivery/run.report.json"]
                 _g = _pg.build_graph(
                     roster=_ROSTER_G,
                     crew=dict(getattr(self, "crew_profile", None) or {}),
-                    workdir=_wd_g, episode_id=self.episode_id)
+                    workdir=_wd_g, episode_id=self.episode_id,
+                    stage_evidence=_stage_ev)
                 _pg.write_graph(_wd_g, _g)
                 self._pipeline_graph_path = "delivery/pipeline.graph.json"
         except Exception as _e_g:                             # noqa: BLE001

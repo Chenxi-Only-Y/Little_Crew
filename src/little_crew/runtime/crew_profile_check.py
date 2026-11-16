@@ -107,7 +107,21 @@ def main() -> int:
           CP.feature_allowed(m, "continuity_supervisor") is False
           and CP.feature_allowed(f, "continuity_supervisor") is True, "")
 
-    print(); print("F. 稳定性")
+    print(); print("F. 回归：服务端字符串输入 / 移除依赖生产者")
+    s1 = CP.resolve(profile="custom", add="gaffer,director")
+    check("F1 ★★★ 字符串形式 crewAdd 正确解析（服务端 body 可能是字符串）",
+          {"gaffer", "director"} <= set(s1["active"]) and s1["ok"],
+          str(s1["active"]))
+    s2 = CP.resolve(profile="standard", remove=["scene_designer"])
+    check("F2 ★★★ 移除了依赖的生产者 -> 拒绝（不许静默断契约）",
+          (not s2["ok"]) and any("scene.library" in e for e in s2["errors"]),
+          str(s2["errors"]))
+    s3 = CP.resolve(profile="custom", add=["compliance_officer"],
+                    remove="compliance_officer", commercial=True)
+    check("F3 ★★ 字符串形式 crewRemove 也生效（商用删合规被拒）",
+          not s3["ok"], str(s3["errors"]))
+
+    print(); print("G. 稳定性")
     check("F1 ★★★ 同编制同 hash",
           CP.resolve(profile="standard")["hash"] == s["hash"], "")
     check("F2 ★★★ 不同编制不同 hash",

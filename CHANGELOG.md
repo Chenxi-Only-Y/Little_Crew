@@ -57,6 +57,37 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.0-rc.1] — 2026-11-16（**功能冻结：进入发布候选**）
+
+> 这是最后一个 beta（`0.4.0-beta.48`）之后的**发布候选**：只修 bug / 补测试 / 补文档 / 补部署，
+> **不再加新功能**。通过 `docs/20` 的发布门槛后发 `0.4.0`。
+
+### 本版完成的最后一块功能：职业可选 + 无限画布后端
+
+- **剧组编制**（`runtime/crew_profile.py`）：minimal / standard / full / custom
+  - 谁是必需核心（编剧/分镜）、商用必须带合规官、依赖闭包自动补齐
+  - `run.report.crew = {preset, hash, active, skipped, autoAdded, verification, level}`
+  - **跳过 ≠ 通过**：缺席审片/质检/合规 → `unverified[]` + `level != full`
+- **无限画布后端**（`runtime/pipeline_graph.py`）：`delivery/pipeline.graph.json`
+  - 节点（19 职位 + 通道 + 外部来源）/ 边（产物契约）/ 状态 / 证据 / 可对账费用
+  - 画布是**制作台**不是**编排器**
+
+### 本版修掉的 3 个后端 bug（自审发现）
+
+1. **字符串输入**：服务端 `crewAdd: "gaffer,director"` 曾被当字符逐个解析 → 改为按逗号切分
+2. **移除依赖生产者被静默跳过**：`standard` 移除场景设计师后，灯光师仍被保留但契约断裂
+   → 现在**拒绝并说明**："职位 gaffer 需要产物 scene.library，但其生产者 scene_designer 已被移除"
+3. **画布证据造假**：仅凭 `run.report.json` 存在就把职位标成 `done`（报告文件本来就有）
+   → 改为 `stage_evidence`（运行期真实产出才给证据）；无证据 = `pending`
+
+### 测试
+
+`crew_profile_check` **22/22**（+字符串输入/+移除依赖生产者）· `pipeline_graph_check` **17/17**
+（+run.report 不造假/+stage_evidence/+JSON 可序列化）
++ 全量 **2903/2890 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0-beta.48] — 2026-11-16（**剧组编制（职业可选）+ 无限画布后端**）
 
 ### ① 职业可选：crew profile

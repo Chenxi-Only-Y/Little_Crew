@@ -88,6 +88,22 @@ def main() -> int:
               g["summary"]["active"] == 19 and g["summary"]["edges"] > 0,
               json.dumps(g["summary"], ensure_ascii=False))
 
+        # ---- 回归：run.report.json 不能证明"某个阶段跑过" ----
+        (d / "run.report.json").write_text("{}", encoding="utf-8")
+        g3 = PG.build_graph(roster=DEFAULT_ROSTER, crew=full, workdir=wd,
+                            episode_id="E3")
+        n3 = {n["id"]: n for n in g3["nodes"]}
+        check("D4 ★★★ 只有 run.report 不足以让职位变 done（证据不造假）",
+              n3["gaffer"]["status"] == "pending",
+              n3["gaffer"]["status"])
+        g4 = PG.build_graph(roster=DEFAULT_ROSTER, crew=full, workdir=wd,
+                            episode_id="E4",
+                            stage_evidence={"gaffer": ["delivery/run.report.json"]})
+        n4 = {n["id"]: n for n in g4["nodes"]}
+        check("D5 ★★★ 运行期证据（stage_evidence）可把职位标 done",
+              n4["gaffer"]["status"] == "done"
+              and "delivery/run.report.json" in n4["gaffer"]["evidence"], "")
+
         p = PG.write_graph(wd, g)
         ok_file = p.is_file()
         obj = json.loads(p.read_text(encoding="utf-8")) if ok_file else {}
@@ -97,6 +113,9 @@ def main() -> int:
         check("E2 ★★★ 图自带编制口径（preset/hash/active）",
               (obj.get("crew") or {}).get("preset") == "full"
               and len(str((obj.get("crew") or {}).get("hash") or "")) == 12, "")
+
+        check("E3 ★★ 图可 JSON 序列化（前端直读）",
+              json.dumps(obj, ensure_ascii=False) is not None, "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

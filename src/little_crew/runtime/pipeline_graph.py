@@ -44,13 +44,11 @@ from typing import Any, Mapping, Sequence
 EVIDENCE_OF: dict[str, tuple[str, ...]] = {
     "script.final": ("script.rounds.json",),
     "script.draft": ("script.rounds.json",),
-    "episode.plan": ("run.report.json",),
     "art.bible": ("art.bible.json",),
     "scene.library": ("scene.library.json",),
     "character.sheet": ("anchors_used.json",),
     "character.anchor_set": ("anchors_used.json",),
-    "lighting.plan": ("run.report.json",),
-    "previs.layouts": ("run.report.json",),
+
     "shot.list": ("shot_selection.json",),
     "shot.voice": ("voice_used.json",),
     "shot.music": ("mix.json",),
@@ -59,9 +57,7 @@ EVIDENCE_OF: dict[str, tuple[str, ...]] = {
     "qc.report": ("vision_review.json",),
     "continuity.report": ("continuity_audit.json",),
     "review.verdict": ("shotlist_review.json",),
-    "cover.image": ("run.report.json",),
     "post.plan": ("post.plan.json",),
-    "production.schedule": ("run.report.json",),
     "compliance.report": ("compliance.json",),
     "episode.master": ("episode.master.mp4",),
     "delivery.evidence": ("delivery.evidence.json",),
@@ -111,8 +107,16 @@ def _read_costs(workdir: str | Path | None) -> dict[str, float]:
 
 def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
                 workdir: str | Path | None = None,
-                episode_id: str = "") -> dict[str, Any]:
-    """按名册契约 + 编制 + 交付证据，构建画布后端图。"""
+                episode_id: str = "",
+                stage_evidence: Mapping[str, Sequence[str]] | None = None,
+                ) -> dict[str, Any]:
+    """按名册契约 + 编制 + 交付证据，构建画布后端图。
+
+    `stage_evidence`：**运行期才知道的证据**（如"导演这次真的产出了 episode.plan"），
+    由 `run()` 传入 `{agent_id: ["delivery/run.report.json"]}` —— 只看文件系统
+    会漏掉"不单独落文件的阶段"，也会把"报告文件存在"误当成"该阶段跑过"。
+    """
+    stage_evidence = dict(stage_evidence or {})
     crew = dict(crew or {})
     active = set(crew.get("active") or [])
     active_known = bool(active)
@@ -130,6 +134,7 @@ def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
         if not active_known or aid in active:
             for art in (a.produces or ()):
                 ev.extend(_evidence_exists(workdir, str(art)))
+            ev.extend(str(x) for x in stage_evidence.get(aid, ()) or ())
             ev = sorted(set(ev))
             status = "done" if ev else "pending"
         nodes.append({
