@@ -112,7 +112,7 @@ class CriticLlm:
     """
 
     def __init__(self, agent_id: str, *, client: LlmClient | None = None,
-                 temperature: float = 0.2) -> None:
+                 temperature: float = 1.0) -> None:
         if agent_id not in CRITIC_CHECKS:
             raise ValueError(
                 f"{agent_id!r} 不是 A 类审查职位；"
@@ -125,8 +125,8 @@ class CriticLlm:
         self.produce_key: str = self._resolve_produce_key(agent_id,
                                                          self.capability)
         self.client = client or LlmClient("deepseek-flash")
-        # ⚠️ 审片默认用 GLM（CLI `--llm-critic-model`）或 DeepSeek 直连；
-        # 不同族 → **不套用** DeepSeek 官方温度建议，保留保守 0.2。
+        # GLM-5.3-Flash 官方推荐 **1.0**；DeepSeek 的"数据/分析"也是 1.0。
+        # 两族同值 → 无论走 GLM（CLI 默认）还是 DeepSeek 直连都不会错。
         self.temperature = temperature
 
     @staticmethod

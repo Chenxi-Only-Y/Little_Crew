@@ -415,10 +415,10 @@ class DramaturgeLlm:
     agent_id = "dramaturge"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.2) -> None:
+                 temperature: float = 0.7) -> None:
         self.client = client or LlmClient("mimo-v2.6-flash")
-        # ⚠️ MiMo 不是 DeepSeek 族：**不套用** DeepSeek 官方温度建议。
-        # 审核保留原保守值 0.2 —— 可复现性优先，跨族/ rubric / 缓存兜底。
+        # ⚠️ MiMo 官方：默认对话 1.0；工具调用/代码/严谨 Agent 场景 0.3~0.7。
+        # 剧本审查是**结构化 JSON 的严谨 Agent 场景** → 取区间上沿 0.7。
         self.temperature = temperature
         self.calls = 0
         self.last_raw: dict[str, Any] = {}

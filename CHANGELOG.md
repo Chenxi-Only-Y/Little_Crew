@@ -57,7 +57,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.4.3] — 2026-11-16（**按 DeepSeek 官方建议调 LLM 温度 + Qwen3 top_p**）
+## [0.4.3] — 2026-11-16（**按各厂官方建议调 LLM 温度：DeepSeek / GLM / MiMo / Qwen3**）
 
 ### 映射
 
@@ -66,11 +66,10 @@ git config http.sslBackend openssl
 创意写作 | **1.5**（原 0.8/0.4/0.3/0.3） | 编剧 · 导演 · 美术指导 · 场景设计师 |
 结构化创作 | **1.3**（原 0.6） | 分镜师 |
 分析/规划 | **1.0**（原 0.3/0.2/0.3） | 灯光师 · 制片主任 · 白模预演师 |
-判定/审查（**非 DeepSeek 族**） | **0.2**（不变） | 剧本顾问（MiMo）· 剧评人/审片（GLM） |
+判定/审查（各厂官方） | **0.7 / 1.0** | 剧本顾问（MiMo Agent 0.3~0.7 → 0.7）· 剧评人/审片（GLM 官方 1.0） |
 通用/视觉（Qwen3） | 0.7 | LlmClient 默认（视觉闸/场记/封面） |
 
-依据：DeepSeek 官方建议（0.0/1.0/1.3/1.5）**只套用到 DeepSeek 族**；
-MiMo/GLM 不套用；Qwen3 非思考 0.7 / top-p 0.8。
+依据：DeepSeek 官方建议（0.0/1.0/1.3/1.5）只用于 DeepSeek 族；GLM-5.3-Flash 官方 1.0；MiMo 默认对话 1.0、Agent 场景 0.3~0.7；Qwen3 非思考 0.7 / top-p 0.8。
 
 ### Qwen3 top_p
 
