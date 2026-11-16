@@ -11,7 +11,7 @@
 | 创意写作 | **1.5** | 编剧 · 导演 · 美术指导 · 场景设计师 |
 | 结构化创作 | **1.3** | 分镜师（有 JSON 校验/重试兜底） |
 | 分析/规划 | **1.0** | 灯光师 · 制片主任 · 白模预演师 |
-| 判定/审查 | **0.7** | 剧本顾问 · 文学策划 · 剧评人/审片（Qwen3 非思考设置） |
+| 判定/审查 | **0.2** | 剧本顾问（MiMo）· 剧评人/审片（GLM）· 文学策划 |
 | 通用/视觉 | **0.7** | LlmClient 默认（含视觉闸/场记质检/封面选帧） |
 
 另：Qwen 族**自动带 top_p**（非思考 0.8；思考 0.95 为未来开关预留），
@@ -63,10 +63,23 @@ def main() -> int:
                       ("白模预演师", previs_agent_llm.PrevisAgentLlm())):
         check(f"C {name} 1.0", _temp(obj) == 1.0, str(_temp(obj)))
 
-    print(); print("D. 判定/审查 = 0.7（Qwen3 非思考）")
-    check("D1 ★★★ 剧本顾问 0.7", _temp(crew_llm.DramaturgeLlm()) == 0.7, "")
-    check("D2 ★★★ 剧评人/审片 0.7",
-          _temp(critic_llm.CriticLlm("review_board")) == 0.7, "")
+    print(); print("D. 非 DeepSeek 族：不套用官方温度（保守 0.2）")
+    d = crew_llm.DramaturgeLlm()
+    check("D1 ★★★ 剧本顾问（MiMo）0.2", _temp(d) == 0.2, str(_temp(d)))
+    check("D2 ★★★ 剧评人/审片（GLM/跨族）0.2",
+          _temp(critic_llm.CriticLlm("review_board")) == 0.2, "")
+    check("D3 ★★★ 剧本顾问默认客户端确为 MiMo",
+          getattr(getattr(d, "client", None), "model_id", "") == "mimo-v2.6-flash",
+          str(getattr(getattr(d, "client", None), "model_id", "")))
+    deepseek_defaults = {
+        "导演": director_llm.DirectorLlm(),
+        "分镜": storyboard_llm.StoryboardArtistLlm(),
+        "灯光": gaffer_llm.GafferLlm(),
+        "美术": production_designer_llm.ProductionDesignerLlm(),
+    }
+    bad = [k for k, o in deepseek_defaults.items()
+           if getattr(getattr(o, "client", None), "model_id", "") != "deepseek-flash"]
+    check("D4 ★★★ DeepSeek 族职位默认客户端 = deepseek-flash", not bad, str(bad))
 
     print(); print("E. LlmClient 默认与 Qwen top_p")
     _kw = getattr(LlmClient.__init__, "__kwdefaults__", {}) or {}

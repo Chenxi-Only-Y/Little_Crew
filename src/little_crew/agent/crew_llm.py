@@ -415,11 +415,10 @@ class DramaturgeLlm:
     agent_id = "dramaturge"
 
     def __init__(self, *, client: LlmClient | None = None,
-                 temperature: float = 0.7) -> None:
+                 temperature: float = 0.2) -> None:
         self.client = client or LlmClient("mimo-v2.6-flash")
-        # 审核要**稳**：0.7 = Qwen3 论文评测的**非思考**设置。
-        # 比创作类（1.5）低得多，但仍高于早期 0.2 —— 0.2 会把评审变成
-        # "只会挑最明显的错"，可复现性由 rubric/跨族/缓存保证，不靠极低温度。
+        # ⚠️ MiMo 不是 DeepSeek 族：**不套用** DeepSeek 官方温度建议。
+        # 审核保留原保守值 0.2 —— 可复现性优先，跨族/ rubric / 缓存兜底。
         self.temperature = temperature
         self.calls = 0
         self.last_raw: dict[str, Any] = {}
