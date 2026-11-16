@@ -57,6 +57,39 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.1] — 2026-11-16（**安全补丁：API key 移出项目目录**）
+
+### 为什么发这个补丁
+
+审查发现：`DASHSCOPE_API_KEY` / `SUDORELAY_API_KEY` 曾写在**项目内** `config/.env`。
+虽然 `.gitignore` 挡住了 git，但如果**整个项目目录被网盘/OneDrive 同步**，密钥会跟着到别的电脑。
+
+### 处置（已完成）
+
+| 项 | 结果 |
+|---|---|
+真实密钥位置 | **`D:\AI\_secrets\little-crew.env`**（仓库外；可用 `LC_SECRETS_FILE` 覆盖） |
+`config/.env` | 密钥行值已清空（只保留键名）；只放端点/路径/模型名 |
+迁移项 | `DASHSCOPE_API_KEY` · `SUDORELAY_API_KEY`（备份在 `_secrets\backup\`） |
+验证 | `env_value()` 仍解析全部 5 个 key；git 历史**无真实值**；镜像不含 `config/` |
+
+### 新增守门测试 `cli/secrets_check`（13 项）
+
+- `config/.env` 不在 git、被 ignore；**无「非空密钥值」**
+- 密钥文件必须在**仓库外**；受控文件与 `.env.example` 不含真实值
+- `.dockerignore` 排除 `config/`；Dockerfile 不 COPY 配置
+- `docs/21` 写明**换机/同步**注意事项（不同步 `_secrets`）
+
+### 文档
+
+`docs/21 §六 密钥与同步边界`（新）· `docs/20 工作区纪律`（密钥规则）· `README` 顶部提示。
+
+### 测试
+
+全量 **2982/2969 + 架构守卫 PASS**
+
+---
+
 ## [0.4.0] — 2026-11-16（**正式发布 · 首个可交付版本**）
 
 > 名称：**《小剧组 · Little Crew》** · 基于多智能体协作的 AIGC 漫剧生成平台

@@ -174,6 +174,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("部署边界（镜像/外部服务）", [sys.executable, "-m", "little_crew.cli.deploy_check"], 25),
     ("20 集批量回归（语料/汇总）", [sys.executable, "-m", "little_crew.cli.regression_check"], 14),
     ("文档图/演示素材", [sys.executable, "-m", "little_crew.cli.docs_check"], 10),
+    ("密钥与同步边界", [sys.executable, "-m", "little_crew.cli.secrets_check"], 13),
     ("对外接口面", [sys.executable, "-m", "little_crew.api.surface_check"], 19),
     ("架构依赖守卫", [sys.executable, str(PLATFORM / "tests" / "test_architecture.py")], None),
 ]
