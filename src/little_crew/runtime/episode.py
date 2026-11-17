@@ -1678,7 +1678,8 @@ class EpisodeRunner:
         # 档位不是人选的：由导演计划（role/priority/allowLong）+ 该场镜数 + 复用信号决定，
         # 决策依据写进 delivery/scene_views.json。
         self._mark("scene_views")
-        self.scene_views_report = self._run_scene_views(picked, director_info)
+        self.scene_views_report = self._run_scene_views(picked, director_info,
+                                                         script_draft)
 
         # ---- 3) 桥接 ----
         # ⚠️ **提示词要进证据链**（2026-10-17 补）。
@@ -4115,6 +4116,8 @@ class EpisodeRunner:
     scene_cards: Any = None
     #: 场景空间视图（2026-11-17）：Tier1/Tier2 由上游信号自动选
     scene_views_enabled: bool = False
+    #: 每集 Tier3（九宫格+平面图）上限，默认 2 场
+    scene_views_hero_max: int = 2
     scene_views_report: dict[str, Any] = None  # type: ignore[assignment]
 
     #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
@@ -5426,7 +5429,8 @@ class EpisodeRunner:
         return {"ok": True, "schedule": dict(sched) if isinstance(sched, Mapping) else {}}
 
     def _run_scene_views(self, picked: Sequence[Any],
-                         director_info: Mapping[str, Any] | None = None) -> dict:
+                         director_info: Mapping[str, Any] | None = None,
+                         script: Any = None) -> dict:
         """生成场景空间视图（Tier1 空景锚点 / Tier2 四视图），失败不阻断。"""
         if not bool(getattr(self, "scene_views_enabled", False)):
             return {}
@@ -5451,6 +5455,8 @@ class EpisodeRunner:
             plan = (director_info or {}).get("plan") or {}
             rep = _sv.generate(scene_cards=cards, shots=picked,
                                director_plan=plan, workdir=wd, enabled=True,
+                               script=script,
+                               tier3_max=int(getattr(self, "scene_views_hero_max", 2) or 2),
                                verify=True)   # 空景 QC：模型常无视"无人物"
             _sv.write_report(wd, rep)
             _t2 = sum(1 for v in (rep.get("scenes") or {}).values()

@@ -1,0 +1,193 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "SC-FREQ-001": {
+      "sceneId": "SC-FREQ-001",
+      "tier": 3,
+      "decision": {
+        "tier": 3,
+        "score": 5,
+        "factors": [
+          "剧本地点出现 2 次",
+          "该场 3 镜",
+          "频率分 5"
+        ]
+      },
+      "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\board.jpg",
+      "matrix": [
+        {
+          "view": "front_wide",
+          "row": 1,
+          "col": 1,
+          "label": "正面全景"
+        },
+        {
+          "view": "front_close",
+          "row": 1,
+          "col": 2,
+          "label": "正面近景"
+        },
+        {
+          "view": "side_wide",
+          "row": 1,
+          "col": 3,
+          "label": "侧面全景"
+        },
+        {
+          "view": "side_close",
+          "row": 2,
+          "col": 1,
+          "label": "侧面近景"
+        },
+        {
+          "view": "back_wide",
+          "row": 2,
+          "col": 2,
+          "label": "背面全景"
+        },
+        {
+          "view": "back_close",
+          "row": 2,
+          "col": 3,
+          "label": "背面近景"
+        },
+        {
+          "view": "top_close",
+          "row": 3,
+          "col": 1,
+          "label": "俯视近景"
+        },
+        {
+          "view": "topdown",
+          "row": 3,
+          "col": 2,
+          "label": "正交平面图"
+        },
+        {
+          "view": "hero45",
+          "row": 3,
+          "col": 3,
+          "label": "45°英雄视角"
+        }
+      ],
+      "shots": 3,
+      "anchors": [
+        "地铁站台，冷白灯带，金属立柱，纵深站台",
+        "拉丝不锈钢",
+        "湿沥青",
+        "长椅",
+        "车灯"
+      ],
+      "sceneHash": "bf840478284b",
+      "images": [
+        {
+          "view": "front_wide",
+          "promptHash": "508b83d6431f",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "seconds": 31.1,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "front_close",
+          "promptHash": "ca663e72e830",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_close.png",
+          "seconds": 70.6,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "side_wide",
+          "promptHash": "9fc75b0446a8",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\side_wide.png",
+          "seconds": 53.9,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "side_close",
+          "promptHash": "4f72800f7a90",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\side_close.png",
+          "seconds": 39.0,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "back_wide",
+          "promptHash": "922946e6f28c",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\back_wide.png",
+          "seconds": 55.9,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "back_close",
+          "promptHash": "6a7b0bc8836d",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\back_close.png",
+          "seconds": 42.4,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "top_close",
+          "promptHash": "2a0acbcf9a72",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\top_close.png",
+          "seconds": 43.8,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "topdown",
+          "promptHash": "47cd004de4a1",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\topdown.png",
+          "seconds": 68.2,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "hero45",
+          "promptHash": "5cf53b5a5a49",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_SCENEVIEWS_T3F\\assets\\scene_views\\SC-FREQ-001\\hero45.png",
+          "seconds": 56.5,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        }
+      ],
+      "ok": true,
+      "note": "Tier3 九宫格矩阵：9 张分开出图 + 程序拼 3×3 展示板；正俯只作空间草图/ControlNet 输入"
+    }
+  },
+  "costCny": 0.45,
+  "generated": 9,
+  "failed": 0,
+  "peopleWarnings": 0
+}

@@ -194,6 +194,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--costume-map", default="", dest="costume_map",
                     help="造型覆盖 JSON（{shotId 或 sceneId: outfits/<variant>}）；"
                          "资产放 assets/characters/<角色>/outfits/<variant>/")
+    ap.add_argument("--scene-views-hero-max", type=int, default=2,
+                    dest="scene_views_hero_max",
+                    help="每集 Tier3（九宫格+平面图）上限，默认 2 场")
     ap.add_argument("--scene-views", action="store_true", dest="scene_views",
                     help="场景空间视图（Tier1 空景锚点 / Tier2 四视图；按上游信号自动选档）")
     ap.add_argument("--scene-cards", default="", dest="scene_cards",
@@ -851,6 +854,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  ⚠️ 相机参数无效：{_e_cam}")
 
     runner.scene_views_enabled = bool(getattr(args, "scene_views", False))
+    runner.scene_views_hero_max = int(getattr(args, "scene_views_hero_max", 2) or 2)
     if runner.scene_views_enabled:
         print("  场景空间视图：开（按导演/镜头信号自动选 Tier1/Tier2）")
     runner.lipsync_enabled = bool(getattr(args, "lipsync", False))

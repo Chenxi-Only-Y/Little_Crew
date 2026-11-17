@@ -44,24 +44,38 @@ def main() -> int:
     print("场景空间视图（Tier1/Tier2 + 上游决策）—— 自检")
     print("=" * 66)
 
+    from PIL import Image
+
     from little_crew.runtime import scene_views as SV
 
-    print(); print("A. 上游决策（谁该用四视图）")
-    t1 = SV.choose_tier(shots_in_scene=1)
-    check("A1 ★★★ 单镜普通场 -> Tier1", t1["tier"] == 1, str(t1))
-    t2 = SV.choose_tier(shots_in_scene=2)
-    check("A2 ★★ 两镜（仅多机位）仍 Tier1", t2["tier"] == 1, str(t2))
-    t3 = SV.choose_tier(shots_in_scene=2, director_scene={"role": "高潮"})
-    check("A3 ★★★ 导演标高亮角色 -> Tier2", t3["tier"] == 2, str(t3))
-    t4 = SV.choose_tier(shots_in_scene=1, director_scene={"priority": 5})
-    check("A4 ★★ 单镜+仅高优先级 -> 仍 Tier1（不为一镜铺四视图）",
-          t4["tier"] == 1, str(t4))
-    t4b = SV.choose_tier(shots_in_scene=2, director_scene={"priority": 5})
-    check("A4b ★★★ 多机位+高优先级 -> Tier2", t4b["tier"] == 2, str(t4b))
-    t5 = SV.choose_tier(shots_in_scene=2, recurring=True)
-    check("A5 ★★★ 跨场复用 -> Tier2", t5["tier"] == 2, str(t5))
-    check("A6 ★★★ 决策依据可复核（factors 非空）",
-          bool(t5["factors"]) and any("复用" in f for f in t5["factors"]), str(t5["factors"]))
+    print(); print("A. 剧本场景出现频率 → 档位")
+    _script = {"scenes": [
+        {"id": "SC1", "heading": "地铁站台·夜"},
+        {"id": "SC2", "heading": "走廊·夜"},
+    ]}
+
+    def _freq(script, scene, n):
+        return SV.scene_frequency(script, [_Shot(f"{scene}-{i}", scene)
+                                          for i in range(1, n + 1)])
+
+    f1 = _freq(_script, "SC1", 1)["SC1"]
+    check("A1 ★★★ 低频（1 次出现 + 1 镜）-> Tier1", f1["tier"] == 1, str(f1))
+    f2 = _freq(_script, "SC1", 2)["SC1"]
+    check("A2 ★★★ 1 次出现 + 2 镜 -> Tier2", f2["tier"] == 2, str(f2["score"]))
+    f3 = _freq(_script, "SC1", 3)["SC1"]
+    check("A3 ★★★ 1 次出现 + 3 镜 -> Tier2", f3["tier"] == 2, str(f3["score"]))
+    f4 = _freq(_script, "SC1", 4)["SC1"]
+    check("A4 ★★★ 高频（4 镜）-> Tier3", f4["tier"] == 3, str(f4["score"]))
+    _rep = {"scenes": [{"id": "SC1", "heading": "站台·列车门前·夜"},
+                       {"id": "SC2", "heading": "站台·空站台·夜"}]}
+    f5 = _freq(_rep, "SC1", 3)["SC1"]
+    check("A5 ★★★ 同一地点在剧本出现 2 次 + 3 镜 -> Tier3",
+          f5["occurrences"] == 2 and f5["tier"] == 3, str(f5))
+    check("A6 ★★★ 决策因素写明出现次数/镜数",
+          any("出现 2 次" in x for x in f5["factors"])
+          and any("3 镜" in x for x in f5["factors"]), str(f5["factors"]))
+    check("A7 ★★ 地点键去掉时段（站台·列车门前·夜 -> 站台）",
+          SV._location_key("站台·列车门前·夜") == "站台", "")
 
     print(); print("B. 提示词（确定性/无人物/正俯约束）")
     p1 = SV.build_prompts("SC1", CARD, 1)
@@ -113,7 +127,7 @@ def main() -> int:
         calls.update(t2i=0, edit=0)
         rep2 = SV.generate(scene_cards={"SC1": CARD}, shots=shots,
                            director_plan=plan, workdir=wd, enabled=True,
-                           t2i=t2i, edit=edit)
+                           t2i=t2i, edit=edit, tier3_enabled=False)
         sc2 = rep2["scenes"]["SC1"]
         check("D4 ★★★ 高亮场生成 Tier2（4 张：1 文生 + 3 派生）",
               sc2["tier"] == 2 and len(sc2["images"]) == 4
@@ -173,6 +187,68 @@ def main() -> int:
         check("E3 ★★★ 证据落 delivery/scene_views.json",
               outp.is_file() and json.loads(outp.read_text(encoding="utf-8"))["kind"]
               == "scene.views", str(outp))
+
+    print(); print("G. Tier3 九宫格（1~2 场上限；9 张分开生成 + 程序拼板）")
+    with tempfile.TemporaryDirectory() as td:
+        wd = Path(td)
+        # 3 场都是"英雄场"（都要 Tier2+），看上限只提升 2 场为 Tier3
+        scenes = ["SC1", "SC2", "SC3"]
+        shots = []
+        for sc in scenes:
+            shots += [_Shot(f"{sc}-1", sc), _Shot(f"{sc}-2", sc)]
+        cards = {sc: CARD for sc in scenes}
+        plan = {"scenes": [{"sceneId": sc, "role": "高潮", "priority": 5}
+                           for sc in scenes]}
+        calls = {"t2i": 0, "edit": 0}
+
+        def t2i(prompt, dst):
+            calls["t2i"] += 1
+            return _png(dst, (20, 40, 60))
+
+        def edit(ref, prompt, dst):
+            calls["edit"] += 1
+            return _png(dst, (60, 40, 20))
+
+        rep = SV.generate(scene_cards=cards, shots=shots, director_plan=plan,
+                          workdir=wd, enabled=True, t2i=t2i, edit=edit,
+                          tier3_enabled=True, tier3_max=2)
+        tiers = {sid: rep["scenes"][sid]["tier"] for sid in scenes}
+        check("G1 ★★★ Tier3 每集上限 = 2（3 场英雄场只提升 2 场）",
+              sorted(tiers.values()) == [2, 3, 3], str(tiers))
+        t3 = [sid for sid, v in tiers.items() if v == 3]
+        g3 = rep["scenes"][t3[0]]
+        check("G2 ★★★ Tier3 每场 9 张图（front_wide 即基准，不额外多一张）",
+              g3["tier"] == 3 and len(g3["images"]) == 9 and g3["ok"], str(len(g3["images"])))
+        check("G3 ★★★ Tier3 成本 9 张 ¥0.45（本测 2 场 Tier3 + 1 场 Tier2 = ¥1.10）",
+              abs(rep["costCny"] - (9 * 0.05 * 2 + 4 * 0.05)) < 1e-6, str(rep["costCny"]))
+        check("G4 ★★★ 9 张里 1 张文生（front_wide）+ 8 张派生（都引用它）",
+              sum(1 for r in g3["images"] if r["view"] == "front_wide") == 1
+              and all(r.get("reference") for r in g3["images"]
+                      if r["view"] != "front_wide"), "")
+        bd = Path(str(g3.get("board") or ""))
+        check("G5 ★★★ 展示板是程序拼的（board.jpg 存在、可读）",
+              bd.is_file() and Image.open(bd).size[0] > 1000, str(bd))
+        check("G6 ★★ Tier3 matrix 记录 9 个机位（行/列/标签）",
+              len(g3.get("matrix") or []) == 9
+              and all({"view", "row", "col", "label"} <= set(x) for x in g3["matrix"]), "")
+        check("G7 ★★★ 普通场（非英雄）不提升 Tier3",
+              all(rep["scenes"][sid]["tier"] != 3 for sid in ("SC1", "SC2", "SC3")
+                  if sid not in t3), "")
+
+    print(); print("H. Tier3 提示词矩阵（9 机位 + 锁定 + 50mm）")
+    p3 = SV.build_prompts("SC1", CARD, 3)
+    check("H1 ★★★ Tier3 提示词键 = 九宫格 9 个机位",
+          set(p3) == {k for k, _r, _c, _l, _d in SV.TIER3_VIEWS}, str(sorted(p3)))
+    check("H2 ★★★ 每个机位都写'唯一许可：只移动机位'",
+          all("只允许摄影机机位移动" in v for v in p3.values()), "")
+    check("H3 ★★ 统一 50mm / 16:9",
+          all("50mm" in v and "16:9" in v for v in p3.values()), "")
+    check("H4 ★★★ 同输入同提示词（Tier3 确定性）",
+          SV.build_prompts("SC1", CARD, 3) == p3, "")
+    check("H5 ★★★ Tier3 含正交平面图（混合版），且不再有 top_wide",
+          "topdown" in p3 and "top_wide" not in p3, str(sorted(p3)))
+    check("H6 ★★ 平面图要求无透视/标注出入口",
+          "无透视" in p3["topdown"] and "出入口" in p3["topdown"], "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()
