@@ -1,0 +1,193 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "S02": {
+      "sceneId": "S02",
+      "tier": 3,
+      "decision": {
+        "tier": 3,
+        "score": 0,
+        "factors": [
+          "场景卡质量验证"
+        ],
+        "source": "manual"
+      },
+      "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\board.jpg",
+      "matrix": [
+        {
+          "view": "front_wide",
+          "row": 1,
+          "col": 1,
+          "label": "正面全景"
+        },
+        {
+          "view": "front_close",
+          "row": 1,
+          "col": 2,
+          "label": "正面近景"
+        },
+        {
+          "view": "side_wide",
+          "row": 1,
+          "col": 3,
+          "label": "侧面全景"
+        },
+        {
+          "view": "side_close",
+          "row": 2,
+          "col": 1,
+          "label": "侧面近景"
+        },
+        {
+          "view": "back_wide",
+          "row": 2,
+          "col": 2,
+          "label": "背面全景"
+        },
+        {
+          "view": "back_close",
+          "row": 2,
+          "col": 3,
+          "label": "背面近景"
+        },
+        {
+          "view": "top_close",
+          "row": 3,
+          "col": 1,
+          "label": "俯视近景"
+        },
+        {
+          "view": "topdown",
+          "row": 3,
+          "col": 2,
+          "label": "正交平面图"
+        },
+        {
+          "view": "hero45",
+          "row": 3,
+          "col": 3,
+          "label": "45°英雄视角"
+        }
+      ],
+      "shots": 3,
+      "anchors": [
+        "地下站厅层，净高4.5米，中部并排4组闸机（每组宽0.6米、间隔1.2米），闸机后为下行自动扶梯，斜长18米、倾角30度、净宽1米，扶梯底端接入站台层，垂直落差约8米；站厅墙面为整片搪瓷钢板，天花为条栅吊顶，纵向进深约40米",
+        "磨砂不锈钢闸机壳体",
+        "水磨石地面",
+        "搪瓷钢板墙面",
+        "扶梯不锈钢梯级与黑色橡胶扶手带"
+      ],
+      "sceneHash": "4b55d3a39171",
+      "images": [
+        {
+          "view": "front_wide",
+          "promptHash": "508b83d6431f",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "seconds": 39.7,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "front_close",
+          "promptHash": "ca663e72e830",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_close.png",
+          "seconds": 39.1,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "side_wide",
+          "promptHash": "9fc75b0446a8",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\side_wide.png",
+          "seconds": 45.7,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "side_close",
+          "promptHash": "4f72800f7a90",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\side_close.png",
+          "seconds": 79.7,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "back_wide",
+          "promptHash": "922946e6f28c",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\back_wide.png",
+          "seconds": 42.5,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "back_close",
+          "promptHash": "6a7b0bc8836d",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\back_close.png",
+          "seconds": 53.1,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "top_close",
+          "promptHash": "2a0acbcf9a72",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\top_close.png",
+          "seconds": 63.8,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "topdown",
+          "promptHash": "47cd004de4a1",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\topdown.png",
+          "seconds": 48.8,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        },
+        {
+          "view": "hero45",
+          "promptHash": "5cf53b5a5a49",
+          "reference": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\front_wide.png",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_CARDQUALITY\\assets\\scene_views\\S02\\hero45.png",
+          "seconds": 50.7,
+          "error": "",
+          "peopleDetected": "no",
+          "tries": 1
+        }
+      ],
+      "ok": true,
+      "note": "Tier3 九宫格矩阵：9 张分开出图 + 程序拼 3×3 展示板；正俯只作空间草图/ControlNet 输入"
+    }
+  },
+  "costCny": 0.45,
+  "generated": 9,
+  "failed": 0,
+  "peopleWarnings": 0,
+  "decisionSource": "manual"
+}

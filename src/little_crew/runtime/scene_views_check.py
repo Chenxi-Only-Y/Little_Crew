@@ -262,6 +262,9 @@ def main() -> int:
           "topdown" in p3 and "top_wide" not in p3, str(sorted(p3)))
     check("H6 ★★ 平面图要求无透视/标注出入口",
           "无透视" in p3["topdown"] and "出入口" in p3["topdown"], "")
+    check("H7 ★★★ Tier3 每个视图都带场景卡内容（空间/材质/道具）",
+          all("地下站台" in v and "拉丝不锈钢" in v and "长椅" in v
+              for v in p3.values()), "")
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

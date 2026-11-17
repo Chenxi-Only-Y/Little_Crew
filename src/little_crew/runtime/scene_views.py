@@ -189,9 +189,12 @@ def build_prompts(scene_id: str, card: Mapping[str, Any], tier: int,
                 "体积光/天气与时段全部锁死；禁止重新设计、禁止增减体量、禁止改布局；"
                 "**唯一许可：只移动摄影机机位**。")
         out = {}          # Tier3：front_wide 即基准，共 9 张（不额外多一张）
+        # ⚠️ 必须把**空景锚点内容**（场景卡：空间/材质/道具/色板/年代）带进每个视图，
+        # 否则九宫格只剩"锁死/机位"这些空话，模型会自由发挥（实测：地铁站厅被画成古风房间）。
+        _content = base
         for key, _row, _col, _label, _desc in TIER3_VIEWS:
             out[key] = (
-                f"{lock}{_label}：{_desc}。以基准图为参考，保持同一空间不漂移。"
+                f"{_content}\n{lock}{_label}：{_desc}。以基准图为参考，保持同一空间不漂移。"
                 f"{_TIER3_CAMERA}"
                 "画面中没有任何人物、没有手、没有文字水印；高精度 3D 半写实国漫 CG。"
                 if str(language).lower().startswith("zh") else
