@@ -102,6 +102,43 @@ def main() -> int:
     check("C8 ★★★ 卸载 showrunner 后能力消失（默认 19 职位不受影响）",
           "series.plan" not in _cap(reg) and len(DEFAULT_ROSTER) == 19, "")
 
+    print(); print("D. 插件依赖（requires）：拓扑加载 / 缺依赖拒绝 / 卸载保护")
+    from little_crew.plugin import PluginManifest as PM
+
+    def _mk(name, cap, requires=()):
+        return PM(name=name, provides={cap: (lambda: name)},
+                  requires=tuple(requires))
+
+    check("D1 ★★ requires 空值 -> 拒绝",
+          _raises(lambda: PM(name="x", provides={"a": lambda: 1}, requires=("",))), "")
+    a = _mk("dep_a", "cap.a")
+    b = _mk("dep_b", "cap.b", requires=("cap.a",))
+    missing = _mk("dep_missing", "cap.m", requires=("cap.nope",))
+    check("D2 ★★★ 依赖未满足 -> 加载拒绝且不注册",
+          _raises(lambda: load_plugin(_ModuleWith(missing)))
+          and reg.get("dep_missing") is None, "")
+    # 直接走注册表语义：先注册 A，再 load B（模拟依赖顺序）
+    reg.register(a)
+    got = load_plugin(_ModuleWith(b))
+    check("D3 ★★★ 依赖已满足 -> 加载成功", got.name == "dep_b", str(got.name))
+    check("D4 ★★★ 卸载被依赖的插件 -> 阻止（有插件依赖它）",
+          _raises(lambda: reg.unload("dep_a")), "")
+    reg.unload("dep_b")
+    check("D5 ★★ 依赖方卸载后，被依赖方可卸载", reg.unload("dep_a") is True, "")
+    # 缺依赖：直接 load 一个依赖未知能力的插件
+    c = _mk("dep_c", "cap.c", requires=("cap.missing",))
+    try:
+        load_plugin(_ModuleWith(c))
+        ok = False
+    except Exception:
+        ok = True
+    check("D6 ★★★ 缺依赖 -> 加载失败且不注册",
+          ok and reg.get("dep_c") is None, "")
+    core = _mk("dep_core", "cap.core", requires=("llm.client",))
+    check("D7 ★★ 依赖核心能力（llm.client）允许",
+          load_plugin(_ModuleWith(core)).name == "dep_core", "")
+    reg.unload("dep_core")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
@@ -111,6 +148,14 @@ def main() -> int:
     print("=" * 66)
     print(f"结果：{n}/{len(_r)} 通过")
     return 0 if n == len(_r) else 1
+
+
+class _ModuleWith:
+    """把 manifest 伪装成模块，供 load_plugin 测试。"""
+
+    def __init__(self, manifest):
+        self.PLUGIN = manifest
+        self.__name__ = f"fake_{manifest.name}"
 
 
 def _raises(fn) -> bool:

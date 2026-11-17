@@ -145,7 +145,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("场景空间视图（Tier1/2）", [sys.executable, "-m", "little_crew.runtime.scene_views_check"], 47),
     ("章节契约/总导演上下文", [sys.executable, "-m", "little_crew.runtime.chapter_plan_check"], 16),
     ("边界审（契约+VLM）", [sys.executable, "-m", "little_crew.runtime.boundary_audit_check"], 14),
-    ("插件化注册", [sys.executable, "-m", "little_crew.runtime.plugin_check"], 18),
+    ("插件化注册", [sys.executable, "-m", "little_crew.runtime.plugin_check"], 25),
     ("场景档位 LLM 决策", [sys.executable, "-m", "little_crew.runtime.scene_tier_planner_check"], 20),
     ("系列资产台账", [sys.executable, "-m", "little_crew.runtime.series_bible_check"], 26),
     ("系列档位决策", [sys.executable, "-m", "little_crew.runtime.series_planner_check"], 15),

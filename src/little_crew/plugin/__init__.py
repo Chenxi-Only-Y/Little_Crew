@@ -36,6 +36,8 @@ class PluginManifest:
     version: str = "0.1.0"
     description: str = ""
     provides: Mapping[str, Callable[..., Any]] = field(default_factory=dict)
+    #: 该插件**依赖的能力**（其他插件或核心能力）；加载时校验、卸载时保护
+    requires: tuple[str, ...] = ()
     optional: bool = True
 
     def __post_init__(self) -> None:
@@ -43,6 +45,9 @@ class PluginManifest:
             raise PluginError("插件缺 name")
         if not isinstance(self.provides, Mapping) or not self.provides:
             raise PluginError(f"插件 {self.name} 没有提供任何能力")
+        for r in self.requires:
+            if not str(r).strip():
+                raise PluginError(f"插件 {self.name} requires 有空值")
         for k, v in self.provides.items():
             if not str(k).strip():
                 raise PluginError(f"插件 {self.name} 能力 key 为空")
@@ -64,7 +69,19 @@ class PluginRegistry:
         self._plugins[manifest.name] = manifest
 
     def unload(self, name: str) -> bool:
-        return self._plugins.pop(str(name), None) is not None
+        m = self._plugins.get(str(name))
+        if m is None:
+            return False
+        provided = set(m.provides)
+        for other in self._plugins.values():
+            if other.name == m.name:
+                continue
+            hit = provided.intersection(other.requires)
+            if hit:
+                raise PluginError(
+                    f"插件 {other.name} 依赖 {m.name} 的能力 {sorted(hit)}，不能卸载")
+        self._plugins.pop(m.name, None)
+        return True
 
     def get(self, name: str) -> PluginManifest | None:
         return self._plugins.get(str(name))
@@ -105,5 +122,65 @@ def load_plugin(module: str | ModuleType) -> PluginManifest:
     return manifest
 
 
+#: 核心能力（非插件提供）：插件可声明依赖这些，不需要注册
+CORE_CAPABILITIES = frozenset({"llm.client", "vlm.judge", "runtime.chapter_plan",
+                               "runtime.boundary_audit"})
+
+
+def _check_requires(manifest: PluginManifest) -> None:
+    have = set(_GLOBAL.capabilities()) | CORE_CAPABILITIES
+    missing = [r for r in manifest.requires if r not in have]
+    if missing:
+        raise PluginError(
+            f"插件 {manifest.name} 缺少依赖能力 {missing}（先加载依赖插件）")
+
+
+def load_plugin(module: str | ModuleType) -> PluginManifest:
+    """加载单个插件；依赖未满足 -> 拒绝且不注册。"""
+    mod = importlib.import_module(module) if isinstance(module, str) else module
+    manifest = getattr(mod, "PLUGIN", None)
+    if not isinstance(manifest, PluginManifest):
+        raise PluginError(f"模块 {getattr(mod, '__name__', mod)} 没有 PLUGIN 清单")
+    _check_requires(manifest)
+    _GLOBAL.register(manifest)
+    return manifest
+
+
 def load_plugins(modules: list[str] | tuple[str, ...]) -> list[PluginManifest]:
-    return [load_plugin(m) for m in (modules or ())]
+    """按依赖拓扑加载一批插件（依赖在前）；缺依赖/成环 -> PluginError。"""
+    mods = list(modules or ())
+    manifests: dict[str, PluginManifest] = {}
+    for m in mods:
+        mod = importlib.import_module(m) if isinstance(m, str) else m
+        man = getattr(mod, "PLUGIN", None)
+        if not isinstance(man, PluginManifest):
+            raise PluginError(f"模块 {getattr(mod, '__name__', mod)} 没有 PLUGIN 清单")
+        manifests[man.name] = man
+    # 插件能力 -> 提供者
+    provider: dict[str, str] = {}
+    for man in manifests.values():
+        for cap in man.provides:
+            provider[cap] = man.name
+    order: list[str] = []
+    done: set[str] = set()
+    while len(order) < len(manifests):
+        ready = []
+        for name, man in manifests.items():
+            if name in done:
+                continue
+            deps = {provider.get(r) for r in man.requires if provider.get(r)}
+            if deps <= done:
+                ready.append(name)
+        if not ready:
+            raise PluginError("插件依赖有环或缺少依赖")
+        for name in sorted(ready):
+            if name not in done:
+                done.add(name)
+                order.append(name)
+    out = []
+    for name in order:
+        mod = next(m for m in mods
+                   if getattr(importlib.import_module(m) if isinstance(m, str) else m,
+                              "PLUGIN", None) is manifests[name])
+        out.append(load_plugin(mod))
+    return out
