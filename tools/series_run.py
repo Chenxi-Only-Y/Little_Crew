@@ -46,6 +46,8 @@ def main() -> int:
     ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--resume", action="store_true", default=True)
     ap.add_argument("--out-root", default="")
+    ap.add_argument("--mode", choices=["serial", "parallel", "hybrid"], default="serial",
+                    help="执行模式：serial 串行；parallel 并行；hybrid 并行+边界串行审")
     ap.add_argument("--plan", default="", help="chapter_plan.json（章卡/契约/依赖）")
     ap.add_argument("--boundary-vlm", action="store_true",
                     help="边界画面也用 VLM 审（默认只审契约）")
@@ -89,6 +91,52 @@ def main() -> int:
     env["PYTHONIOENCODING"] = "utf-8"
     env["LITTLE_CREW_ALLOW_UNVERIFIED"] = "1"
     env["LITTLE_CREW_SERIES_DIR"] = str(series_dir)
+    if a.mode in ("parallel", "hybrid"):
+        # B3：先把各章并行跑到"完成"，再由主循环按顺序做边界审（resume 分支）
+        import concurrent.futures as _cf
+        _jobs: list[tuple[str, Path, list[str]]] = []
+        for _s in scripts:
+            _ep = _episode_id(_s.stem)
+            _wd = out_root / _ep
+            if a.resume and (_wd / "delivery" / "series.json").is_file():
+                continue
+            _cmd = [sys.executable, "-X", "utf8", "-m",
+                    "little_crew.runtime.episode_demo",
+                    "--story-file", str(_s), "--workdir", str(_wd),
+                    "--episode-id", _ep, "--shots-target", str(a.shots),
+                    "--render-path", a.render_path,
+                    "--crew-profile", a.crew_profile, "--accept-script",
+                    "--series-dir", str(series_dir),
+                    "--scene-views-hero-max", str(a.hero_max)]
+            if a.scene_views:
+                _cmd.append("--scene-views")
+            if a.no_llm:
+                _cmd.append("--scene-views-no-llm")
+            _ch0 = next((c for c in (plan.get("chapters") or ())
+                         if str(c.get("chapterId")) == _ep), None) if plan else None
+            if _ch0 is not None:
+                from little_crew.runtime.chapter_plan import build_brief as _bb
+                _bp = _wd / "episode.brief.json"
+                _wd.mkdir(parents=True, exist_ok=True)
+                _bp.write_text(json.dumps(_bb(plan, _ep), ensure_ascii=False,
+                                          indent=2), encoding="utf-8")
+                _cmd += ["--episode-brief", str(_bp)]
+            _jobs.append((_ep, _wd, _cmd))
+        print(f"  并行模式：{len(_jobs)} 集同时跑（边界审仍串行）")
+        def _run_job(job):
+            ep0, wd0, cmd0 = job
+            try:
+                pr = subprocess.run(cmd0, cwd=str(ROOT), env=env,
+                                    capture_output=True, text=True,
+                                    encoding="utf-8", errors="replace",
+                                    timeout=a.timeout)
+                return ep0, pr.returncode
+            except Exception as e:                            # noqa: BLE001
+                return ep0, f"ERR:{e}"
+        with _cf.ThreadPoolExecutor(max_workers=max(1, min(4, len(_jobs)))) as _ex:
+            for ep0, rc0 in _ex.map(_run_job, _jobs):
+                print(f"  并行完成 {ep0} rc={rc0}", flush=True)
+
     rows: list[dict] = []
     prev_exit: dict | None = None
     prev_frames: list[str] = []
