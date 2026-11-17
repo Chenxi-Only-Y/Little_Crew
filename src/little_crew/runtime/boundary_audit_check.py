@@ -96,6 +96,26 @@ def main() -> int:
         check("C5 ★★ 红项给出可定位 diffs", isinstance(red["contract"]["diffs"], list)
               and isinstance(red["visual"]["diffs"], list), "")
 
+    print(); print("E. 重拍计划（B2：只边界镜）")
+    from little_crew.runtime import boundary_retake as BR
+    with tempfile.TemporaryDirectory() as td:
+        wd = Path(td)
+        for i in (1, 2, 3, 4):
+            (wd / "assets" / "shots" / f"SH-CH02-001-{i:03d}").mkdir(parents=True)
+        r = BR.plan({"level": "red"}, wd, max_shots=3)
+        check("E1 ★★★ 红项 -> needRetake + 只边界镜",
+              r["needRetake"] and r["scope"] == "boundary_shots_only"
+              and len(r["retakeShots"]) == 3, str(r))
+        check("E2 ★★★ 取本章前 N 镜（不整章）",
+              r["retakeShots"] == ["SH-CH02-001-001", "SH-CH02-001-002",
+                                   "SH-CH02-001-003"], str(r["retakeShots"]))
+        check("E3 ★★ 重试上限默认 2", r["maxRetries"] == 2, str(r["maxRetries"]))
+        green = BR.plan({"level": "green"}, wd)
+        check("E4 ★★ 非红 -> 不重拍", green["needRetake"] is False, "")
+        pth = BR.write(wd, r)
+        check("E5 ★★ 计划落盘 delivery/retake-plan.json",
+              pth.is_file() and "boundary_shots_only" in pth.read_text(encoding="utf-8"), "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

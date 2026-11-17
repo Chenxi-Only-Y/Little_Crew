@@ -137,6 +137,14 @@ def main() -> int:
                                        if _level == "red" else ""})
                     prev_exit = _ch.get("exit")
                     rows[-1]["boundary"] = _level
+                    if _level == "red":
+                        try:
+                            from little_crew.runtime import boundary_retake as _brt2
+                            _rp2 = _brt2.plan({"level": _level}, wd)
+                            _brt2.write(wd, _rp2)
+                            rows[-1]["retakePlanned"] = True
+                        except Exception:                # noqa: BLE001
+                            pass
                 print(f"  ↷ {ep} 已成功（续跑跳过）")
                 continue
         cmd = [sys.executable, "-X", "utf8", "-m", "little_crew.runtime.episode_demo",
@@ -212,6 +220,15 @@ def main() -> int:
                 json.dumps(_bd, ensure_ascii=False, indent=2), encoding="utf-8")
             boundaries.append(_bd)
             row["boundary"] = _level
+            if _level == "red":
+                try:
+                    from little_crew.runtime import boundary_retake as _brt
+                    _rp = _brt.plan(_bd, wd)
+                    _brt.write(wd, _rp)
+                    row["retakePlanned"] = bool(_rp.get("needRetake"))
+                    row["retakeShots"] = _rp.get("retakeShots")
+                except Exception:                        # noqa: BLE001
+                    pass
             if _level == "red":
                 row["failure"] = (row.get("failure") or "") + " 边界审红项：只重拍边界镜"
             prev_exit = _ch.get("exit")

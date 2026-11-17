@@ -1637,6 +1637,7 @@ class EpisodeRunner:
         # ---- 2.5) 顾问批评家（不进裁定）----
         advisory = self._run_advisory(script_draft, on_progress=on_progress)
 
+        self._apply_series_cast()      # 系列模式：先复用台账里已有的角色锚点
         self.characters = self._design_characters(script_draft)
 
         picked, shots = self._repair_subjects(picked, shots, script_draft)
@@ -5591,6 +5592,23 @@ class EpisodeRunner:
                             episode_id=self.episode_id)
                 except Exception:                            # noqa: BLE001
                     pass
+                # 角色锚点登记（跨集锁脸）：assets/characters/*/sheet*.png
+                try:
+                    _cdir = Path(str(wd)) / "assets" / "characters"
+                    for _sub in sorted(_cdir.iterdir()) if _cdir.is_dir() else ():
+                        if not _sub.is_dir():
+                            continue
+                        for _nm in ("sheet_refined.png", "sheet.png",
+                                    "sheet_refined.jpg", "sheet.jpg"):
+                            _f = _sub / _nm
+                            if _f.is_file():
+                                _sb2.upsert_character(
+                                    _bible, character_id=_sub.name,
+                                    name=_sub.name, episode_id=self.episode_id,
+                                    anchor=str(_f))
+                                break
+                except Exception:                            # noqa: BLE001
+                    pass
                 _sb2.save(_series_dir, _bible)
                 try:
                     import json as _jsv
@@ -5620,6 +5638,32 @@ class EpisodeRunner:
             print(f"  ⚠️ 场景视图失败（不阻断）：{type(e).__name__}: {e}")
             return {"kind": "scene.views", "enabled": True,
                     "error": f"{type(e).__name__}: {e}"}
+
+    def _apply_series_cast(self) -> None:
+        """系列模式：把台账里已登记的角色锚点复制进本集 workdir（跨集锁脸）。"""
+        import os as _os
+        import shutil as _sh
+
+        sd = str(getattr(self, "series_dir", "")
+                 or _os.environ.get("LITTLE_CREW_SERIES_DIR") or "").strip()
+        if not sd:
+            return
+        try:
+            from little_crew.runtime import series_bible as _sb
+
+            _data = _sb.load(sd)
+            _wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            for _cid, _ent in (_data.get("cast") or {}).items():
+                _anchor = str((_ent or {}).get("anchor") or "")
+                if not _anchor or not Path(_anchor).is_file() or not _wd:
+                    continue
+                _dst = Path(str(_wd)) / "assets" / "characters" / str(_cid) / "sheet.png"
+                _dst.parent.mkdir(parents=True, exist_ok=True)
+                _sh.copy2(_anchor, _dst)
+                getattr(self, "cast_anchors", {})[str(_cid)] = str(_dst)
+                print(f"  系列角色锚点复用：{_cid} ← {_anchor}")
+        except Exception:                                    # noqa: BLE001
+            pass
 
     def _run_director(self, script: Any) -> dict[str, Any]:
         """跑**导演**产出 `episode.plan`，并把它交给分镜师。
