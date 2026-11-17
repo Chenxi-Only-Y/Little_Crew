@@ -1,0 +1,32 @@
+{
+  "kind": "experiment.scene_tiers.llm",
+  "date": "2026-11-17",
+  "model": "deepseek-flash",
+  "heroMax": 2,
+  "scenes": {
+    "SC-SCENEVIEWS-001": {
+      "tier": 2,
+      "reason": "地铁站入口是本剧起点空间，需要基准与反向视图衔接夜街与室内，但仅一次出现，不必九宫格。",
+      "source": "llm"
+    },
+    "SC-SCENEVIEWS-002": {
+      "tier": 2,
+      "reason": "站厅与扶梯为连续运动调度的过渡主场景，45°与平面图可锁定刷卡到冲下扶梯的走位。",
+      "source": "llm"
+    },
+    "SC-SCENEVIEWS-003": {
+      "tier": 3,
+      "reason": "站台列车门前承载题眼'车门合上时表情怔住'，多机位反复拍门线与安全线关系，需九宫格锁死空间。",
+      "source": "llm"
+    },
+    "SC-SCENEVIEWS-004": {
+      "tier": 3,
+      "reason": "空站台是情绪落点与结尾灯灭长镜头的关键空间，柱子、玻璃倒影、灯带需多机位精确对位。",
+      "source": "llm"
+    }
+  },
+  "source": "llm",
+  "costCny": 1.3,
+  "seriesNote": "四场为同一地铁夜的连续推进，后两场承担题眼与情绪落点，给 Tier3；前两场为过渡型主场景给 Tier2，总预算与最多 2 场 Tier3 的限制均满足。",
+  "error": ""
+}

@@ -192,6 +192,35 @@ def _load_costume_map(value: Any) -> dict[str, str]:
             if str(v or "").strip()}
 
 
+def parse_scene_tiers(value: Any) -> dict[str, int]:
+    """解析人工档位覆盖：`{"SC1":3}` / `["SC1=3"]` / `"SC1=3,SC2=2"`。"""
+    out: dict[str, int] = {}
+    if not value:
+        return out
+    if isinstance(value, Mapping):
+        for k, v in value.items():
+            try:
+                t = int(v)
+            except (TypeError, ValueError):
+                continue
+            if t in (1, 2, 3):
+                out[str(k)] = t
+        return out
+    items = value if isinstance(value, (list, tuple)) else str(value).split(",")
+    for it in items:
+        s = str(it).strip()
+        if not s or "=" not in s:
+            continue
+        k, v = s.split("=", 1)
+        try:
+            t = int(v)
+        except ValueError:
+            continue
+        if t in (1, 2, 3):
+            out[k.strip()] = t
+    return out
+
+
 def _load_scene_cards(value: Any) -> dict[str, Any]:
     """加载场景卡表（dict 或 JSON 文件）：`{sceneId: {space, materials, ...}}`。
 

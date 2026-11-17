@@ -595,6 +595,12 @@ class _Handlers:
 
         runner.assemble_video = bool(body.get("video", False))
         runner.voice_enabled = bool(body.get("voice", False))
+        try:
+            from little_crew.runtime.run_options import parse_scene_tiers as _pst2
+            runner.scene_views_tiers = _pst2(body.get("sceneViewsTiers"))
+        except Exception:                                # noqa: BLE001
+            pass
+        runner.scene_views_llm = not bool(body.get("sceneViewsNoLlm", False))
         _wm = bool(body.get("whiteModel", False))
         if _wm:
             run.emit("提示", note="whiteModel 仅 ComfyUI 通道生效；API 走 HTTP 通道，本次忽略")

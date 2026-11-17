@@ -197,6 +197,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--scene-views-hero-max", type=int, default=2,
                     dest="scene_views_hero_max",
                     help="每集 Tier3（九宫格+平面图）上限，默认 2 场")
+    ap.add_argument("--scene-views-tiers", default="", dest="scene_views_tiers",
+                    help="人工档位覆盖，如 --scene-views-tiers SC1=3,SC2=2")
+    ap.add_argument("--scene-views-no-llm", action="store_true",
+                    dest="scene_views_no_llm",
+                    help="档位决策不用 LLM（退回频率启发式）")
     ap.add_argument("--scene-views", action="store_true", dest="scene_views",
                     help="场景空间视图（Tier1 空景锚点 / Tier2 四视图；按上游信号自动选档）")
     ap.add_argument("--scene-cards", default="", dest="scene_cards",
@@ -855,6 +860,9 @@ def main(argv: list[str] | None = None) -> int:
 
     runner.scene_views_enabled = bool(getattr(args, "scene_views", False))
     runner.scene_views_hero_max = int(getattr(args, "scene_views_hero_max", 2) or 2)
+    from little_crew.runtime.run_options import parse_scene_tiers as _pst
+    runner.scene_views_tiers = _pst(getattr(args, "scene_views_tiers", ""))
+    runner.scene_views_llm = not bool(getattr(args, "scene_views_no_llm", False))
     if runner.scene_views_enabled:
         print("  场景空间视图：开（按导演/镜头信号自动选 Tier1/Tier2）")
     runner.lipsync_enabled = bool(getattr(args, "lipsync", False))

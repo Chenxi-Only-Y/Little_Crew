@@ -57,6 +57,36 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.4.9] — 2026-11-17（**场景档位改由 LLM 读整部剧决策；人工可覆盖**）
+
+### 决策链
+
+**人工覆盖 > LLM（读完整剧本）> 频率启发式兜底**
+
+- LLM 输入：整部剧本每场标题/摘要 + 各场镜数 + 场景卡摘要；输出每场 Tier + 理由
+  （只看本场镜数会漏掉"全剧反复出现/题眼空间"）
+- 人工：`--scene-views-tiers SC01=3,SC02=2`（CLI）· `sceneViewsTiers`（API）· `--scene-views-no-llm` 强制启发式
+- 降级：LLM 失败/无 key → 频率启发式，来源写入 `delivery/scene_views.json`
+- Tier3 每集上限 `--scene-views-hero-max`（默认 2）
+
+### 真实 LLM 决策（《最后一班》12 镜 4 场，deepseek-flash）
+
+| 场 | 档 | LLM 理由 |
+|---|---|---|
+SC01 | Tier2 | 地铁站入口是本剧起点空间，需基准与反向视图衔接夜街与室内，但仅一次出现 |
+SC02 | Tier2 | 站厅/扶梯是连续运动调度的过渡主场景，45°与平面图锁走位 |
+SC03 | **Tier3** | 站台列车门前承载题眼"车门合上时表情怔住"，多机位反复拍门线/安全线 |
+SC04 | **Tier3** | 空站台是情绪落点与结尾灯灭长镜头，柱子/玻璃倒影/灯带需多机位对位 |
+
+上限满足（2 场 Tier3）；证据 `research/experiments/2026-11-17-scene-views/tier-decisions-llm.json`
+
+### 测试
+
+新增 `runtime/scene_tier_planner_check` **20/20**；`scene_views_check` 扩到 **43/43**；
+全量 **3104/3091 + 架构守卫 PASS**
+
+---
+
 ## [0.4.8] — 2026-11-17（**场景视图按剧本频率选档 + Tier3 九宫格/正交平面图**）
 
 ### 决策改为"剧本场景出现频率"

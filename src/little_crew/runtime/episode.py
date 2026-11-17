@@ -4118,6 +4118,9 @@ class EpisodeRunner:
     scene_views_enabled: bool = False
     #: 每集 Tier3（九宫格+平面图）上限，默认 2 场
     scene_views_hero_max: int = 2
+    #: 档位决策：LLM（默认）或频率启发式；人工覆盖优先
+    scene_views_llm: bool = True
+    scene_views_tiers: Any = None
     scene_views_report: dict[str, Any] = None  # type: ignore[assignment]
 
     #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
@@ -5453,16 +5456,41 @@ class EpisodeRunner:
                 except Exception:                            # noqa: BLE001
                     cards[sid] = {}
             plan = (director_info or {}).get("plan") or {}
+            # ---- 档位：LLM 看整部剧决策；失败/未配 key 退回频率启发式；人工覆盖优先 ----
+            from little_crew.runtime.scene_tier_planner import plan_tiers as _plan_tiers
+
+            _hero_max = int(getattr(self, "scene_views_hero_max", 2) or 2)
+            _overrides = getattr(self, "scene_views_tiers", None) or {}
+            _client = None
+            if bool(getattr(self, "scene_views_llm", True)):
+                try:
+                    from little_crew.agent.llm import LlmClient
+
+                    _client = LlmClient("deepseek-flash", temperature=0.7,
+                                        timeout_s=90)
+                except Exception:                            # noqa: BLE001
+                    _client = None
+            _tp = _plan_tiers(script=script, shots=picked, scene_cards=cards,
+                              client=_client, hero_max=_hero_max,
+                              overrides=_overrides,
+                              force_heuristic=(_client is None))
+            _tiers = {sid: row for sid, row in (_tp.get("scenes") or {}).items()}
             rep = _sv.generate(scene_cards=cards, shots=picked,
                                director_plan=plan, workdir=wd, enabled=True,
-                               script=script,
-                               tier3_max=int(getattr(self, "scene_views_hero_max", 2) or 2),
+                               script=script, tiers=_tiers or None,
+                               tier3_max=_hero_max,
                                verify=True)   # 空景 QC：模型常无视"无人物"
+            rep["tierPlan"] = {"source": _tp.get("source"),
+                               "seriesNote": _tp.get("seriesNote"),
+                               "error": _tp.get("error"),
+                               "plannerCostCny": _tp.get("costCny")}
             _sv.write_report(wd, rep)
             _t2 = sum(1 for v in (rep.get("scenes") or {}).values()
                       if int(v.get("tier") or 1) >= 2)
+            _src = (rep.get("tierPlan") or {}).get("source") or rep.get("decisionSource")
             print(f"  场景视图：{len(rep.get('scenes') or {})} 场"
-                  f"（Tier2 {_t2} 场）· 图 {rep.get('generated')} 张"
+                  f"（Tier2+ {_t2 + sum(1 for v in (rep.get('scenes') or {}).values() if int(v.get('tier') or 1) >= 3)} 场）"
+                  f" · 档位来源 {_src} · 图 {rep.get('generated')} 张"
                   f" · ¥{rep.get('costCny')}")
             return rep
         except Exception as e:                                # noqa: BLE001

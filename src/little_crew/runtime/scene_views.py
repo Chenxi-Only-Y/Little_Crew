@@ -358,6 +358,7 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
              shots: Sequence[Any], director_plan: Mapping[str, Any] | None,
              workdir: str | Path, enabled: bool = False, language: str = "zh",
              script: Any = None,
+             tiers: Mapping[str, Any] | None = None,
              size: str = DEFAULT_SIZE,
              t2i: Callable[[str, Path], dict] | None = None,
              edit: Callable[[Path, str, Path], dict] | None = None,
@@ -386,27 +387,57 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
     _t2i = t2i or _default_t2i
     _edit = edit or _default_edit
     _check = checker or (_default_people_check if verify else None)
-    # ---- 按"剧本场景出现频率"决策（+ 每集 Tier3 上限）----
-    _freq = scene_frequency(script, shots) if script is not None else {
-        sid: {"sceneId": sid, "shots": per_scene[sid], "occurrences": 1,
-              "score": per_scene[sid] + 1,
-              "tier": (1 if per_scene[sid] + 1 <= 2 else
-                       (2 if per_scene[sid] + 1 <= 4 else 3)),
-              "location": sid,
-              "factors": [f"该场 {per_scene[sid]} 镜（未提供剧本，按镜数）"]}
-        for sid in per_scene}
-    _decisions = {sid: choose_tier(_freq.get(sid) or {}) for sid in per_scene}
-    if tier3_enabled and tier3_max > 0:
-        _cands = sorted((sid for sid, d in _decisions.items()
-                         if int(d["tier"]) >= 2),
-                        key=lambda s: (-int(_decisions[s]["score"]), s))[:tier3_max]
-        for sid in _cands:
-            if int(_decisions[sid]["tier"]) == 3:
-                continue
-            _decisions[sid]["baseTier"] = int(_decisions[sid]["tier"])
-            _decisions[sid]["tier"] = 3
-            _decisions[sid]["factors"] = list(_decisions[sid]["factors"]) + [
-                f"Tier3：九宫格+平面图（每集上限 {tier3_max} 场）"]
+    # ---- 档位来源：外部决策（LLM/人工）优先，否则频率启发式 ----
+    if tiers is not None:
+        _decisions = {}
+        _src = "external"
+        for sid in per_scene:
+            row = tiers.get(sid)
+            if isinstance(row, Mapping):
+                try:
+                    tier = int(row.get("tier") or 1)
+                except (TypeError, ValueError):
+                    tier = 1
+                if tier not in (1, 2, 3):
+                    tier = 1
+                _src = str(row.get("source") or _src)
+                _decisions[sid] = {
+                    "tier": tier, "score": int(row.get("score") or 0),
+                    "factors": (list(row.get("factors") or ())
+                                + ([str(row.get("reason"))] if row.get("reason") else [])),
+                    "source": _src,
+                }
+            else:
+                try:
+                    tier = int(row or 1)
+                except (TypeError, ValueError):
+                    tier = 1
+                _decisions[sid] = {"tier": tier if tier in (1, 2, 3) else 1,
+                                   "score": 0, "factors": ["外部指定档位"],
+                                   "source": "external"}
+        rep["decisionSource"] = _src
+    else:
+        _freq = scene_frequency(script, shots) if script is not None else {
+            sid: {"sceneId": sid, "shots": per_scene[sid], "occurrences": 1,
+                  "score": per_scene[sid] + 1,
+                  "tier": (1 if per_scene[sid] + 1 <= 2 else
+                           (2 if per_scene[sid] + 1 <= 4 else 3)),
+                  "location": sid,
+                  "factors": [f"该场 {per_scene[sid]} 镜（未提供剧本，按镜数）"]}
+            for sid in per_scene}
+        _decisions = {sid: choose_tier(_freq.get(sid) or {}) for sid in per_scene}
+        rep["decisionSource"] = "heuristic"
+        if tier3_enabled and tier3_max > 0:
+            _cands = sorted((sid for sid, d in _decisions.items()
+                             if int(d["tier"]) >= 2),
+                            key=lambda s: (-int(_decisions[s]["score"]), s))[:tier3_max]
+            for sid in _cands:
+                if int(_decisions[sid]["tier"]) == 3:
+                    continue
+                _decisions[sid]["baseTier"] = int(_decisions[sid]["tier"])
+                _decisions[sid]["tier"] = 3
+                _decisions[sid]["factors"] = list(_decisions[sid]["factors"]) + [
+                    f"Tier3：九宫格+平面图（每集上限 {tier3_max} 场）"]
     for sid in sorted(per_scene):
         card = dict(scene_cards.get(sid) or {})
         dec = _decisions[sid]

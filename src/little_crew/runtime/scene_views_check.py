@@ -140,6 +140,19 @@ def main() -> int:
         check("D7 ★★ 正俯图标注只作草图（note 写明）",
               "正俯" in sc2.get("note", "") and "不回灌" in sc2.get("note", ""), "")
 
+        print(); print("D2. 外部档位 / 人工覆盖（优先于启发式）")
+        rep_ex = SV.generate(scene_cards={"SC1": CARD}, shots=shots[:1],
+                             director_plan={}, workdir=wd, enabled=True,
+                             t2i=t2i, edit=edit,
+                             tiers={"SC1": {"tier": 2, "source": "manual",
+                                            "reason": "人工指定"}})
+        sc_ex = rep_ex["scenes"]["SC1"]
+        check("D8 ★★★ 外部档位生效（人工 Tier2）+ 来源可核",
+              sc_ex["tier"] == 2 and len(sc_ex["images"]) == 4
+              and rep_ex.get("decisionSource") == "manual", str(rep_ex.get("decisionSource")))
+        check("D9 ★★ 外部档位的理由进证据",
+              any("人工指定" in str(x) for x in sc_ex["decision"].get("factors") or []), "")
+
         print(); print("E. 空景 QC：检出人物 -> 重试一次（更硬约束）")
         _seq = {"v": ["yes", "no"]}
 
