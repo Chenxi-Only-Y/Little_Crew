@@ -57,7 +57,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.6.1] — 2026-11-17（**插件化 + 总导演章节层：章契约 / 边界审**）
+## [0.6.2] — 2026-11-17（**插件化 + 总导演章节层：章契约 / 边界审**）
 
 ### 插件化纪律（新职业一律插件）
 
@@ -78,7 +78,7 @@ git config http.sslBackend openssl
 ### 测试
 
 新增 `chapter_plan_check 16` · `boundary_audit_check 14` · `plugin_check 18`；
-全量 **3204/3191 + 架构守卫 PASS**
+全量 **3222/3209 + 架构守卫 PASS**
 
 ### 待办（下一步）
 
@@ -17220,4 +17220,15 @@ n 从 10 涨到 20~30 只需日常跑几集。
 
 ---
 
+
+
+## [0.6.2] — 2026-11-17（**职业依赖：必需性 + 顺序**）
+
+- `runtime/position_order.py`：职业依赖图（产物依赖 ∪ 显式 after）→ 拓扑序
+  - 必需性：`MANDATORY=("screenwriter","storyboard_artist")` 不可移除；缺 → `F-POSITION-MISSING`
+  - 顺序：有环/未知 → `F-ORDER-CYCLE`；显式 after 优先（避免导演审阅型 requires 成环）
+  - 核心顺序：编剧→导演→分镜→角色/场景/灯光→摄影→场记/审片→后期/合规
+- 测试 `position_order_check` **18/18**；全量 **3222/3209 + 架构守卫 PASS**
+
+---
 
