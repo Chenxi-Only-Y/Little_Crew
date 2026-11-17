@@ -67,8 +67,11 @@ def _a_cli_basics() -> None:
 
     # --version
     rc, out = _run_cli(["--version"])
+    from little_crew.version import VERSION as _CUR_VER
+
     check("A4 `--version` 成功且打印版本号",
-          rc == ExitCode.OK and "0.4" in out, f"rc={rc} out={out.strip()[:40]}")
+          rc == ExitCode.OK and _CUR_VER in out,
+          f"rc={rc} out={out.strip()[:40]}")
 
     # 无子命令 -> 帮助 + 用法错误
     rc, out = _run_cli([])

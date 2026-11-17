@@ -1,0 +1,58 @@
+{
+  "episodeId": "E01",
+  "rounds": [
+    {
+      "verdict": "Verdict.PASS",
+      "total": 71.9,
+      "issues": [
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-E01-001', shot='', line=0, asset=''), problem='SC-E01-001 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-E01-001 补一个体现「冲突」的镜头或段落')",
+        "ReviewIssue(severity=<Severity.MAJOR: 'major'>, dimension=<Dimension.COMPLETENESS: 'completeness'>, location=IssueLocation(scene='SC-E01-002', shot='', line=0, asset=''), problem='SC-E01-002 缺少「冲突」：本场缺少明确的冲突或阻力', suggestion='在 SC-E01-002 补一个体现「冲突」的镜头或段落')"
+      ],
+      "asDict": {
+        "round": 1,
+        "verdict": "PASS",
+        "total": 71.9,
+        "issueCount": 2,
+        "blockerCount": 0,
+        "repairHintCount": 0,
+        "reviewerCount": 2,
+        "invalidatedReason": "",
+        "stages": [
+          {
+            "stage": "script",
+            "agent": "screenwriter",
+            "ok": true,
+            "produced": [
+              "script.draft",
+              "script.final"
+            ],
+            "error": "",
+            "seconds": 0.001
+          },
+          {
+            "stage": "gate",
+            "agent": "dramaturge",
+            "ok": true,
+            "produced": [
+              "script.critique"
+            ],
+            "error": "",
+            "seconds": 0.001
+          },
+          {
+            "stage": "gate",
+            "agent": "story_editor",
+            "ok": true,
+            "produced": [
+              "style.guard"
+            ],
+            "error": "",
+            "seconds": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "accepted": true,
+  "reason": "第 1 轮通过（权威总分 71.9）"
+}

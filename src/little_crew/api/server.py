@@ -601,6 +601,7 @@ class _Handlers:
         except Exception:                                # noqa: BLE001
             pass
         runner.scene_views_llm = not bool(body.get("sceneViewsNoLlm", False))
+        runner.series_dir = str(body.get("seriesDir") or "")
         _wm = bool(body.get("whiteModel", False))
         if _wm:
             run.emit("提示", note="whiteModel 仅 ComfyUI 通道生效；API 走 HTTP 通道，本次忽略")

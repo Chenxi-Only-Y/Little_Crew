@@ -362,6 +362,7 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
              workdir: str | Path, enabled: bool = False, language: str = "zh",
              script: Any = None,
              tiers: Mapping[str, Any] | None = None,
+             reuse_map: Mapping[str, Any] | None = None,
              size: str = DEFAULT_SIZE,
              t2i: Callable[[str, Path], dict] | None = None,
              edit: Callable[[Path, str, Path], dict] | None = None,
@@ -449,12 +450,28 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
         outdir = wd / "assets" / "scene_views" / sid
         rows: list[dict] = []
         base: Path | None = None
+        _reuse = (reuse_map or {}).get(sid) or {}
+        _reuse_views = (dict(_reuse.get("assets") or {})
+                        if _reuse.get("reuse") else {})
+
+        def _copy_reused(view: str, dst: Path) -> dict | None:
+            src = _reuse_views.get(view)
+            if not src or not Path(str(src)).is_file():
+                return None
+            import shutil as _sh
+
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            _sh.copy2(str(src), str(dst))
+            return {"ok": True, "out": str(dst), "seconds": 0.0, "reused": True}
         n_expected = len(prompts)
         _first_view = ("front_wide" if tier >= 3 else "base")
         for view, prompt in prompts.items():
             dst = outdir / f"{view}.png"
             ref_used = None
-            if view == _first_view:
+            _pre = _copy_reused(view, dst)
+            if _pre is not None:
+                res = _pre
+            elif view == _first_view:
                 res = _t2i(prompt, dst)
             else:
                 # 反向/45°/正俯都以基准图为参考；正俯只用于空间草图（不再回灌）
@@ -466,7 +483,8 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
             # ---- 空景 QC（模型经常无视"无人物"）----
             _people = ""
             _tries = 1
-            if _check is not None and res.get("ok") and res.get("out"):
+            if (_check is not None and res.get("ok") and res.get("out")
+                    and not res.get("reused")):
                 _people = str(_check(Path(str(res["out"]))) or "")
                 if _people == "yes":
                     # 重试一次：提示词追加硬约束
@@ -487,14 +505,18 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
                    "reference": (str(ref_used) if ref_used else ""),
                    "ok": bool(res.get("ok")), "out": res.get("out"),
                    "seconds": res.get("seconds"), "error": res.get("error", ""),
-                   "peopleDetected": _people, "tries": _tries}
+                   "peopleDetected": _people, "tries": _tries,
+                   "reused": bool(res.get("reused"))}
             if _people == "yes":
                 rep["peopleWarnings"] += 1
             rows.append(row)
             if row["ok"] and view == _first_view:
                 base = Path(str(row["out"]))
         ok_n = sum(1 for r in rows if r["ok"])
-        _attempts = sum(int(r.get("tries") or 1) for r in rows if r["ok"])
+        _attempts = sum(int(r.get("tries") or 1) for r in rows
+                        if r["ok"] and not r.get("reused"))
+        _reused_n = sum(1 for r in rows if r.get("reused"))
+        rep["reused"] = int(rep.get("reused") or 0) + _reused_n
         rep["costCny"] = round(rep["costCny"] + _attempts * COST_PER_IMAGE_CNY, 2)
         rep["generated"] += ok_n
         rep["failed"] += (n_expected - ok_n)
@@ -509,6 +531,8 @@ def generate(*, scene_cards: Mapping[str, Mapping[str, Any]],
             "matrix": ([{"view": k, "row": r, "col": c, "label": lb}
                         for k, r, c, lb, _d in TIER3_VIEWS] if tier >= 3 else []),
             "shots": per_scene[sid], "anchors": anchor_facts(card),
+            "reused": bool(_reuse.get("reuse")),
+            "reusedFrom": str(_reuse.get("from") or ""),
             "sceneHash": _hash(json.dumps(dict(card), sort_keys=True, ensure_ascii=False)),
             "images": rows,
             "ok": ok_n == n_expected,

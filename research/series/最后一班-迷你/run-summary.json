@@ -1,0 +1,37 @@
+{
+  "kind": "series.run",
+  "seriesDir": "research\\series\\最后一班-迷你",
+  "episodes": 2,
+  "ok": 2,
+  "wallS": 1185.5,
+  "sceneCostCny": 1.05,
+  "reusedScenes": 1,
+  "rows": [
+    {
+      "episodeId": "E01",
+      "rc": 0,
+      "ok": true,
+      "shots": 2,
+      "coverage": 1.0,
+      "wallS": 792.27,
+      "sceneCostCny": 0.7,
+      "tierSource": "llm-series",
+      "reusedScenes": 0,
+      "sceneFailed": 2,
+      "failure": ""
+    },
+    {
+      "episodeId": "E02",
+      "rc": 0,
+      "ok": true,
+      "shots": 2,
+      "coverage": 1.0,
+      "wallS": 392.66,
+      "sceneCostCny": 0.35,
+      "tierSource": "llm-series",
+      "reusedScenes": 1,
+      "sceneFailed": 0,
+      "failure": ""
+    }
+  ]
+}

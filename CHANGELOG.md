@@ -57,6 +57,35 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.5.0] — 2026-11-17（**系列资产台账：多集复用 / 更新 / 升档**）
+
+### 新增
+
+- `runtime/series_bible.py`：系列台账（稳定 sceneKey / 场景卡 canonical 与版本 / 档位只升不降 /
+  角色 bible 与造型 / 复用判定 / 使用流水 / 汇总）
+- `runtime/series_planner.py`：系列级档位（整部台账 + 当前集 → 档位/升档建议；LLM 失败退启发式）
+- `runtime/scene_views.py`：生成前查台账；命中复用 → **复制已有视图，0 成本**；升档才重生成
+- `runtime/episode.py`：`--series-dir` 进入系列模式（台账卡优先、决策、复用、回写）
+- `tools/series_run.py`：多集顺序跑 + 断点续跑 + 汇总（成本/复用/墙钟）
+- `--series-dir`（CLI）· `seriesDir`（API）
+
+### 实跑（《最后一班》迷你 2 集，2 镜/集）
+
+| 集 | 结果 | 墙钟 | 场景成本 | 复用 |
+|---|---|---|---|---|
+E01 | 2/2 | 792s | ¥0.70 | 0 |
+E02 | 2/2 | **393s** | **¥0.35** | **7/9 视图复用（地铁站台 Tier3）** |
+
+- 复用命中后：成本减半、墙钟减半；台账记录 `E01,E02`、usage、tierHistory
+- 证据：`research/series/最后一班-迷你/`（series.json / run-summary.md / scripts）
+
+### 测试
+
+新增 `series_bible_check 26` · `series_planner_check 15`；`scene_views_check` 扩到 47（含复用 0 成本）；
+全量 **3149/3136 + 架构守卫 PASS**
+
+---
+
 ## [0.4.10] — 2026-11-17（**修复：Tier3 九宫格提示词丢失场景卡内容**）
 
 ### 问题（真机质量验证发现）

@@ -194,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--costume-map", default="", dest="costume_map",
                     help="造型覆盖 JSON（{shotId 或 sceneId: outfits/<variant>}）；"
                          "资产放 assets/characters/<角色>/outfits/<variant>/")
+    ap.add_argument("--series-dir", default="", dest="series_dir",
+                    help="系列台账目录（启用跨集复用/升档）；如 outputs/_series/某剧")
     ap.add_argument("--scene-views-hero-max", type=int, default=2,
                     dest="scene_views_hero_max",
                     help="每集 Tier3（九宫格+平面图）上限，默认 2 场")
@@ -863,6 +865,9 @@ def main(argv: list[str] | None = None) -> int:
     from little_crew.runtime.run_options import parse_scene_tiers as _pst
     runner.scene_views_tiers = _pst(getattr(args, "scene_views_tiers", ""))
     runner.scene_views_llm = not bool(getattr(args, "scene_views_no_llm", False))
+    runner.series_dir = str(getattr(args, "series_dir", "") or "")
+    if runner.series_dir:
+        print(f"  系列台账：{runner.series_dir}（跨集复用/升档）")
     if runner.scene_views_enabled:
         print("  场景空间视图：开（按导演/镜头信号自动选 Tier1/Tier2）")
     runner.lipsync_enabled = bool(getattr(args, "lipsync", False))

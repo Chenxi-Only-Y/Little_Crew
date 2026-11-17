@@ -1,0 +1,177 @@
+"""多集顺序跑（2026-11-17）：把 `series/` 台账 + 当前剧集接起来。
+
+```
+scripts/E01.txt, E02.txt, ...  ->  逐集跑 episode_demo（带系列台账）
+                                  ->  scene views 决策/复用/升档
+                                  -> 回写 series/series.json
+```
+
+用法：
+```powershell
+$env:PYTHONPATH="<项目>\\src"
+python tools/series_run.py --series-dir research/series/最后一班-迷你 \
+    --scripts-dir research/series/最后一班-迷你/scripts \
+    --shots 2 --render-path cloud --scene-views --hero-max 1
+```
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _episode_id(stem: str) -> str:
+    s = stem.strip()
+    return s if s else "EP"
+
+
+def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--series-dir", required=True)
+    ap.add_argument("--scripts-dir", default="")
+    ap.add_argument("--episodes", type=int, default=0, help="跑前 N 集（0=全部）")
+    ap.add_argument("--shots", type=int, default=2)
+    ap.add_argument("--render-path", default="cloud")
+    ap.add_argument("--crew-profile", default="standard")
+    ap.add_argument("--scene-views", action="store_true", default=True)
+    ap.add_argument("--hero-max", type=int, default=2)
+    ap.add_argument("--no-llm", action="store_true")
+    ap.add_argument("--resume", action="store_true", default=True)
+    ap.add_argument("--out-root", default="")
+    ap.add_argument("--timeout", type=int, default=1800)
+    a = ap.parse_args()
+
+    series_dir = Path(a.series_dir)
+    scripts_dir = Path(a.scripts_dir) if a.scripts_dir else series_dir / "scripts"
+    if not scripts_dir.is_dir():
+        print(f"  ❌ 找不到剧本目录：{scripts_dir}")
+        return 2
+    scripts = sorted(scripts_dir.glob("*.txt"))
+    if a.episodes > 0:
+        scripts = scripts[:a.episodes]
+    if not scripts:
+        print("  ❌ 目录里没有 *.txt 剧本")
+        return 2
+    out_root = Path(a.out_root) if a.out_root else ROOT / "outputs" / "_series" / series_dir.name
+    out_root.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(ROOT / "src")
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["LITTLE_CREW_ALLOW_UNVERIFIED"] = "1"
+    env["LITTLE_CREW_SERIES_DIR"] = str(series_dir)
+    rows: list[dict] = []
+    t_all = time.time()
+    for script in scripts:
+        ep = _episode_id(script.stem)
+        wd = out_root / ep
+        marker = wd / "delivery" / "series.json"
+        if a.resume and marker.is_file():
+            try:
+                rep = json.loads((wd / "delivery" / "run.report.json")
+                                 .read_text(encoding="utf-8")) if (wd / "delivery" / "run.report.json").is_file() else {}
+            except Exception:                                # noqa: BLE001
+                rep = {}
+            if rep.get("ok"):
+                sv = {}
+                if (wd / "delivery" / "scene_views.json").is_file():
+                    try:
+                        sv = json.loads((wd / "delivery" / "scene_views.json").read_text(encoding="utf-8"))
+                    except Exception:                        # noqa: BLE001
+                        sv = {}
+                rows.append({"episodeId": ep, "rc": 0, "ok": True, "resumed": True,
+                             "shots": rep.get("rendered"), "coverage": rep.get("coverage"),
+                             "wallS": rep.get("wallSeconds"),
+                             "sceneCostCny": sv.get("costCny"),
+                             "reusedScenes": sum(1 for v in (sv.get("scenes") or {}).values()
+                                                 if v.get("reused"))})
+                print(f"  ↷ {ep} 已成功（续跑跳过）")
+                continue
+        cmd = [sys.executable, "-X", "utf8", "-m", "little_crew.runtime.episode_demo",
+               "--story-file", str(script), "--workdir", str(wd),
+               "--episode-id", ep, "--shots-target", str(a.shots),
+               "--render-path", a.render_path, "--crew-profile", a.crew_profile,
+               "--accept-script", "--series-dir", str(series_dir),
+               "--scene-views-hero-max", str(a.hero_max)]
+        if a.scene_views:
+            cmd.append("--scene-views")
+        if a.no_llm:
+            cmd.append("--scene-views-no-llm")
+        t0 = time.time()
+        try:
+            p = subprocess.run(cmd, cwd=str(ROOT), env=env, capture_output=True,
+                               text=True, encoding="utf-8", errors="replace",
+                               timeout=a.timeout)
+            rc, tail = p.returncode, (p.stdout or "")[-600:]
+        except subprocess.TimeoutExpired:
+            rc, tail = -9, f"timeout>{a.timeout}s"
+        wall = round(time.time() - t0, 1)
+        rep: dict = {}
+        rp = wd / "delivery" / "run.report.json"
+        if rp.is_file():
+            try:
+                rep = json.loads(rp.read_text(encoding="utf-8"))
+            except Exception:                                # noqa: BLE001
+                rep = {}
+        sv: dict = {}
+        sp = wd / "delivery" / "scene_views.json"
+        if sp.is_file():
+            try:
+                sv = json.loads(sp.read_text(encoding="utf-8"))
+            except Exception:                                # noqa: BLE001
+                sv = {}
+        ok = bool(rep.get("ok")) and rc == 0
+        row = {"episodeId": ep, "rc": rc, "ok": ok,
+               "shots": rep.get("rendered"), "coverage": rep.get("coverage"),
+               "wallS": rep.get("wallSeconds") or wall,
+               "sceneCostCny": sv.get("costCny"),
+               "tierSource": (sv.get("tierPlan") or {}).get("source"),
+               "reusedScenes": sum(1 for v in (sv.get("scenes") or {}).values()
+                                   if v.get("reused")),
+               "sceneFailed": sv.get("failed"),
+               "failure": "" if ok else (str(rep.get("reason") or "")[:160] or tail[-160:])}
+        rows.append(row)
+        mark = "✅" if ok else "❌"
+        print(f"  {mark} {ep} rc={rc} 覆盖={row['coverage']} 墙钟={row['wallS']}s "
+              f"场景¥{row.get('sceneCostCny')} 复用{row.get('reusedScenes')}场"
+              + ("" if ok else f" · {row['failure'][:80]}"), flush=True)
+        if not ok and rep:
+            pass
+
+    total_cost = round(sum(float((r.get("sceneCostCny") or 0)) for r in rows), 2)
+    summary = {"kind": "series.run", "seriesDir": str(series_dir),
+               "episodes": len(rows), "ok": sum(1 for r in rows if r.get("ok")),
+               "wallS": round(time.time() - t_all, 1),
+               "sceneCostCny": total_cost,
+               "reusedScenes": sum(int(r.get("reusedScenes") or 0) for r in rows),
+               "rows": rows}
+    (series_dir / "run-summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    lines = ["# 多集运行汇总", "",
+             f"- 剧集目录：`{series_dir}`",
+             f"- 成功：**{summary['ok']}/{summary['episodes']}**",
+             f"- 场景视图成本：**¥{total_cost}** · 复用场景 {summary['reusedScenes']} 场",
+             f"- 总墙钟：{summary['wallS']}s", "",
+             "| 集 | 结果 | 覆盖 | 墙钟s | 场景¥ | 复用场 | 档位来源 |",
+             "|---|---|---|---|---|---|---|"]
+    for r in rows:
+        lines.append(f"| {r['episodeId']} | {'✅' if r.get('ok') else '❌'} "
+                     f"| {r.get('coverage')} | {r.get('wallS')} "
+                     f"| {r.get('sceneCostCny')} | {r.get('reusedScenes')} "
+                     f"| {r.get('tierSource') or ''} |")
+    (series_dir / "run-summary.md").write_text("\n".join(lines), encoding="utf-8")
+    print(f"  --- {summary['ok']}/{summary['episodes']} 成功 · 场景¥{total_cost} · "
+          f"墙钟 {summary['wallS']}s")
+    print(f"  汇总：{series_dir / 'run-summary.md'}")
+    return 0 if summary["ok"] == summary["episodes"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -4121,6 +4121,8 @@ class EpisodeRunner:
     #: 档位决策：LLM（默认）或频率启发式；人工覆盖优先
     scene_views_llm: bool = True
     scene_views_tiers: Any = None
+    #: 系列台账目录（设置后启用跨集复用/升档）
+    series_dir: str = ""
     scene_views_report: dict[str, Any] = None  # type: ignore[assignment]
 
     #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
@@ -5434,10 +5436,12 @@ class EpisodeRunner:
     def _run_scene_views(self, picked: Sequence[Any],
                          director_info: Mapping[str, Any] | None = None,
                          script: Any = None) -> dict:
-        """生成场景空间视图（Tier1 空景锚点 / Tier2 四视图），失败不阻断。"""
+        """生成场景空间视图；**若配置了系列目录，则走系列台账（复用/升档）**。失败不阻断。"""
         if not bool(getattr(self, "scene_views_enabled", False)):
             return {}
         try:
+            import os as _osv
+
             from little_crew.runtime import scene_views as _sv
 
             wd = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
@@ -5456,9 +5460,6 @@ class EpisodeRunner:
                 except Exception:                            # noqa: BLE001
                     cards[sid] = {}
             plan = (director_info or {}).get("plan") or {}
-            # ---- 档位：LLM 看整部剧决策；失败/未配 key 退回频率启发式；人工覆盖优先 ----
-            from little_crew.runtime.scene_tier_planner import plan_tiers as _plan_tiers
-
             _hero_max = int(getattr(self, "scene_views_hero_max", 2) or 2)
             _overrides = getattr(self, "scene_views_tiers", None) or {}
             _client = None
@@ -5470,28 +5471,148 @@ class EpisodeRunner:
                                         timeout_s=90)
                 except Exception:                            # noqa: BLE001
                     _client = None
-            _tp = _plan_tiers(script=script, shots=picked, scene_cards=cards,
-                              client=_client, hero_max=_hero_max,
-                              overrides=_overrides,
-                              force_heuristic=(_client is None))
-            _tiers = {sid: row for sid, row in (_tp.get("scenes") or {}).items()}
+            _series_dir = str(getattr(self, "series_dir", "")
+                              or _osv.environ.get("LITTLE_CREW_SERIES_DIR") or "").strip()
+            tiers: dict[str, dict] | None = None
+            reuse_map: dict[str, dict] | None = None
+            tier_source = ""
+            planner_meta: dict[str, Any] = {}
+            _bible = None
+            keys: dict[str, str] = {}
+            if _series_dir:
+                # ---- 系列模式：台账 + 跨集决策 + 复用/升档 ----
+                from little_crew.runtime import series_bible as _sb
+                from little_crew.runtime import series_planner as _sp
+
+                _bible = _sb.load(_series_dir)
+                aliases = _bible.get("sceneAliases") or {}
+                _scenes = (script.get("scenes") if isinstance(script, Mapping)
+                           else getattr(script, "scenes", ()) or ())
+                for _sc in _scenes or ():
+                    if isinstance(_sc, Mapping):
+                        _sid = str(_sc.get("id") or _sc.get("sceneId") or "")
+                        _head = str(_sc.get("heading") or "")
+                    else:
+                        _sid = str(getattr(_sc, "scene_id", "") or "")
+                        _head = str(getattr(_sc, "heading", "") or "")
+                    if _sid:
+                        keys[_sid] = _sb.stable_scene_key(_head, aliases=aliases)
+                        # 系列已登记过该场景 -> 用台账卡片（跨集 canonical，避免每集重生成导致哈希变化）
+                        _ent = (_bible.get("scenes") or {}).get(keys[_sid]) or {}
+                        if isinstance(_ent, Mapping) and _ent.get("card"):
+                            cards[_sid] = dict(_ent["card"])
+                            print(f"  系列场景卡复用：{_sid} -> {keys[_sid]}")
+                _pp = _sp.plan_episode(
+                    episode_id=self.episode_id, script=script, shots=picked,
+                    scene_cards=cards, data=_bible, client=_client,
+                    hero_max=_hero_max, overrides=_overrides, keys=keys,
+                    force_heuristic=(_client is None))
+                tiers = {sid: row for sid, row in (_pp.get("scenes") or {}).items()}
+                tier_source = str(_pp.get("source") or "")
+                planner_meta = {"source": _pp.get("source"),
+                                "seriesNote": _pp.get("seriesNote"),
+                                "error": _pp.get("error"),
+                                "plannerCostCny": _pp.get("costCny")}
+                reuse_map = {}
+                for sid, row in tiers.items():
+                    key = str(row.get("sceneKey") or keys.get(sid, ""))
+                    dec = _sb.decide_reuse(_bible, scene_key=key,
+                                           card=cards.get(sid),
+                                           desired_tier=int(row.get("tier") or 1))
+                    ent = (_bible.get("scenes") or {}).get(key) or {}
+                    dec["from"] = ",".join(str(x) for x in (ent.get("episodes") or []))
+                    reuse_map[sid] = dec
+            else:
+                # ---- 单集模式：整集 LLM 决策（0.4.9 行为）----
+                from little_crew.runtime.scene_tier_planner import plan_tiers as _plan_tiers
+
+                _tp = _plan_tiers(script=script, shots=picked, scene_cards=cards,
+                                  client=_client, hero_max=_hero_max,
+                                  overrides=_overrides,
+                                  force_heuristic=(_client is None))
+                tiers = {sid: row for sid, row in (_tp.get("scenes") or {}).items()}
+                tier_source = str(_tp.get("source") or "")
+                planner_meta = {"source": _tp.get("source"),
+                                "seriesNote": _tp.get("seriesNote"),
+                                "error": _tp.get("error"),
+                                "plannerCostCny": _tp.get("costCny")}
             rep = _sv.generate(scene_cards=cards, shots=picked,
                                director_plan=plan, workdir=wd, enabled=True,
-                               script=script, tiers=_tiers or None,
+                               script=script, tiers=tiers or None,
+                               reuse_map=reuse_map or None,
                                tier3_max=_hero_max,
                                verify=True)   # 空景 QC：模型常无视"无人物"
-            rep["tierPlan"] = {"source": _tp.get("source"),
-                               "seriesNote": _tp.get("seriesNote"),
-                               "error": _tp.get("error"),
-                               "plannerCostCny": _tp.get("costCny")}
+            rep["tierPlan"] = planner_meta
+            if _series_dir:
+                rep["seriesDir"] = _series_dir
             _sv.write_report(wd, rep)
-            _t2 = sum(1 for v in (rep.get("scenes") or {}).values()
-                      if int(v.get("tier") or 1) >= 2)
-            _src = (rep.get("tierPlan") or {}).get("source") or rep.get("decisionSource")
-            print(f"  场景视图：{len(rep.get('scenes') or {})} 场"
-                  f"（Tier2+ {_t2 + sum(1 for v in (rep.get('scenes') or {}).values() if int(v.get('tier') or 1) >= 3)} 场）"
-                  f" · 档位来源 {_src} · 图 {rep.get('generated')} 张"
-                  f" · ¥{rep.get('costCny')}")
+            # ---- 回写系列台账 ----
+            if _series_dir and _bible is not None:
+                from little_crew.runtime import series_bible as _sb2
+
+                _act_count = {"reused": 0, "upgraded": 0, "generated": 0}
+                for sid, sc in (rep.get("scenes") or {}).items():
+                    key = (keys.get(sid) or _sb2.stable_scene_key(
+                        str((tiers or {}).get(sid, {}).get("sceneKey")
+                            or sid), aliases=aliases))
+                    assets = {str(r.get("view")): str(r.get("out"))
+                              for r in (sc.get("images") or ())
+                              if r.get("ok") and r.get("out")}
+                    if sc.get("board"):
+                        assets["board"] = str(sc["board"])
+                    _act = "reused" if sc.get("reused") else (
+                        "upgraded" if (reuse_map or {}).get(sid, {}).get("upgrade")
+                        else "generated")
+                    _act_count[_act] = _act_count.get(_act, 0) + 1
+                    _sb2.upsert_scene(
+                        _bible, scene_key=key, heading=str(sc.get("sceneId") or ""),
+                        card=cards.get(sid), tier=int(sc.get("tier") or 1),
+                        episode_id=self.episode_id, assets=assets,
+                        decision_source=tier_source,
+                        reason=str(((tiers or {}).get(sid) or {}).get("reason") or ""))
+                    _sb2.record_usage(_bible, episode_id=self.episode_id,
+                                      scene_key=key, tier=int(sc.get("tier") or 1),
+                                      action=_act, source=tier_source,
+                                      assets=assets)
+                _sb2.upsert_episode(
+                    _bible, episode_id=self.episode_id,
+                    title=str(getattr(self, "title", "") or ""),
+                    scenes=list((tiers or {}).keys()), shots=len(picked))
+                try:
+                    for _sh in (getattr(self.characters, "sheets", ()) or ()):
+                        _nm = str(getattr(_sh, "name", "") or "")
+                        if not _nm:
+                            continue
+                        _sb2.upsert_character(
+                            _bible, character_id=_nm, name=_nm,
+                            appearance=str(getattr(_sh, "prompt_fragment", "") or ""),
+                            episode_id=self.episode_id)
+                except Exception:                            # noqa: BLE001
+                    pass
+                _sb2.save(_series_dir, _bible)
+                try:
+                    import json as _jsv
+
+                    (Path(str(wd)) / "delivery" / "series.json").write_text(
+                        _jsv.dumps({"kind": "series.state",
+                                    "seriesId": _bible.get("seriesId"),
+                                    "episodeId": self.episode_id,
+                                    "summary": _sb2.summary(_bible),
+                                    "actions": _act_count},
+                                   ensure_ascii=False, indent=2), encoding="utf-8")
+                except Exception:                            # noqa: BLE001
+                    pass
+                print(f"  系列台账：{_sb2.summary(_bible)} · 本集 "
+                      f"复用 {_act_count.get('reused', 0)} / 升档 {_act_count.get('upgraded', 0)}"
+                      f" / 新生成 {_act_count.get('generated', 0)}")
+            _reused_n = sum(1 for v in (rep.get("scenes") or {}).values()
+                            if v.get("reused"))
+            _t23 = sum(1 for v in (rep.get("scenes") or {}).values()
+                       if int(v.get("tier") or 1) >= 2)
+            print(f"  场景视图：{len(rep.get('scenes') or {})} 场（Tier2+ {_t23} 场）"
+                  f" · 档位来源 {tier_source}"
+                  + (f" · 复用 {_reused_n} 场" if _reused_n else "")
+                  + f" · 图 {rep.get('generated')} 张 · ¥{rep.get('costCny')}")
             return rep
         except Exception as e:                                # noqa: BLE001
             print(f"  ⚠️ 场景视图失败（不阻断）：{type(e).__name__}: {e}")

@@ -153,6 +153,27 @@ def main() -> int:
         check("D9 ★★ 外部档位的理由进证据",
               any("人工指定" in str(x) for x in sc_ex["decision"].get("factors") or []), "")
 
+        print(); print("D3. 系列复用（0 成本跳过生成）")
+        calls.update(t2i=0, edit=0)
+        reuse_assets = {}
+        for _v in ("base", "reverse", "oblique45", "topdown"):
+            _dst = Path(td) / "series_assets" / "SC1" / f"{_v}.png"
+            _png(_dst)
+            reuse_assets[_v] = str(_dst)
+        rep_re = SV.generate(scene_cards={"SC1": CARD}, shots=shots[:1],
+                             director_plan={}, workdir=wd, enabled=True,
+                             t2i=t2i, edit=edit,
+                             tiers={"SC1": {"tier": 2, "source": "series-reuse"}},
+                             reuse_map={"SC1": {"reuse": True,
+                                                "assets": reuse_assets,
+                                                "from": "E01"}})
+        sc_re = rep_re["scenes"]["SC1"]
+        check("D10 ★★★ 复用命中：4 张全部复用，0 次生成调用",
+              sc_re["reused"] and all(r.get("reused") for r in sc_re["images"])
+              and calls["t2i"] == 0 and calls["edit"] == 0, str(calls))
+        check("D11 ★★★ 复用成本 ¥0", rep_re["costCny"] == 0.0, str(rep_re["costCny"]))
+        check("D12 ★★ 复用来源写进证据", sc_re.get("reusedFrom") == "E01", str(sc_re.get("reusedFrom")))
+
         print(); print("E. 空景 QC：检出人物 -> 重试一次（更硬约束）")
         _seq = {"v": ["yes", "no"]}
 
