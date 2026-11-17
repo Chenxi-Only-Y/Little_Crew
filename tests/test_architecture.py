@@ -88,6 +88,10 @@ ROOT_LEVEL_EXEMPT: frozenset[str] = frozenset({
     # 不登记为层，因为它没有"层"的语义，只是标准库 syslib 的一层薄封装；
     # 放进 config 会误导后人以为它是配置。豁免只是为了满足"必须在子目录里"的形式要求。
     "net.py",
+    # 插件机制（2026-11-17）：插件不是"层"——只依赖核心公开模块，
+    # 核心反向禁止 import 插件（依赖段守卫检查）。放包根是为了导入路径稳定。
+    "plugin",
+    "plugins",
 })
 
 #: 允许的跨层依赖白名单：(源层, 目标层)
@@ -118,6 +122,9 @@ def layer_of(path: Path) -> str | None:
         if rel.parts[0] in ROOT_LEVEL_EXEMPT:
             return None
         return f"<root:{rel.parts[0]}>"
+    if rel.parts[0] in ROOT_LEVEL_EXEMPT:
+        # 子目录豁免（插件包：不是流水线的层；核心反向 import 由专门检查守）
+        return None
     return rel.parts[0]
 
 

@@ -57,6 +57,35 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.6.0] — 2026-11-17（**插件化 + 总导演章节层：章契约 / 边界审**）
+
+### 插件化纪律（新职业一律插件）
+
+- `little_crew.plugin`：`PluginManifest` + `PluginRegistry`（注册/卸载/能力查询）
+- 核心**不 import** 插件；插件只能依赖核心公开模块；缺插件功能给出明确提示、不影响默认 19 职位
+- 首个插件 `little_crew.plugins.series_showrunner`：系列总导演，提供 `series.plan`，
+  **不挤占 19 职位名册**（卸载后名册仍为 19）
+
+### 总导演章节层（R2/R1 落地）
+
+- `runtime/chapter_plan.py`：章卡三字段（目标/冲突/钩子）+ 边界契约（entry/exit）+
+  依赖拓扑 + **总导演上下文守门（禁止注入正文）** + 子导演 brief + `F-CONT` 契约差异
+- `runtime/boundary_audit.py`：边界审 = **契约线（机器）+ 画面线（VLM）**；
+  红项只重拍边界镜；无帧/VLM 异常转黄项人工；证据含对比图
+- R3 异常驱动、R4 预演/复用/预算闸、R5 权限守卫、R6 台账一致性、R7/R8 断点/依赖拓扑
+  在 0.5/0.6 的 series 层已有底座
+
+### 测试
+
+新增 `chapter_plan_check 16` · `boundary_audit_check 14` · `plugin_check 18`；
+全量 **3197/3184 + 架构守卫 PASS**
+
+### 待办（下一步）
+
+3 章试点 + 注入错误（钩子断裂/人物消失）验证门禁；series_run `--mode hybrid` 接边界审。
+
+---
+
 ## [0.5.0] — 2026-11-17（**系列资产台账：多集复用 / 更新 / 升档**）
 
 ### 新增
