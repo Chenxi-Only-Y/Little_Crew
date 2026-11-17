@@ -194,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--costume-map", default="", dest="costume_map",
                     help="造型覆盖 JSON（{shotId 或 sceneId: outfits/<variant>}）；"
                          "资产放 assets/characters/<角色>/outfits/<variant>/")
+    ap.add_argument("--episode-brief", default="", dest="episode_brief",
+                    help="本章 brief（chapter_plan.build_brief 产出的 JSON 文件）")
     ap.add_argument("--series-dir", default="", dest="series_dir",
                     help="系列台账目录（启用跨集复用/升档）；如 outputs/_series/某剧")
     ap.add_argument("--scene-views-hero-max", type=int, default=2,
@@ -866,6 +868,15 @@ def main(argv: list[str] | None = None) -> int:
     runner.scene_views_tiers = _pst(getattr(args, "scene_views_tiers", ""))
     runner.scene_views_llm = not bool(getattr(args, "scene_views_no_llm", False))
     runner.series_dir = str(getattr(args, "series_dir", "") or "")
+    _brief_path = str(getattr(args, "episode_brief", "") or "")
+    if _brief_path:
+        try:
+            import json as _bj
+            runner.episode_brief = _bj.loads(open(_brief_path, encoding="utf-8").read())
+            print(f"  本章契约 brief：{runner.episode_brief.get('chapterId')}")
+        except Exception as _be:
+            print(f"  ⚠️ brief 读取失败：{_be}")
+            runner.episode_brief = None
     if runner.series_dir:
         print(f"  系列台账：{runner.series_dir}（跨集复用/升档）")
     if runner.scene_views_enabled:

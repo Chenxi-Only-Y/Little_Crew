@@ -1,0 +1,128 @@
+{
+  "schema": "little_crew.chapter_plan/v1",
+  "logline": "少女在末班地铁等一个不会来的人",
+  "volumes": [
+    {
+      "name": "第一卷·末班",
+      "chapters": [
+        "CH01",
+        "CH02",
+        "CH03"
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "chapterId": "CH01",
+      "name": "末班车",
+      "card": {
+        "goal": "等最后一班车",
+        "conflict": "时间在流逝",
+        "hook": "柱子后有人"
+      },
+      "entry": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": []
+      },
+      "exit": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": [
+          "他是谁"
+        ]
+      },
+      "dependsOn": []
+    },
+    {
+      "chapterId": "CH02",
+      "name": "同行",
+      "card": {
+        "goal": "确认对方身份",
+        "conflict": "她不信他",
+        "hook": "他记得她小时候"
+      },
+      "entry": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": [
+          "他是谁"
+        ]
+      },
+      "exit": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": [
+          "记忆真相"
+        ]
+      },
+      "dependsOn": [
+        "CH01"
+      ]
+    },
+    {
+      "chapterId": "CH03",
+      "name": "终点",
+      "card": {
+        "goal": "做出去留决定",
+        "conflict": "真相伤人",
+        "hook": "她选择留下"
+      },
+      "entry": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": [
+          "记忆真相"
+        ]
+      },
+      "exit": {
+        "placeKey": "站台",
+        "time": "夜",
+        "characters": [
+          "少女"
+        ],
+        "props": [
+          "手机"
+        ],
+        "openThreads": []
+      },
+      "dependsOn": [
+        "CH02"
+      ]
+    }
+  ]
+}

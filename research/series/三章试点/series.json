@@ -1,0 +1,159 @@
+{
+  "schema": "little_crew.series/v1",
+  "seriesId": "三章试点",
+  "episodes": [
+    {
+      "episodeId": "CH01",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-CH01-001"
+      ],
+      "shots": 2,
+      "status": "done"
+    },
+    {
+      "episodeId": "CH02",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-CH02-001"
+      ],
+      "shots": 2,
+      "status": "done"
+    },
+    {
+      "episodeId": "CH03",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-CH03-001"
+      ],
+      "shots": 2,
+      "status": "done"
+    }
+  ],
+  "scenes": {
+    "地铁站台": {
+      "sceneKey": "地铁站台",
+      "heading": "SC-CH03-001",
+      "cardHash": "64b28ad48013",
+      "card": {
+        "space": "@少女 停在安全线前，说：「最后一班车了。」\n@少女 低头看表，说：「他说会来。」",
+        "era": "当代"
+      },
+      "updatedIn": "CH03",
+      "lastDecisionSource": "llm-series",
+      "lastReason": "地铁站台已连续三集出现，本场是“等待是否被兑现”的题眼落点，2 镜内有 2 处关键台词，需要更稳的灯光与氛围层次来支撑情绪，并且本集只有 1 场，Tier3 额度充足。",
+      "version": 1,
+      "tier": 3,
+      "episodes": [
+        "CH01",
+        "CH02",
+        "CH03"
+      ],
+      "usage": 3,
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\topdown__retry.png",
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\front_wide.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\front_close__retry.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\side_wide__retry.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\side_close__retry.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\back_close__retry.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\top_close.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\hero45.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\board.jpg"
+      },
+      "tierHistory": [
+        {
+          "episodeId": "CH01",
+          "tier": 2,
+          "source": "llm-series"
+        },
+        {
+          "episodeId": "CH03",
+          "tier": 3,
+          "source": "llm-series"
+        }
+      ]
+    }
+  },
+  "cast": {
+    "少女": {
+      "characterId": "少女",
+      "name": "少女",
+      "appearance": "女性，少女，纤细高挑身形，乌黑及腰直长发，琥珀眼睛，身穿深灰呢料外套，腰间系麻绳，眉间有一颗小痣",
+      "appearanceHash": "9bd8020920",
+      "version": 3,
+      "outfits": [],
+      "episodes": [
+        "CH01",
+        "CH02",
+        "CH03"
+      ],
+      "anchor": ""
+    },
+    "旅人": {
+      "characterId": "旅人",
+      "name": "旅人",
+      "appearance": "人物，青年，娇小匀称身形，乌黑蓬松微卷中长发，酒红眼睛，身穿白色衬衫配马甲，胸前别一支干花，右耳戴一只小银环",
+      "appearanceHash": "e6045b2738",
+      "version": 2,
+      "outfits": [],
+      "episodes": [
+        "CH02",
+        "CH03"
+      ],
+      "anchor": ""
+    }
+  },
+  "usage": [
+    {
+      "episodeId": "CH01",
+      "sceneKey": "地铁站台",
+      "tier": 2,
+      "action": "generated",
+      "source": "llm-series",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH01\\assets\\scene_views\\SC-CH01-001\\base__retry.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH01\\assets\\scene_views\\SC-CH01-001\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH01\\assets\\scene_views\\SC-CH01-001\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH01\\assets\\scene_views\\SC-CH01-001\\topdown.png"
+      }
+    },
+    {
+      "episodeId": "CH02",
+      "sceneKey": "地铁站台",
+      "tier": 2,
+      "action": "reused",
+      "source": "series-heuristic",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\scene_views\\SC-CH02-001\\topdown.png"
+      }
+    },
+    {
+      "episodeId": "CH03",
+      "sceneKey": "地铁站台",
+      "tier": 3,
+      "action": "upgraded",
+      "source": "llm-series",
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\front_wide.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\front_close__retry.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\side_wide__retry.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\side_close__retry.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\back_close__retry.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\topdown__retry.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\hero45.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH03\\assets\\scene_views\\SC-CH03-001\\board.jpg"
+      }
+    }
+  ],
+  "createdAt": ""
+}

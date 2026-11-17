@@ -41,11 +41,14 @@ def main() -> int:
     ap.add_argument("--shots", type=int, default=2)
     ap.add_argument("--render-path", default="cloud")
     ap.add_argument("--crew-profile", default="standard")
-    ap.add_argument("--scene-views", action="store_true", default=True)
+    ap.add_argument("--scene-views", action="store_true", default=False)
     ap.add_argument("--hero-max", type=int, default=2)
     ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--resume", action="store_true", default=True)
     ap.add_argument("--out-root", default="")
+    ap.add_argument("--plan", default="", help="chapter_plan.json（章卡/契约/依赖）")
+    ap.add_argument("--boundary-vlm", action="store_true",
+                    help="边界画面也用 VLM 审（默认只审契约）")
     ap.add_argument("--timeout", type=int, default=1800)
     a = ap.parse_args()
 
@@ -60,6 +63,25 @@ def main() -> int:
     if not scripts:
         print("  ❌ 目录里没有 *.txt 剧本")
         return 2
+    plan: dict = {}
+    if a.plan:
+        plan = json.loads(Path(a.plan).read_text(encoding="utf-8"))
+        from little_crew.runtime.chapter_plan import topo_order, validate_plan
+        _errs = validate_plan(plan)
+        if _errs:
+            print("  ❌ chapter_plan 校验失败：", _errs[:5])
+            return 2
+        _order = topo_order(plan)
+        _by_id = {str(c.get("chapterId")): c for c in plan.get("chapters") or []}
+        _files = {s.stem: s for s in scripts}
+        _ordered = []
+        for cid in _order:
+            f = _files.get(cid)
+            if f is None:
+                print(f"  ❌ 找不到章节 {cid} 的剧本文件")
+                return 2
+            _ordered.append((_by_id[cid], f))
+        scripts = [f for _c, f in _ordered]
     out_root = Path(a.out_root) if a.out_root else ROOT / "outputs" / "_series" / series_dir.name
     out_root.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
@@ -68,8 +90,17 @@ def main() -> int:
     env["LITTLE_CREW_ALLOW_UNVERIFIED"] = "1"
     env["LITTLE_CREW_SERIES_DIR"] = str(series_dir)
     rows: list[dict] = []
+    prev_exit: dict | None = None
+    prev_frames: list[str] = []
+    boundaries: list[dict] = []
+    injection: dict = {"kind": "pilot.injection", "checks": []}
     t_all = time.time()
-    for script in scripts:
+    for _idx, script in enumerate(scripts):
+        _ch = None
+        if plan:
+            _cid = _episode_id(script.stem)
+            _ch = next((c for c in plan.get("chapters") or ()
+                        if str(c.get("chapterId")) == _cid), None)
         ep = _episode_id(script.stem)
         wd = out_root / ep
         marker = wd / "delivery" / "series.json"
@@ -92,6 +123,20 @@ def main() -> int:
                              "sceneCostCny": sv.get("costCny"),
                              "reusedScenes": sum(1 for v in (sv.get("scenes") or {}).values()
                                                  if v.get("reused"))})
+                if plan and _ch is not None:
+                    from little_crew.runtime.boundary_audit import audit_contract
+                    _bc = audit_contract(prev_exit, _ch.get("entry")) \
+                        if prev_exit is not None else {
+                            "kind": "boundary.contract", "level": "green",
+                            "ok": True, "diffs": [], "note": "第一章无前序"}
+                    _level = _bc.get("level", "green")
+                    boundaries.append({"kind": "boundary.audit", "chapterId": ep,
+                                       "level": _level, "contract": _bc,
+                                       "visual": {"level": "skip"},
+                                       "retakeScope": "boundary_shots_only"
+                                       if _level == "red" else ""})
+                    prev_exit = _ch.get("exit")
+                    rows[-1]["boundary"] = _level
                 print(f"  ↷ {ep} 已成功（续跑跳过）")
                 continue
         cmd = [sys.executable, "-X", "utf8", "-m", "little_crew.runtime.episode_demo",
@@ -104,6 +149,14 @@ def main() -> int:
             cmd.append("--scene-views")
         if a.no_llm:
             cmd.append("--scene-views-no-llm")
+        _brief_path = wd / "episode.brief.json"
+        if _ch is not None:
+            from little_crew.runtime.chapter_plan import build_brief
+            _brief = build_brief(plan, str(_ch.get("chapterId")))
+            wd.mkdir(parents=True, exist_ok=True)
+            _brief_path.write_text(json.dumps(_brief, ensure_ascii=False, indent=2),
+                                   encoding="utf-8")
+            cmd += ["--episode-brief", str(_brief_path)]
         t0 = time.time()
         try:
             p = subprocess.run(cmd, cwd=str(ROOT), env=env, capture_output=True,
@@ -137,6 +190,32 @@ def main() -> int:
                                    if v.get("reused")),
                "sceneFailed": sv.get("failed"),
                "failure": "" if ok else (str(rep.get("reason") or "")[:160] or tail[-160:])}
+        # ---- 边界审（上一章 exit vs 本章 entry；画面可选 VLM）----
+        if ok and plan and _ch is not None:
+            from little_crew.runtime.boundary_audit import audit_contract, audit_visual
+            _cur_entry = _ch.get("entry")
+            _bc = audit_contract(prev_exit, _cur_entry) if prev_exit is not None else {
+                "kind": "boundary.contract", "level": "green", "ok": True,
+                "diffs": [], "note": "第一章无前序"}
+            _cur_frames = sorted(str(x) for x in (wd / "assets").rglob("*.png")) if (wd / "assets").is_dir() else []
+            _bv = {"kind": "boundary.visual", "level": "skip", "ok": None,
+                   "diffs": ["未开启 VLM 或缺少帧"], "judge": ""}
+            if a.boundary_vlm and prev_frames and _cur_frames:
+                _bv = audit_visual(prev_frames, _cur_frames, composite=wd / "boundary_compare.jpg")
+            _level = "red" if "red" in (_bc.get("level"), _bv.get("level")) else (
+                "yellow" if "yellow" in (_bc.get("level"), _bv.get("level")) else "green")
+            _bd = {"kind": "boundary.audit", "chapterId": ep, "level": _level,
+                   "contract": _bc, "visual": _bv,
+                   "retakeScope": "boundary_shots_only" if _level == "red" else ""}
+            (wd / "delivery").mkdir(parents=True, exist_ok=True)
+            (wd / "delivery" / "boundary.json").write_text(
+                json.dumps(_bd, ensure_ascii=False, indent=2), encoding="utf-8")
+            boundaries.append(_bd)
+            row["boundary"] = _level
+            if _level == "red":
+                row["failure"] = (row.get("failure") or "") + " 边界审红项：只重拍边界镜"
+            prev_exit = _ch.get("exit")
+            prev_frames = _cur_frames[-2:] if _cur_frames else []
         rows.append(row)
         mark = "✅" if ok else "❌"
         print(f"  {mark} {ep} rc={rc} 覆盖={row['coverage']} 墙钟={row['wallS']}s "
@@ -151,7 +230,33 @@ def main() -> int:
                "wallS": round(time.time() - t_all, 1),
                "sceneCostCny": total_cost,
                "reusedScenes": sum(int(r.get("reusedScenes") or 0) for r in rows),
+               "boundaries": boundaries,
+               "injectionOk": (injection.get("ok") if plan else None),
                "rows": rows}
+    # ---- 注入错误验证（R1）：故意破坏契约，必须检出 ----
+    if plan:
+        from little_crew.runtime.boundary_audit import audit_contract
+        _chs = [dict(c) for c in (plan.get("chapters") or [])]
+        if len(_chs) >= 2:
+            _mut = json.loads(json.dumps(plan))
+            _mut["chapters"][1]["entry"] = dict(_mut["chapters"][1].get("entry") or {})
+            _mut["chapters"][1]["entry"]["characters"] = []
+            _mut["chapters"][1]["entry"]["placeKey"] = "错误地点"
+            _d = audit_contract(plan["chapters"][0].get("exit"),
+                                _mut["chapters"][1].get("entry"))
+            injection["checks"].append({
+                "case": "人物消失+地点改变",
+                "detected": _d["level"] == "red",
+                "diffs": _d["diffs"]})
+        injection["ok"] = bool(injection["checks"]) and all(
+            c["detected"] for c in injection["checks"])
+        (series_dir / "injection-report.json").write_text(
+            json.dumps(injection, ensure_ascii=False, indent=2), encoding="utf-8")
+    if plan:
+        summary["injectionOk"] = injection.get("ok")
+    (series_dir / "boundary-summary.json").write_text(
+        json.dumps({"kind": "pilot.boundaries", "boundaries": boundaries},
+                   ensure_ascii=False, indent=2), encoding="utf-8")
     (series_dir / "run-summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = ["# 多集运行汇总", "",

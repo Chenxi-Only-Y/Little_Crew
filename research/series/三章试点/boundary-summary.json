@@ -1,0 +1,53 @@
+{
+  "kind": "pilot.boundaries",
+  "boundaries": [
+    {
+      "kind": "boundary.audit",
+      "chapterId": "CH01",
+      "level": "green",
+      "contract": {
+        "kind": "boundary.contract",
+        "level": "green",
+        "ok": true,
+        "diffs": [],
+        "note": "第一章无前序"
+      },
+      "visual": {
+        "level": "skip"
+      },
+      "retakeScope": ""
+    },
+    {
+      "kind": "boundary.audit",
+      "chapterId": "CH02",
+      "level": "green",
+      "contract": {
+        "kind": "boundary.contract",
+        "ok": true,
+        "level": "green",
+        "diffs": [],
+        "evidence": "chapter_plan.contract_diff"
+      },
+      "visual": {
+        "level": "skip"
+      },
+      "retakeScope": ""
+    },
+    {
+      "kind": "boundary.audit",
+      "chapterId": "CH03",
+      "level": "green",
+      "contract": {
+        "kind": "boundary.contract",
+        "ok": true,
+        "level": "green",
+        "diffs": [],
+        "evidence": "chapter_plan.contract_diff"
+      },
+      "visual": {
+        "level": "skip"
+      },
+      "retakeScope": ""
+    }
+  ]
+}

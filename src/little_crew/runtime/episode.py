@@ -4123,6 +4123,8 @@ class EpisodeRunner:
     scene_views_tiers: Any = None
     #: 系列台账目录（设置后启用跨集复用/升档）
     series_dir: str = ""
+    #: 本章契约（entry/exit + 章卡 + 上一章摘要），子导演只读这个，不读全剧
+    episode_brief: Any = None
     scene_views_report: dict[str, Any] = None  # type: ignore[assignment]
 
     #: 造型覆盖（2026-11-15）：`{shotId 或 sceneId: 造型 variant}`。
@@ -5643,8 +5645,11 @@ class EpisodeRunner:
         if "director" not in impls:
             return {}
         try:
-            out = self.orch.run_stage("director", "episode.direct",
-                                     {"script.draft": script})
+            _payload = {"script.draft": script}
+            _brief = getattr(self, "episode_brief", None)
+            if isinstance(_brief, Mapping):
+                _payload["episode.brief"] = dict(_brief)
+            out = self.orch.run_stage("director", "episode.direct", _payload)
         except Exception as e:                                # noqa: BLE001
             return {"ok": False, "reason": f"{type(e).__name__}: {e}"[:160]}
         if not getattr(out, "ok", False):

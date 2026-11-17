@@ -1,0 +1,14 @@
+{
+  "kind": "pilot.injection",
+  "checks": [
+    {
+      "case": "人物消失+地点改变",
+      "detected": true,
+      "diffs": [
+        "placeKey: 上一章 exit='站台' ≠ 本章 entry='错误地点'",
+        "characters: 上一章有 ['少女', '旅人']，本章 entry 消失"
+      ]
+    }
+  ],
+  "ok": true
+}

@@ -76,6 +76,12 @@ class DirectorLlm:
     def _render(self, payload: Mapping[str, Any]) -> tuple[str, str]:
         art = payload.get(self.consumes_key)
         body = art if isinstance(art, str) else _as_text(art)
+        _brief = payload.get("episode.brief")
+        if isinstance(_brief, Mapping):
+            import json as _json
+
+            body = ((body or "") + "\n\n## 本章契约（必须接上，不要改）\n"
+                    + _json.dumps(dict(_brief), ensure_ascii=False, indent=2))
         prompt = (
             f"## 剧本\n{body or '（空）'}\n\n"
             f"## 任务\n"
