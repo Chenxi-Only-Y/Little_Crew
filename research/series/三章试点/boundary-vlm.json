@@ -1,0 +1,21 @@
+{
+  "kind": "boundary.visual",
+  "frames": [
+    "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH01\\assets\\shots\\SH-CH01-001-003\\SH-CH01-001-003-SH-CH01-001-003.png",
+    "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\三章试点\\CH02\\assets\\shots\\SH-CH02-001-001\\SH-CH02-001-001-SH-CH02-001-001-SH-CH02-001-001.png"
+  ],
+  "ok": false,
+  "level": "red",
+  "diffs": [
+    "空间不一致",
+    "光线/时段不连续"
+  ],
+  "judge": "左图在有窗格、花瓶与灯笼的室内场景中持卷轴，右图背景为纯色模糊墙面且人物抬头质问，空间与光线（左偏暖柔光/右偏冷平光）均不连续，但服饰与发饰完全一致。",
+  "verdict": {
+    "sameSpace": false,
+    "sameCostume": true,
+    "sameLighting": false,
+    "diff": "左图在有窗格、花瓶与灯笼的室内场景中持卷轴，右图背景为纯色模糊墙面且人物抬头质问，空间与光线（左偏暖柔光/右偏冷平光）均不连续，但服饰与发饰完全一致。"
+  },
+  "evidence": "D:\\AI\\ds.8\\Little_Crew\\research\\series\\三章试点\\boundary_compare.jpg"
+}
