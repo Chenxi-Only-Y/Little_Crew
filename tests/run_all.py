@@ -148,7 +148,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("插件化注册", [sys.executable, "-m", "little_crew.runtime.plugin_check"], 25),
     ("职业依赖/顺序", [sys.executable, "-m", "little_crew.runtime.position_order_check"], 18),
     ("场景档位 LLM 决策", [sys.executable, "-m", "little_crew.runtime.scene_tier_planner_check"], 20),
-    ("系列资产台账", [sys.executable, "-m", "little_crew.runtime.series_bible_check"], 26),
+    ("系列资产台账", [sys.executable, "-m", "little_crew.runtime.series_bible_check"], 27),
     ("系列档位决策", [sys.executable, "-m", "little_crew.runtime.series_planner_check"], 15),
     ("cameraDefaults 导演计划", [sys.executable, "-m", "little_crew.runtime.camera_defaults_check"], 12),
     ("场景卡→提示词", [sys.executable, "-m", "little_crew.ir.scene_card_check"], 12),

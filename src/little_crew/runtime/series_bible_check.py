@@ -93,11 +93,20 @@ def main() -> int:
                                  episode_id="E03")
         check("D4 ★★★ 外观变化 -> 版本+1", c3["version"] == 2, str(c3["version"]))
 
+        _assets_before = dict((SB.scene_entry(data, "地铁站台") or {}).get("assets") or {})
+        SB.upsert_scene(data, scene_key="地铁站台", card={"space": "站台（改）"},
+                        tier=2, episode_id="E05", assets={"only_new": "/tmp/n.png"})
+        _after = dict((SB.scene_entry(data, "地铁站台") or {}).get("assets") or {})
+        check("D5 ★★★ 台账 assets 只增不覆盖（旧视图不丢）",
+              "base" in _after and "only_new" in _after, str(_after))
+
         print(); print("E. 使用记录 / 汇总 / 持久化")
         SB.record_usage(data, episode_id="E02", scene_key="地铁站台", tier=2,
                         action="reused", source="llm-series")
         check("E1 ★★ usage 记录追加，场景计数 +1",
-              len(data["usage"]) == 1 and e4["usage"] == 1, str(data["usage"]))
+              len(data["usage"]) == 1
+          and (SB.scene_entry(data, "地铁站台") or {}).get("usage") == 1,
+          str(data["usage"]))
         ep = SB.upsert_episode(data, episode_id="E01", title="第一集",
                                scenes=["地铁站台"], shots=6)
         SB.upsert_episode(data, episode_id="E01", shots=8)

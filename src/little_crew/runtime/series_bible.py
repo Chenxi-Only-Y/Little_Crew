@@ -182,7 +182,9 @@ def upsert_scene(data: dict[str, Any], *, scene_key: str, heading: str = "",
         else:
             prev_update["tier"] = old_tier
     if assets:
-        prev_update["assets"] = {**dict(prev_update.get("assets") or {}), **dict(assets)}
+        # 按视图合并：新产物覆盖同名视图，但**不丢旧视图**（9 视图复用缺 2 张的根因）
+        prev_update["assets"] = {**dict(prev_update.get("assets") or {}),
+                                 **dict(assets)}
     scenes[scene_key] = prev_update
     return prev_update
 
