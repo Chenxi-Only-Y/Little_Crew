@@ -1,0 +1,117 @@
+{
+  "kind": "b2.semi-real.retake_loop.on_real_manifest",
+  "sourceWorkdir": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02",
+  "tempWorkdir": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02",
+  "usedRealShotManifest": true,
+  "cloudCalls": 0,
+  "note": "renderer 为假（写真实 PNG 副本，不调云端）；judge 为假脚本；成本 ¥0.2 为模拟记账",
+  "loop": {
+    "kind": "boundary.retake.loop",
+    "level": "green",
+    "ok": true,
+    "needRetake": true,
+    "escalated": false,
+    "needsHuman": false,
+    "attempts": 2,
+    "history": [
+      {
+        "attempt": 1,
+        "hint": "沿用上一章同一空间/背景/陈设，不要换景；上一版被判：站台背景换了",
+        "shots": [
+          "SH-E02-001-001",
+          "SH-E02-002-001"
+        ],
+        "retakeOk": true,
+        "costCny": 0.1,
+        "level": "red",
+        "diffs": [
+          "光线/时段不连续"
+        ],
+        "judge": "光线偏冷"
+      },
+      {
+        "attempt": 2,
+        "hint": "沿用上一章同一空间/背景/陈设，不要换景；保持与上一章同一光线/时段/色温；上一版仍被判：光线/时段不连续（这次必须严格按约束重拍）；上一版被判：光线偏冷",
+        "shots": [
+          "SH-E02-001-001",
+          "SH-E02-002-001"
+        ],
+        "retakeOk": true,
+        "costCny": 0.1,
+        "level": "green",
+        "diffs": [],
+        "judge": ""
+      }
+    ],
+    "costCny": 0.2,
+    "maxRetries": 2,
+    "episodeId": "E02",
+    "seriesId": "最后一班-迷你",
+    "reason": "第 2 次补拍后复审为 green，停止重拍",
+    "retakeShots": [
+      "SH-E02-001-001",
+      "SH-E02-002-001"
+    ],
+    "shots": [
+      {
+        "shotId": "SH-E02-001-001",
+        "ok": true,
+        "versionBefore": 5,
+        "versionAfter": 6,
+        "out": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02\\assets\\shots\\SH-E02-001-001\\retake.png",
+        "reused": false,
+        "costCny": 0.05
+      },
+      {
+        "shotId": "SH-E02-002-001",
+        "ok": true,
+        "versionBefore": 2,
+        "versionAfter": 3,
+        "out": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02\\assets\\shots\\SH-E02-002-001\\retake.png",
+        "reused": false,
+        "costCny": 0.05
+      }
+    ],
+    "lastHint": "沿用上一章同一空间/背景/陈设，不要换景；保持与上一章同一光线/时段/色温；上一版仍被判：光线/时段不连续（这次必须严格按约束重拍）；上一版被判：光线偏冷",
+    "lastDiffs": [
+      "空间不一致",
+      "光线/时段不连续"
+    ],
+    "workdir": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02"
+  },
+  "judgeCalls": [
+    {
+      "attempt": 1,
+      "hintLen": 33,
+      "shots": [
+        "SH-E02-001-001",
+        "SH-E02-002-001"
+      ],
+      "retakeCostCny": 0.1
+    },
+    {
+      "attempt": 2,
+      "hintLen": 77,
+      "shots": [
+        "SH-E02-001-001",
+        "SH-E02-002-001"
+      ],
+      "retakeCostCny": 0.1
+    }
+  ],
+  "manifestVersions": {
+    "SH-E02-001-001": {
+      "before": 4,
+      "after": 6,
+      "historyLen": 5,
+      "out": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02\\assets\\shots\\SH-E02-001-001\\retake.png"
+    },
+    "SH-E02-002-001": {
+      "before": 1,
+      "after": 3,
+      "historyLen": 2,
+      "out": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\E02\\assets\\shots\\SH-E02-002-001\\retake.png"
+    }
+  },
+  "loopFileKind": "boundary.retake.loop"
+}

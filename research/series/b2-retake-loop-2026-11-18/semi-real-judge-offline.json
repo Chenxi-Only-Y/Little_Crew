@@ -1,0 +1,16 @@
+{
+  "kind": "b2.semi-real.boundary_judge_offline",
+  "cloudCalls": 0,
+  "note": "prev_frames=[] -> audit_visual 直接 yellow，不触发 VLM；验证闭包接线/帧选择",
+  "verdict": {
+    "kind": "boundary.visual",
+    "ok": null,
+    "level": "yellow",
+    "diffs": [
+      "边界帧缺失，无法自动判"
+    ],
+    "judge": "",
+    "evidence": "frames missing"
+  },
+  "framesUsedFallback": 2
+}

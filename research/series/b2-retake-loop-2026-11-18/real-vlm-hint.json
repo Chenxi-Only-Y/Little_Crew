@@ -1,0 +1,98 @@
+{
+  "kind": "b2.real-vlm.hint",
+  "generatedAt": "2026-11-18T06:07:55.089826+00:00",
+  "modelId": "vlm-judge-cloud (qwen3-vl-plus)",
+  "prompt": "这是一组相邻两章的边界画面：左边是上一章最后一帧，右边是本章第一帧。请只判断三项连续性：1) 是否同一空间/场景；2) 主要人物造型/服装是否一致；3) 光线/时段是否连续。输出 JSON：{\"sameSpace\": true|false, \"sameCostume\": true|false, \"sameLighting\": true|false, \"diff\": \"一句话差异\"}",
+  "frames": {
+    "prevChapter": "E01",
+    "prevShotId": "SH-E01-002-001",
+    "prevFrame": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\cloud_render\\SH-E01-002-001_cloud.png",
+    "curChapter": "E02",
+    "curShotId": "SH-E02-001-001",
+    "curFrame": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\cloud_render\\SH-E02-001-001_cloud.png",
+    "composite": "D:\\AI\\ds.8\\Little_Crew\\research\\series\\b2-retake-loop-2026-11-18\\real-vlm-boundary-compare.jpg",
+    "note": "真实集 outputs/_series/最后一班-迷你 的真实云端出图",
+    "compositeNote": "左=上一章最后帧，右=本章第一帧（真实集真实出图）"
+  },
+  "cloudCalls": 1,
+  "costCnyEstimate": 0.05,
+  "elapsedS": 3.32,
+  "vlmRaw": "{\n  \"sameSpace\": false,\n  \"sameCostume\": false,\n  \"sameLighting\": false,\n  \"diff\": \"从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。\"\n}",
+  "vlmError": "",
+  "usageLastCall": {
+    "modelId": "vlm-judge-cloud",
+    "servedModel": "qwen3-vl-plus",
+    "elapsedS": 3.08,
+    "usage": {
+      "prompt_tokens": 1019,
+      "completion_tokens": 86,
+      "total_tokens": 1105,
+      "completion_tokens_details": {
+        "text_tokens": 86
+      },
+      "prompt_tokens_details": {
+        "image_tokens": 914,
+        "text_tokens": 105,
+        "cached_tokens": 0
+      }
+    },
+    "chars": 155
+  },
+  "boundary": {
+    "kind": "boundary.visual",
+    "ok": false,
+    "level": "red",
+    "diffs": [
+      "空间不一致",
+      "人物造型不一致",
+      "光线/时段不连续"
+    ],
+    "judge": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。",
+    "verdict": {
+      "sameSpace": false,
+      "sameCostume": false,
+      "sameLighting": false,
+      "diff": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。"
+    },
+    "evidence": "D:\\AI\\ds.8\\Little_Crew\\research\\series\\b2-retake-loop-2026-11-18\\real-vlm-boundary-compare.jpg"
+  },
+  "judgeSentence": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。",
+  "hint": "沿用上一章同一空间/背景/陈设，不要换景；人物沿用同一服装/发型/妆造，不要改造型；保持与上一章同一光线/时段/色温；上一版被判：从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。",
+  "hintLen": 133,
+  "constructedRed": {
+    "constructed": false,
+    "note": "真实 VLM 直接判红，无需构造",
+    "boundary": {
+      "kind": "boundary.visual",
+      "ok": false,
+      "level": "red",
+      "diffs": [
+        "空间不一致",
+        "人物造型不一致",
+        "光线/时段不连续"
+      ],
+      "judge": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。",
+      "verdict": {
+        "sameSpace": false,
+        "sameCostume": false,
+        "sameLighting": false,
+        "diff": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。"
+      },
+      "evidence": "D:\\AI\\ds.8\\Little_Crew\\research\\series\\b2-retake-loop-2026-11-18\\real-vlm-boundary-compare.jpg"
+    },
+    "hint": "沿用上一章同一空间/背景/陈设，不要换景；人物沿用同一服装/发型/妆造，不要改造型；保持与上一章同一光线/时段/色温；上一版被判：从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。"
+  },
+  "boundaryShape": "boundary_audit.audit_visual 扁平记录；喂 hint_from_diffs 时走顶层 diffs/judge 兜底",
+  "hintFromMergedBoundary": "沿用上一章同一空间/背景/陈设，不要换景；人物沿用同一服装/发型/妆造，不要改造型；保持与上一章同一光线/时段/色温；上一版被判：从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。",
+  "hintMergedEqualsFlat": true,
+  "vlmVerdictFields": {
+    "sameSpace": false,
+    "sameCostume": false,
+    "sameLighting": false,
+    "diff": "从樱花树下的公园长椅场景切换到雨雾中的火车站台，人物从黑长发、露肩灰衣变为银短发、和风灰袍，光线由柔和日光转为昏暗湿冷的傍晚/雨天氛围。"
+  },
+  "realVlmRed": true,
+  "hintFromRealRedBoundary": true,
+  "costNote": "1 次 qwen3-vl-plus 调用；成本按 models/registry.py CostProfile(cny_per_call=0.05) 估算",
+  "rawParsedOk": true
+}

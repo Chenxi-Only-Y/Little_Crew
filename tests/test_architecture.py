@@ -428,6 +428,11 @@ ALLOWED_ROOT_ENTRIES: frozenset[str] = frozenset({
     "legacy",
     # 入库的顶层文件
     "README.md", "STRUCTURE.md", "ARCHITECTURE.md", "CHANGELOG.md",
+    # HANDOFF.md（2026-11-18）：**上下文到上限时的续跑入口**。
+    # 它必须是顶层文件——放在 docs/ 里会在"先读哪份"的问题上再多一层路径，
+    # 而且它只写"当前状态 + 待做队列 + 纪律"，不属于设计/调研文档，故不入 docs/。
+    # 同批补进 STRUCTURE.md §1 目录职责表（规范与守卫必须同源）。
+    "HANDOFF.md",
     "pyproject.toml", ".gitignore",
     #: 换行符策略（2026-10-17）。仓库 blob 存 LF、工作区可能 CRLF，
     #: 没有它 `git status` 会被纯换行符差异刷满（实测 41 个假改动），

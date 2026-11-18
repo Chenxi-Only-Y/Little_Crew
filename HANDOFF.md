@@ -5,26 +5,42 @@
 ## 当前状态
 
 - 版本：**0.8.6**（版本线停在 0.8.*，不升 0.9/1.0）
-- HEAD：**24381e7**
-- 未推送提交：**27**
-- 全量：3251/3238 + 架构守卫 PASS（#6 修复后需再跑一次确认）
+- HEAD：**5021dfc**（= 最近一次**代码/文档**提交；本轮收尾提交以 `git log -1` 为准）
+- 本轮提交：分三条 **`feat(#7)` → `feat(#8)` → `feat(B1)`**（本文件在第一条提交里已更新到终态，
+  后续两条只落代码/文档；三项在同轮完成）
+- 未推送提交：**0**（0.8.6 已于 2026-11-18 推送过；**本轮新增提交未推送，等用户说"推"再推**）
+- 全量：**3408/3408** + 架构守卫 PASS（2026-11-18 实跑，247.26s）
 - dirty：0
+- 镜像/tag：`little-crew:0.8.6` 镜像在收尾统一重建（`docs/21 §八`）；tag `v0.8.6` 本地已有
 
 ## 已完成（不要重做）
 
 - B1/B2/B3/B4/B5/A1/A2/A3/A4/A5 全部完成（详见 CHANGELOG 0.8.*）
 - #6 门禁定位+修复：云端出图落盘前归一 engine_resolution（832x480）；
   CH01 复跑 gate kept 2/2、retry 0 ✅
+- **#7 B2 自动循环（2026-11-18）**：边界审红 → VLM/契约 diff **自动生成 hint** → 只补拍边界镜
+  → 复审；**重试上限 2**；仍红/契约红/无判官/无 shot **一律诚实升级人工**；
+  接进 `series_run --retake-red --retake-max`（主+续跑分支）。
+  自检 `boundary_retake_check` **70/70**；真实 VLM 判词→hint 真机一次（¥0.05）；
+  证据 `research/series/b2-retake-loop-2026-11-18/`
+- **#8 并行写台账锁（2026-11-18）**：系列台账改**按集增量 + 跨进程合并锁**
+  （`O_CREAT|O_EXCL` 锁文件+原子写+陈旧锁可破+幂等）→ **允许并行开场景视图**。
+  真实 3 集 `--mode parallel --scene-views`：3/3、¥0.30、墙钟 124.5s、**0 丢更新**；
+  压力 1320 次并发合并 0 丢更新；自检 `series_bible_check` 27→**44/44**；
+  证据 `research/series/ledger-lock-2026-11-18/`
+- **B1 全职业插件化 20/20（2026-11-18）**：插件 API 加 `positions` 声明 + `default_roster`；
+  19 职位迁 `plugins/core_crew`；总导演 `series_showrunner` 声明**第 20 职位**；
+  名册/编制/依赖图/无限画布**从注册表构建**（默认仍是 19，卸载不影响默认流水线）。
+  自检 `core_crew_check` **50/50**
+- 基线卫生：`HANDOFF.md` 入项目根白名单（此前架构守卫一直 FAIL）；3 个套件期望数同步实际。
 
 ## 待做队列（按序）
 
-1. **#7 B2 自动循环**：VLM diff → 自动生成 hint；
-un_retake 重试上限 2 次；仍红升级人工；接进 series_run --retake-red
-2. **#8 并行写台账锁**：parallel 模式多集共写 series.json → 按集写 + 合并锁，然后允许并行开场景视图
-3. **B1 全职业插件化（目标 20/20）**：插件 API 加 positions 声明 → 19 职位迁 plugins/core_crew → 名册/编制/依赖图从注册表构建 → 无限画布读注册表
-4. 推送 27 个提交
-5. 收尾：全量回归、Docker 镜像 little-crew:0.8.6、tag 0.8.6
-
+1. ~~#7 B2 自动循环~~ ✅ / ~~#8 并行台账锁~~ ✅ / ~~B1 全职业插件化 20/20~~ ✅
+2. **发布动作（等用户指示）**：推送本轮提交 → 如需对外发布再复核镜像/`tag v0.8.6`
+3. **人工项（按用户要求挂起）**：盲判/评分/录屏/答辩包
+4. （可选，非阻塞）真机复跑"补拍后真 VLM 复审"端到端：本轮只验证到
+   `VLM diff → hint` + 半真实循环，**补拍后真 VLM 复审/真云端出图未端到端跑**（要真花钱）
 
 ## 规范与限制（必须遵守；之前口头约定）
 
@@ -62,17 +78,18 @@ un_retake 重试上限 2 次；仍红升级人工；接进 series_run --retake-r
 - 人工项（盲判/评分/录屏/答辩包）按用户要求挂起
 
 ---
+
 ## 关键文件
 
-- 门禁报告：<workdir>/delivery/gate.report.json
-- 场景台账：series/series.json；shot 记录：ssets/shots/<shotId>/shot.json
-- 重拍：
-untime/boundary_retake.py + 	ools/retake_shot.py（--ref-frame 是关键）
-- 插件：
-untime/plugin/__init__.py、plugins/series_showrunner.py
-- 待办清单：docs/20-待办清单.md
+- 门禁报告：`<workdir>/delivery/gate.report.json`
+- 场景台账：`series/series.json`；shot 记录：`assets/shots/<shotId>/shot.json`
+- 边界重拍：`runtime/boundary_retake.py`（`hint_from_diffs` / `run_retake_loop`）+ `tools/retake_shot.py`（`--ref-frame` 是关键）
+- 台账锁：`runtime/series_bible.py`（`_lock` / `locked_merge` / `merge_episode`）+ `runtime/episode.py` 回写段
+- 插件：`plugin/__init__.py`（`positions` / `ensure_default_plugins`）· `plugins/core_crew.py`（19 职位）· `plugins/series_showrunner.py`（第 20 职位）· `agent/crew_spec.py` · `agent/roster.py`
+- 本轮证据：`research/series/b2-retake-loop-2026-11-18/`、`research/series/ledger-lock-2026-11-18/`
+- 待办清单：`docs/20-待办清单.md`
 
-## 纪律
+## 纪律（收口三条）
 
 - 新职业/功能一律插件化（接口+注册+可卸载+默认不影响 19 职位）
 - 版本 0.8.*；镜像只在收尾重建

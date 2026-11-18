@@ -1,0 +1,43 @@
+{
+  "kind": "b2.semi-real.retake_loop.no_judge_honest_escalation",
+  "cloudCalls": 0,
+  "loop": {
+    "kind": "boundary.retake.loop",
+    "level": "red",
+    "ok": false,
+    "needRetake": true,
+    "escalated": true,
+    "needsHuman": true,
+    "attempts": 0,
+    "history": [],
+    "costCny": 0.0,
+    "maxRetries": 2,
+    "episodeId": "E02",
+    "seriesId": "最后一班-迷你",
+    "reason": "无复审判官（未开 VLM/无帧）：补拍后无法自动复审，人工确认边界连续性",
+    "retakeShots": [
+      "SH-E02-001-001",
+      "SH-E02-002-001"
+    ],
+    "shots": [],
+    "lastHint": "",
+    "lastDiffs": [
+      "空间不一致"
+    ],
+    "workdir": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\b\\E02"
+  },
+  "rendererCalls": [],
+  "escalationFile": {
+    "kind": "boundary.escalation",
+    "needsHuman": true,
+    "reason": "无复审判官（未开 VLM/无帧）：补拍后无法自动复审，人工确认边界连续性",
+    "attempts": 0,
+    "costCny": 0.0,
+    "suggestedActions": [
+      "开启 --boundary-vlm（或确认边界帧存在）让 VLM 真复审",
+      "人工并排对比上一章末帧与本章首帧：空间/造型/光线三项",
+      "确认差异后手动只重拍边界镜，并在 delivery 记录豁免/修正原因"
+    ],
+    "createdAt": "2026-11-18T06:03:18.251446+00:00"
+  }
+}

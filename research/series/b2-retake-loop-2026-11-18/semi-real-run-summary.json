@@ -1,0 +1,96 @@
+{
+  "kind": "series.run",
+  "seriesDir": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\series\\最后一班-迷你-半真",
+  "episodes": 2,
+  "ok": 2,
+  "wallS": 0.0,
+  "sceneCostCny": 0.0,
+  "retakeCostCny": 0.0,
+  "retakeEscalated": [
+    "E02"
+  ],
+  "reusedScenes": 0,
+  "boundaries": [
+    {
+      "kind": "boundary.audit",
+      "chapterId": "E01",
+      "level": "green",
+      "contract": {
+        "kind": "boundary.contract",
+        "level": "green",
+        "ok": true,
+        "diffs": [],
+        "note": "第一章无前序"
+      },
+      "visual": {
+        "level": "skip",
+        "ok": null,
+        "diffs": [],
+        "judge": ""
+      },
+      "retakeScope": ""
+    },
+    {
+      "kind": "boundary.audit",
+      "chapterId": "E02",
+      "level": "red",
+      "contract": {
+        "kind": "boundary.contract",
+        "ok": false,
+        "level": "red",
+        "diffs": [
+          "placeKey: 上一章 exit='站台' ≠ 本章 entry='医院'"
+        ],
+        "evidence": "chapter_plan.contract_diff"
+      },
+      "visual": {
+        "level": "skip",
+        "ok": null,
+        "diffs": [],
+        "judge": ""
+      },
+      "retakeScope": "boundary_shots_only"
+    }
+  ],
+  "injectionOk": true,
+  "rows": [
+    {
+      "episodeId": "E01",
+      "rc": 0,
+      "ok": true,
+      "resumed": true,
+      "shots": 2,
+      "coverage": 1.0,
+      "wallS": 0.0,
+      "sceneCostCny": 0.0,
+      "reusedScenes": 0,
+      "boundary": "green"
+    },
+    {
+      "episodeId": "E02",
+      "rc": 0,
+      "ok": true,
+      "resumed": true,
+      "shots": 2,
+      "coverage": 1.0,
+      "wallS": 0.0,
+      "sceneCostCny": 0.0,
+      "reusedScenes": 0,
+      "boundary": "red",
+      "retakePlanned": true,
+      "retakeShots": [
+        "SH-E02-001-001",
+        "SH-E02-002-001"
+      ],
+      "retakeAttempts": 0,
+      "retakeEscalated": true,
+      "retakeLevel": "red",
+      "retakeHint": "",
+      "retakeResult": {
+        "ok": false,
+        "costCny": 0.0,
+        "shots": []
+      }
+    }
+  ]
+}

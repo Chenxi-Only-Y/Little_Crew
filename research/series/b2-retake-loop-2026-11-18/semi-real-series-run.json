@@ -1,0 +1,95 @@
+{
+  "kind": "b2.semi-real.series_run_resume_retake_loop",
+  "command": [
+    "D:\\Python\\python.exe",
+    "-X",
+    "utf8",
+    "D:\\AI\\ds.8\\Little_Crew\\tools\\series_run.py",
+    "--series-dir",
+    "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\series\\最后一班-迷你-半真",
+    "--out-root",
+    "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\out_root",
+    "--plan",
+    "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\series\\最后一班-迷你-半真\\chapter_plan.json",
+    "--resume",
+    "--retake-red",
+    "--retake-max",
+    "2",
+    "--no-llm"
+  ],
+  "returncode": 0,
+  "cloudCalls": 0,
+  "note": "resume 标记 run.report.json(ok=true) 为合成（避免云端重跑整集）；脚本/章计划/shot manifest 均为真实文件；E02 entry 故意改医院制造契约红",
+  "summarySlice": {
+    "ok": 2,
+    "episodes": 2,
+    "retakeCostCny": 0.0,
+    "retakeEscalated": [
+      "E02"
+    ]
+  },
+  "rowE02": {
+    "episodeId": "E02",
+    "ok": true,
+    "boundary": "red",
+    "retakePlanned": true,
+    "retakeShots": [
+      "SH-E02-001-001",
+      "SH-E02-002-001"
+    ],
+    "retakeAttempts": 0,
+    "retakeEscalated": true,
+    "retakeLevel": "red",
+    "retakeResult": {
+      "ok": false,
+      "costCny": 0.0,
+      "shots": []
+    },
+    "retakeError": null
+  },
+  "retakeLoopFile": {
+    "kind": "boundary.retake.loop",
+    "level": "red",
+    "ok": false,
+    "needRetake": true,
+    "escalated": true,
+    "needsHuman": true,
+    "attempts": 0,
+    "history": [],
+    "costCny": 0.0,
+    "maxRetries": 2,
+    "episodeId": "E02",
+    "seriesId": "最后一班-迷你-半真",
+    "reason": "契约红项需人工改章卡/章契约：补拍图片修不了契约（diffs：placeKey: 上一章 exit='站台' ≠ 本章 entry='医院'）",
+    "retakeShots": [
+      "SH-E02-001-001",
+      "SH-E02-002-001"
+    ],
+    "shots": [],
+    "lastHint": "",
+    "lastDiffs": [
+      "placeKey: 上一章 exit='站台' ≠ 本章 entry='医院'"
+    ],
+    "workdir": "C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\out_root\\E02"
+  },
+  "escalationFile": {
+    "kind": "boundary.escalation",
+    "needsHuman": true,
+    "reason": "契约红项需人工改章卡/章契约：补拍图片修不了契约（diffs：placeKey: 上一章 exit='站台' ≠ 本章 entry='医院'）",
+    "level": "red",
+    "attempts": 0,
+    "costCny": 0.0,
+    "lastHint": "",
+    "lastDiffs": [
+      "placeKey: 上一章 exit='站台' ≠ 本章 entry='医院'"
+    ],
+    "suggestedActions": [
+      "改章卡/章契约：对齐上一章 exit 与本章 entry（地点/时间/人物/道具/悬念）",
+      "改完重跑边界审（series_run --resume），确认契约转绿/黄",
+      "若确认章卡正确、是上游剧本变化，人工评审后再改契约"
+    ],
+    "createdAt": "2026-11-18T06:03:18.465124+00:00"
+  },
+  "runSummaryMd": "# 多集运行汇总\n\n- 剧集目录：`C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\series\\最后一班-迷你-半真`\n- 成功：**2/2**\n- 场景视图成本：**¥0.0** · 复用场景 0 场\n- 边界重拍：**¥0.0** · 升级人工 1 集（E02）\n- 总墙钟：0.0s\n\n| 集 | 结果 | 覆盖 | 墙钟s | 场景¥ | 复用场 | 档位来源 | 重拍 |\n|---|---|---|---|---|---|---|---|\n| E01 | ✅ | 1.0 | 0.0 | 0.0 | 0 |  | — |\n| E02 | ✅ | 1.0 | 0.0 | 0.0 | 0 |  | 升级(0次) |",
+  "stdoutTail": "  ↷ E01 已成功（续跑跳过）\n  ↷ E02 已成功（续跑跳过） · 边界重拍 attempts=0 level=red ⚠升级人工\n  --- 2/2 成功 · 场景¥0.0 · 重拍¥0.0 · 墙钟 0.0s · 重拍升级 1 集：E02\n  汇总：C:\\Users\\OnlyY\\AppData\\Local\\Temp\\b2loop-semi-real-bgw_t1z0\\series\\最后一班-迷你-半真\\run-summary.md\n"
+}

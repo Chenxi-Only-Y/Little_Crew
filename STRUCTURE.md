@@ -53,9 +53,11 @@ Little_Crew/
 │   ├── ir/  governance/          [0] 叶子层：零内部依赖
 │   ├── capability/               [1]
 │   ├── models/  compiler/        [2]/[3]
-│   ├── agent/                    [3]  名册、协议、编排、定妆表
+│   ├── agent/                    [3]  名册（注册表构建）、协议、编排、定妆表
 │   ├── review/  runtime/         [4]  门禁 / 执行
-│   └── api/  cli/                [5]  对外接口
+│   ├── api/  cli/                [5]  对外接口
+│   ├── plugin/                   【插件机制】manifest（能力 + 职位声明）/ 注册 / 卸载 / 默认插件
+│   └── plugins/                  【插件实现】core_crew（19 核心职位）/ series_showrunner（总导演）
 ├── tests/                        【测试脚手架】不含业务逻辑
 ├── config/                       【配置】只放"会随部署变化"的配置
 ├── docs/                         【文档】设计、调研、规范
@@ -77,6 +79,7 @@ Little_Crew/
 ├── ARCHITECTURE.md               【架构总纲】代码怎么分层、依赖方向
 ├── STRUCTURE.md                  【本文】文件该放哪、配置怎么写
 ├── CHANGELOG.md                  【变更记录】本版做了什么、有何限制
+├── HANDOFF.md                    【交接】上下文到上限时先读它再续跑（顶部状态 + 待做队列）
 ├── README.md                     【入口】给人看的门面
 ├── pyproject.toml                【依赖与工具配置】不接受其他同类文件
 ├── .gitignore
@@ -102,7 +105,7 @@ Little_Crew/
 
 | 守卫 | 检查什么 |
 |---|---|
-| `storage_main()` | ① 项目根只能有白名单里的条目（29 个条目，含 `LICENSE` 与 4 个打包/任务入口文件）<br>② `outputs/` 下不得留 `*_nowm` 这类对照实验中间物<br>③ `research/` 里不得有自己的 Python 包（第三方快照 `src-*/` 豁免） |
+| `storage_main()` | ① 项目根只能有白名单里的条目（30 个条目，含 `LICENSE`、`HANDOFF.md` 与 4 个打包/任务入口文件）<br>② `outputs/` 下不得留 `*_nowm` 这类对照实验中间物<br>③ `research/` 里不得有自己的 Python 包（第三方快照 `src-*/` 豁免） |
 
 同一文件里既有**依赖方向守卫**（R1–R3），又有**存储规范守卫** ——
 两者的共同点是：**它们检查的不是功能，而是项目本身是否还在正轨上。**

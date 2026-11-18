@@ -1,0 +1,6 @@
+  ↷ E01 已成功（续跑跳过）
+  ↷ E02 已成功（续跑跳过） · 边界重拍 attempts=0 level=red ⚠升级人工
+  --- 2/2 成功 · 场景¥0.0 · 重拍¥0.0 · 墙钟 0.0s · 重拍升级 1 集：E02
+  汇总：C:\Users\OnlyY\AppData\Local\Temp\b2loop-semi-real-bgw_t1z0\series\最后一班-迷你-半真\run-summary.md
+
+[stderr]
