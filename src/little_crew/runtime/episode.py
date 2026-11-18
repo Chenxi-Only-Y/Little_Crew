@@ -3576,6 +3576,18 @@ class EpisodeRunner:
         res = _cr.render_plan(
             picked, rows, anchors, out_dir,
             model=_cloud_mid, extra=style, workers=4)
+        # #6 修复：云端出图尺寸由服务商决定（实测 1672x941），
+        # 但 IR 的 resolution_matches 按 engine_resolution(832x480) 校验 ->
+        # 落盘前统一归一，否则每镜都会被门禁判 RETRY。
+        try:
+            for _rec0 in (res.get("records") or ()):
+                _p0 = Path(str(_rec0.get("out") or ""))
+                if _rec0.get("ok") and _p0.is_file():
+                    _n0 = self._normalize_cloud_image(_p0)
+                    if isinstance(_n0, (bytes, bytearray)):
+                        _p0.write_bytes(bytes(_n0))
+        except Exception:
+            pass
         outcomes: list[CacheOutcome] = []
         prefix = f"G-{self.episode_id}-"
         by_id = {r.get("shotId"): r for r in (res.get("records") or [])}
