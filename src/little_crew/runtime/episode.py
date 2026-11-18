@@ -1848,6 +1848,18 @@ class EpisodeRunner:
 
         self._materialize_batch(batch, picked)
         gate_dict = gate_report.as_dict() if gate_report is not None else {}
+        # #6 可观测性：门禁完整报告落盘（终端只打印摘要，交付物里要能定位）
+        try:
+            import json as _gj
+            _gw = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            if _gw:
+                _gd = Path(str(_gw)) / "delivery"
+                _gd.mkdir(parents=True, exist_ok=True)
+                (_gd / "gate.report.json").write_text(
+                    _gj.dumps({"kind": "gate.report", **dict(gate_dict or {})},
+                              ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            pass
         if repair_log:
             gate_dict["repairRounds"] = list(repair_log)
         if applied_repairs:
