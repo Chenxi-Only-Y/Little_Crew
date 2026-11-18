@@ -234,6 +234,7 @@ class RunRegistry:
             run.state = RunState.RUNNING
             run.emit("开始")
             self._save()
+            ok = False
             try:
                 # ⚠️ **把返回值当作结果** —— 而不是要求调用方在 `fn` 里
                 # 自己 `run.result = ...`。
@@ -245,19 +246,27 @@ class RunRegistry:
                 out = fn(run)
                 if out is not None:
                     run.result = out
-                if run.state is RunState.RUNNING:
-                    run.state = RunState.SUCCEEDED
-                run.emit("完成", state=run.state)
-                self._save()
+                ok = True
             except Exception as e:                          # noqa: BLE001
-                run.state = RunState.FAILED
                 run.error = f"{type(e).__name__}: {e}"
-                run.emit("失败", error=run.error)
-                self._save()
-                # 栈留在服务端日志，**不进响应**（可能含路径等内部信息）
                 traceback.print_exc()
+                # 栈留在服务端日志，**不进响应**（可能含路径等内部信息）
             finally:
+                # ⚠️ 顺序很重要（2026-11-18 修 D15 竞态）：
+                # **先写 finished_at，再写终态**，最后才落盘。
+                # 反过来（先 state=SUCCEEDED/FAILED，finally 里才写 finished_at）时，
+                # 轮询线程可能在两步之间读到「终态 + finishedAt=None」——
+                # `cli.check` D15 因此会间歇性失败（实测复现）。
                 run.finished_at = time.time()
+                if not ok:
+                    run.state = RunState.FAILED
+                elif run.state is RunState.RUNNING:
+                    run.state = RunState.SUCCEEDED
+                if ok:
+                    run.emit("完成", state=run.state)
+                else:
+                    run.emit("失败", error=run.error)
+                self._save()
 
         threading.Thread(target=_wrap, daemon=True,
                          name=f"run-{run.run_id}").start()

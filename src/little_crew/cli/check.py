@@ -391,6 +391,43 @@ def _d_http_contract() -> None:
               bool(j.get("finishedAt")) and j.get("seconds") is not None,
               str(j.get("seconds")))
 
+        # ★ 竞态守卫（2026-11-18）：**落盘那一刻，终态必须已经带好 finishedAt**。
+        #
+        # 起因：D15 曾间歇性失败（全量复跑 3 次里 2 次）。根因不是测试时序，
+        # 而是 `RunRegistry.start()._wrap()` 的实现顺序 —— 旧版先写
+        # `state=SUCCEEDED` 并 `emit/save`，`finally` 里才写 `finished_at`，
+        # 于是轮询线程可能读到「已完成 + finishedAt=0」的中间态
+        # （客户端会拿到"已完成但没有耗时"的任务）。
+        #
+        # 这条守卫把顺序变成**确定性断言**：包一层 `_save`，在每次落盘时检查
+        # 被监视任务：若已终态却没有 finished_at，立即记违规（旧实现必被抓住）。
+        #
+        # ⚠️ 守卫里**不能调 `runs.all()`**：`create()/touch()` 是"持锁 → _save"，
+        # 而 `all()` 也要拿同一把**非重入锁** → 直接死锁（第一次实现踩到，
+        # 用 faulthandler 打成栈才定位到）。所以这里只看闭包里的 Run 对象。
+        run_race = s.api.runs.create("episode")
+        _race_violations: list[tuple[str, str]] = []
+        _orig_save = s.api.runs._save
+
+        def _save_guard() -> None:
+            if run_race.state in RunState.TERMINAL and not run_race.finished_at:
+                _race_violations.append((run_race.run_id, run_race.state))
+            _orig_save()
+
+        s.api.runs._save = _save_guard
+        try:
+            s.api.runs.start(run_race, _slow)
+            _deadline = time.time() + 8
+            while time.time() < _deadline:
+                _rr = s.api.runs.get(run_race.run_id)
+                if _rr is not None and _rr.state in RunState.TERMINAL:
+                    break
+                time.sleep(0.1)
+        finally:
+            s.api.runs._save = _orig_save
+        check("D15b ★★ 落盘时终态必须已带 finishedAt（防 D15 竞态回归）",
+              not _race_violations, str(_race_violations[:3]))
+
         # ---- ★ 后台异常必须变成状态，不能静默 ----
         def _boom(run) -> dict:
             raise RuntimeError("故意失败")

@@ -57,6 +57,46 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.8.6] — 2026-11-18（**修复：API 任务"完成时间"写入竞态 + 加确定性守卫**）
+
+### 问题（全量复跑抓到的真竞态，不是测试时序问题）
+
+全量回归时 `cli.check` 的 **D15「完成时间被记录」间歇性失败**（3 次里 2 次 70/71）。
+根因在 `api/server.py` `RunRegistry.start()._wrap()` 的实现顺序：
+
+```
+旧：run.state = SUCCEEDED → emit("完成") → self._save()   ← 此时 finished_at 还是 0
+    finally: run.finished_at = time.time()               ← 落盘之后才写
+```
+
+轮询线程可能在两步之间读到「**已完成 + finishedAt=0**」——
+**客户端会拿到"已完成但没有耗时"的任务**（不只是测试偶发）。
+
+### 改法
+
+`_wrap()` 重排：先算出 ok/error，`finally` 里**先写 `finished_at`、再写终态/emit、最后落盘**；
+成功/失败同一顺序（失败路径也不会出现"终态无耗时"）。
+
+### 守卫（让这条竞态不可能悄悄回来）
+
+`cli.check` 新增 **D15b**：包一层 `_save`，落盘瞬间检查被监视任务——
+**若已终态却没有 `finished_at` 即记录违规**（旧实现必然被抓到）。
+（第一次实现调了 `runs.all()`，撞上"持锁 → _save → all() 再取同一把非重入锁"直接死锁，
+用 faulthandler 打成栈才定位；已改为只看闭包里的 Run 对象。）
+
+另做了一次**对照探针**证明守卫有效：把旧顺序临时装回，守卫抓出
+`violations=[('…','succeeded')]`；新顺序 `violations=[]`。
+
+### 验证
+
+```
+cli.check          连跑 3 次 72/72（修复前 3 次里 2 次 70/71）
+api.surface_check  19/19
+全量               3409/3409 + 架构守卫 PASS（原 3408 = 未含 D15b 的读数）
+```
+
+---
+
 ## [0.8.6] — 2026-11-18（**B1 全职业插件化 20/20：插件 positions + 19 职位迁 core_crew**）
 
 ### 问题
