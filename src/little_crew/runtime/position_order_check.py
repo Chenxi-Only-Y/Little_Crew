@@ -69,6 +69,16 @@ def main() -> int:
     bad_unknown = PO.validate_dependencies(all_ids + ["不存在的职业"])
     check("C4 ★★ 未知职业 -> 报错",
           any("未知职业" in e for e in bad_unknown["errors"]), str(bad_unknown["errors"]))
+    # 2026-11-18（B1 全职业插件化）：插件专属职位不进默认调度口径
+    from little_crew.plugin import get_registry, load_plugin
+    from little_crew.agent.roster import positions as _positions
+    load_plugin("little_crew.plugins.series_showrunner")
+    try:
+        plugin_counts = (len(_positions()), len(PO.order_positions()))
+    finally:
+        get_registry().unload("series_showrunner")
+    check("C5 ★★★ 插件职位不挤占默认顺序（positions=20 时 order 仍 19）",
+          plugin_counts == (20, 19), str(plugin_counts))
 
     print(); print("D. 环 / 描述")
     cyc = [_Spec("A", produces=["x"], requires=["y"]),
@@ -86,6 +96,15 @@ def main() -> int:
     check("D3 ★★ describe.order 是拓扑序",
           len(d["order"]) == 19 and d["order"].index("screenwriter")
           < d["order"].index("director"), "")
+    check("D4 ★★★ describe 标 source=registry（默认名册来自插件注册表）",
+          d.get("source") == "registry", str(d.get("source")))
+    d2 = PO.describe(list(DEFAULT_ROSTER))
+    check("D5 ★★ 显式传 roster -> source=explicit（既有键全部保留）",
+          d2.get("source") == "explicit" and d2["positions"] == 19
+          and {"positions", "edges", "mandatory", "order"} <= set(d2), str(d2.get("source")))
+    from little_crew.runtime.crew_profile import MANDATORY as _MAND
+    check("D6 ★★ 必需性口径与编制同源（describe.mandatory = crew_profile.MANDATORY）",
+          d["mandatory"] == list(_MAND), str(d["mandatory"]))
 
     n = sum(1 for _, ok, _ in _r if ok)
     print()

@@ -1,4 +1,4 @@
-"""**导演台**：把 19 个职位画成一张节点图（只读，SVG 手写，零依赖）。
+"""**导演台**：把剧组职位画成一张节点图（只读，SVG 手写，零依赖）。
 
 ## 这张图从哪来 —— 不需要手画
 
@@ -6,10 +6,13 @@
 把「谁产出什么」连到「谁需要什么」，**依赖图是自动生成的**：
 
 ```
-19 职位 · 26 种产物 · 32 条依赖边
+默认名册：19 职位 · 26 种产物 · 32 条依赖边
 ```
 
 **加一个职位，图自动多一个块** —— 图不会和代码脱节。
+2026-11-18（B1 全职业插件化）：节点来自 `agent.roster.positions()`，
+即**插件注册表**的全量职位。默认 19（core_crew 插件）；加载 showrunner
+插件后变 20（第 20 个节点带 `plugin="series_showrunner"`）。
 
 ## 为什么是"只读"
 
@@ -107,16 +110,23 @@ def _dep_key(d: Any) -> str:
 
 
 def _graph() -> tuple[list[dict[str, Any]], list[tuple[str, str, str]]]:
-    """从名册生成节点与边。**不手写任何一条依赖。**"""
-    from little_crew.agent.roster import DEFAULT_ROSTER
+    """从**插件注册表**的职位生成节点与边。**不手写任何一条依赖。**
 
+    2026-11-18（B1 全职业插件化）：改用 `agent.roster.positions()`
+    —— 默认 19 个职位；加载 showrunner 插件后自动变 20 个（多一个节点）。
+    节点带 `plugin`（声明它的插件名），画布能区分默认职位与插件专属职位。
+    """
+    from little_crew.agent.roster import positions
+    from little_crew.plugin import get_registry
+
+    specs = positions()
     prod: dict[str, list[str]] = {}
-    for s in DEFAULT_ROSTER:
+    for s in specs:
         for p in s.produces:
             prod.setdefault(p, []).append(s.agent_id)
 
     nodes: list[dict[str, Any]] = []
-    for s in DEFAULT_ROSTER:
+    for s in specs:
         nodes.append({
             "id": s.agent_id,
             "title": s.crew_title,
@@ -125,9 +135,10 @@ def _graph() -> tuple[list[dict[str, Any]], list[tuple[str, str, str]]]:
             "produces": list(s.produces),
             "requires": list(s.requires),
             "duty": (getattr(s, "real_world_duty", "") or "")[:120],
+            "plugin": get_registry().position_owner(s.agent_id),
         })
     edges: list[tuple[str, str, str]] = []
-    for s in DEFAULT_ROSTER:
+    for s in specs:
         for r in s.requires:
             for src in prod.get(r, []):
                 edges.append((src, s.agent_id, r))
@@ -395,7 +406,10 @@ def build_console(workdir: Path, *, editable: bool = False) -> Path:
         cls, count = _badge(n["id"], st)
         has_impl = n["id"] in impl
         if not has_impl:
-            cls, count = "todo", "未实现"
+            # B1：插件专属职位（加载了插件但本集流水线不跑它）与"核心职位未实现"
+            # 状态要能区分 —— 否则 showrunner 会被误标成"未实现"。
+            cls, count = "todo", ("插件职位" if n.get("plugin")
+                                  and n["plugin"] != "core_crew" else "未实现")
         stroke = {"ok": "#4ade80", "idle": "#3c4452", "todo": "#5b6472",
                   "bad": "#f87171"}[cls]
         fill = {"ok": "#17301f", "idle": "#1d2026", "todo": "#191c22",
@@ -434,9 +448,13 @@ def build_console(workdir: Path, *, editable: bool = False) -> Path:
     detail: dict[str, Any] = {}
     for n in nodes:
         cls, count = _badge(n["id"], st)
+        if n["id"] not in impl:
+            count = ("插件职位" if n.get("plugin") and n["plugin"] != "core_crew"
+                     else "未实现")
         detail[n["id"]] = {
             "title": n["title"], "dept": n["dept"], "exec": n["exec"],
-            "state": ("未实现" if n["id"] not in impl else count),
+            "state": count,
+            "plugin": n.get("plugin", ""),
             "duty": n["duty"],
             "produces": n["produces"], "requires": n["requires"],
             "arts": [{"label": lbl, "src": src}
@@ -514,7 +532,7 @@ margin-right:5px;vertical-align:middle}}
  <span class="sub">· {html.escape(str(st.get('episodeId') or ''))}</span></h1>
 <div class="sub">判定：<b style="color:{'var(--ok)' if ok else '#f87171'}">
 {'通过' if ok else '未通过'}</b> · 剧本 {html.escape(str(st.get('scriptRounds') or '?'))} 轮
- · 19 个职位 · 32 条依赖（自动生成自名册）</div>
+ · {len(nodes)} 个职位 · {len(edges)} 条依赖（自动生成自插件注册表）</div>
 <div class="kpis">{kpis}</div>
 <div class="legend">
  <span><i class="dot" style="background:#17301f;border:1px solid #4ade80"></i>本集有产出</span>

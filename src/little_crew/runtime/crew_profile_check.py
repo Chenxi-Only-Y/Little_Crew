@@ -7,6 +7,9 @@
 4 **跳过 ≠ 通过**：缺席审片/质检/合规 -> `unverified` + `level != full`
 5 **应用**：`apply_to_stubs` 真的裁掉未启用职位；功能开关联动
 6 稳定指纹：同编制同 hash，不同编制不同 hash
+
+2026-11-18（B1 全职业插件化）：`MANDATORY` 不再硬编码，由默认名册的
+`AgentSpec.mandatory` 派生（单一真源）—— 新增 A5/A6 两条守卫。
 """
 from __future__ import annotations
 
@@ -49,6 +52,15 @@ def main() -> int:
                        remove=["compliance_officer"], commercial=True)
     check("A4 ★★★ 商用模式手删合规官 -> 拒绝",
           (not r_bad["ok"]) and any("合规官" in e for e in r_bad["errors"]), "")
+    check("A5 ★★★ MANDATORY 由名册 spec.mandatory 派生（单一真源）",
+          CP.MANDATORY == ("screenwriter", "storyboard_artist")
+          and CP.MANDATORY == tuple(
+              s.agent_id for s in DEFAULT_ROSTER
+              if getattr(s, "mandatory", False)), str(CP.MANDATORY))
+    check("A6 ★★ 名册里 mandatory 的职位 = 编制必需核心（无第二来源漂移）",
+          {a.agent_id for a in DEFAULT_ROSTER
+           if getattr(a, "mandatory", False)} == set(CP.MANDATORY),
+          str(CP.MANDATORY))
 
     print(); print("B. 依赖闭包")
     r_g = CP.resolve(profile="custom", add=["gaffer"])

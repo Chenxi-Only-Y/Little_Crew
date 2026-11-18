@@ -1,4 +1,4 @@
-"""Agent 名册 —— **按剧组职业组织**的 18 个 Agent 声明。
+"""Agent 名册 —— **按剧组职业组织**的 19 个 Agent 声明（注册表驱动）。
 
 命名即架构
 ----------
@@ -39,22 +39,40 @@
 ⚠️ `AgentManifest.consumes` 的语义是「**允许调用的下游能力**」，
 **不是**「需要的输入数据」。后者由 `AgentSpec.requires` 表达。
 审计规则会检查 **L1 不得直接 consumes 任何 L3 能力**（R2 禁止跳层）。
+
+注册表驱动（2026-11-18，B1 全职业插件化）
+----------------------------------------
+19 个核心职位已从本模块**迁出**到 `plugins/core_crew.py`，通过插件
+`PluginManifest.positions` 声明；本模块不再硬编码任何 `AgentSpec`：
+
+  · `DEFAULT_ROSTER`：默认单集名册快照（19 条）—— 由**注册表中
+    `default_roster=True` 的插件职位**构建，保留给既有 17 处导入（向后兼容）
+  · `positions()`：**运行时注册表全量职位**（含已加载插件职位，如 showrunner）
+    —— 无限画布/依赖图用它，加载插件后自动多出节点
+  · `build_registry` / `roster_by_*` / `validate_roster` / `roster_warnings`：
+    名册查询与校验（默认参数仍指向 `DEFAULT_ROSTER`）
+
+`Department` / `Stage` / `ExecutionKind` / `STAGE_ORDER` / `AgentSpec` 已原样
+迁到 `agent/crew_spec.py`，本模块 re-export 它们以保持向后兼容。
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any, Sequence
 
+from little_crew.agent.crew_spec import (
+    AgentSpec,
+    Department,
+    ExecutionKind,
+    STAGE_ORDER,
+    Stage,
+)
 from little_crew.agent.protocol import (
-    AgentManifest,
-    Budget,
     CapabilityRegistry,
-    Layer,
     SideEffect,
     ToolSpec,
 )
+from little_crew.plugin import ensure_default_plugins, get_registry
 
 __all__ = [
     "Department",
@@ -63,6 +81,7 @@ __all__ = [
     "AgentSpec",
     "DEFAULT_ROSTER",
     "STAGE_ORDER",
+    "positions",
     "build_registry",
     "roster_by_department",
     "roster_by_stage",
@@ -71,568 +90,33 @@ __all__ = [
     "roster_warnings",
 ]
 
-
 # ==========================================================================
-# 部门（剧组建制）
+# 注册表驱动（2026-11-18，B1）：名册不再手写，从插件 positions 构建
 # ==========================================================================
+#
+# 导入期 `ensure_default_plugins()` 注册 `core_crew`（19 职位，默认名册）。
+# 注意循环导入：本模块 -> `plugin`（机制层，root-level 豁免）-> importlib
+# 加载 `plugins/core_crew` -> 它只 import `agent/crew_spec`（不 import 本模块）
+# -> 无环。冒烟：`python -c "import little_crew.agent.roster"`。
+ensure_default_plugins()
 
-class Department(str, Enum):
-    """剧组部门。这是**组织维度**，与运行时层（`Layer`）正交。
+#: 默认单集名册（19 条）：注册表中 `default_roster=True` 的插件职位。
+#: **模块级快照** —— 插件后续卸载不会改变它（保证默认流水线稳定）。
+DEFAULT_ROSTER: tuple[AgentSpec, ...] = tuple(get_registry().default_roster())
 
-    | 部门 | 现实职责 | 本平台对应 |
-    |---|---|---|
-    | 导演组 | 艺术决策与调度 | L1 决策 |
-    | 编剧组 | 剧本创作与修订 | 剧本形态 |
-    | 美术组 | 视觉资产与一致性 | 角色/场景锚点 |
-    | 摄影组 | 镜头设计（分镜 + 灯光） | 镜头表与光照 |
-    | 录音组 | 对白与音乐 | 音轨 |
-    | 剪辑组 | 节奏与成片 | 分镜节奏、合成 |
-    | 制片组 | 计划与合规 | 调度、版权 |
-    | 审片组 | 审看与验收 | 门禁 |
+
+def positions() -> tuple[AgentSpec, ...]:
+    """运行时注册表的**全量职位**（默认 19；加载 showrunner 后 20）。
+
+    与 `DEFAULT_ROSTER` 的区别：
+      · `DEFAULT_ROSTER` 是默认单集名册的**快照**（19，不含插件专属职位）
+      · `positions()` 是**当前注册表**的全量声明（含插件专属职位），
+        无限画布/依赖图用它 —— 加载插件后画布自动多节点。
+
+    幂等：先 `ensure_default_plugins()`（缺默认插件时补注册，如被卸载过）。
     """
-
-    DIRECTOR = "director"        # 导演组
-    SCREENPLAY = "screenplay"    # 编剧组
-    ART = "art"                  # 美术组
-    CAMERA = "camera"            # 摄影组
-    SOUND = "sound"              # 录音组
-    EDITORIAL = "editorial"      # 剪辑组
-    PRODUCTION = "production"    # 制片组
-    REVIEW = "review"            # 审片组
-
-
-class Stage(str, Enum):
-    """生产阶段。顺序即依赖顺序。`GATE` 为横切阶段（审片可在任意出口介入）。"""
-
-    SCRIPT = "script"          # 剧本
-    ASSET = "asset"            # 资产（角色/场景锚点）
-    STORYBOARD = "storyboard"  # 分镜
-    RENDER = "render"          # 渲染
-    ASSEMBLE = "assemble"      # 合成
-    GATE = "gate"              # 门禁（横切）
-
-
-#: 阶段的线性顺序。`GATE` 不参与排序。
-STAGE_ORDER: tuple[Stage, ...] = (
-    Stage.SCRIPT, Stage.ASSET, Stage.STORYBOARD, Stage.RENDER, Stage.ASSEMBLE,
-)
-
-
-class ExecutionKind(str, Enum):
-    """该职位**靠什么执行**。决定成本、确定性与是否需要 GPU。
-
-    **立这个字段的理由**：把"确定性职责"从 Agent 里剥离出去之后，
-    剩下的 Agent 也不是同质的 —— 有的是纯文本推理（编剧），
-    有的是纯生成（摄影），有的是视觉判定（审片）。
-    混为一谈会让成本测算与调度都失准。
-    """
-
-    TEXT_LLM = "text_llm"        # 文本模型推理（编剧、剧评）
-    VLM = "vlm"                  # 视觉模型判定（审片、场记核对）
-    IMAGE_GEN = "image_gen"      # 图像生成（美术、摄影）
-    VIDEO_GEN = "video_gen"      # 视频生成（摄影）
-    AUDIO_GEN = "audio_gen"      # 音频生成（录音）
-    ASSEMBLY = "assembly"        # 组装与落盘（剪辑、档案），调确定性工具
-
-    @property
-    def needs_gpu(self) -> bool:
-        return self in (ExecutionKind.IMAGE_GEN, ExecutionKind.VIDEO_GEN,
-                        ExecutionKind.AUDIO_GEN)
-
-    @property
-    def is_generative(self) -> bool:
-        """生成型：产出新素材。**生成方不得自任审核方**（不自我签收）。"""
-        return self in (ExecutionKind.IMAGE_GEN, ExecutionKind.VIDEO_GEN,
-                        ExecutionKind.AUDIO_GEN, ExecutionKind.TEXT_LLM)
-
-
-# ==========================================================================
-# Agent（剧组职位）声明
-# ==========================================================================
-
-@dataclass(frozen=True)
-class AgentSpec:
-    """一个剧组职位的完整声明。**声明式**：新增职位 = 加一条，不改框架。"""
-
-    agent_id: str
-    #: 剧组职位名（中文），如 "摄影指导"
-    crew_title: str
-    #: 英文职位名，便于与 industry 惯例对照
-    crew_title_en: str
-    department: Department
-    stage: Stage
-    execution: ExecutionKind
-    #: 能力标签，供路由匹配（与 AgentManifest.capabilities 必须一致）
-    capabilities: tuple[str, ...]
-    #: 该职位**交付**的产物类型
-    produces: tuple[str, ...] = ()
-    #: 该职位**需要**哪些产物作为输入（数据依赖，与 consumes 不同！）
-    requires: tuple[str, ...] = ()
-    #: 允许调用的**下游能力标签**（喂给 AgentManifest.consumes）
-    consumes: tuple[str, ...] = ()
-    #: 允许调用的**L3 工具名**（剪辑/档案等确定性职位用）
-    tools: tuple[str, ...] = ()
-    #: 任务档案名，走 `models.profile_for` 求解模型 —— **不硬编码 model_id**
-    task_profile: str = ""
-    #: 提示词模板的**引用名**（内容不入代码，见 STRUCTURE.md 配置分类）
-    prompt_template: str = ""
-    max_reasoning_steps: int = 3
-    max_budget_cny: float = 0.0
-    max_budget_tokens: int = 0
-    retryable: bool = True
-    #: 真实剧组里这个职位的职责，用于校验我们的抽象没跑偏
-    real_world_duty: str = ""
-    notes: str = ""
-    #: 是否必需职业：必需职业不可从 profile 省略（插件卸载时也受保护）
-    mandatory: bool = False
-    #: 显式顺序约束：本职业必须排在这些职业之后（与产物依赖合并做拓扑）
-    after: tuple[str, ...] = ()
-
-    # ---- 派生 ----------------------------------------------------------
-
-    @property
-    def layer(self) -> Layer:
-        """由部门推导运行时层。
-
-        **只有导演组是 L1**（艺术决策与调度中枢）；其余剧组职位都是 L2。
-        单一来源，避免两处声明不一致。
-        """
-        return (Layer.DECISION if self.department is Department.DIRECTOR
-                else Layer.COLLAB)
-
-    @property
-    def is_generative(self) -> bool:
-        return self.execution.is_generative
-
-    def manifest(self) -> AgentManifest:
-        budget = (Budget.unlimited()
-                  if not (self.max_budget_cny or self.max_budget_tokens)
-                  else Budget(tokens=self.max_budget_tokens, cny=self.max_budget_cny))
-        return AgentManifest(
-            agent_id=self.agent_id,
-            layer=self.layer,
-            capabilities=self.capabilities,
-            consumes=self.consumes + self.tools,
-            max_budget=budget,
-            max_reasoning_steps=self.max_reasoning_steps,
-            trigger_stage=self.stage.value,
-        )
-
-    def as_dict(self) -> dict[str, Any]:
-        return {
-            "agentId": self.agent_id,
-            "crewTitle": self.crew_title,
-            "crewTitleEn": self.crew_title_en,
-            "department": self.department.value,
-            "stage": self.stage.value,
-            "layer": self.layer.name,
-            "execution": self.execution.value,
-            "needsGpu": self.execution.needs_gpu,
-            "capabilities": list(self.capabilities),
-            "produces": list(self.produces),
-            "requires": list(self.requires),
-            "consumes": list(self.consumes),
-            "tools": list(self.tools),
-            "taskProfile": self.task_profile,
-            "promptTemplate": self.prompt_template,
-            "maxReasoningSteps": self.max_reasoning_steps,
-            "retryable": self.retryable,
-            "realWorldDuty": self.real_world_duty,
-            "notes": self.notes,
-        }
-
-
-# ==========================================================================
-# 18 个剧组职位
-# ==========================================================================
-
-def _specs() -> list[AgentSpec]:
-    """名册。按部门排列，**顺序即生产顺序**（审片组为横切）。"""
-    return [
-        # ================= 导演组（L1，1 人）=================
-        AgentSpec(
-            agent_id="director",
-            crew_title="导演",
-            crew_title_en="Director",
-            department=Department.DIRECTOR,
-            stage=Stage.SCRIPT,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("episode.direct",),
-            produces=("episode.plan",),
-            # 导演需要的是**真实产物**，不是"阶段完成标记"。
-            # 早期版本写 requires=("script.final","asset.ready","board.ready") ——
-            # "asset.ready" 这种标记无人产出，属于把编排概念误当数据依赖。
-            requires=("script.final", "character.anchor_set", "scene.library",
-                      "shot.list", "shot.image", "shot.video"),
-            consumes=("script.draft", "script.revise", "script.critique", "style.guard", "character.design", "scene.design", "continuity.check", "shot.list", "production.schedule", "shot.video", "shot.voice", "shot.music", "review.board", "compliance.check", "lighting.plan"),
-            task_profile="script.structured",
-            prompt_template="crew.director.v1",
-            max_reasoning_steps=8,
-            real_world_duty="把握全片艺术方向，做最终创作决策，协调各部门",
-            notes=("调度枢纽。持有全局预算，按阶段推进并把失败路由到返工链。"
-                   "**不得直调 L3** —— 由 CapabilityRegistry.audit() 强制（R2 禁止跳层）。"
-                   "可在 `episode.plan.cameraDefaults` 给**整集默认机位/光学**（景别/运镜仍归分镜师）。"),
-        ),
-
-        # ================= 编剧组（3 人）=================
-        AgentSpec(
-            agent_id="screenwriter",
-            crew_title="编剧",
-            crew_title_en="Screenwriter",
-            department=Department.SCREENPLAY,
-            stage=Stage.SCRIPT,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("script.draft", "script.revise"),
-            produces=("script.draft", "script.final"),
-            requires=("source.novel",),
-            consumes=("script.critique", "style.guard"),
-            task_profile="script.long_context",
-            prompt_template="crew.screenwriter.v1",
-            max_reasoning_steps=4,
-            real_world_duty="创作与修订剧本；根据剧评意见返工",
-            notes=("**同时声明 draft 与 revise 两个能力** —— 因为它既要出初稿，"
-                   "也要按审查意见改稿。这两件事的提示词模板不同。"),
-        ),
-        AgentSpec(
-            agent_id="dramaturge",
-            crew_title="剧本顾问",
-            crew_title_en="Dramaturge",
-            department=Department.SCREENPLAY,
-            stage=Stage.GATE,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("script.critique",),
-            produces=("script.critique",),
-            requires=("script.draft",),
-            task_profile="script.structured",
-            prompt_template="crew.dramaturge.v1",
-            max_reasoning_steps=3,
-            real_world_duty="审查剧本的戏剧结构、冲突强度、人物弧光",
-            notes=("真实剧组里叫 dramaturge（戏剧顾问）。**与文学策划并行审查**，"
-                   "二者互不阻塞 —— 这是「并行双维审查」的实现。"),
-        ),
-        AgentSpec(
-            agent_id="story_editor",
-            crew_title="文学策划",
-            crew_title_en="Story Editor",
-            department=Department.SCREENPLAY,
-            stage=Stage.GATE,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("style.guard",),
-            produces=("style.guard",),
-            requires=("script.draft",),
-            task_profile="script.structured",
-            prompt_template="crew.story_editor.v1",
-            max_reasoning_steps=3,
-            real_world_duty="把关基调一致性、语言风格、命名规范",
-            notes="与剧本顾问并行；两者意见由导演合并。",
-        ),
-
-        # ================= 美术组（4 人）=================
-        AgentSpec(
-            agent_id="production_designer",
-            crew_title="美术指导",
-            crew_title_en="Production Designer",
-            department=Department.ART,
-            stage=Stage.ASSET,
-            execution=ExecutionKind.TEXT_LLM,
-            # 2026-11-15：**资产生产与美术裁决分离**。
-            # 角色资产由角色设计师产出、场景资产由场景设计师产出；
-            # 美术指导只管总体基调与一致性裁决（不再下场产场景资产）。
-            capabilities=("art.direction",),
-            produces=("art.bible",),
-            requires=("script.final",),
-            task_profile="shot.image.final",
-            prompt_template="crew.production_designer.v1",
-            max_reasoning_steps=3,
-            real_world_duty="总体视觉风格与美术 bible，裁决角色/场景资产的一致性",
-            notes=("产出视觉基调（art.bible）；**不直接产场景资产** —— "
-                   "场景卡归场景设计师（`scene.library`），资产层保持对称。"),
-        ),
-        AgentSpec(
-            agent_id="scene_designer",
-            crew_title="场景设计师",
-            crew_title_en="Scene Designer",
-            department=Department.ART,
-            stage=Stage.ASSET,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("scene.design",),
-            produces=("scene.library",),
-            requires=("script.final",),
-            task_profile="script.structured",
-            prompt_template="crew.scene_designer.v1",
-            max_reasoning_steps=3,
-            real_world_duty="逐场设计空间/材质/道具/色板/年代，产出场景库（场景卡）",
-            notes=("**与角色设计师同级、同组**：角色资产是『图+外观』，"
-                   "场景资产是『场景卡（+可选场景概念图）』。"
-                   "场景卡以**逐字稳定**的文本进入 IR → 跨镜/跨集不漂移。"),
-        ),
-        AgentSpec(
-            agent_id="character_designer",
-            crew_title="角色设计师",
-            crew_title_en="Character Designer",
-            department=Department.ART,
-            stage=Stage.ASSET,
-            execution=ExecutionKind.IMAGE_GEN,
-            capabilities=("character.design",),
-            produces=("character.anchor_set", "character.sheet"),
-            requires=("script.final",),
-            consumes=("continuity.check",),
-            task_profile="shot.image.identity_locked",
-            prompt_template="crew.character_designer.v1",
-            max_reasoning_steps=3,
-            real_world_duty="角色形象设计、表情与服装设定表",
-            notes=("产出锚点图集（正/侧/表情）。**一致性优先参考图** —— "
-                   "本机无法训练角色 LoRA（Z-Image fp32 底模需 22.93 GB > 15.8 GB 内存）。"),
-        ),
-        AgentSpec(
-            agent_id="continuity_supervisor",
-            crew_title="场记",
-            crew_title_en="Continuity Supervisor",
-            department=Department.ART,
-            stage=Stage.GATE,
-            # 2026-11-15 合并：原「质检员」并入场记（**同一维度只留一个权威**）。
-            # 单镜质检要**看图**判崩没崩 → 执行方式必须是 VLM（文本 LLM 做不了）。
-            execution=ExecutionKind.VLM,
-            capabilities=("continuity.check", "shot.qc"),
-            produces=("continuity.report", "continuity.sheet", "qc.report"),
-            requires=("character.anchor_set", "shot.image"),
-            task_profile="review.vlm_blind",
-            prompt_template="crew.continuity_supervisor.v1",
-            max_reasoning_steps=3,
-            real_world_duty=("单镜质检（崩坏判定 + 返工指令）+ 跨镜连贯性审计"
-                             "（服装/道具/轴线/视线）"),
-            notes=("**合并说明（2026-11-15）**：原「质检员」并入本职位 —— "
-                   "两者都以画面为对象、都要看图，分开只会让返工通道出现两个来源。"
-                   "分工：**单镜崩坏=唯一权威（可下返工指令）**；"
-                   "跨镜一致性=审计模式（只报警，不进裁定）。"
-                   "**跨模型族盲读**的落点之一：审核模型必须与生成模型不同族。"),
-        ),
-
-        # ================= 摄影组（5 人）=================
-        # ---- 预演师（2026-10-19 加，P2）----
-        #
-        # **为什么在摄影组**：它决定"机位在哪、人物站在哪、画面怎么构图" ——
-        # 这是摄影组的活。放在导演组会破坏"导演有且仅有一个"这条守卫
-        # （那是名册刻意的设计，不是疏漏）。
-        #
-        # **它不产出最终画面**：产出的是**三维空间的示意图**（白模），
-        # 交给 Blender 渲染。所以 `execution=TEXT_LLM` —— 判断由 LLM 做，
-        # 画面由 Blender 做。
-        #
-        # **`produces` 必须声明，不能省**（2026-10-19 实测）：
-        # 黑板写入是**按名册的 `produces` 白名单**做的 ——
-        # 省掉它，`run_stage` 会 ok=True 但**产物根本不进黑板**
-        # （表现为 `previs.layouts` 取到 None，`_run_previs` 空转返回 ok=False）。
-        #
-        # 消费者是**摄影指导**：出图时把白模当 ControlNet 控制图
-        # （`EpisodeRunner._control_frame_for` 就是这条路径）。
-        # 这不是凑对子 —— 白模的用途本来就是"约束画面"。
-        #
-        # 刻意**不声明** `consumes`：`art.bible` / `episode.plan` 目前只在
-        # 产物键层面存在、没有 agent 声明**能力**，写上去就是造假依赖。
-        AgentSpec(
-            agent_id="previs",
-            crew_title="白模预演师",
-            crew_title_en="Previs Artist",
-            department=Department.CAMERA,
-            stage=Stage.SCRIPT,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("previs.layouts",),
-            produces=("previs.layouts",),
-            requires=("shot.list", "script.final"),
-        ),
-        AgentSpec(
-            agent_id="storyboard_artist",
-            crew_title="分镜师",
-            crew_title_en="Storyboard Artist",
-            department=Department.CAMERA,
-            stage=Stage.STORYBOARD,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("shot.list",),
-            produces=("shot.list", "shot.breakdown"),
-            requires=("script.final", "character.anchor_set", "scene.library"),
-            task_profile="script.structured",
-            prompt_template="crew.storyboard_artist.v1",
-            max_reasoning_steps=4,
-            real_world_duty="把剧本拆解为镜头表：**景别 + 运镜**（机位由导演默认/摄影师覆盖）",
-            notes=("**每镜时长硬上限 10 秒** —— H3 实测 12 秒必 OOM，"
-                   "且降分辨率无效（瓶颈是注意力序列长度）。"),
-        ),
-        AgentSpec(
-            agent_id="gaffer",
-            crew_title="灯光师",
-            crew_title_en="Gaffer",
-            department=Department.CAMERA,
-            stage=Stage.STORYBOARD,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("lighting.plan",),
-            produces=("lighting.plan",),
-            requires=("scene.library",),
-            task_profile="script.structured",
-            prompt_template="crew.gaffer.v1",
-            max_reasoning_steps=2,
-            real_world_duty="设计每场的光线方案（主光/辅光/色温/氛围）",
-            notes="把光照从「摄影指导顺手写的提示词」提升为**独立可审查的产物**。",
-        ),
-        AgentSpec(
-            agent_id="camera_operator",
-            crew_title="摄影师",
-            crew_title_en="Camera Operator",
-            department=Department.CAMERA,
-            stage=Stage.RENDER,
-            execution=ExecutionKind.VIDEO_GEN,
-            capabilities=("shot.video",),
-            produces=("shot.video",),
-            requires=("shot.image",),
-            tools=("qc.tech_check",),
-            task_profile="shot.video.identity_locked",
-            prompt_template="crew.camera_operator.v1",
-            max_reasoning_steps=2,
-            real_world_duty="机位与光学执行 + 特殊镜头（手持/航拍/长镜头）；\n"
-                            "景别/运镜由分镜师定，默认机位由导演 `cameraDefaults` 给",
-            notes=("图生视频。本机 H3 实测 442~518 秒/5 秒片段 —— "
-                   "**渲染时间是真正的瓶颈**。"),
-        ),
-
-        # ================= 录音组（2 人）=================
-        AgentSpec(
-            agent_id="dialogue_editor",
-            crew_title="对白剪辑",
-            crew_title_en="Dialogue Editor",
-            department=Department.SOUND,
-            stage=Stage.RENDER,
-            execution=ExecutionKind.AUDIO_GEN,
-            capabilities=("shot.voice",),
-            produces=("shot.voice",),
-            requires=("script.final",),
-            task_profile="audio.dialogue",
-            prompt_template="crew.dialogue_editor.v1",
-            max_reasoning_steps=2,
-            real_world_duty="对白录制与剪辑、口型对齐",
-            notes=("**优先用 H3 原生音轨** —— 音画同出，零额外成本，"
-                   "且省一次模型加载（本机同时只能加载一个模型）。"),
-        ),
-        AgentSpec(
-            agent_id="composer",
-            crew_title="作曲",
-            crew_title_en="Composer",
-            department=Department.SOUND,
-            stage=Stage.RENDER,
-            execution=ExecutionKind.AUDIO_GEN,
-            capabilities=("shot.music",),
-            produces=("shot.music",),
-            requires=("shot.list",),
-            task_profile="audio.dialogue",
-            prompt_template="crew.composer.v1",
-            max_reasoning_steps=2,
-            real_world_duty="配乐与情绪铺底",
-            notes="背景音乐。需与对白做音量闪避（ducking）。",
-        ),
-
-        # ================= 剪辑组（2 人）=================
-        AgentSpec(
-            agent_id="post_production",
-            crew_title="后期统筹",
-            crew_title_en="Post-Production Supervisor",
-            department=Department.EDITORIAL,
-            stage=Stage.ASSEMBLE,
-            # **不调模型**：字幕/转场/特效/BGM/音轨策略都是**确定性规则**，
-            # 执行交给 ffmpeg；职位只负责"定方案 + 出计划"。
-            execution=ExecutionKind.ASSEMBLY,
-            capabilities=("post.plan",),
-            produces=("post.plan",),
-            requires=("shot.list", "script.final"),
-            max_reasoning_steps=1,
-            real_world_duty="后期统筹：字幕/转场/特效/BGM/音轨策略，产出后期计划",
-            notes=("**合并了原「剪辑师」与「合成剪辑」**：节奏判断并入本职位（但它不出分数），",
-                   "拼接/混流/字幕烧录仍由 ffmpeg 执行。",
-                   "音轨策略二选一：`native`（视频模型自带音轨，H3 FL2VA）| `tts+bgm`（静帧路径）。",
-                   "判据可数：字幕条数/时长、响度下限、BGM 增益、转场类型与数量。"),
-        ),
-        AgentSpec(
-            agent_id="line_producer",
-            crew_title="制片主任",
-            crew_title_en="Line Producer",
-            department=Department.PRODUCTION,
-            stage=Stage.STORYBOARD,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("production.schedule",),
-            produces=("production.schedule",),
-            requires=("shot.list",),
-            task_profile="script.structured",
-            prompt_template="crew.line_producer.v1",
-            max_reasoning_steps=3,
-            real_world_duty="排期、预算、资源调配",
-            notes=("**本机约束的落点**：8 GB 显存同时只能加载一个模型，"
-                   "故必须**按模型分批调度**（把所有用同一底模的镜头排在一起），"
-                   "而非按镜头顺序逐个跑。"),
-        ),
-        AgentSpec(
-            agent_id="compliance_officer",
-            crew_title="版权与合规",
-            crew_title_en="Clearance & Compliance",
-            department=Department.PRODUCTION,
-            stage=Stage.ASSEMBLE,
-            # 2026-11-15：内容审查改为 **VLM 初审 + 人工/法务复审**（初审绝不宣布通过），
-            # 授权/交付两腿仍是确定性工具 —— 所以执行方式记 VLM（因为有视觉调用）。
-            execution=ExecutionKind.VLM,
-            capabilities=("compliance.check",),
-            produces=("compliance.report",),
-            requires=("episode.master",),
-            # 2026-11-15：**LicenseGate 归口为本职位的职能工具**（`license.audit`）。
-            # 注意「归口」≠「搬家」：引擎仍在 `governance/license.py`，
-            # 由 **router 在路由期**调用做硬门禁（还没花钱就拒）；这里声明的是
-            # **权责归属** —— 合规官名下的工具，交付报告的授权部分由它汇总。
-            tools=("license.audit", "gate.assert"),
-            max_reasoning_steps=2,
-            real_world_duty="版权清理、内容审查、署名规范",
-            notes=("**三腿**：①授权硬门禁（`LicenseGate` 引擎，归口为本职位工具 "
-                   "`license.audit`，路由期执行）②交付审计（代码：AI 标识/署名/素材登记）"
-                   "③内容 **VLM 初审 + 人工/法务复审**。"
-                   "审核结论只有 `blocked`（硬规则没过）或 `needs_human_review`（等人工签字），"
-                   "**永远不产生 `signed`** —— 不可自签收。"),
-        ),
-
-        # ================= 审片组（1 人）=================
-        AgentSpec(
-            agent_id="review_board",
-            crew_title="审片",
-            crew_title_en="Review Board",
-            department=Department.REVIEW,
-            stage=Stage.GATE,
-            execution=ExecutionKind.TEXT_LLM,
-            capabilities=("review.board",),
-            produces=("review.verdict",),
-            requires=("shot.image", "shot.video"),
-            task_profile="review.vlm_blind",
-            prompt_template="crew.review_board.v1",
-            max_reasoning_steps=3,
-            real_world_duty="成片审查：艺术质量与观众感受（审文本镜头表；看图由质检员承担）",
-            notes=("QC-5 五维品控：完整性 25 / 一致性 40 / 品质感 25 / "
-                   "可执行性 / 合规性。**跨模型族盲读**，且不得由生成方自任。"),
-        ),
-        AgentSpec(
-            agent_id="cover_designer",
-            crew_title="封面设计师",
-            crew_title_en="Cover Designer",
-            department=Department.REVIEW,
-            stage=Stage.GATE,
-            # **必须看图**：哪张能当门面是纯视觉判断（主体完整/未切头/无崩坏）
-            execution=ExecutionKind.VLM,
-            capabilities=("cover.select", "cover.generate"),
-            produces=("cover.image",),
-            requires=("shot.image",),
-            task_profile="review.vlm_blind",
-            prompt_template="crew.key_art.v1",
-            max_reasoning_steps=1,
-            real_world_duty="产出封面主视觉：可从成片选帧，也可用角色/美术设定生成新封面",
-            notes=("**双模式**：①`select` 从成片选帧（拼图一次判断：候选等距抽样 8 张 → "
-                   "ffmpeg 拼 2×4 → VLM 一次选格 → 复制**原分辨率**那张）；"
-                   "②`generate` 以**角色设定图 + 美术/剧情设定**为输入做图生图，产出海报感封面。"
-                   "默认 select（可追溯）；generate 会引入新内容，需显式开。"
-                   "宁可不出封面（模型回「不选」）也不选有硬伤的一张。"),
-        ),
-    ]
+    ensure_default_plugins()
+    return tuple(get_registry().positions())
 
 
 #: **代码产出**的产物（不是任何职位交付的）：`shot.image` 由渲染通道产出。
@@ -645,9 +129,6 @@ CODE_OUTPUTS: frozenset = frozenset({
 
 #: 由**代码**消费的产物：渲染通道取 `previs.layouts` 当控制图。
 CODE_CONSUMED: frozenset = frozenset({"previs.layouts", "post.plan"})
-
-#: 19 个剧组职位（模块级常量，便于直接 import）。
-DEFAULT_ROSTER: tuple[AgentSpec, ...] = tuple(_specs())
 
 
 # ==========================================================================

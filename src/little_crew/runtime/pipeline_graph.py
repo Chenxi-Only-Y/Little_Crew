@@ -17,6 +17,7 @@
     {"id": "scene_designer", "type": "position", "title": "场景设计师",
      "department": "art", "stage": "asset", "execution": "text_llm",
      "active": true, "status": "done", "produces": ["scene.library"],
+     "plugin": "core_crew", "inDefaultRoster": true,
      "evidence": ["delivery/scene.library.json"]},
     {"id": "code:shot.image", "type": "channel", "title": "渲染通道", ...}
   ],
@@ -105,17 +106,36 @@ def _read_costs(workdir: str | Path | None) -> dict[str, float]:
     return out
 
 
-def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
+def build_graph(*, roster: Sequence[Any] | None = None,
+                crew: Mapping[str, Any] | None = None,
                 workdir: str | Path | None = None,
                 episode_id: str = "",
                 stage_evidence: Mapping[str, Sequence[str]] | None = None,
                 ) -> dict[str, Any]:
     """按名册契约 + 编制 + 交付证据，构建画布后端图。
 
+    `roster`（2026-11-18，B1 全职业插件化）：
+      · **不传（None）** -> 读**插件注册表** `agent.roster.positions()`
+        （默认 19；加载 showrunner 插件后 20 —— 画布自动出现插件专属职位）
+      · 显式传 -> 用传入序列（如 `DEFAULT_ROSTER` 得到稳定的 19 节点，
+        `episode.py`/回归测试都走这条稳定路径）
+
+    每个职位节点带 `plugin`（声明它的插件名，如 "core_crew"/"series_showrunner"）
+    与 `inDefaultRoster`（是否属于默认单集名册）—— 让画布能区分
+    "默认 19 职位"与"插件专属职位"，不靠前端猜。
+
     `stage_evidence`：**运行期才知道的证据**（如"导演这次真的产出了 episode.plan"），
     由 `run()` 传入 `{agent_id: ["delivery/run.report.json"]}` —— 只看文件系统
     会漏掉"不单独落文件的阶段"，也会把"报告文件存在"误当成"该阶段跑过"。
     """
+    from little_crew.agent.roster import DEFAULT_ROSTER
+    from little_crew.agent.roster import positions as _positions
+    from little_crew.plugin import get_registry
+
+    from_registry = roster is None
+    if roster is None:
+        roster = _positions()
+    default_ids = {str(s.agent_id) for s in DEFAULT_ROSTER}
     stage_evidence = dict(stage_evidence or {})
     crew = dict(crew or {})
     active = set(crew.get("active") or [])
@@ -149,6 +169,9 @@ def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
             "produces": list(a.produces or ()),
             "requires": list(a.requires or ()),
             "evidence": ev,
+            # B1（2026-11-18）：职位来源可追溯（插件名 + 是否默认名册）
+            "plugin": get_registry().position_owner(aid),
+            "inDefaultRoster": aid in default_ids,
         })
 
     # 通道节点（产物无职位生产者）
@@ -165,6 +188,7 @@ def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
             "status": "done" if ev else "pending",
             "capabilities": [], "produces": [art], "requires": [],
             "evidence": ev,
+            "plugin": "", "inDefaultRoster": False,
         })
         channel_ids.add(art)
 
@@ -219,6 +243,11 @@ def build_graph(*, roster: Sequence[Any], crew: Mapping[str, Any] | None = None,
             "pending": sum(1 for n in nodes if n["status"] == "pending"),
             "skipped": sum(1 for n in nodes if n["status"] == "skipped"),
             "edges": len(edges),
+            # B1（2026-11-18）：职位来源可审计 —— 哪些插件贡献了节点、
+            # 默认名册口径从哪来（不传 roster 时读插件注册表）
+            "plugins": sorted({str(n.get("plugin")) for n in nodes
+                               if n.get("plugin")}),
+            "fromRegistry": from_registry,
         },
     }
 

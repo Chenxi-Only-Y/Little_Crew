@@ -57,6 +57,164 @@ git config http.sslBackend openssl
 
 ---
 
+## [0.8.6] — 2026-11-18（**B1 全职业插件化 20/20：插件 positions + 19 职位迁 core_crew**）
+
+### 问题
+
+19 个剧组职位此前**硬编码**在 `agent/roster.py` 的 `_specs()` 里。
+"新职业/功能一律插件化"的纪律只在功能层有入口（`provides`），**职位层没有入口** ——
+新增一个职位必须改核心文件，插件化名不副实。
+
+### 改法：职位成为一等插件声明
+
+- `PluginManifest` 增加 **`positions`**（职位声明）与 `default_roster`（是否构成默认单集名册）；
+  校验：`provides` 与 `positions` 至少一个非空、条目必须有非空 `agent_id`、同插件内不重复。
+- `PluginRegistry` 增加 `positions()` / `default_roster()` / `position_owner()`；
+  **跨插件重复声明同一 agent_id → 注册被拒绝**；卸载时同步移除职位索引。
+- 新增 `DEFAULT_PLUGIN_MODULES = ("little_crew.plugins.core_crew",)` 与
+  `ensure_default_plugins()`（幂等）：`agent/roster.py` 导入期确保默认插件已注册，
+  **默认行为与迁移前一致**。
+- `agent/crew_spec.py`：`Department / Stage / ExecutionKind / STAGE_ORDER / AgentSpec`
+  原样迁出（类型单一来源）；`agent/roster.py` re-export 保持向后兼容（17 处导入）。
+- `plugins/core_crew.py`：**19 个核心职位原样迁入**（`default_roster=True`）。
+- `plugins/series_showrunner.py`：声明**第 20 个职位**「总导演/Showrunner」
+  （系列级、插件专属，**不进默认 19 职位名册**）。
+- 名册/编制/依赖图/画布**从注册表构建**：
+  · `agent/roster.DEFAULT_ROSTER`（19 快照）+ `positions()`（运行时全量）
+  · `crew_profile.MANDATORY` 由 `AgentSpec.mandatory` 派生（不再硬编码 id）
+  · `pipeline_graph.build_graph(roster=None)` 默认读注册表；节点带 `plugin` / `inDefaultRoster`
+  · `console._graph()`、`episode.py` 画布落盘改读 `positions()`
+
+**20/20 口径**：全部 20 个职位都由插件 `positions` 声明（19 核心 + 1 总导演）。
+默认单集名册仍 **19** —— 插件专属职位加载后才进注册表/画布，卸载不影响默认流水线。
+
+### 验证
+
+```
+core_crew_check        50/50   （迁移源码守卫/注册表/20-20/下游/卸载语义/画布读注册表）
+plugin_check           25→36
+crew_profile_check     22→24
+position_order_check   18→22
+pipeline_graph_check   17→20
+架构守卫               PASS（层序 + 存储）
+DEFAULT_ROSTER=19 · 加载两插件后注册表 20（19 core + showrunner）
+全量                   3408/3408 + 架构守卫 PASS（2026-11-18 实跑，247.26s）
+```
+
+### 顺带修的基线卫生
+
+- `HANDOFF.md` 加入项目根白名单（`tests/test_architecture.py` + `STRUCTURE.md` 同源）——
+  此前 `aaccdaf` 新增 HANDOFF 后**架构守卫一直 FAIL**，交接文档说的"守卫 PASS"其实未复核。
+- 3 个套件期望数同步实际（逐场分镜 13→18、混流 12→19、角色定妆表 77→78），
+  消除了"3251/3238"这种**用例漂移没跟上**的读数。
+
+### 边界（如实）
+
+- "20/20" ≠ 单集跑 20 个职位：默认单集编制仍是 19；showrunner 只参与系列层声明。
+- 旧 `PluginManifest` 只声明能力的插件仍可加载（`positions` 缺省空）；重复 `load_plugin` 的历史
+  重复定义已合并为唯一实现（旧版第一个定义漏 `_check_requires`，被后一个覆盖）。
+
+---
+
+## [0.8.6] — 2026-11-18（**#8 并行写台账锁：按集写 + 合并锁 → 允许并行开场景视图**）
+
+### 问题
+
+`tools/series_run.py --mode parallel` 并行跑多集时，各集子进程在 `episode.py` 场景视图
+回写段是 **`load()` → 内存 upsert → `save()` 整份覆盖** `series/series.json` ——
+**后写者覆盖前写者**（scenes / cast / usage / episodes 并发丢更新）。
+所以此前只敢并行跑、不敢并行开场景视图。
+
+### 改法
+
+- `runtime/series_bible.py` 新增：
+  · `_lock(base, timeout_s=30.0)`：纯 stdlib 跨进程锁（`O_CREAT|O_EXCL` 锁文件、
+    10~50ms 抖动重试、30s 超时抛 `LedgerLockTimeout`、锁 mtime > **300s** 判陈旧可破并回传
+    `staleBroke`、`finally` 必删锁；Windows 上删锁瞬间的 `EACCES` 按"被占"重试）
+  · `_atomic_write`（同目录 tmp + `os.replace`）；`save` 改原子写（路径/返回不变）
+  · `locked_merge`（锁内重读最新 → mutate → 原子写回）
+  · `merge_episode`：锁内**只合并本集增量** —— scenes 走 `upsert_scene` 语义
+    （tier 只升不降 / cardHash 变才升 version / assets 按视图合并）、
+    usage 按 `(episodeId, sceneKey, action)` **去重**、cast 走 `upsert_character`、
+    episodes 走 `upsert_episode`；返回 `{ok, episodeId, added, summary, waitMs, staleBroke}`
+- `runtime/episode.py`：回写段改为**边跑边收集本集增量 → 只 merge 一次**（不再整份 save）；
+  角色图集登记段同样改 `locked_merge`；`delivery/series.json` 每集文件形状不变
+  （summary 用合并后最新值）；失败不阻断且打印。
+- `tools/series_run.py`：并行分支确认传 `--scene-views / --scene-views-no-llm /
+  --scene-views-hero-max`；`run-summary` 记录 `mode / sceneViewsParallel / sceneViewsNoLlm / heroMax`；
+  修并行分支 `t_all` 起表过晚导致 `wallS=0.0` 的统计 bug。
+
+### 验证
+
+- `series_bible_check` **27 → 44/44**（锁超时/陈旧锁/异常释放/原子写无残留/locked_merge/
+  merge_episode 幂等/保留他集/tier-assets-version 语义/4 进程并发）
+- 独立并发压力：8 进程 × 5 集 × 5 轮（200 次）+ 6 进程 × 5 集 × 8 轮（240 次），
+  各重复 3 轮**共 1320 次锁内合并** → **0 丢更新**、无锁/tmp 残留、JSON 完整
+- 真实并行（3 集，`--mode parallel --scene-views --shots 2`）：
+  **3/3 成功** · coverage 1.0 · 墙钟 **124.5s** · 场景视图全复用（13/13/9 视图，**¥0**）·
+  云渲染 ¥0.30；台账 `episodes=3 / scenes=3 / usage=8 / cast=3`，
+  三集子进程在**同一 4 秒窗口**内写同一份 `series.json`，数据全在；
+  独立校验 `validation.json` **54 项全过**；证据 `research/series/ledger-lock-2026-11-18/`
+
+### 边界（如实）
+
+- 陈旧锁是"近似锁"：破陈旧锁与活进程极端竞争时理论上可能双持有（临界区只是读-合并-原子写，
+  毫秒级；300s 阈值实际不会撞上活进程），换来纯 stdlib、无平台分支。
+- 跨集复用决策仍是**乐观**的（每集开头读快照决定复用/升档）：并行时两集可能同时决定生成
+  同一场景 —— 只多花生成成本，**不会丢数据**。
+
+---
+
+## [0.8.6] — 2026-11-18（**B2 自动循环：VLM diff→自动 hint，重拍 ≤2，仍红升级人工**）
+
+### 问题
+
+0.8.4 的 B2 只做到"执行层"（`run_retake` 能给边界镜加 hint 并只重渲这些镜），但：
+
+1. **hint 是硬编码一句**（"保持与上一章同一空间…"）—— 不管这次到底差在哪；
+2. 只补拍**一次**，没有复审 —— 红没红没人知道；
+3. `series_run --retake-red` 只调一次 `run_retake`，续跑分支更只写计划不执行。
+
+### 改法
+
+`runtime/boundary_retake.py`（旧 `plan/write/run_retake` 签名与证据文件不变）：
+
+- `hint_from_diffs(boundary)`：视觉 diffs（空间/造型/光线）→ 可执行约束；
+  VLM 一句话差异 → 「上一版被判：…」；契约 diffs → 逐条「契约要求：…」；
+  确定性、去重、总长 ≤400 字；完全没有依据时给通用 hint。
+- `run_retake_loop(...)`：边界红 → 生成 hint → **只补拍边界镜** → `judge` 复审，
+  最多 `max_retries`（默认 **2**）次：
+  · **契约红** → 补拍修不了契约，**不重渲**直接升级人工；
+  · **画面红** → 补拍+复审；仍红 → 把新 diff 并回 boundary，下一轮 hint 更强
+    （含「上一版仍被判：…」）；
+  · **judge=None**（未开 VLM / 无帧）→ **不假装复审**，直接升级；
+  · 无 shot manifest / 渲染失败 / 判官异常 → 全部诚实升级；
+  · 证据：`delivery/retake-loop.json`；升级时 `delivery/retake-escalation.json`
+    （needsHuman / reason / attempts / costCny / lastHint / lastDiffs / history /
+    suggestedActions×3 / createdAt）。
+- `tools/series_run.py`：`--retake-red` 主分支与**续跑分支**都走 loop；新增 `--retake-max`；
+  行/汇总/`run-summary.md` 增加"重拍"列（attempts / level / 升级 / hint）。
+
+### 验证
+
+- 自检 `boundary_retake_check` **70/70**（hint 生成 14 项 / 红→绿 11 / 一直红+证据 10 /
+  契约红 5 / 诚实边界 10 / 非红 4 / 显式 shots+旧接口兼容 6 / 源码接线守卫 10）
+- 半真实（¥0）：真实集 `shot.json` + 假 renderer/judge → `attempts=2` 红→绿、真实文件版本
+  `1→3`；`judge=None` → 升级且 0 次重渲；`series_run --resume` 注入契约红端到端 →
+  `summary.retakeEscalated=["E02"]`、升级证据齐（证据 `research/series/b2-retake-loop-2026-11-18/`）
+- **真实 VLM**（成本 ¥0.05、1 次调用、云出图 0 次）：真实相邻章真实帧
+  （E01 末镜 / E02 首镜）→ VLM 判 **red**（空间/造型/光线三项全 false，判词完整）→
+  `hint_from_diffs` 自动生成 133 字 hint（三约束 + 「上一版被判：…」）
+- 相关既有套件：边界审 23/23 · 每镜资产 19/19 · 章节契约 16/16 · 报告页 17/17
+
+### 边界（如实）
+
+- **补拍后的真 VLM 复审、真云端出图仍未端到端跑**（要真花钱；预算内选择 ¥0 的半真实验证）。
+  复审链路由"假判官单测 + 源码接线守卫"覆盖，真 VLM 只验证到 `diff → hint` 这一段。
+- 黄项（VLM 拿不准）不触发重拍，保持原语义（黄=人工）。
+
+---
+
 ## [0.8.6] — 2026-11-18（**A3：serial vs parallel 真墙钟对比**）
 
 - 同条件 3 章（shots=2、cloud、无场景视图、fresh out-root）：

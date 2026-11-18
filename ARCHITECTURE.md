@@ -82,6 +82,10 @@ Little_Crew/
 │   │   └── cover_designer.py       封面设计师（选帧 / 生成 / 叠标题）
 │   ├── api/                    [5] 对外 HTTP 接口
 │   └── cli/                    [5] 命令行入口
+│
+│   （包根豁免层序、不是"层"）
+│   ├── plugin/                 插件机制：manifest 能力 + **职位声明** / 注册 / 卸载 / 默认插件
+│   └── plugins/                插件实现：core_crew（19 核心职位）· series_showrunner（总导演，第 20 职位）
 ├── tests/
 │   ├── run_all.py              一键全量测试
 │   ├── test_architecture.py    架构守卫（机器强制依赖方向）
@@ -571,3 +575,46 @@ Store 的应用执行别名是 reparse point，harness 特意用 `lstatSync` 而
 
 > 依赖方向仍由 `tests/test_architecture.py` 机器强制：review(4) 不 import runtime(4+)；
 > 公共逻辑下沉到 `runtime/run_options.py` 与 `net.py`，避免三处各写一份（历史教训：漂移）。
+
+## 2.6 2026-11-18 新增：插件职位声明（全职业插件化 20/20）
+
+**问题**：19 个剧组职位原先硬编码在 `agent/roster.py` 的 `_specs()` 里。
+"新职业一律插件化"的纪律因此只在功能层成立，**职位层没有入口**。
+
+**改法（单一来源 + 注册表驱动）**：
+
+```
+PluginManifest.positions        职位声明（AgentSpec 列表）+ default_roster 标志
+        │
+        ▼
+PluginRegistry.positions() / default_roster() / position_owner()
+        │                               │
+        ▼                               ▼
+agent/roster.py                  runtime/pipeline_graph.py（无限画布）
+ · DEFAULT_ROSTER = 注册表中        · build_graph(roster=None) 默认读注册表
+   default_roster=True 的职位        · 节点带 plugin / inDefaultRoster
+ · positions() = 全量（含插件职位）     → 加载插件后画布自动多节点
+        │
+        ├── runtime/crew_profile.py（编制：MANDATORY 由 spec.mandatory 派生）
+        └── runtime/position_order.py（依赖图：仍由 produces/requires + EXPLICIT_AFTER 推）
+```
+
+| 模块 | 作用 |
+|---|---|
+| `plugin/__init__.py` | `PluginManifest.positions` + `default_roster`；注册表职位索引（跨插件重复 `agent_id` 拒绝）；`DEFAULT_PLUGIN_MODULES` + `ensure_default_plugins()`（幂等） |
+| `agent/crew_spec.py` | 类型单一来源：`Department/Stage/ExecutionKind/STAGE_ORDER/AgentSpec`（原样从 roster 迁出） |
+| `agent/roster.py` | 不再硬编码职位：导入期确保默认插件 → `DEFAULT_ROSTER`（19 快照）+ `positions()`（运行时全量） |
+| `plugins/core_crew.py` | 19 个核心职位（`default_roster=True`） |
+| `plugins/series_showrunner.py` | 第 20 个职位：总导演/Showrunner（插件专属，**不进**默认 19 职位名册） |
+
+**20/20 口径**：全部 20 个职位都由插件 `positions` 声明（19 核心 + 1 总导演）。
+默认单集名册仍 19 —— 插件专属职位加载后才进注册表/画布，不影响既有单集流水线。
+
+**边界与不变量**：
+- 核心（`agent/` 等）只 import `little_crew.plugin`（机制，包根豁免），**不 import 具体插件**；
+  默认插件的模块名只出现在机制层的 `DEFAULT_PLUGIN_MODULES` 一处（字符串，不做反向 import）；
+- `DEFAULT_ROSTER` 是**模块级快照**：插件卸载不会改变它，保证默认流水线稳定；
+- 插件清单校验：`provides` 与 `positions` 至少一个非空；职位条目必须有非空 `agent_id`；
+- 自检：`runtime/core_crew_check.py`（50 项）+ `plugin_check` / `crew_profile_check` /
+  `position_order_check` / `pipeline_graph_check` 扩展用例。
+

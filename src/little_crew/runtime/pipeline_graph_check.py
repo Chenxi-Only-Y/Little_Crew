@@ -6,6 +6,10 @@
 3 **状态**：只按**证据文件是否存在**推断 done/pending；未启用 = skipped（不冒充完成）
 4 **费用**：只汇总能对账的（image_calls / lipsync），不估算
 5 **落盘**：`delivery/pipeline.graph.json` 可被前端直接读
+
+2026-11-18（B1 全职业插件化）：不传 `roster` 时图读**插件注册表**
+（`agent.roster.positions()`）；节点带 `plugin`/`inDefaultRoster`，
+加载 showrunner 插件后默认图自动变 20 节点。
 """
 from __future__ import annotations
 
@@ -54,6 +58,33 @@ def main() -> int:
               str(sorted(k for k in nodes if k.startswith("code:"))))
         check("A3 ★★ 含外部来源（源小说）",
               any(s["artifact"] == "source.novel" for s in g["sources"]), "")
+
+        # 2026-11-18（B1 全职业插件化）：不传 roster 时图读**插件注册表**
+        from little_crew.plugin import get_registry, load_plugin
+
+        gr = PG.build_graph()
+        pos_nodes = [n for n in gr["nodes"] if n["type"] == "position"]
+        check("A4 ★★★ 不传 roster -> 读注册表（19 职位，节点带插件来源）",
+              gr["summary"]["positions"] == 19
+              and all(n.get("plugin") == "core_crew"
+                      and n.get("inDefaultRoster") is True for n in pos_nodes)
+              and gr["summary"]["fromRegistry"] is True
+              and gr["summary"]["plugins"] == ["core_crew"],
+              json.dumps(gr["summary"], ensure_ascii=False))
+        load_plugin("little_crew.plugins.series_showrunner")
+        try:
+            g20 = PG.build_graph()
+            sr = next((n for n in g20["nodes"] if n["id"] == "showrunner"), {})
+            twenty = (g20["summary"]["positions"] == 20
+                      and sr.get("plugin") == "series_showrunner"
+                      and sr.get("inDefaultRoster") is False)
+        finally:
+            get_registry().unload("series_showrunner")
+        check("A5 ★★★ 加载 showrunner -> 默认图 20 节点（插件职位自动出现）",
+              twenty and PG.build_graph()["summary"]["positions"] == 19, "")
+        check("A6 ★★★ 显式传 roster=DEFAULT_ROSTER -> fromRegistry=False（稳定口径）",
+              g["summary"]["fromRegistry"] is False
+              and g["summary"]["plugins"] == ["core_crew"], "")
 
         check("B1 ★★★ 产物契约连边（场景设计师 -> 分镜师 scene.library）",
               any(e["from"] == "scene_designer" and e["to"] == "storyboard_artist"

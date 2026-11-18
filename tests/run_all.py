@@ -83,7 +83,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("对白编辑职位", [sys.executable, "-m", "little_crew.runtime.dialogue_editor_agent_check"], 12),
     ("配乐摄影职位", [sys.executable, "-m", "little_crew.runtime.music_camera_agents_check"], 12),
     ("音乐床决策", [sys.executable, "-m", "little_crew.runtime.music_stage_check"], 14),
-    ("逐场分镜", [sys.executable, "-m", "little_crew.runtime.storyboard_stage_check"], 13),
+    ("逐场分镜", [sys.executable, "-m", "little_crew.runtime.storyboard_stage_check"], 18),
     ("场景主体修复", [sys.executable, "-m", "little_crew.runtime.subject_repair_check"], 16),
     ("视觉重渲", [sys.executable, "-m", "little_crew.runtime.vision_rework_check"], 18),
     ("断点续跑", [sys.executable, "-m", "little_crew.runtime.stage_checkpoint_check"], 18),
@@ -98,7 +98,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("配音规则", [sys.executable, "-m", "little_crew.review.voice_cast_check"], 19),
     ("配音轨", [sys.executable, "-m", "little_crew.runtime.voice_track_check"], 19),
     ("对白编辑", [sys.executable, "-m", "little_crew.governance.dialogue_editor_check"], 19),
-    ("混流", [sys.executable, "-m", "little_crew.runtime.mixdown_check"], 12),
+    ("混流", [sys.executable, "-m", "little_crew.runtime.mixdown_check"], 19),
     ("音乐床", [sys.executable, "-m", "little_crew.runtime.music_bed_check"], 14),
     ("存音色工具", [sys.executable, "-m", "little_crew.runtime.voice_save_check"], 4),
     ("音色设计", [sys.executable, "-m", "little_crew.runtime.voice_design_check"], 15),
@@ -111,7 +111,7 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("定向返工", [sys.executable, "-m", "little_crew.runtime.rework_check"], 13),
     ("定向返工执行", [sys.executable, "-m", "little_crew.runtime.rework_pipeline_check"], 13),
     ("角色锚点发现", [sys.executable, "-m", "little_crew.runtime.anchors_check"], 9),
-    ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 77),
+    ("角色定妆表", [sys.executable, "-m", "little_crew.agent.character_sheet_check"], 78),
     ("多智能体协作", [sys.executable, str(PLATFORM / "tests" / "test_agent_collab.py")], 49),
     ("剧组编排闭环", [sys.executable, "-m", "little_crew.agent.orchestrator_check"], 63),
     ("预算账本", [sys.executable, "-m", "little_crew.agent.budget_check"], 21),
@@ -145,10 +145,18 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("场景空间视图（Tier1/2）", [sys.executable, "-m", "little_crew.runtime.scene_views_check"], 47),
     ("章节契约/总导演上下文", [sys.executable, "-m", "little_crew.runtime.chapter_plan_check"], 16),
     ("边界审（契约+VLM）", [sys.executable, "-m", "little_crew.runtime.boundary_audit_check"], 23),
-    ("插件化注册", [sys.executable, "-m", "little_crew.runtime.plugin_check"], 25),
-    ("职业依赖/顺序", [sys.executable, "-m", "little_crew.runtime.position_order_check"], 18),
+    # B2 自动循环（2026-11-18）：VLM diff -> 自动 hint -> 只补拍边界镜 -> 复审，
+    # 重试上限 2；仍红/契约红/无判官都**诚实升级人工**，不假装绿。
+    ("边界重拍自动循环", [sys.executable, "-m", "little_crew.runtime.boundary_retake_check"], 70),
+    ("插件化注册", [sys.executable, "-m", "little_crew.runtime.plugin_check"], 36),
+    # B1 全职业插件化（2026-11-18）：19 职位迁 plugins/core_crew，名册/编制/依赖图/画布
+    # 全部从插件注册表构建；两插件全部加载时 20/20（19 默认 + 总导演 showrunner）。
+    ("全职业插件化 20/20", [sys.executable, "-m", "little_crew.runtime.core_crew_check"], 50),
+    ("职业依赖/顺序", [sys.executable, "-m", "little_crew.runtime.position_order_check"], 22),
     ("场景档位 LLM 决策", [sys.executable, "-m", "little_crew.runtime.scene_tier_planner_check"], 20),
-    ("系列资产台账", [sys.executable, "-m", "little_crew.runtime.series_bible_check"], 27),
+    # 系列资产台账（2026-11-18 #8）：多进程并发写 + 合并锁（按集增量、原子写、
+    # 陈旧锁可破、幂等），保证并行跑多集不丢场景/角色/usage。
+    ("系列资产台账", [sys.executable, "-m", "little_crew.runtime.series_bible_check"], 44),
     ("每镜资产记录", [sys.executable, "-m", "little_crew.runtime.shot_manifest_check"], 19),
     ("系列档位决策", [sys.executable, "-m", "little_crew.runtime.series_planner_check"], 15),
     ("cameraDefaults 导演计划", [sys.executable, "-m", "little_crew.runtime.camera_defaults_check"], 12),
@@ -163,8 +171,8 @@ SUITES: list[tuple[str, list[str], int | None]] = [
     ("H3 音轨渲染", [sys.executable, "-m", "little_crew.runtime.h3_video_check"], 31),
     ("口型视频通道", [sys.executable, "-m", "little_crew.runtime.lipsync_check"], 26),
     ("音频来源（原生音频/TTS）", [sys.executable, "-m", "little_crew.runtime.voice_source_check"], 9),
-    ("剧组编制（职业可选）", [sys.executable, "-m", "little_crew.runtime.crew_profile_check"], 22),
-    ("无限画布后端（依赖图）", [sys.executable, "-m", "little_crew.runtime.pipeline_graph_check"], 17),
+    ("剧组编制（职业可选）", [sys.executable, "-m", "little_crew.runtime.crew_profile_check"], 24),
+    ("无限画布后端（依赖图）", [sys.executable, "-m", "little_crew.runtime.pipeline_graph_check"], 20),
     # 顾问批评家的守卫：**取不到可审正文 -> error，不是 PASS**。
     # 单开文件是为了避开 episode_check 里既有的 G/H 段标签（之前撞过两次）。
     ("顾问批评家守卫", [sys.executable, "-m", "little_crew.runtime.advisory_check"], 10),

@@ -37,6 +37,13 @@ EXPLICIT_AFTER: dict[str, tuple[str, ...]] = {
 
 
 def _specs(roster: Sequence[Any] | None = None) -> list[Any]:
+    """默认 roster：`DEFAULT_ROSTER`（19 条，由插件注册表 `default_roster`
+    职位构建的模块级快照 —— 本模块**不读插件专属职位**，调度口径稳定）。
+
+    2026-11-18（B1 全职业插件化）：默认名册已由插件 positions 构建，
+    但本模块默认仍用默认名册（与迁移前一致）；显式传 roster 可校验任意
+    职位序列（如 `agent.roster.positions()` 含插件职位）。
+    """
     if roster is not None:
         return list(roster)
     from little_crew.agent.roster import DEFAULT_ROSTER
@@ -129,10 +136,18 @@ def validate_dependencies(profile_ids: Sequence[str] | None = None,
 
 
 def describe(roster: Sequence[Any] | None = None) -> dict[str, Any]:
+    """依赖/顺序描述（给报告/自检用）。
+
+    2026-11-18（B1）：新增 `source` 来源标记，不破坏既有键：
+      · `"registry"`：未显式传 roster，默认名册由**插件注册表**构建
+      · `"explicit"`：调用方显式传入 roster
+    """
+    from little_crew.runtime.crew_profile import MANDATORY as _MANDATORY
+
     specs = _specs(roster)
     edges = dependency_edges(roster)
     return {"positions": len(specs),
             "edges": sum(len(v) for v in edges.values()),
-            "mandatory": list(__import__("little_crew.runtime.crew_profile",
-                                        fromlist=["MANDATORY"]).MANDATORY),
-            "order": order_positions(roster) if specs else []}
+            "mandatory": list(_MANDATORY),
+            "order": order_positions(roster) if specs else [],
+            "source": "explicit" if roster is not None else "registry"}

@@ -1,8 +1,10 @@
 """插件注册表自检（2026-11-17）：**新职业/功能插件化**。
 
 - 清单/注册/卸载/查能力
+- **职位声明（positions）**（2026-11-18，B1 全职业插件化）：清单校验 /
+  职位索引 / 跨插件重复拒绝 / 默认插件自动注册
 - 缺插件给出明确错误，不影响默认 19 职位
-- showrunner 插件：load → 提供 `series.plan`；卸载 → 能力消失
+- showrunner 插件：load → 提供 `series.plan` + 声明第 20 职位；卸载 → 能力消失
 """
 from __future__ import annotations
 
@@ -62,12 +64,66 @@ def main() -> int:
           _raises(lambda: reg.provider("no.such")), "")
     check("B7 ★★ 卸载不存在的插件 -> False", reg.unload("no.such") is False, "")
 
+    print(); print("B2. 职位声明（positions，2026-11-18 B1 全职业插件化）")
+    from types import SimpleNamespace
+
+    def _pos_plugin(name, ids, provides=("demo.pos",)):
+        return PluginManifest(
+            name=name,
+            provides={c: (lambda: name) for c in provides},
+            positions=tuple(SimpleNamespace(agent_id=i) for i in ids))
+
+    check("B8 ★★★ 只有 positions 没有 provides 的清单合法",
+          len(PluginManifest(name="pos_only", provides={},
+                             positions=(SimpleNamespace(agent_id="a1"),)
+                             ).positions) == 1, "")
+    check("B9 ★★★ provides 与 positions 都空 -> 拒绝",
+          _raises(lambda: PluginManifest(name="empty", provides={})), "")
+    check("B10 ★★★ position 条目缺非空 agent_id -> 拒绝",
+          _raises(lambda: PluginManifest(
+              name="bad_pos", provides={"x": lambda: 1},
+              positions=(SimpleNamespace(title="无 id"),))), "")
+    check("B11 ★★★ 同一清单内 agent_id 重复 -> 拒绝",
+          _raises(lambda: PluginManifest(
+              name="dup_inside", provides={"x": lambda: 1},
+              positions=(SimpleNamespace(agent_id="dup"),
+                         SimpleNamespace(agent_id="dup")))), "")
+    check("B12 ★★★ default_roster=True 但无 positions -> 拒绝",
+          _raises(lambda: PluginManifest(
+              name="bad_default", provides={"x": lambda: 1},
+              default_roster=True)), "")
+    pa = _pos_plugin("pos_plugin_a", ["pos.demo"])
+    reg.register(pa)
+    pb = _pos_plugin("pos_plugin_b", ["pos.demo"])
+    cross_dup = _raises(lambda: reg.register(pb))
+    check("B13 ★★★ 跨插件重复声明同一职位 agent_id -> 注册拒绝",
+          cross_dup and reg.get("pos_plugin_b") is None, "")
+    pc = _pos_plugin("pos_plugin_c", ["pos.c1", "pos.c2"])
+    reg.register(pc)
+    check("B14 ★★★ 注册后 positions()/position_owner() 可查",
+          len(reg.positions()) == 22
+          and reg.position_owner("pos.c1") == "pos_plugin_c", "")
+    reg.unload("pos_plugin_c")
+    reg.unload("pos_plugin_a")
+    check("B15 ★★ 卸载插件移除其职位索引（positions 回到 19）",
+          len(reg.positions()) == 19 and reg.position_owner("pos.demo") == "", "")
+    check("B16 ★★★ 默认插件 core_crew 已自动注册（positions=19，默认名册=19）",
+          reg.get("core_crew") is not None
+          and len(reg.positions()) == 19 and len(reg.default_roster()) == 19,
+          str(reg.names()))
+    from little_crew.plugin import ensure_default_plugins as _ensure
+    check("B17 ★★ ensure_default_plugins 幂等（不重复注册默认插件）",
+          [x.name for x in _ensure()] == ["core_crew"], str(reg.names()))
+
     print(); print("C. showrunner 插件（新职业不进默认名册）")
     p = load_plugin("little_crew.plugins.series_showrunner")
     check("C1 ★★★ 插件加载成功且提供 series.plan",
           p.name == "series_showrunner" and "series.plan" in p.provides, str(p.name))
-    check("C2 ★★★ 默认 19 职位名册不变（插件不挤占）",
-          len(DEFAULT_ROSTER) == 19, str(len(DEFAULT_ROSTER)))
+    check("C2 ★★★ 默认 19 职位名册不变（插件清单不挤占默认名册）",
+          len(DEFAULT_ROSTER) == 19 and len(reg.default_roster()) == 19
+          and {s.agent_id for s in reg.default_roster()}
+          == {s.agent_id for s in DEFAULT_ROSTER},
+          f"{len(DEFAULT_ROSTER)}/{len(reg.default_roster())}")
     outline = {"seriesId": "T", "logline": "末班地铁",
                "volumes": [{"name": "第一卷"}],
                "chapters": [{"chapterId": f"CH0{i}", "name": f"第{i}章",
@@ -100,7 +156,15 @@ def main() -> int:
           any("只规划，不写正文" in x for x in fake.prompts), "")
     reg.unload("series_showrunner")
     check("C8 ★★★ 卸载 showrunner 后能力消失（默认 19 职位不受影响）",
-          "series.plan" not in _cap(reg) and len(DEFAULT_ROSTER) == 19, "")
+          "series.plan" not in _cap(reg) and len(DEFAULT_ROSTER) == 19
+          and len(reg.positions()) == 19 and len(reg.default_roster()) == 19, "")
+    check("C9 ★★★ showrunner 声明第 20 职位：加载后 positions=20，默认名册仍 19",
+          len(p.positions) == 1 and p.default_roster is False
+          and len(load_plugin("little_crew.plugins.series_showrunner").positions) == 1
+          and len(reg.positions()) == 20
+          and len(reg.default_roster()) == 19
+          and len(DEFAULT_ROSTER) == 19, "")
+    reg.unload("series_showrunner")
 
     print(); print("D. 插件依赖（requires）：拓扑加载 / 缺依赖拒绝 / 卸载保护")
     from little_crew.plugin import PluginManifest as PM

@@ -27,8 +27,18 @@ from __future__ import annotations
 import hashlib
 from typing import Any, Iterable, Mapping, Sequence
 
-#: 必需核心（删了就无法产出可执行对象）
-MANDATORY: tuple[str, ...] = ("screenwriter", "storyboard_artist")
+from little_crew.agent.roster import DEFAULT_ROSTER as _DEFAULT_ROSTER
+
+#: 必需核心（删了就无法产出可执行对象）。
+#:
+#: 2026-11-18（B1 全职业插件化）：不再硬编码 id 列表，而是由**名册快照**的
+#: `AgentSpec.mandatory` 派生（`core_crew` 插件里 screenwriter /
+#: storyboard_artist 标了 `mandatory=True`）。单一真源 = 职位声明本身，
+#: 避免"名册说必需、编制说另一套"的两处漂移。
+MANDATORY: tuple[str, ...] = tuple(
+    str(s.agent_id) for s in _DEFAULT_ROSTER
+    if bool(getattr(s, "mandatory", False))
+)
 
 #: 三档预设（顺序即报告里的展示顺序）
 PRESETS: dict[str, tuple[str, ...]] = {
@@ -105,6 +115,8 @@ def resolve(*, profile: str = "standard",
     **坏输入不抛异常**：返回 `ok=False` + `errors`（调用方负责报错）。
     """
     if roster is None:
+        # 默认 = 注册表 `default_roster=True` 插件构建的默认名册快照（19 条）。
+        # 显式传 roster 时可用任意职位序列（含插件专属职位，如 showrunner）。
         from little_crew.agent.roster import DEFAULT_ROSTER
 
         roster = DEFAULT_ROSTER
