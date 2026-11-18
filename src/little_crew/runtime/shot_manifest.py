@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 __all__ = ["RECORD", "record_path", "load", "save", "upsert", "bump_hint",
-           "view", "complete"]
+           "view", "complete", "to_batch"]
 
 
 RECORD = "shot.json"
@@ -113,3 +113,25 @@ def view(workdir: str | Path) -> dict[str, Any]:
 
 def complete(workdir: str | Path) -> bool:
     return bool(view(workdir)["complete"])
+
+
+
+def to_batch(workdir: str | Path, *, episode_id: str = "") -> Any:
+    """manifest -> CachedBatch 适配器：下游（门禁/合成/审片）无需改代码。"""
+    from little_crew.runtime.cached_render import CachedBatch, CacheOutcome
+
+    v = view(workdir)
+    outcomes = []
+    prefix = f"G-{episode_id}-" if episode_id else ""
+    for sid, rec in sorted(v["shots"].items()):
+        out = Path(str(rec.get("out") or ""))
+        if str(rec.get("status")) == "ok" and out.is_file():
+            outcomes.append(CacheOutcome(
+                graph_id=f"{prefix}{sid}", ok=True, from_cache=True,
+                artifacts={f"{sid}.png": out.read_bytes()}, seconds=0.0))
+        else:
+            outcomes.append(CacheOutcome(
+                graph_id=f"{prefix}{sid}", ok=False,
+                failure="artifact-missing",
+                reason=f"manifest 记录不可用：status={rec.get('status')}"))
+    return CachedBatch(outcomes=tuple(outcomes))

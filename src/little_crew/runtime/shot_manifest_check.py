@@ -57,6 +57,24 @@ def main() -> int:
         check("C4 ★★ 缺记录 -> 视图 missing 反映",
               (not SM.load(wd, "SH-NOPE")) and SM.load(wd, sid) is not None, "")
 
+    print(); print("D. manifest -> CachedBatch 适配（下游不改代码）")
+    with tempfile.TemporaryDirectory() as td:
+        wd = Path(td)
+        png = wd / "a.png"
+        png.write_bytes(b"\x89PNG\r\n\x1a\n" + b"x" * 40)
+        SM.upsert(wd, shot_id="SH-1", prompt="p1", out=str(png), status="ok")
+        b = SM.to_batch(wd, episode_id="E1")
+        check("D1 ★★★ 适配器产出整集 batch", len(b.outcomes) == 1, str(len(b.outcomes)))
+        check("D2 ★★★ 产物字节可读（下游拿得到图）",
+              bool(b.outcomes[0].artifacts), "")
+        check("D3 ★★ graph_id 按集+镜命名（下游按前缀取）",
+              "E1" in b.outcomes[0].graph_id and "SH-1" in b.outcomes[0].graph_id,
+              b.outcomes[0].graph_id)
+        SM.upsert(wd, shot_id="SH-2", prompt="p2", out="", status="pending")
+        b2 = SM.to_batch(wd, episode_id="E1")
+        check("D4 ★★★ pending 记录 -> 下游判失败（不会静默混入）",
+              bool(b2.failed), "")
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:

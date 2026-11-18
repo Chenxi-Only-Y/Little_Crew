@@ -1806,6 +1806,17 @@ class EpisodeRunner:
             print(f"  ↻ 渲染重试：{_retried} 镜成功（通道瞬时不可用）")
         # 产物落盘（云端 b64 产物在系统临时目录，不落盘下游全找不到）—— 见方法注释
         self._materialize_batch(batch, picked)
+        # manifest 视图优先（2026-11-18，A2）：单镜补拍会更新 shot.json；
+        # 下游改读 manifest -> 补拍后的新版自动生效，无需重跑整条流水线。
+        try:
+            from little_crew.runtime import shot_manifest as _sm2
+            _wd_m = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
+            _mv = _sm2.view(_wd_m) if _wd_m else {"complete": False}
+            if _mv.get("complete") and _mv.get("shots"):
+                batch = _sm2.to_batch(_wd_m, episode_id=str(self.episode_id))
+                print(f"  下游数据源：shot manifest 视图（{len(_mv['shots'])} 镜）")
+        except Exception:                                    # noqa: BLE001
+            pass
 
         # ---- 4.5) 验收门禁（C3）----
         #
