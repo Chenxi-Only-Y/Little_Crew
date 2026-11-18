@@ -1,0 +1,92 @@
+{
+  "checks": [
+    {
+      "name": "平台导入",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "little_crew 0.8.6（PEP440 0.8.6）"
+    },
+    {
+      "name": "名册契约",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "19 位"
+    },
+    {
+      "name": "授权目录",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "27 条（未核实 10 条；未核实需显式接受风险）"
+    },
+    {
+      "name": "输出目录",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "outputs · 剩余 950.7 GB（建议 > 2 GB）"
+    },
+    {
+      "name": "FFmpeg",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "ffmpeg version 8.1.3 Copyright (c) 2000-2026 the F"
+    },
+    {
+      "name": "local-gen",
+      "ok": false,
+      "blocking": false,
+      "external": true,
+      "path": "render.image",
+      "detail": "http://127.0.0.1:8100 · URLError: <urlopen error [Errno 111] Connection refused> · 外置出图服务（不计入平台）；--render-path local 时需要"
+    },
+    {
+      "name": "ComfyUI",
+      "ok": false,
+      "blocking": false,
+      "external": true,
+      "path": "render.comfyui",
+      "detail": "http://127.0.0.1:8188/system_stats · URLError: <urlopen error [Errno 111] Connection refused> · 外置可选（不计入平台）"
+    },
+    {
+      "name": "TTS",
+      "ok": false,
+      "blocking": false,
+      "external": true,
+      "path": "audio.tts",
+      "detail": "http://127.0.0.1:8110/health · URLError: <urlopen error [Errno 111] Connection refused> · 外置可选（不计入平台）；需要外部配音时设 LITTLE_CREW_NEED_VOICE=1"
+    },
+    {
+      "name": "LLM key",
+      "ok": false,
+      "blocking": false,
+      "external": false,
+      "detail": "一个都没有（--llm 跑不了）"
+    },
+    {
+      "name": "云端渲染 key",
+      "ok": false,
+      "blocking": false,
+      "external": false,
+      "detail": "未配置（--render-path cloud 需要 DASHSCOPE/SUDORELAY key） · 未固定渲染路径"
+    },
+    {
+      "name": "模型矩阵",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "图片 本地3/云1 · 音频 本地2/云1 · 视频 本地3/云1"
+    },
+    {
+      "name": "自定义供应商",
+      "ok": true,
+      "blocking": false,
+      "external": false,
+      "detail": "未配置（config/providers.custom.json）"
+    }
+  ],
+  "blocking": 0
+}

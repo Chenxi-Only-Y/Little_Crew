@@ -1,0 +1,1 @@
+build command: docker build -t little-crew:0.8.6 --build-arg APK_MIRROR=mirrors.aliyun.com .
