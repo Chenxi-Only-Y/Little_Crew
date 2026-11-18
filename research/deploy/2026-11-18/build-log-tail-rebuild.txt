@@ -1,0 +1,25 @@
+#10 426.9 (101/103) Installing v4l-utils-libs (1.32.0-r1)
+#10 428.2 (102/103) Installing ffmpeg-libavdevice (8.1.3-r0)
+#10 428.7 (103/103) Installing ffmpeg (8.1.3-r0)
+#10 430.6 Executing busybox-1.37.0-r31.trigger
+#10 430.6 Executing glib-2.88.1-r1.trigger
+#10 430.6 OK: 140.6 MiB in 141 packages
+#10 DONE 430.7s
+
+#11 [7/8] COPY tools/ /app/tools/
+#11 DONE 0.1s
+
+#12 [8/8] RUN mkdir -p /app/outputs
+#12 DONE 0.4s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 4.3s done
+#13 exporting manifest sha256:e9e934f95ba6b5402d7e12d773b940243ef5c090769a6ca178a3ac678955b1e9 0.0s done
+#13 exporting config sha256:5a04e103f9885c15abeaa1ae5c5adf965dc4961b7fb26ca4d15214ddb278ecd8 done
+#13 exporting attestation manifest sha256:f776acc3108e8df815b96b20beb5534a3f3883a953faf381d292096cde61aca7 0.0s done
+#13 exporting manifest list sha256:8648993f1b9a78fd03cc0da04e9326c18d061dd50696a727a1ffd17fba691a20 done
+#13 naming to docker.io/library/little-crew:0.8.6 done
+#13 unpacking to docker.io/library/little-crew:0.8.6
+#13 unpacking to docker.io/library/little-crew:0.8.6 0.7s done
+#13 DONE 5.0s

@@ -1,2 +1,1 @@
-little-crew:0.8.6 269MB 5219b37b8ea3 2026-11-18 14:30:37 +0800 CST
-little-crew:0.4.1 268MB 16a6f9fe7248 2026-11-16 18:16:13 +0800 CST
+little-crew:0.8.6 269MB 8648993f1b9a

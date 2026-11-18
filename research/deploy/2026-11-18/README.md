@@ -14,12 +14,14 @@ docker build -t little-crew:0.8.6 --build-arg APK_MIRROR=mirrors.aliyun.com .
 |---|---|
 | 基础镜像 | `python:3.12-alpine`（平台纯 Python，零第三方运行依赖） |
 | 构建参数 | `--build-arg APK_MIRROR=mirrors.aliyun.com`（只换源域名，不改依赖版本） |
-| 构建耗时 | **300.1s**（含 ffmpeg 安装；本机首次拉层） |
+| 构建耗时 | **300.1s**（首次）；**454.1s**（同日二次重建，修复 `api/server.py` 完成时间竞态之后） |
 | 镜像大小 | **269 MB**（与上一版 0.4.1 的 268MB 同量级 → 没把模型/外置服务塞进来） |
-| 镜像 ID | `5219b37b8ea3` |
+| 最终镜像 ID | `8648993f1b9a`（首次为 `5219b37b8ea3`，二次重建后替换） |
 | 旧镜像 | `little-crew:0.4.1` 已按 §八「旧标签不保留多份」删除 |
 
-原始日志：`build-log-tail.txt`（完整日志在构建机 `%TEMP%`，本目录留尾部与命令）。
+原始日志：`build-log-tail-first.txt`（首次）/ `build-log-tail-rebuild.txt`（二次重建），命令见 `build-command.txt`。
+**为什么重建**：收口后发现 API 任务完成时间写入竞态（见 CHANGELOG 同日修复条），
+镜像必须与最终代码一致，故重建并**重新冒烟**（下表均为二次重建后的结果）。
 
 ## 冒烟（容器实跑）
 

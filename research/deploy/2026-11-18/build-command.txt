@@ -1,1 +1,4 @@
-build command: docker build -t little-crew:0.8.6 --build-arg APK_MIRROR=mirrors.aliyun.com .
+# 构建记录（两次，同日）
+# 1) 首次（2026-11-18 14:30）：docker build -t little-crew:0.8.6 --build-arg APK_MIRROR=mirrors.aliyun.com .  (300.1s)
+# 2) 二次重建（2026-11-18 17:09，修复 api/server.py 完成时间竞态之后）：同命令 (454.1s)
+#    -> 镜像 ID 8648993f1b9a · 269MB · 重新冒烟通过（本目录 healthz/capabilities/doctor 均为二次重建后结果）
