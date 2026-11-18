@@ -3546,6 +3546,17 @@ class EpisodeRunner:
                         reason=f"产物读不到：{p}"))
                     continue
                 _reused = bool(rec.get("reused"))
+                try:
+                    from little_crew.runtime import shot_manifest as _sm
+                    _sm.upsert(wd, shot_id=sid,
+                               prompt=str(rec.get("prompt") or ""),
+                               model=str(_cloud_mid), anchor=str(rec.get("anchor") or ""),
+                               out=str(p), status="ok",
+                               cost_cny=(0.0 if _reused else 0.05),
+                               meta={"key": str(rec.get("key") or ""),
+                                     "reused": _reused})
+                except Exception:                            # noqa: BLE001
+                    pass
                 outcomes.append(CacheOutcome(
                     graph_id=f"{prefix}{sid}", ok=True, from_cache=_reused,
                     # 按 shotId 命名，与本地产物同一套规则（_materialize 会再去重命名）

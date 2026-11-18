@@ -120,6 +120,7 @@ def render_one(shot: Any, anchor: str, out_dir: str | Path, *,
         if str(meta.get("key") or "") == ckey:
             return {"shotId": sid, "ok": True, "out": str(dst),
                     "anchor": anchor or "", "model": model,
+                    "prompt": prompt,
                     "seconds": 0.0, "reused": True, "key": ckey}
     key = str(env_value("SUDORELAY_API_KEY", "") or "")
     if not key:
