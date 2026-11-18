@@ -49,6 +49,8 @@ def main() -> int:
     ap.add_argument("--mode", choices=["serial", "parallel", "hybrid"], default="serial",
                     help="执行模式：serial 串行；parallel 并行；hybrid 并行+边界串行审")
     ap.add_argument("--plan", default="", help="chapter_plan.json（章卡/契约/依赖）")
+    ap.add_argument("--retake-red", action="store_true",
+                    help="边界红项自动只补拍边界镜（需要 shot manifest）")
     ap.add_argument("--boundary-vlm", action="store_true",
                     help="边界画面也用 VLM 审（默认只审契约）")
     ap.add_argument("--timeout", type=int, default=1800)
@@ -275,6 +277,12 @@ def main() -> int:
                     _brt.write(wd, _rp)
                     row["retakePlanned"] = bool(_rp.get("needRetake"))
                     row["retakeShots"] = _rp.get("retakeShots")
+                    if a.retake_red and _rp.get("needRetake"):
+                        _hint = "保持与上一章同一空间/同一背景/同一光线；只补拍接戏镜"
+                        _rr = _brt.run_retake(wd, list(_rp.get("retakeShots") or []), _hint)
+                        row["retakeResult"] = {"ok": _rr.get("ok"),
+                                               "costCny": _rr.get("costCny"),
+                                               "shots": _rr.get("shots")}
                 except Exception:                        # noqa: BLE001
                     pass
             if _level == "red":

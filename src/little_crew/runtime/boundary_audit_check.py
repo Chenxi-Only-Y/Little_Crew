@@ -116,6 +116,29 @@ def main() -> int:
         check("E5 ★★ 计划落盘 delivery/retake-plan.json",
               pth.is_file() and "boundary_shots_only" in pth.read_text(encoding="utf-8"), "")
 
+    print(); print("F. B2 执行层：run_retake（只改边界镜记录）")
+    from little_crew.runtime import shot_manifest as SM
+    with tempfile.TemporaryDirectory() as td:
+        wd = Path(td)
+        sid = "SH-CH02-001-001"
+        SM.upsert(wd, shot_id=sid, prompt="站台 冷光", model="m", anchor="",
+                  out="/tmp/a.png", status="ok")
+        calls = []
+        def _fake_render(shot_id, prompt):
+            calls.append((shot_id, prompt))
+            return {"ok": True, "out": str(wd / "new.png"), "model": "m",
+                    "anchor": "", "reused": False}
+        rr = BR.run_retake(wd, [sid], "同空间同光线", renderer=_fake_render)
+        check("F1 ★★★ 只重渲指定边界镜（1 次调用）",
+              rr["ok"] and len(calls) == 1 and calls[0][0] == sid, str(calls))
+        check("F2 ★★★ prompt 加 hint 且版本+1",
+              "同空间同光线" in calls[0][1]
+              and SM.load(wd, sid)["version"] == 2, "")
+        check("F3 ★★ 证据 retake-result.json 落盘",
+              (wd / "delivery" / "retake-result.json").is_file(), "")
+        check("F4 ★★ 成本按新渲计（¥0.05）", abs(rr["costCny"] - 0.05) < 1e-6,
+              str(rr["costCny"]))
+
     n = sum(1 for _, ok, _ in _r if ok)
     print()
     for name, ok, detail in _r:
