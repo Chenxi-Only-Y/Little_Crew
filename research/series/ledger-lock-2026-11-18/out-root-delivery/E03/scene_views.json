@@ -1,0 +1,210 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "SC-E03-001": {
+      "sceneId": "SC-E03-001",
+      "tier": 3,
+      "decision": {
+        "tier": 3,
+        "score": 0,
+        "factors": [
+          "该场景在系列中已连续出现3集，且本集由它承载「等待与告别」的题眼和全部2镜，因此需保留最高档位来保证场景连续性与情绪强度。"
+        ],
+        "source": "llm-series"
+      },
+      "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\board.jpg",
+      "matrix": [
+        {
+          "view": "front_wide",
+          "row": 1,
+          "col": 1,
+          "label": "正面全景"
+        },
+        {
+          "view": "front_close",
+          "row": 1,
+          "col": 2,
+          "label": "正面近景"
+        },
+        {
+          "view": "side_wide",
+          "row": 1,
+          "col": 3,
+          "label": "侧面全景"
+        },
+        {
+          "view": "side_close",
+          "row": 2,
+          "col": 1,
+          "label": "侧面近景"
+        },
+        {
+          "view": "back_wide",
+          "row": 2,
+          "col": 2,
+          "label": "背面全景"
+        },
+        {
+          "view": "back_close",
+          "row": 2,
+          "col": 3,
+          "label": "背面近景"
+        },
+        {
+          "view": "top_close",
+          "row": 3,
+          "col": 1,
+          "label": "俯视近景"
+        },
+        {
+          "view": "topdown",
+          "row": 3,
+          "col": 2,
+          "label": "正交平面图"
+        },
+        {
+          "view": "hero45",
+          "row": 3,
+          "col": 3,
+          "label": "45°英雄视角"
+        }
+      ],
+      "shots": 2,
+      "anchors": [
+        "@少女 停在安全线前，低声说：「最后一班车了。」\n@少女 抬头看向隧道，说：「我等的人，好像不会来了。」"
+      ],
+      "reused": true,
+      "reusedFrom": "E01,E02",
+      "reusedViews": 9,
+      "generatedViews": 0,
+      "sceneHash": "df45fd5aeb08",
+      "images": [
+        {
+          "view": "front_wide",
+          "promptHash": "051f4868d2fb",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\front_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "front_close",
+          "promptHash": "62db87e39276",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\front_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "side_wide",
+          "promptHash": "2fe14e18c556",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\side_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "side_close",
+          "promptHash": "eefb38990283",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\side_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "back_wide",
+          "promptHash": "4c9b1abac412",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\back_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "back_close",
+          "promptHash": "1e58bc613af8",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\back_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "top_close",
+          "promptHash": "ea03c75b2d9a",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\top_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "topdown",
+          "promptHash": "4e2e0a0b4752",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\topdown.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "hero45",
+          "promptHash": "065bdd1be327",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\hero45.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        }
+      ],
+      "ok": true,
+      "note": "Tier3 九宫格矩阵：9 张分开出图 + 程序拼 3×3 展示板；正俯只作空间草图/ControlNet 输入"
+    }
+  },
+  "costCny": 0.0,
+  "generated": 9,
+  "failed": 0,
+  "peopleWarnings": 0,
+  "decisionSource": "llm-series",
+  "reused": 9,
+  "tierPlan": {
+    "source": "llm-series",
+    "seriesNote": "地铁站台是本系列的锚点场景（E01–E03连续出现），台账档位已是T3上限，不降档也无需再升；本集仅此1场，Tier3配额（≤1）刚好用满。建议后续集数若地铁站台继续出现，可将其固定为系列T3常驻场景，并预留场景卡资产复用；河堤（T2）与医院走廊（T2）本集不出现，维持原档位待下次复用时评估是否升档。",
+    "error": "",
+    "plannerCostCny": 0.45
+  },
+  "seriesDir": "research\\series\\ledger-lock-2026-11-18\\series"
+}

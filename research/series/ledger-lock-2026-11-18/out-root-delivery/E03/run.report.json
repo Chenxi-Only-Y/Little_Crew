@@ -1,0 +1,781 @@
+{
+  "episodeId": "E03",
+  "ok": true,
+  "scriptRounds": 1,
+  "scriptVerdict": "PASS",
+  "failureKind": "",
+  "clipVideo": "",
+  "art": {},
+  "schedule": {},
+  "previs": {
+    "ok": false,
+    "reason": "没有绑定 previs 实现 —— 加 --llm（--llm-previs 需要它）"
+  },
+  "clipAudio": {},
+  "advisory": [],
+  "humanGate": {
+    "kind": "human.gate",
+    "decision": "skip",
+    "reviewed": false,
+    "approved": false,
+    "assisted": false,
+    "by": "disabled",
+    "reason": "未开启人工 Gate（--human-gate 可开）",
+    "interactive": false,
+    "shots": 2,
+    "seconds": 12.0
+  },
+  "director": {},
+  "gaffer": {},
+  "plannedShots": 2,
+  "rendered": 0,
+  "cacheHits": 2,
+  "imageCalls": {
+    "kind": "image.calls",
+    "renderPath": "cloud",
+    "cloud": {
+      "attempted": 2,
+      "new": 2,
+      "reused": 0,
+      "unitCny": 0.05,
+      "estCostCny": 0.1
+    },
+    "local": {
+      "new": 0,
+      "reused": 0,
+      "unitCny": 0.0,
+      "estCostCny": 0.0
+    }
+  },
+  "lipsync": {
+    "kind": "lipsync.report",
+    "enabled": false
+  },
+  "compliance": {},
+  "continuity": {},
+  "deliveryMeta": {
+    "aiLabels": {
+      "explicit": true,
+      "implicit": true,
+      "where": [
+        "delivery\\ai_label_endcard.png",
+        "delivery\\episode.master.mp4"
+      ]
+    },
+    "credits": "本片由 AI 生成合成",
+    "attributions": [],
+    "sources": [
+      {
+        "kind": "model",
+        "name": "z-image-turbo",
+        "source": "models 授权目录（governance/license.py）",
+        "license": "Apache-2.0（未核实）",
+        "licenseVerified": false
+      },
+      {
+        "kind": "model",
+        "name": "gpt-image-2.6-sunburst",
+        "source": "运行时使用",
+        "license": "UNKNOWN",
+        "licenseVerified": false
+      },
+      {
+        "kind": "reference",
+        "name": "旅人",
+        "path": "D:\\AI\\ds.8\\Little_Crew\\assets\\characters\\旅人\\anchor.png",
+        "source": "项目自产（角色设定板/锚点）",
+        "license": "project-owned"
+      },
+      {
+        "kind": "reference",
+        "name": "少女",
+        "path": "D:\\AI\\ds.8\\Little_Crew\\assets\\characters\\少女\\anchor.png",
+        "source": "项目自产（角色设定板/锚点）",
+        "license": "project-owned"
+      }
+    ],
+    "sourceRegistryOk": false,
+    "endcard": "delivery\\ai_label_endcard.png",
+    "labeledCovers": [],
+    "metadataInjected": [
+      "delivery\\episode.master.mp4"
+    ],
+    "errors": []
+  },
+  "costumes": {},
+  "crew": {
+    "ok": true,
+    "preset": "standard",
+    "active": [
+      "screenwriter",
+      "dramaturge",
+      "story_editor",
+      "production_designer",
+      "scene_designer",
+      "character_designer",
+      "continuity_supervisor",
+      "storyboard_artist",
+      "gaffer",
+      "camera_operator",
+      "composer",
+      "post_production",
+      "review_board"
+    ],
+    "skipped": [
+      "director",
+      "previs",
+      "dialogue_editor",
+      "line_producer",
+      "compliance_officer",
+      "cover_designer"
+    ],
+    "autoAdded": [
+      "camera_operator"
+    ],
+    "commercial": false,
+    "hash": "d291291a80f6",
+    "errors": [],
+    "verification": {
+      "reviewed": true,
+      "qualityChecked": true,
+      "complianceAudited": false
+    },
+    "unverified": [
+      "compliance_officer"
+    ],
+    "level": "reduced"
+  },
+  "pipelineGraph": "delivery/pipeline.graph.json",
+  "camera": {},
+  "sceneCards": {
+    "SH-E03-001-001": {
+      "sceneId": "SC-E03-001",
+      "fingerprint": "30aab017d43f"
+    },
+    "SH-E03-001-003": {
+      "sceneId": "SC-E03-001",
+      "fingerprint": "30aab017d43f"
+    }
+  },
+  "sceneDesign": {
+    "kind": "scene.library",
+    "scenes": [
+      {
+        "sceneId": "SC-E03-001",
+        "space": "@少女 站在黄线后，说：「今天的风，像那天。」\n@旅人 没有出现。她低头，把票根折成一只小船。",
+        "era": "当代"
+      }
+    ],
+    "throughLine": ""
+  },
+  "failed": 0,
+  "coverage": 1.0,
+  "totalSeconds": 12.0,
+  "wallSeconds": 124.11,
+  "playable": true,
+  "sceneVeto": false,
+  "visionNotJudged": false,
+  "video": {
+    "ok": true,
+    "failure": "none",
+    "reason": "全部镜头合成成功",
+    "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\delivery\\episode.master.mp4",
+    "clipsBuilt": 2,
+    "clipsTotal": 2,
+    "coverage": 1.0,
+    "seconds": 12.0,
+    "wallSeconds": 0.36,
+    "bytes": 199531
+  },
+  "videoPath": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\delivery\\episode.master.mp4",
+  "characters": {
+    "kind": "character.library",
+    "episodeId": "E03",
+    "seed": "cb2b37adb748dea6",
+    "count": 2,
+    "sheets": [
+      {
+        "kind": "character.sheet",
+        "name": "旅人",
+        "characterId": "CHAR-12E5",
+        "appearance": {
+          "hair_style": "侧分长直发",
+          "hair_color": "墨绿挑染",
+          "eye_color": "浅灰",
+          "build": "清瘦文弱",
+          "outfit": "深蓝粗布工装",
+          "outfit_accent": "袖口卷起两道",
+          "signature": "右耳戴一只小银环",
+          "gender": "女性",
+          "age_band": "青年"
+        },
+        "promptFragment": "女性，青年，清瘦文弱身形，墨绿挑染侧分长直发，浅灰眼睛，身穿深蓝粗布工装，袖口卷起两道，右耳戴一只小银环",
+        "scenes": [
+          "SC-E03-001"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      },
+      {
+        "kind": "character.sheet",
+        "name": "少女",
+        "characterId": "CHAR-DEF0",
+        "appearance": {
+          "hair_style": "齐肩内扣短发",
+          "hair_color": "银灰",
+          "eye_color": "深褐",
+          "build": "丰盈端庄",
+          "outfit": "亚麻长裙",
+          "outfit_accent": "袖口卷起两道",
+          "signature": "眉间有一颗小痣",
+          "gender": "女性",
+          "age_band": "少女"
+        },
+        "promptFragment": "女性，少女，丰盈端庄身形，银灰齐肩内扣短发，深褐眼睛，身穿亚麻长裙，袖口卷起两道，眉间有一颗小痣",
+        "scenes": [
+          "SC-E03-001"
+        ],
+        "aliases": [],
+        "overridden": [],
+        "notes": "",
+        "pending": [
+          "anchorSet"
+        ],
+        "pendingReason": "锚点图需要图像条件能力；本机无 IPAdapter，Z-Image 为纯文本版（见策划书 §5.8）"
+      }
+    ]
+  },
+  "reason": "全部镜头就绪",
+  "failures": [],
+  "manifest": {
+    "kind": "episode.master",
+    "episodeId": "E03",
+    "title": "薰衣草",
+    "stage": "image",
+    "pendingStages": [
+      "video",
+      "audio"
+    ],
+    "shotCount": 2,
+    "totalSeconds": 12.0,
+    "shots": [
+      {
+        "shotId": "SH-E03-001-001",
+        "sceneId": "SC-E03-001",
+        "shotSize": "full",
+        "cameraMovement": "static",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "SH-E03-001-001-SH-E03-001-001.png"
+        ],
+        "prompt": "少女 站在黄线后，说：「今天的风，像那天（少女：女性，少女，丰盈端庄身形，银灰齐肩内扣短发，深褐眼睛，身穿亚麻长裙，袖口卷起两道，眉间有一颗小痣；旅人：女性，青年，清瘦文弱身形，墨绿挑染侧分长直发，浅灰眼睛，身穿深蓝粗布工装，袖口卷起两道，右耳戴一只小银环）",
+        "ready": true
+      },
+      {
+        "shotId": "SH-E03-001-003",
+        "sceneId": "SC-E03-001",
+        "shotSize": "medium_close",
+        "cameraMovement": "truck_left",
+        "durationSec": 6.0,
+        "characters": [
+          "少女",
+          "旅人"
+        ],
+        "artifacts": [
+          "SH-E03-001-003-SH-E03-001-003.png"
+        ],
+        "prompt": "她低头，把票根折成一只小船（少女：女性，少女，丰盈端庄身形，银灰齐肩内扣短发，深褐眼睛，身穿亚麻长裙，袖口卷起两道，眉间有一颗小痣；旅人：女性，青年，清瘦文弱身形，墨绿挑染侧分长直发，浅灰眼睛，身穿深蓝粗布工装，袖口卷起两道，右耳戴一只小银环）",
+        "ready": true
+      }
+    ],
+    "createdAt": 1794982343.062287
+  },
+  "evidence": {
+    "kind": "delivery.evidence",
+    "episodeId": "E03",
+    "artifactCount": 2,
+    "artifacts": [
+      "SH-E03-001-001-SH-E03-001-001.png",
+      "SH-E03-001-003-SH-E03-001-003.png"
+    ],
+    "irHashes": {
+      "SH-E03-001-001": "sha256:8cc6164557fd2584e52a78a1085d60b99e7829ddd61eb35077db8bc3130b3467",
+      "SH-E03-001-003": "sha256:17dc63901da0ca5c4de7b28c4e33b99ffb23f31945b7e1f9b8fa8ecb709f7b24"
+    },
+    "artifactHashes": {
+      "SH-E03-001-001-SH-E03-001-001.png": "sha256:6dd8220460903574a06054165947bfa1df43c7707af477c6af726d1eca4efdf7",
+      "SH-E03-001-003-SH-E03-001-003.png": "sha256:db214ad5ba43fa6930d6484d35e0a41651fd21b877f8fb79d54089b40408eea6"
+    },
+    "cache": {
+      "hits": 2,
+      "rendered": 0,
+      "secondsSaved": 0.0,
+      "secondsSpent": 0.0
+    },
+    "checks": {
+      "allShotsHaveArtifacts": true,
+      "allShotsWithinDurationLimit": true,
+      "manifestNonEmpty": true,
+      "artifactsUnique": true,
+      "hasContentHashChain": true
+    },
+    "allChecksPassed": true,
+    "gate": {
+      "results": [
+        {
+          "artifactId": "SH-E03-001-001",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_cast_text_SH-E03-001-001",
+              "op": "cast_consistent_with_text",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "cast_consistent_with_text"
+              },
+              "observed": {
+                "characters": 2,
+                "names": [
+                  "少女",
+                  "旅人"
+                ],
+                "soloMarkers": [],
+                "direction": "consistent"
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "2 人，描述无矛盾标记",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_res_SH-E03-001-001",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_dur_SH-E03-001-001",
+              "op": "duration_within",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "duration_within",
+                "max": 10.0
+              },
+              "observed": {
+                "durationSec": 6.0,
+                "min": 0.0,
+                "max": 10.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E03-001-001",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_identity_少女",
+              "op": "identity_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "identity_similarity",
+                "characterRef": "少女",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "max": 1.0,
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette",
+                "otherShotId": "SH-E03-001-003"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "sampleRef": "",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_identity_旅人",
+              "op": "identity_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "identity_similarity",
+                "characterRef": "旅人",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "max": 1.0,
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette",
+                "otherShotId": "SH-E03-001-003"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "sampleRef": "",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E03-001-001",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "otherShotId": "SH-E03-001-003",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 7,
+            "passed": 7,
+            "blocking": 0,
+            "hard": 3
+          }
+        },
+        {
+          "artifactId": "SH-E03-001-003",
+          "verdict": "KEEP",
+          "assertions": [
+            {
+              "constraintRef": "cr_cast_text_SH-E03-001-003",
+              "op": "cast_consistent_with_text",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "cast_consistent_with_text"
+              },
+              "observed": {
+                "characters": 2,
+                "names": [
+                  "少女",
+                  "旅人"
+                ],
+                "soloMarkers": [],
+                "direction": "consistent"
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "2 人，描述无矛盾标记",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_res_SH-E03-001-003",
+              "op": "resolution_matches",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "resolution_matches",
+                "width": 832,
+                "height": 480
+              },
+              "observed": {
+                "width": 832,
+                "height": 480,
+                "expectedWidth": 832,
+                "expectedHeight": 480
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_dur_SH-E03-001-003",
+              "op": "duration_within",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "duration_within",
+                "max": 10.0
+              },
+              "observed": {
+                "durationSec": 6.0,
+                "min": 0.0,
+                "max": 10.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cast_SH-E03-001-003",
+              "op": "count_at_most",
+              "enforcement": "hard",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "count_at_most",
+                "field": "characterCount",
+                "max": 3
+              },
+              "observed": {
+                "characterCount": 2.0,
+                "max": 3.0
+              },
+              "evidence": {
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_identity_少女",
+              "op": "identity_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "identity_similarity",
+                "characterRef": "少女",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "max": 1.0,
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette",
+                "otherShotId": "SH-E03-001-001"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "sampleRef": "",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_identity_旅人",
+              "op": "identity_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "identity_similarity",
+                "characterRef": "旅人",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "max": 1.0,
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette",
+                "otherShotId": "SH-E03-001-001"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "sampleRef": "",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            },
+            {
+              "constraintRef": "cr_cross_shot_SH-E03-001-003",
+              "op": "pairwise_similarity",
+              "enforcement": "audit",
+              "passed": true,
+              "blocking": false,
+              "expected": {
+                "op": "pairwise_similarity",
+                "min": 0.7
+              },
+              "observed": {
+                "similarity": 0.864072,
+                "min": 0.7,
+                "otherShotId": "SH-E03-001-001",
+                "method": "consistency-descriptor/v2",
+                "weakestDimension": "palette"
+              },
+              "evidence": {
+                "method": "consistency-descriptor/v2",
+                "evaluated": true,
+                "operatorVersion": "1",
+                "observedSource": "artifact-ref"
+              },
+              "detail": "",
+              "inconclusive": false
+            }
+          ],
+          "repairs": [],
+          "repairActions": [],
+          "repairable": false,
+          "escalations": [],
+          "notes": [],
+          "counts": {
+            "total": 7,
+            "passed": 7,
+            "blocking": 0,
+            "hard": 3
+          }
+        }
+      ],
+      "skippedConstraints": [
+        "SH-E03-001-001/cr_blind_SH-E03-001-001(blind_read_verdict) 未执行：缺观测 ['blindVerdict']",
+        "SH-E03-001-003/cr_blind_SH-E03-001-003(blind_read_verdict) 未执行：缺观测 ['blindVerdict']"
+      ],
+      "availableObservations": [
+        "bytes",
+        "characterCount",
+        "characters",
+        "consistencySignature",
+        "description",
+        "durationSec",
+        "height",
+        "method",
+        "name",
+        "otherShotId",
+        "pairwise",
+        "similarity",
+        "weakestDimension",
+        "width"
+      ],
+      "counts": {
+        "shots": 2,
+        "kept": 2,
+        "retry": 0,
+        "escalate": 0,
+        "skipped": 2
+      }
+    },
+    "gatePassed": true,
+    "providers": {
+      "total": 4,
+      "providers": [
+        {
+          "provider": "api.deepseek.com",
+          "model": "deepseek-flash",
+          "calls": 4,
+          "servedModels": {
+            "deepseek-flash": 4
+          },
+          "kinds": {
+            "llm": 1,
+            "llm.json": 1,
+            "vision:画面审查": 2
+          }
+        }
+      ],
+      "missingServedModel": 0
+    },
+    "createdAt": 1794982343.062287
+  }
+}

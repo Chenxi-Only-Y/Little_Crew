@@ -1,0 +1,285 @@
+{
+  "kind": "scene.views",
+  "enabled": true,
+  "size": "1536x1024",
+  "scenes": {
+    "SC-E01-001": {
+      "sceneId": "SC-E01-001",
+      "tier": 3,
+      "decision": {
+        "tier": 3,
+        "score": 0,
+        "factors": [
+          "系列复现场景且承担本集开场题眼，维持T3作为视觉主场景。"
+        ],
+        "source": "llm-series"
+      },
+      "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\board.jpg",
+      "matrix": [
+        {
+          "view": "front_wide",
+          "row": 1,
+          "col": 1,
+          "label": "正面全景"
+        },
+        {
+          "view": "front_close",
+          "row": 1,
+          "col": 2,
+          "label": "正面近景"
+        },
+        {
+          "view": "side_wide",
+          "row": 1,
+          "col": 3,
+          "label": "侧面全景"
+        },
+        {
+          "view": "side_close",
+          "row": 2,
+          "col": 1,
+          "label": "侧面近景"
+        },
+        {
+          "view": "back_wide",
+          "row": 2,
+          "col": 2,
+          "label": "背面全景"
+        },
+        {
+          "view": "back_close",
+          "row": 2,
+          "col": 3,
+          "label": "背面近景"
+        },
+        {
+          "view": "top_close",
+          "row": 3,
+          "col": 1,
+          "label": "俯视近景"
+        },
+        {
+          "view": "topdown",
+          "row": 3,
+          "col": 2,
+          "label": "正交平面图"
+        },
+        {
+          "view": "hero45",
+          "row": 3,
+          "col": 3,
+          "label": "45°英雄视角"
+        }
+      ],
+      "shots": 1,
+      "anchors": [
+        "@少女 停在安全线前，低声说：「最后一班车了。」\n@少女 抬头看向隧道，说：「我等的人，好像不会来了。」"
+      ],
+      "reused": true,
+      "reusedFrom": "E01,E02",
+      "reusedViews": 9,
+      "generatedViews": 0,
+      "sceneHash": "df45fd5aeb08",
+      "images": [
+        {
+          "view": "front_wide",
+          "promptHash": "051f4868d2fb",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\front_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "front_close",
+          "promptHash": "62db87e39276",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\front_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "side_wide",
+          "promptHash": "2fe14e18c556",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\side_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "side_close",
+          "promptHash": "eefb38990283",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\side_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "back_wide",
+          "promptHash": "4c9b1abac412",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\back_wide.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "back_close",
+          "promptHash": "1e58bc613af8",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\back_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "top_close",
+          "promptHash": "ea03c75b2d9a",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\top_close.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "topdown",
+          "promptHash": "4e2e0a0b4752",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\topdown.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "hero45",
+          "promptHash": "065bdd1be327",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\hero45.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        }
+      ],
+      "ok": true,
+      "note": "Tier3 九宫格矩阵：9 张分开出图 + 程序拼 3×3 展示板；正俯只作空间草图/ControlNet 输入"
+    },
+    "SC-E01-002": {
+      "sceneId": "SC-E01-002",
+      "tier": 2,
+      "decision": {
+        "tier": 2,
+        "score": 0,
+        "factors": [
+          "医院走廊首次出现且非本集题眼，维持T2即可，本集T3名额已满不建议升档。"
+        ],
+        "source": "llm-series"
+      },
+      "board": null,
+      "matrix": [],
+      "shots": 1,
+      "anchors": [
+        "@少女 坐在长椅上，说：「他说会来。」\n@老奶奶 路过，说：「孩子，别等了。」"
+      ],
+      "reused": true,
+      "reusedFrom": "E01",
+      "reusedViews": 4,
+      "generatedViews": 0,
+      "sceneHash": "5f97f1f8f846",
+      "images": [
+        {
+          "view": "base",
+          "promptHash": "abd1de6aa563",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\base.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "reverse",
+          "promptHash": "521b512c9e5a",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\reverse.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "oblique45",
+          "promptHash": "4c823d46fa3a",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\oblique45.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        },
+        {
+          "view": "topdown",
+          "promptHash": "37cfe0d80f2b",
+          "reference": "",
+          "ok": true,
+          "out": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\topdown.png",
+          "seconds": 0.0,
+          "error": "",
+          "peopleDetected": "",
+          "tries": 1,
+          "reused": true
+        }
+      ],
+      "ok": true,
+      "note": "正俯图只作空间草图/ControlNet 输入，不回灌 img2img"
+    }
+  },
+  "costCny": 0.0,
+  "generated": 13,
+  "failed": 0,
+  "peopleWarnings": 0,
+  "decisionSource": "llm-series",
+  "reused": 13,
+  "tierPlan": {
+    "source": "llm-series",
+    "seriesNote": "本集Tier3仅保留系列复现且承载题眼的地铁站台，符合每集最多1场Tier3；医院走廊维持既有T2，无升档建议，全部场景不低于台账档位。",
+    "error": "",
+    "plannerCostCny": 0.65
+  },
+  "seriesDir": "research\\series\\ledger-lock-2026-11-18\\series"
+}

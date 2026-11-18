@@ -1,0 +1,21 @@
+{
+  "kind": "series.state",
+  "seriesId": "最后一班-迷你",
+  "episodeId": "E03",
+  "summary": {
+    "seriesId": "最后一班-迷你",
+    "episodes": 3,
+    "scenes": 3,
+    "cast": 3,
+    "tiers": {
+      "3": 1,
+      "2": 2
+    },
+    "usage": 5
+  },
+  "actions": {
+    "reused": 1,
+    "upgraded": 0,
+    "generated": 0
+  }
+}

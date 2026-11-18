@@ -1,0 +1,26 @@
+======================================================================
+#8 episode.py 场景视图回写段 —— 集成自检（离线）
+======================================================================
+  系列场景卡复用：SC-E01-002 -> 河堤
+  系列台账合并：+1 场 / +2 usage / +0 角色（锁等 0ms）
+  系列台账：{'seriesId': 'series', 'episodes': 2, 'scenes': 2, 'cast': 1, 'tiers': {2: 1, 1: 1}, 'usage': 3} · 本集 复用 0 / 升档 0 / 新生成 2
+  场景视图：2 场（Tier2+ 1 场） · 档位来源 series-heuristic · 图 2 张 · ¥0.0
+  系列场景卡复用：SC-E02-001 -> 地铁站台
+  系列台账合并：+1 场 / +2 usage / +0 角色（锁等 0ms）
+  系列台账：{'seriesId': 'series', 'episodes': 3, 'scenes': 3, 'cast': 1, 'tiers': {2: 1, 1: 2}, 'usage': 5} · 本集 复用 0 / 升档 0 / 新生成 2
+  场景视图：2 场（Tier2+ 0 场） · 档位来源 series-heuristic · 图 2 张 · ¥0.0
+  ⚠️ 系列台账合并失败（不阻断）：RuntimeError: 模拟写台账失败
+  系列台账：{'seriesId': 'series', 'episodes': 3, 'scenes': 3, 'cast': 1, 'tiers': {2: 1, 1: 2}, 'usage': 5} · 本集 复用 0 / 升档 0 / 新生成 1
+  场景视图：1 场（Tier2+ 0 场） · 档位来源 series-heuristic · 图 1 张 · ¥0.0
+
+ [v] I1 ★★★ 第 1 集回写：series.json 有 E01、2 场、usage 2
+ [v] I2 ★★★ 预置他集 E00 数据未丢（河堤 episodes 含 E00）
+ [v] I3 ★★ delivery/series.json 形状不变（kind/seriesId/episodeId/summary/actions）
+ [v] I4 ★★ 回写返回 rep 且 rep.seriesDir 指向系列目录
+ [v] I5 ★★★ 两集累计：episodes=3 / scenes=3 / usage=5（无丢集/丢场）
+ [v] I6 ★★★ 共享场景跨集合并：地铁站台 episodes=[E01,E02] 且 usage=2
+ [v] I7 ★★ 每集 episode.scenes 存的是场景 id（沿用旧行为）
+ [v] I8 ★★ 无锁文件 / 无 .tmp 残留
+ [v] I9 ★★★ 合并失败不阻断：仍返回 rep + 写 delivery/series.json，台账不被破坏
+======================================================================
+结果：9/9 通过

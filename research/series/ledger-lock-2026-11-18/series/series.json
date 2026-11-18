@@ -1,0 +1,308 @@
+{
+  "schema": "little_crew.series/v1",
+  "seriesId": "最后一班-迷你",
+  "episodes": [
+    {
+      "episodeId": "E01",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-E01-001",
+        "SC-E01-002"
+      ],
+      "shots": 2,
+      "status": "done"
+    },
+    {
+      "episodeId": "E02",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-E02-001",
+        "SC-E02-002"
+      ],
+      "shots": 2,
+      "status": "done"
+    },
+    {
+      "episodeId": "E03",
+      "title": "薰衣草",
+      "scenes": [
+        "SC-E03-001"
+      ],
+      "shots": 2,
+      "status": "done"
+    }
+  ],
+  "scenes": {
+    "地铁站台": {
+      "sceneKey": "地铁站台",
+      "heading": "SC-E02-001",
+      "cardHash": "df45fd5aeb08",
+      "card": {
+        "space": "@少女 停在安全线前，低声说：「最后一班车了。」\n@少女 抬头看向隧道，说：「我等的人，好像不会来了。」",
+        "era": "当代"
+      },
+      "updatedIn": "E02",
+      "lastDecisionSource": "llm-series",
+      "lastReason": "系列重复出现且承担“最后一班车/等待”题眼，维持T3作为本集视觉锚点。",
+      "version": 1,
+      "tier": 3,
+      "episodes": [
+        "E01",
+        "E02",
+        "E03"
+      ],
+      "usage": 4,
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\front_wide.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\side_wide.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\back_close.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\topdown.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\hero45.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\front_close.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\side_close.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-001\\board.jpg"
+      },
+      "tierHistory": [
+        {
+          "episodeId": "E01",
+          "tier": 3,
+          "source": "llm-series"
+        }
+      ]
+    },
+    "医院走廊": {
+      "sceneKey": "医院走廊",
+      "heading": "SC-E01-002",
+      "cardHash": "5f97f1f8f846",
+      "card": {
+        "space": "@少女 坐在长椅上，说：「他说会来。」\n@老奶奶 路过，说：「孩子，别等了。」",
+        "era": "当代"
+      },
+      "updatedIn": "E01",
+      "lastDecisionSource": "llm-series",
+      "lastReason": "医院走廊首次出现且非本集题眼，维持T2即可，本集T3名额已满不建议升档。",
+      "version": 1,
+      "tier": 2,
+      "episodes": [
+        "E01"
+      ],
+      "usage": 2,
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\topdown.png"
+      },
+      "tierHistory": [
+        {
+          "episodeId": "E01",
+          "tier": 2,
+          "source": "llm-series"
+        }
+      ]
+    },
+    "河堤": {
+      "sceneKey": "河堤",
+      "heading": "SC-E02-002",
+      "cardHash": "e6044563fdaf",
+      "card": {
+        "space": "@少女 站在河堤边，说：「走吧。」\n@旅人 说：「好。」",
+        "era": "当代"
+      },
+      "updatedIn": "E02",
+      "lastDecisionSource": "llm-series",
+      "lastReason": "首次出现且以对话过渡为主，T2足够；本集T3名额已被地铁站台占用，不升档。",
+      "version": 1,
+      "tier": 2,
+      "episodes": [
+        "E02"
+      ],
+      "usage": 2,
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\topdown.png"
+      },
+      "tierHistory": [
+        {
+          "episodeId": "E02",
+          "tier": 2,
+          "source": "llm-series"
+        }
+      ]
+    }
+  },
+  "cast": {
+    "老奶奶": {
+      "characterId": "老奶奶",
+      "name": "老奶奶",
+      "appearance": "女性，老年，清瘦文弱身形，浅亚麻蓬松微卷中长发，琥珀眼睛，身穿深蓝粗布工装，腰间系麻绳，左手腕有一道旧疤",
+      "appearanceHash": "cc7581e6c3",
+      "version": 1,
+      "outfits": [],
+      "episodes": [
+        "E01"
+      ],
+      "anchor": ""
+    },
+    "少女": {
+      "characterId": "少女",
+      "name": "少女",
+      "appearance": "女性，少女，清瘦文弱身形，暗红棕齐肩内扣短发，琥珀眼睛，身穿深灰呢料外套，腰间系麻绳，眉间有一颗小痣",
+      "appearanceHash": "bad5bd07f2",
+      "version": 5,
+      "outfits": [],
+      "episodes": [
+        "E01",
+        "E02",
+        "E03"
+      ],
+      "anchor": ""
+    },
+    "旅人": {
+      "characterId": "旅人",
+      "name": "旅人",
+      "appearance": "男性，青年，结实挺拔身形，浅亚麻及腰直长发，浅灰眼睛，身穿深灰呢料外套，袖口卷起两道，眉间有一颗小痣",
+      "appearanceHash": "941d31e688",
+      "version": 5,
+      "outfits": [],
+      "episodes": [
+        "E02",
+        "E03",
+        "E01"
+      ],
+      "anchor": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\characters\\旅人\\sheet.png"
+    }
+  },
+  "usage": [
+    {
+      "episodeId": "E01",
+      "sceneKey": "地铁站台",
+      "tier": 3,
+      "action": "generated",
+      "source": "llm-series",
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\front_wide__retry.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\side_wide.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\back_close.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\topdown__retry.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-001\\hero45.png"
+      }
+    },
+    {
+      "episodeId": "E01",
+      "sceneKey": "医院走廊",
+      "tier": 2,
+      "action": "generated",
+      "source": "llm-series",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-002\\base__retry.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E01\\assets\\scene_views\\SC-E01-002\\topdown.png"
+      }
+    },
+    {
+      "episodeId": "E02",
+      "sceneKey": "地铁站台",
+      "tier": 3,
+      "action": "reused",
+      "source": "llm-series",
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\front_wide.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\front_close.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\side_wide.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\side_close.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\back_close.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\topdown.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\hero45.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-001\\board.jpg"
+      }
+    },
+    {
+      "episodeId": "E02",
+      "sceneKey": "河堤",
+      "tier": 2,
+      "action": "generated",
+      "source": "llm-series",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-002\\base__retry.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\scene_views\\SC-E02-002\\topdown.png"
+      }
+    },
+    {
+      "episodeId": "E03",
+      "sceneKey": "地铁站台",
+      "tier": 3,
+      "action": "reused",
+      "source": "llm-series",
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\front_wide.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\front_close.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\side_wide.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\side_close.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\back_close.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\topdown.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\hero45.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E03\\assets\\scene_views\\SC-E03-001\\board.jpg"
+      }
+    },
+    {
+      "episodeId": "E01",
+      "sceneKey": "地铁站台",
+      "tier": 3,
+      "action": "reused",
+      "source": "llm-series",
+      "assets": {
+        "front_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\front_wide.png",
+        "front_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\front_close.png",
+        "side_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\side_wide.png",
+        "side_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\side_close.png",
+        "back_wide": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\back_wide.png",
+        "back_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\back_close.png",
+        "top_close": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\top_close.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\topdown.png",
+        "hero45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\hero45.png",
+        "board": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-001\\board.jpg"
+      }
+    },
+    {
+      "episodeId": "E01",
+      "sceneKey": "医院走廊",
+      "tier": 2,
+      "action": "reused",
+      "source": "llm-series",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E01\\assets\\scene_views\\SC-E01-002\\topdown.png"
+      }
+    },
+    {
+      "episodeId": "E02",
+      "sceneKey": "河堤",
+      "tier": 2,
+      "action": "reused",
+      "source": "llm-series",
+      "assets": {
+        "base": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\base.png",
+        "reverse": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\reverse.png",
+        "oblique45": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\oblique45.png",
+        "topdown": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_LOCKTEST_2026-11-18\\E02\\assets\\scene_views\\SC-E02-002\\topdown.png"
+      }
+    }
+  ],
+  "createdAt": ""
+}

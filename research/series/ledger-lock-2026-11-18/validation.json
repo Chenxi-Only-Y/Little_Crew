@@ -1,0 +1,362 @@
+{
+  "kind": "ledger.lock.real-parallel-validation",
+  "ts": "2026-11-18 14:12:55",
+  "checks": [
+    {
+      "name": "台账 JSON 可解析",
+      "ok": true,
+      "detail": "<class 'dict'>"
+    },
+    {
+      "name": "台账目录无锁/tmp 残留",
+      "ok": true,
+      "detail": "['_seed_before.json', 'boundary-summary.json', 'run-summary.json', 'run-summary.md', 'scripts', 'series.json']"
+    },
+    {
+      "name": "系列目录含 series.json（其余为 run 汇总/脚本子目录，允许）",
+      "ok": true,
+      "detail": "['_seed_before.json', 'boundary-summary.json', 'run-summary.json', 'run-summary.md', 'scripts', 'series.json']"
+    },
+    {
+      "name": "3 集全在（无丢集）",
+      "ok": true,
+      "detail": "['E01', 'E02', 'E03']"
+    },
+    {
+      "name": "E01 episode 记录形状（scenes/shots/status）",
+      "ok": true,
+      "detail": "{'episodeId': 'E01', 'title': '薰衣草', 'scenes': ['SC-E01-001', 'SC-E01-002'], 'shots': 2, 'status': 'done'}"
+    },
+    {
+      "name": "E02 episode 记录形状（scenes/shots/status）",
+      "ok": true,
+      "detail": "{'episodeId': 'E02', 'title': '薰衣草', 'scenes': ['SC-E02-001', 'SC-E02-002'], 'shots': 2, 'status': 'done'}"
+    },
+    {
+      "name": "E03 episode 记录形状（scenes/shots/status）",
+      "ok": true,
+      "detail": "{'episodeId': 'E03', 'title': '薰衣草', 'scenes': ['SC-E03-001'], 'shots': 2, 'status': 'done'}"
+    },
+    {
+      "name": "场景集合不丢（seed 3 场都在）",
+      "ok": true,
+      "detail": "['医院走廊', '地铁站台', '河堤']"
+    },
+    {
+      "name": "场景数=3（无重复建场）",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "地铁站台 tier 只升不降",
+      "ok": true,
+      "detail": "3 -> 3"
+    },
+    {
+      "name": "地铁站台 卡片哈希未被意外改写（同名卡复用）",
+      "ok": true,
+      "detail": "df45fd5aeb08 -> df45fd5aeb08"
+    },
+    {
+      "name": "地铁站台 assets 视图不丢（旧资产仍在）",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "医院走廊 tier 只升不降",
+      "ok": true,
+      "detail": "2 -> 2"
+    },
+    {
+      "name": "医院走廊 卡片哈希未被意外改写（同名卡复用）",
+      "ok": true,
+      "detail": "5f97f1f8f846 -> 5f97f1f8f846"
+    },
+    {
+      "name": "医院走廊 assets 视图不丢（旧资产仍在）",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "河堤 tier 只升不降",
+      "ok": true,
+      "detail": "2 -> 2"
+    },
+    {
+      "name": "河堤 卡片哈希未被意外改写（同名卡复用）",
+      "ok": true,
+      "detail": "e6044563fdaf -> e6044563fdaf"
+    },
+    {
+      "name": "河堤 assets 视图不丢（旧资产仍在）",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "共享场景 地铁站台 episodes=[E01,E02,E03] 无丢更新",
+      "ok": true,
+      "detail": "['E01', 'E02', 'E03']"
+    },
+    {
+      "name": "每集每场在最终台账都有 usage 记录（无丢更新）",
+      "ok": true,
+      "detail": "missing=[]"
+    },
+    {
+      "name": "本次新增 usage 键集合 = 期望（幂等去重语义）",
+      "ok": true,
+      "detail": "missing=[] extra=[]"
+    },
+    {
+      "name": "每集每场 usage 唯一键不超过 2 条（历史动作 + 本次动作，无重复）",
+      "ok": true,
+      "detail": "{('E02', '地铁站台'): 1, ('E01', '地铁站台'): 2, ('E02', '河堤'): 2, ('E01', '医院走廊'): 2, ('E03', '地铁站台'): 1}"
+    },
+    {
+      "name": "usage 行数 = 唯一键数（无重复行）",
+      "ok": true,
+      "detail": "8 vs 8"
+    },
+    {
+      "name": "usage 总数 = 旧 usage + 本次新增（只增不乱）",
+      "ok": true,
+      "detail": "8 = 4 + 4"
+    },
+    {
+      "name": "每集都有本次 usage 写入",
+      "ok": true,
+      "detail": "{'E01': 4, 'E02': 3, 'E03': 1}"
+    },
+    {
+      "name": "E01/地铁站台 复用动作进 usage",
+      "ok": true,
+      "detail": "['generated', 'reused']"
+    },
+    {
+      "name": "E01/医院走廊 复用动作进 usage",
+      "ok": true,
+      "detail": "['generated', 'reused']"
+    },
+    {
+      "name": "E02/地铁站台 复用动作进 usage",
+      "ok": true,
+      "detail": "['reused']"
+    },
+    {
+      "name": "E02/河堤 复用动作进 usage",
+      "ok": true,
+      "detail": "['generated', 'reused']"
+    },
+    {
+      "name": "E03/地铁站台 复用动作进 usage",
+      "ok": true,
+      "detail": "['reused']"
+    },
+    {
+      "name": "cast 不丢（seed 角色都在）",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "E01 delivery/series.json 形状正确",
+      "ok": true,
+      "detail": "{'kind': 'series.state', 'episodeId': 'E01'}"
+    },
+    {
+      "name": "E01 summary 集数在 2~3（合并后最新台账视角）",
+      "ok": true,
+      "detail": "{'seriesId': '最后一班-迷你', 'episodes': 3, 'scenes': 3, 'cast': 3, 'tiers': {'3': 1, '2': 2}, 'usage': 7}"
+    },
+    {
+      "name": "E01 actions 总数=该集场景数",
+      "ok": true,
+      "detail": "{'reused': 2, 'upgraded': 0, 'generated': 0}"
+    },
+    {
+      "name": "E02 delivery/series.json 形状正确",
+      "ok": true,
+      "detail": "{'kind': 'series.state', 'episodeId': 'E02'}"
+    },
+    {
+      "name": "E02 summary 集数在 2~3（合并后最新台账视角）",
+      "ok": true,
+      "detail": "{'seriesId': '最后一班-迷你', 'episodes': 3, 'scenes': 3, 'cast': 3, 'tiers': {'3': 1, '2': 2}, 'usage': 8}"
+    },
+    {
+      "name": "E02 actions 总数=该集场景数",
+      "ok": true,
+      "detail": "{'reused': 2, 'upgraded': 0, 'generated': 0}"
+    },
+    {
+      "name": "E03 delivery/series.json 形状正确",
+      "ok": true,
+      "detail": "{'kind': 'series.state', 'episodeId': 'E03'}"
+    },
+    {
+      "name": "E03 summary 集数在 2~3（合并后最新台账视角）",
+      "ok": true,
+      "detail": "{'seriesId': '最后一班-迷你', 'episodes': 3, 'scenes': 3, 'cast': 3, 'tiers': {'3': 1, '2': 2}, 'usage': 5}"
+    },
+    {
+      "name": "E03 actions 总数=该集场景数",
+      "ok": true,
+      "detail": "{'reused': 1, 'upgraded': 0, 'generated': 0}"
+    },
+    {
+      "name": "E01 场景视图有产物记录",
+      "ok": true,
+      "detail": "scene.views"
+    },
+    {
+      "name": "E01 场景全部复用（成本 0 预期）",
+      "ok": true,
+      "detail": "{'SC-E01-001': True, 'SC-E01-002': True}"
+    },
+    {
+      "name": "E02 场景视图有产物记录",
+      "ok": true,
+      "detail": "scene.views"
+    },
+    {
+      "name": "E02 场景全部复用（成本 0 预期）",
+      "ok": true,
+      "detail": "{'SC-E02-001': True, 'SC-E02-002': True}"
+    },
+    {
+      "name": "E03 场景视图有产物记录",
+      "ok": true,
+      "detail": "scene.views"
+    },
+    {
+      "name": "E03 场景全部复用（成本 0 预期）",
+      "ok": true,
+      "detail": "{'SC-E03-001': True}"
+    },
+    {
+      "name": "run-summary ok=3/3",
+      "ok": true,
+      "detail": "{'ok': 3, 'episodes': 3}"
+    },
+    {
+      "name": "run-summary 如实记录并行开场景视图",
+      "ok": true,
+      "detail": "{'mode': 'parallel', 'sceneViews': True, 'sceneViewsParallel': True}"
+    },
+    {
+      "name": "run-summary 每集 ok=true",
+      "ok": true,
+      "detail": "[('E01', True), ('E02', True), ('E03', True)]"
+    },
+    {
+      "name": "场景视图成本=¥0（全复用）",
+      "ok": true,
+      "detail": "0.0"
+    },
+    {
+      "name": "云渲染成本=3集×2镜×¥0.05=¥0.30",
+      "ok": true,
+      "detail": "0.30000000000000004"
+    },
+    {
+      "name": "E01 流水线 ok + 覆盖 1.0",
+      "ok": true,
+      "detail": "ok=True coverage=1.0 reason=全部镜头就绪"
+    },
+    {
+      "name": "E02 流水线 ok + 覆盖 1.0",
+      "ok": true,
+      "detail": "ok=True coverage=1.0 reason=全部镜头就绪"
+    },
+    {
+      "name": "E03 流水线 ok + 覆盖 1.0",
+      "ok": true,
+      "detail": "ok=True coverage=1.0 reason=全部镜头就绪"
+    }
+  ],
+  "usage": {
+    "seedRows": 4,
+    "newRows": 4,
+    "total": 8,
+    "perEpisode": {
+      "E01": 4,
+      "E02": 3,
+      "E03": 1
+    },
+    "stationUsageCounter": 4,
+    "newKeys": [
+      [
+        "E01",
+        "医院走廊",
+        "reused"
+      ],
+      [
+        "E01",
+        "地铁站台",
+        "reused"
+      ],
+      [
+        "E02",
+        "河堤",
+        "reused"
+      ],
+      [
+        "E03",
+        "地铁站台",
+        "reused"
+      ]
+    ]
+  },
+  "sceneViews": {
+    "E01": {
+      "costCny": 0.0,
+      "generated": 13,
+      "reused": 13,
+      "tierPlanSource": "llm-series"
+    },
+    "E02": {
+      "costCny": 0.0,
+      "generated": 13,
+      "reused": 13,
+      "tierPlanSource": "llm-series"
+    },
+    "E03": {
+      "costCny": 0.0,
+      "generated": 9,
+      "reused": 9,
+      "tierPlanSource": "llm-series"
+    }
+  },
+  "cost": {
+    "sceneViewsCny": 0.0,
+    "cloudRenderCny": 0.3,
+    "estimatedDirectCny": 0.3,
+    "llmTokens": {
+      "input": 3952,
+      "output": 3630,
+      "calls": 12
+    },
+    "llmCostNote": "deepseek-flash 每集约 1k token：成本可忽略，未计入直接成本",
+    "totalWallS": 124.5
+  },
+  "wallSeconds": {
+    "E01": 100.26,
+    "E02": 57.99,
+    "E03": 124.11
+  },
+  "ledgerMergeWriteTime": {
+    "E01": "14:10:25",
+    "E02": "14:10:27",
+    "E03": "14:10:23"
+  },
+  "runSummary": {
+    "mode": "parallel",
+    "sceneViews": true,
+    "sceneViewsParallel": true,
+    "ok": 3,
+    "episodes": 3,
+    "wallS": 124.5,
+    "sceneCostCny": 0.0
+  },
+  "problems": [],
+  "ok": true
+}

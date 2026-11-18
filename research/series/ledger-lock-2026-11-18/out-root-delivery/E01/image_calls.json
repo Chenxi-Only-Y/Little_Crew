@@ -1,0 +1,17 @@
+{
+  "kind": "image.calls",
+  "renderPath": "cloud",
+  "cloud": {
+    "attempted": 2,
+    "new": 2,
+    "reused": 0,
+    "unitCny": 0.05,
+    "estCostCny": 0.1
+  },
+  "local": {
+    "new": 0,
+    "reused": 0,
+    "unitCny": 0.0,
+    "estCostCny": 0.0
+  }
+}

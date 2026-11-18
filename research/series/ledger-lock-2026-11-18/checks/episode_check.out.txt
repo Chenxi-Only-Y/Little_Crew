@@ -1,0 +1,507 @@
+==============================================================================
+一集流水线 —— 自检
+==============================================================================
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  ⚠️ 成片计划有 2 个问题（这些镜不进成片）：SH-E100-001-001 没有产物；SH-E100-001-002 没有产物
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  ⚠️ 成片计划有 1 个问题（这些镜不进成片）：SH-E100-001-001 没有产物
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=False 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 2 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=False 素材登记=✓（4 项）
+  合规官：needs_human_review（人工复审 2 项；blocking=False）
+
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+  ✅ LLM 探活通过（第 1 次）
+  剧本轮次已落盘：1 轮 -> delivery/ 与 research/script-rounds/
+  场景设计师：3 场场景卡（确定性注入 IR）
+  配额遵守：0/3 场（0%）· 越界 3 条
+  处置：3 场需要改（SC-E100-001, SC-E100-002, SC-E100-003）
+  剧本场景主体 ['山坡', '岩石', '木屋']
+  成片整体审：通过（0 条）
+  接口缺陷 0 条 -> interface_defects.json
+  场景主体修复：0 处（未检出越权词）
+  修复后复算越权：0 镜
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  ℹ️ IR 出口：IR 含参考图节点（identity.reference），该出口不保证支持 —— 已忽略，降级由上层决定
+  渲染并发 1（云端后端，可用 LITTLE_CREW_RENDER_PARALLEL 开 2~4；**未实测**）
+  审片（可数项）：未渲染 —— 跳过（不是通过）
+  交付标识：显式=True 隐式=True 素材登记=✓（3 项）
+  合规官：needs_human_review（人工复审 1 项；blocking=False）
+
+I. 附加产物（2026-11-14 P0：两处被 except 吞掉的 NameError）
+  配额遵守：0/0 场（0%）· 越界 0 条
+  接口缺陷 0 条 -> interface_defects.json
+
+
+J. 渲染路径由用户手动选择（2026-11-14：删混合，云端需显式开）
+
+K. 相机参数合并（2026-11-15：默认 <- 按镜头/场次覆盖）
+  ⚠️ 相机参数无效（S2）：相机字段 'focal' 的取值 '500mm' 不认识；可用：['14mm', '24mm', '35mm', '50mm', '85mm', '135mm']
+
+L. 场景卡解析（2026-11-15：显式优先 / 尾部数字模糊匹配）
+  ⚠️ 场景卡无效（S01）：场景卡 era='赛博' 不在封闭集内；可用：['古代', '近代', '民国', '当代', '未来', '架空']
+ [v] A1 一集跑通
+       全部镜头就绪
+ [v] A2 剧本经历返工（不止一轮）
+       1 轮，终裁 PASS
+ [v] A3 分镜切出镜头（每场至少 2 镜）
+       12 镜
+ [v] A4 全部镜头出图（覆盖率 100%）
+       100%
+ [v] A5 首跑全部实算、无命中
+       实算 12 命中 0
+ [v] A6 无失败
+       0 镜失败
+ [v] A7 成片清单非空且有时长
+       12 镜 / 72.0s
+ [v] A8 清单标明阶段与待补（不假装已完成）
+       stage=image pending=('video', 'audio')
+ [v] A9 每镜都带产物文件名
+       空产物的镜头 0 个
+ [v] A10 清单条目含可审查的镜头属性
+ [v] A11 交付证据含产物清单
+       12 个
+ [v] A12 交付证据含**内容哈希链**（可追溯改了什么）
+       12 条
+ [v] A13 交付证据含缓存统计
+ [v] A14 硬规则全部通过
+       {'allShotsHaveArtifacts': True, 'allShotsWithinDurationLimit': True, 'manifestNonEmpty': True, 'artifactsUnique': True, 'hasContentHashChain': True}
+ [v] A15 检查点记录全部镜头为已完成
+       {'succeeded': 12}
+ [v] B1 重跑仍成功
+       全部镜头就绪
+ [v] B2 ★ 重跑**零实算**（全部命中缓存）
+       实算 0 命中 12
+ [v] B3 ★ 重跑没有再向通道提交
+       提交数 12 -> 12
+ [v] B4 重跑省下了时间
+       节省 2.44s
+ [v] B5 重跑产出同一批文件名（可用同一份清单交付）
+       12 个
+ [v] C1 清单时长为各镜之和
+       9.0
+ [v] C2 清单顺序与输入一致
+ [v] C3 每镜标出是否就绪
+ [v] C4 证据记录缓存收益
+       命中 1 节省 3.0
+ [v] C5 清单可序列化（可落盘交付）
+ [v] C6 证据可序列化
+ [v] D1 ★ 有镜头没有产物 → 硬规则不过
+       {'allShotsHaveArtifacts': False, 'allShotsWithinDurationLimit': True, 'manifestNonEmpty': True, 'artifactsUnique': True, 'hasContentHashChain': True}
+ [v] D2 ★ 镜头超过 10 秒硬上限 → 硬规则不过
+ [v] D3 ★ 产物文件名重复 → 硬规则不过（会静默覆盖）
+ [v] D4 ★ 缺内容哈希链 → 硬规则不过（无法追溯）
+ [v] D5 ★ 空清单 → 硬规则不过
+ [v] D6 全部合规时硬规则通过
+       {'allShotsHaveArtifacts': True, 'allShotsWithinDurationLimit': True, 'manifestNonEmpty': True, 'artifactsUnique': True, 'hasContentHashChain': True}
+ [v] E1 有镜头失败时整集标记为未跑通
+       2 镜失败 / 硬规则未全过
+ [v] E2 **失败的镜头被记录**（不静默丢弃）
+       2 镜失败
+ [v] E3 失败明细含 id / 分类 / 原因
+       ({'graphId': 'G-E100-SH-E100-001-001', 'failure': 'job_failed', 'reason': 'failed'},)
+ [v] E4 **成功的那部分仍被记录**（不因部分失败丢掉整集）
+       实算 10 命中 0
+ [v] E5 清单仍产出（可审查缺口）
+       未就绪 2 镜
+ [v] E6 覆盖率正确地反映缺口
+       83%
+ [v] E7 通道报成功但零产物 → 判为失败（不当成功传下去）
+       1 镜失败
+ [v] F1 一集跑通
+       全部镜头就绪
+ [v] F2 ★ 默认产出了视频结果
+       AssemblyOutcome
+ [v] F3 成片文件存在且非空
+       C:\Users\OnlyY\AppData\Local\Temp\lc_ep_vqyzejts\f\delivery\delivery\episode.master.mp4
+ [v] F4 全部镜头都进了成片
+       12/12
+ [v] F5 成片时长等于清单时长
+       72.0 vs 72.0
+ [v] F6 成片文件有实际字节
+       1035957 字节
+ [v] F7 结果可序列化且带「可播放」标记
+ [v] F8 可关掉视频合成（只出图）
+       ok=True video=None
+ [v] F9 关掉视频时 playable=False（不谎报）
+ [v] F10 关掉视频不影响镜头覆盖率
+       100%
+ [v] F11 未提供产物解析器时优雅跳过（不崩）
+       ok=True
+ [v] G1 关闭门禁时证据里**没有** gate（与「全过」可区分）
+       gate 非空=False
+ [v] G2 门禁开启且可计算的约束全过 -> **不算失败**
+       全部镜头就绪
+ [v] G3 每镜都有真实裁定（门禁确实执行了，不是空跑）
+       {'shots': 2, 'kept': 2, 'retry': 0, 'escalate': 0, 'skipped': 2}
+ [v] G3b 证据里如实列出**跳过的约束**（图片没有时长 -> 时长约束跳过）
+       {'shots': 2, 'kept': 2, 'retry': 0, 'escalate': 0, 'skipped': 2}
+ [v] G4 ★★ 硬约束失败 -> **ok 变 False**（门禁真会拦）
+       ok=False reason=门禁未过：2 镜需返工 / 0 镜需人工
+ [v] G5 ★ 理由指明是「门禁未过」而非「渲染失败」
+       门禁未过：2 镜需返工 / 0 镜需人工
+ [v] G6 门禁计数正确（每镜一条 RETRY）
+       {'shots': 2, 'kept': 0, 'retry': 2, 'escalate': 0, 'skipped': 0}
+ [v] G7 证据链带完整裁定（审查方可复核）
+       2 条
+ [v] G8 ★ 返工指令进了证据
+       ['[cr_impossible] 分辨率 64x48 != 要求 1x1。返工方向：改回目标分辨率：检查编译出的 latent 尺寸与采样器参数']
+ [v] G9 返工指令带约束 ref（可追溯）
+       ['[cr_impossible] 分辨率 64x48 != 要求 1x1。返工方向：改回目标分辨率：检查编译出的 latent 尺
+ [v] G10 软约束失败**不阻断**交付
+       ok=True
+ [v] G11 ★★ L2 之后 `similarity` **可算**了（此前恒被跳过）
+       ['bytes', 'characterCount', 'characters', 'consistencySignature', 'description', 'durationSec', 'height', 'method', 'name', 'otherShotId', 'pairwise', 'similarity', 'weakestDimension', 'width']
+ [v] G12 ★ 且该约束**真的执行了**（不再出现在跳过清单里）
+       跳过 0 条：[]
+ [v] G12b 断言里带 similarity 观测值
+       {'similarity': 1.0, 'min': 0.82, 'max': 1.0, 'method': 'consistency-descriptor/v2', 'weake
+ [v] G12c ★ 观测值里记明**用了哪个算法**（可追溯）
+       consistency-descriptor/v2
+ [v] G12d 观测值里记明**跟哪一镜最不像 + 哪一维**
+       {'similarity': 1.0, 'min': 0.82, 'max': 1.0, 'method': 'consistency-descriptor/v2', 'weakestDimension': 'palet
+ [v] G13 ★★ 算得出的约束**不阻断**（夹具里两镜内容相同 -> 相似度 1）
+       ok=True reason=全部镜头就绪
+ [v] G14 证据里说明本机**具备哪些观测能力**
+       ['bytes', 'characterCount', 'characters', 'consistencySignature', 'description', 'durationSec', 'height', 'method', 'name', 'otherShotId', 'pairwise', 'similarity', 'weakestDimension', 'width']
+ [v] G15 三态裁定可用（KEEP/RETRY/ESCALATE）
+       ['ESCALATE', 'KEEP', 'RETRY']
+ [v] G16 ★★ 门禁能拿到 `durationSec`（键名与 OPERATOR_NEEDS 对齐）
+       ['bytes', 'characterCount', 'characters', 'consistencySignature', 'description', 'durationSec', 'height', 'method', 'name', 'otherShotId', 'pairwise', 'similarity', 'weakestDimension', 'width']
+ [v] G17 ★★ 时长硬门禁**真的执行了**（不在跳过清单里）
+       ["SH-E100-001-001/cr_blind_SH-E100-001-001(blind_read_verdict) 未执行：缺观测
+ [v] H1 ★★ 返工后**通过**（改了 IR -> 重跑 -> 复检，真的自愈）
+       ok=True reason=全部镜头就绪
+ [v] H2 门禁最终 KEEP（不是带着 RETRY 交付）
+       {'shots': 1, 'kept': 1, 'retry': 0, 'escalate': 0, 'skipped': 0}
+ [v] H3 返工过程有日志（可追溯改了什么）
+       2 条
+ [v] H4 日志说明是「改 IR 的哪一步」
+       ['第 1 轮：重跑 1 镜 —— SH-E100-001-001', "  SH-E100-001-001: 应用 cr_wrong_res：节点 n_latent {'width': 32, 'height': 24
+ [v] H5 ★ 返工时**只重跑受影响的镜头**（不是整集重跑）
+       提交 3 次（首跑 2 镜 + 只重跑受影响的 1 镜）
+ [v] H6 ★★ 闸一：`max_repair_rounds=0` 时**不重跑**（可关）
+       ok=False 提交 1 次
+ [v] H7 关闭返工时仍如实报 RETRY（判定不受影响）
+       {'shots': 1, 'kept': 0, 'retry': 1, 'escalate': 0, 'skipped': 0}
+ [v] H8 ★★ 闸二：算不出的约束被跳过，**不触发重跑**
+       提交 1 次
+ [v] H9 ★★ 闸二：能算但**修不了**的约束 -> RETRY 但**不重跑**
+       ok=False 提交 1 次
+ [v] H10 且日志明说「没有可应用的动作」（不是静默结束）
+       ['第 1 轮：1 镜需返工，但**没有可应用的动作**（能力缺失，不是参数问题）—— 不重跑，如实上报']
+ [v] H11 不可应用的动作被标记且给出原因
+       [{'kind': 'shot.reduce_cast', 'targetNode': None, 'params': {'max': 0, 'actual': 2.0}, 'constraintRef': 'cr_ca
+ [v] H12 ★ 上限生效：`max_repair_rounds=1` 时**最多一轮**返工
+       1 轮
+ [v] H12b 一轮就修好（自愈），且 ok=True
+       ok=True reason=全部镜头就绪
+ [v] H14 ★ 证据链里有完整的返工轨迹（审查方可复核）
+       2 条
+ [v] H15 返工动作进证据（机器可读，含轮次与镜头）
+       [{'round': 1, 'shotId': 'SH-E100-001-001', 'kind': 'ir.set_params', 'targetNode': 'n_latent', 'params': {'widt
+ [v] H16 轨迹里写明「重跑了哪几镜」（可对账）
+       ['第 1 轮：重跑 1 镜 —— SH-E100-001-001']
+ [v] I1 ★★ 配额对账真的运行（scene_quota.json 落盘，不再 NameError）
+       C:\Users\OnlyY\AppData\Local\Temp\tmpgmd4fqsr\delivery\scene_quota.json
+ [v] I2 ★★ 接口缺陷清单真的生成（不再 UnboundLocalError）
+       C:\Users\OnlyY\AppData\Local\Temp\tmpgmd4fqsr\delivery\interface_defects.json
+ [v] J1 ★★★ 默认 render_path=local（不出云端）
+ [v] J2 ★★★ 用户显式选 cloud 才走云端图生图
+ [v] J3 ★★ 非法值不会被当成云端
+ [v] K1 ★★★ 默认 + 镜头覆盖 + 场次覆盖正确合并
+       {'focal': '85mm', 'aperture': 'f8', 'body': '70mm'}
+ [v] K2 ★★★ 无覆盖时用默认值
+       {'focal': '85mm', 'aperture': 'f1.4'}
+ [v] K3 ★★★ 坏值 -> 返回空（不把坏参数塞进 IR）
+       {}
+ [v] L1 ★★★ 显式场景卡优先（精确 sceneId）
+       {'space': '站台A', 'era': '当代'}
+ [v] L2 ★★★ 尾部数字模糊匹配到 art.bible（SC-...-002 -> S02）
+       {'space': '车厢B', 'era': '当代'}
+ [v] L3 ★★★ 坏场景卡 -> 返回空（不把非法卡塞进 IR）
+       {}
+ [v] L4 ★★★ 场景设计师产物优先于美术 bible 旁证
+       {'space': '场景库卡'}
+==============================================================================
+结果：99/99 通过

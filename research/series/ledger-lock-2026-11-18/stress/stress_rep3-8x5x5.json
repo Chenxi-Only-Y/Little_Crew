@@ -1,0 +1,47 @@
+{
+  "kind": "ledger.lock.stress",
+  "ts": "2026-11-18 14:06:27",
+  "config": {
+    "processes": 8,
+    "episodesPerProcess": 5,
+    "rounds": 5,
+    "totalLockedMerges": 200
+  },
+  "result": {
+    "workersOk": true,
+    "startupS": 0.17,
+    "wallS": 3.59,
+    "lockWaitMsTotal": 13874,
+    "staleLocksBroke": 0,
+    "episodes": 40,
+    "scenes": 40,
+    "usage": 200,
+    "cast": 8,
+    "usagePerEpisode": [
+      5
+    ],
+    "residueFiles": [
+      "series.json"
+    ],
+    "jsonIntact": true,
+    "checks": {
+      "worker_all_ok": true,
+      "episodes": true,
+      "episodes_set": true,
+      "scenes": true,
+      "usage": true,
+      "usage_per_ep": true,
+      "cast": true,
+      "json_ok": true,
+      "no_residue": true,
+      "call_count": true
+    },
+    "lostUpdates": 0
+  },
+  "expected": {
+    "episodes": 40,
+    "scenes": 40,
+    "usage": 200,
+    "cast": 8
+  }
+}

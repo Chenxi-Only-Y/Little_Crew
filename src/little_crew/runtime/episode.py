@@ -2075,8 +2075,10 @@ class EpisodeRunner:
 
         # ---- 无限画布后端（2026-11-16）：依赖图落盘 ----
         # 放在合规之后：图里要带"这轮到底产出了哪些证据"。
+        # ＃B1（2026-11-18）：**读插件注册表**而不是 DEFAULT_ROSTER 快照 ——
+        # 默认仍是 19 节点；加载了插件专属职位（如 showrunner）时画布自动多节点。
         try:
-            from little_crew.agent.roster import DEFAULT_ROSTER as _ROSTER_G
+            from little_crew.agent.roster import positions as _POSITIONS_G
             from little_crew.runtime import pipeline_graph as _pg
 
             _wd_g = getattr(self, "_workdir", None) or getattr(self, "workdir", None)
@@ -2097,7 +2099,7 @@ class EpisodeRunner:
                         and self._cover_report.get("enabled"):
                     _stage_ev["cover_designer"] = ["delivery/run.report.json"]
                 _g = _pg.build_graph(
-                    roster=_ROSTER_G,
+                    roster=_POSITIONS_G(),
                     crew=dict(getattr(self, "crew_profile", None) or {}),
                     workdir=_wd_g, episode_id=self.episode_id,
                     stage_evidence=_stage_ev)
@@ -3101,12 +3103,14 @@ class EpisodeRunner:
                 qc_attempts=2 if getattr(self, "character_sheet_qc_strict", False) else 1)
             self._character_sheets = {"enabled": True, **report}
             # 系列台账：把画好的锚点按**角色名**登记（跨集复用）
+            # #8：不再"整份 load → 整份 save"（并行跑多集会互相覆盖），
+            # 改为锁内合并本集角色增量；失败不阻断出图主流程。
             try:
                 _sd = str(getattr(self, "series_dir", "") or "")
                 if _sd and wd:
                     import json as _cj
                     from little_crew.runtime import series_bible as _sb3
-                    _bib = _sb3.load(_sd)
+                    _cast_rows: list[dict] = []
                     for _d in sorted((Path(str(wd)) / "assets" / "characters").glob("*")):
                         _meta = _d / "sheet.json"
                         _img = _d / "sheet.png"
@@ -3117,13 +3121,22 @@ class EpisodeRunner:
                         except Exception:                    # noqa: BLE001
                             _m = {}
                         _nm = str(_m.get("name") or _d.name)
-                        _sb3.upsert_character(_bib, character_id=_nm, name=_nm,
-                                              appearance=str(_m.get("appearance") or ""),
-                                              episode_id=self.episode_id,
-                                              anchor=str(_img))
-                    _sb3.save(_sd, _bib)
-            except Exception:                                # noqa: BLE001
-                pass
+                        _cast_rows.append({
+                            "characterId": _nm, "name": _nm,
+                            "appearance": str(_m.get("appearance") or ""),
+                            "anchor": str(_img)})
+                    if _cast_rows:
+                        def _mut_cast(_d3: dict) -> None:
+                            for _row in _cast_rows:
+                                _sb3.upsert_character(
+                                    _d3, character_id=str(_row["characterId"]),
+                                    name=str(_row["name"]),
+                                    appearance=str(_row["appearance"]),
+                                    episode_id=self.episode_id,
+                                    anchor=str(_row["anchor"]))
+                        _sb3.locked_merge(_sd, _mut_cast)
+            except Exception as _ec:                         # noqa: BLE001
+                print(f"  ⚠️ 系列角色台账登记失败（不阻断）：{type(_ec).__name__}: {_ec}")
             _n_ok = len(report.get("painted") or ())
             _n_bad = len(report.get("failed") or ())
             print(f"  角色设计师：画 {_n_ok}/{len(lib.sheets)} 个角色"
@@ -5619,11 +5632,15 @@ class EpisodeRunner:
             if _series_dir:
                 rep["seriesDir"] = _series_dir
             _sv.write_report(wd, rep)
-            # ---- 回写系列台账 ----
+            # ---- 回写系列台账（#8：按集写 + 合并锁，不再整份覆盖） ----
             if _series_dir and _bible is not None:
                 from little_crew.runtime import series_bible as _sb2
 
                 _act_count = {"reused": 0, "upgraded": 0, "generated": 0}
+                # 边跑边收集**本集增量**：scenes / usage / cast，最后只 merge 一次
+                _inc_scenes: list[dict] = []
+                _inc_usage: list[dict] = []
+                _cast_rows: list[dict] = []
                 for sid, sc in (rep.get("scenes") or {}).items():
                     key = (keys.get(sid) or _sb2.stable_scene_key(
                         str((tiers or {}).get(sid, {}).get("sceneKey")
@@ -5637,32 +5654,34 @@ class EpisodeRunner:
                         "upgraded" if (reuse_map or {}).get(sid, {}).get("upgrade")
                         else "generated")
                     _act_count[_act] = _act_count.get(_act, 0) + 1
-                    _sb2.upsert_scene(
-                        _bible, scene_key=key, heading=str(sc.get("sceneId") or ""),
-                        card=cards.get(sid), tier=int(sc.get("tier") or 1),
-                        episode_id=self.episode_id, assets=assets,
-                        decision_source=tier_source,
-                        reason=str(((tiers or {}).get(sid) or {}).get("reason") or ""))
-                    _sb2.record_usage(_bible, episode_id=self.episode_id,
-                                      scene_key=key, tier=int(sc.get("tier") or 1),
-                                      action=_act, source=tier_source,
-                                      assets=assets)
-                _sb2.upsert_episode(
-                    _bible, episode_id=self.episode_id,
-                    title=str(getattr(self, "title", "") or ""),
-                    scenes=list((tiers or {}).keys()), shots=len(picked))
+                    _row = (tiers or {}).get(sid) or {}
+                    _inc_scenes.append({
+                        "sceneKey": key,
+                        "heading": str(sc.get("sceneId") or ""),
+                        "card": cards.get(sid),
+                        "tier": int(sc.get("tier") or 1),
+                        "decisionSource": tier_source,
+                        "reason": str(_row.get("reason") or ""),
+                        "assets": assets,
+                        "action": _act,
+                    })
+                    _inc_usage.append({
+                        "sceneKey": key, "tier": int(sc.get("tier") or 1),
+                        "action": _act, "source": tier_source,
+                        "assets": assets})
+                # 角色增量 1/2：角色设计师产出的角色清单（外观）
                 try:
                     for _sh in (getattr(self.characters, "sheets", ()) or ()):
                         _nm = str(getattr(_sh, "name", "") or "")
                         if not _nm:
                             continue
-                        _sb2.upsert_character(
-                            _bible, character_id=_nm, name=_nm,
-                            appearance=str(getattr(_sh, "prompt_fragment", "") or ""),
-                            episode_id=self.episode_id)
-                except Exception:                            # noqa: BLE001
-                    pass
-                # 角色锚点登记（跨集锁脸）：assets/characters/*/sheet*.png
+                        _cast_rows.append({
+                            "characterId": _nm, "name": _nm,
+                            "appearance": str(getattr(_sh, "prompt_fragment", "") or ""),
+                            "outfit": "", "anchor": ""})
+                except Exception as _ec:                     # noqa: BLE001
+                    print(f"  ⚠️ 系列角色清单收集失败（不阻断）：{type(_ec).__name__}: {_ec}")
+                # 角色增量 2/2：锚点登记（跨集锁脸）：assets/characters/*/sheet*.png
                 try:
                     _cdir = Path(str(wd)) / "assets" / "characters"
                     for _sub in sorted(_cdir.iterdir()) if _cdir.is_dir() else ():
@@ -5672,14 +5691,46 @@ class EpisodeRunner:
                                     "sheet_refined.jpg", "sheet.jpg"):
                             _f = _sub / _nm
                             if _f.is_file():
-                                _sb2.upsert_character(
-                                    _bible, character_id=_sub.name,
-                                    name=_sub.name, episode_id=self.episode_id,
-                                    anchor=str(_f))
+                                _cast_rows.append({"characterId": _sub.name,
+                                                   "name": _sub.name,
+                                                   "appearance": "", "outfit": "",
+                                                   "anchor": str(_f)})
                                 break
-                except Exception:                            # noqa: BLE001
-                    pass
-                _sb2.save(_series_dir, _bible)
+                except Exception as _ec:                     # noqa: BLE001
+                    print(f"  ⚠️ 系列角色锚点收集失败（不阻断）：{type(_ec).__name__}: {_ec}")
+                # 同一角色多来源增量合并成一条（避免"外观"与"锚点"互相清空/虚增版本）
+                _cast_map: dict[str, dict] = {}
+                for _row in _cast_rows:
+                    _cid = str(_row.get("characterId") or "")
+                    if not _cid:
+                        continue
+                    _cur = _cast_map.setdefault(
+                        _cid, {"characterId": _cid, "name": _cid,
+                               "appearance": "", "outfit": "", "anchor": ""})
+                    for _k in ("name", "appearance", "outfit", "anchor"):
+                        if _row.get(_k):
+                            _cur[_k] = _row[_k]
+                _inc_cast = list(_cast_map.values())
+                # 锁内合并本集增量（幂等：同集重复 merge 不虚增版本/usage）
+                _sum = _sb2.summary(_bible)
+                _added: dict = {}
+                try:
+                    _merged = _sb2.merge_episode(
+                        _series_dir, episode_id=self.episode_id,
+                        title=str(getattr(self, "title", "") or ""),
+                        scenes=_inc_scenes, usage=_inc_usage, cast=_inc_cast,
+                        shots=len(picked),
+                        episode_scene_ids=list((tiers or {}).keys()))
+                    _sum = _merged.get("summary") or _sum
+                    _added = dict(_merged.get("added") or {})
+                    print(f"  系列台账合并：+{_added.get('scenes', 0)} 场 / "
+                          f"+{_added.get('usage', 0)} usage / "
+                          f"+{_added.get('cast', 0)} 角色（锁等 "
+                          f"{_merged.get('waitMs', 0)}ms"
+                          + ("，破陈旧锁" if _merged.get("staleBroke") else "")
+                          + "）")
+                except Exception as e:                       # noqa: BLE001
+                    print(f"  ⚠️ 系列台账合并失败（不阻断）：{type(e).__name__}: {e}")
                 try:
                     import json as _jsv
 
@@ -5687,12 +5738,13 @@ class EpisodeRunner:
                         _jsv.dumps({"kind": "series.state",
                                     "seriesId": _bible.get("seriesId"),
                                     "episodeId": self.episode_id,
-                                    "summary": _sb2.summary(_bible),
+                                    "summary": _sum,
                                     "actions": _act_count},
                                    ensure_ascii=False, indent=2), encoding="utf-8")
-                except Exception:                            # noqa: BLE001
-                    pass
-                print(f"  系列台账：{_sb2.summary(_bible)} · 本集 "
+                except Exception as _ec:                     # noqa: BLE001
+                    print(f"  ⚠️ delivery/series.json 写失败（不阻断）："
+                          f"{type(_ec).__name__}: {_ec}")
+                print(f"  系列台账：{_sum} · 本集 "
                       f"复用 {_act_count.get('reused', 0)} / 升档 {_act_count.get('upgraded', 0)}"
                       f" / 新生成 {_act_count.get('generated', 0)}")
             _reused_n = sum(1 for v in (rep.get("scenes") or {}).values()

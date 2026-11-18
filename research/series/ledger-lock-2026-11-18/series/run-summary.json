@@ -1,0 +1,53 @@
+{
+  "kind": "series.run",
+  "seriesDir": "research\\series\\ledger-lock-2026-11-18\\series",
+  "episodes": 3,
+  "ok": 3,
+  "wallS": 124.5,
+  "mode": "parallel",
+  "sceneViews": true,
+  "sceneViewsParallel": true,
+  "sceneViewsNoLlm": false,
+  "heroMax": 1,
+  "sceneCostCny": 0.0,
+  "retakeCostCny": 0.0,
+  "retakeEscalated": [],
+  "reusedScenes": 5,
+  "boundaries": [],
+  "injectionOk": null,
+  "rows": [
+    {
+      "episodeId": "E01",
+      "rc": 0,
+      "ok": true,
+      "resumed": true,
+      "shots": 0,
+      "coverage": 1.0,
+      "wallS": 100.26,
+      "sceneCostCny": 0.0,
+      "reusedScenes": 2
+    },
+    {
+      "episodeId": "E02",
+      "rc": 0,
+      "ok": true,
+      "resumed": true,
+      "shots": 0,
+      "coverage": 1.0,
+      "wallS": 57.99,
+      "sceneCostCny": 0.0,
+      "reusedScenes": 2
+    },
+    {
+      "episodeId": "E03",
+      "rc": 0,
+      "ok": true,
+      "resumed": true,
+      "shots": 0,
+      "coverage": 1.0,
+      "wallS": 124.11,
+      "sceneCostCny": 0.0,
+      "reusedScenes": 1
+    }
+  ]
+}
