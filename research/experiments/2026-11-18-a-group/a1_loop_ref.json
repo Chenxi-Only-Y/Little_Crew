@@ -1,0 +1,18 @@
+{
+  "kind": "experiment.a1_loop_ref",
+  "retakeVersion": "v3",
+  "vlm": {
+    "kind": "boundary.visual",
+    "ok": true,
+    "level": "green",
+    "diffs": [],
+    "judge": "人物坐姿、表情与台词内容变化，但场景、服饰及光照完全一致，属同一连续镜头内的微时序推进。",
+    "verdict": {
+      "sameSpace": true,
+      "sameCostume": true,
+      "sameLighting": true,
+      "diff": "人物坐姿、表情与台词内容变化，但场景、服饰及光照完全一致，属同一连续镜头内的微时序推进。"
+    },
+    "evidence": "D:\\AI\\ds.8\\Little_Crew\\research\\experiments\\2026-11-18-a-group\\a1_loop_ref_compare.jpg"
+  }
+}

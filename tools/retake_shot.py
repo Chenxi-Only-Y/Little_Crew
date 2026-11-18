@@ -18,6 +18,8 @@ def main() -> int:
     ap.add_argument("--workdir", required=True)
     ap.add_argument("--shot", required=True)
     ap.add_argument("--hint", required=True)
+    ap.add_argument("--ref-frame", default="",
+                    help="上一章末帧参考图（图生图锁空间/光线，B2 闭环）")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     wd = Path(a.workdir)
@@ -35,7 +37,8 @@ def main() -> int:
     fake = SimpleNamespace(shot_id=a.shot, description=str(new.get("prompt") or ""),
                            characters="")
     out_dir = wd / "assets" / "cloud_render"
-    res = CR.render_one(fake, str(new.get("anchor") or ""), out_dir,
+    _ref = str(a.ref_frame or new.get("anchor") or "")
+    res = CR.render_one(fake, _ref, out_dir,
                         model=str(new.get("model") or CR.DEFAULT_MODEL), extra="")
     if not res.get("ok"):
         SM.upsert(wd, shot_id=a.shot, prompt=str(new.get("prompt") or ""),
@@ -53,7 +56,7 @@ def main() -> int:
     ev.write_text(json.dumps({"kind": "boundary.retake_shot", "shotId": a.shot,
                               "oldVersion": old.get("version"),
                               "newVersion": upd.get("version"),
-                              "hint": a.hint, "out": upd.get("out"),
+                              "hint": a.hint, "refFrame": str(a.ref_frame or ""), "out": upd.get("out"),
                               "reused": bool(res.get("reused")),
                               "costCny": 0.0 if res.get("reused") else 0.05,
                               "promptHash": upd.get("promptHash")},
