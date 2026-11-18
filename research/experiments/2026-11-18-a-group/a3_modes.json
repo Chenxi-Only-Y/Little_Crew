@@ -1,0 +1,16 @@
+{
+  "kind": "experiment.a3_modes",
+  "date": "2026-11-18",
+  "serial": {
+    "wallS": 209.7,
+    "episodes": 3,
+    "ok": 0
+  },
+  "parallel": {
+    "wallS": 46.2,
+    "episodes": 3,
+    "ok": 0
+  },
+  "speedup": 4.54,
+  "note": "同条件（fresh out-root、shots=2、cloud、无场景视图）；两边门禁都报 2 镜需返工"
+}

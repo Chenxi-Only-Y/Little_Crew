@@ -57,7 +57,18 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.8.5] — 2026-11-18（**A4 打通：角色锚点跨集复用**）
+## [0.8.6] — 2026-11-18（**A3：serial vs parallel 真墙钟对比**）
+
+- 同条件 3 章（shots=2、cloud、无场景视图、fresh out-root）：
+  - **serial**：209.7s
+  - **parallel**：46.2s
+  - **加速 4.54×**
+- 两边门禁均报"2 镜需返工"（同条件，不影响墙钟结论）
+- 证据：`research/experiments/2026-11-18-a-group/a3_modes.json`
+
+---
+
+## [0.8.6] — 2026-11-18（**A4 打通：角色锚点跨集复用**）
 
 - 根因：episode 把 `lib.sheets`(list) 传给画师，画师只认 `.sheets` → 0 输出
 - 修复：`painter.paint(lib, ...)` + 画师兼容 list 入参
@@ -67,7 +78,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.8.5] — 2026-11-18（**A2：下游切 manifest 视图**）
+## [0.8.6] — 2026-11-18（**A2：下游切 manifest 视图**）
 
 - `shot_manifest.to_batch()` 适配器：manifest → CachedBatch，下游零改动
 - episode 渲染落盘后优先读 manifest 视图（完整时）；pending/缺失按失败处理
@@ -76,7 +87,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.8.5] — 2026-11-17（**B3：多集执行模式 serial/parallel/hybrid**）
+## [0.8.6] — 2026-11-17（**B3：多集执行模式 serial/parallel/hybrid**）
 
 - `series_run --mode serial|parallel|hybrid`
   - parallel：各集并行跑子进程，**边界审串行**（避免并发审边界）
@@ -87,7 +98,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.8.5] — 2026-11-17（**B1：边界 VLM 真跑，抓到画面漂移**）
+## [0.8.6] — 2026-11-17（**B1：边界 VLM 真跑，抓到画面漂移**）
 
 - 用真实 VLM 对 3 章试点的边界帧做连续性审：CH01 末帧 vs CH02 首帧
 - 结果 **red**：`空间不一致`、`光线/时段不连续`
@@ -97,7 +108,7 @@ git config http.sslBackend openssl
 
 ---
 
-## [0.8.5] — 2026-11-17（**插件化 + 总导演章节层：章契约 / 边界审**）
+## [0.8.6] — 2026-11-17（**插件化 + 总导演章节层：章契约 / 边界审**）
 
 ### 插件化纪律（新职业一律插件）
 
@@ -17262,7 +17273,7 @@ n 从 10 涨到 20~30 只需日常跑几集。
 
 
 
-## [0.8.5] — 2026-11-17（**3 章试点：章契约/边界审/注入错误验证**）
+## [0.8.6] — 2026-11-17（**3 章试点：章契约/边界审/注入错误验证**）
 
 ### 链路接通
 
