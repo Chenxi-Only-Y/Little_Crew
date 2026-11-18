@@ -108,7 +108,9 @@ class CharacterSheetPainter:
                 report["refineFailed"].append(
                     {"reason": f"精修通道不可用：{type(exc).__name__}: {exc}"})
                 refine = False
-        all_sheets = list(getattr(sheets, "sheets", ()) or ())
+        # 兼容两种入参：CharacterLibrary(.sheets) / 直接 list
+        all_sheets = (list(sheets) if isinstance(sheets, (list, tuple))
+                      else list(getattr(sheets, "sheets", ()) or ()))
         if self.limit and len(all_sheets) > self.limit:
             report["skipped"] = [str(getattr(s, "character_id", ""))
                                  for s in all_sheets[self.limit:]]

@@ -3080,7 +3080,7 @@ class EpisodeRunner:
                 limit=int(getattr(self, "character_sheets_limit", 6) or 6))
             out = (Path(str(wd)) / "assets" / "characters") if wd else Path("assets/characters")
             report = painter.paint(
-                lib.sheets, out,
+                lib, out,   # 传 CharacterLibrary（画师内部取 .sheets）
                 style=str(getattr(self, "character_sheet_style", "") or ""),
                 proportion=str(getattr(self, "character_sheet_proportion", "adult")
                                or "adult"),
@@ -3088,6 +3088,30 @@ class EpisodeRunner:
                 qc=bool(getattr(self, "character_sheet_qc", False)),
                 qc_attempts=2 if getattr(self, "character_sheet_qc_strict", False) else 1)
             self._character_sheets = {"enabled": True, **report}
+            # 系列台账：把画好的锚点按**角色名**登记（跨集复用）
+            try:
+                _sd = str(getattr(self, "series_dir", "") or "")
+                if _sd and wd:
+                    import json as _cj
+                    from little_crew.runtime import series_bible as _sb3
+                    _bib = _sb3.load(_sd)
+                    for _d in sorted((Path(str(wd)) / "assets" / "characters").glob("*")):
+                        _meta = _d / "sheet.json"
+                        _img = _d / "sheet.png"
+                        if not (_meta.is_file() and _img.is_file()):
+                            continue
+                        try:
+                            _m = _cj.loads(_meta.read_text(encoding="utf-8"))
+                        except Exception:                    # noqa: BLE001
+                            _m = {}
+                        _nm = str(_m.get("name") or _d.name)
+                        _sb3.upsert_character(_bib, character_id=_nm, name=_nm,
+                                              appearance=str(_m.get("appearance") or ""),
+                                              episode_id=self.episode_id,
+                                              anchor=str(_img))
+                    _sb3.save(_sd, _bib)
+            except Exception:                                # noqa: BLE001
+                pass
             _n_ok = len(report.get("painted") or ())
             _n_bad = len(report.get("failed") or ())
             print(f"  角色设计师：画 {_n_ok}/{len(lib.sheets)} 个角色"

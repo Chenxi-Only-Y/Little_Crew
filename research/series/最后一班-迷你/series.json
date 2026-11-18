@@ -154,14 +154,14 @@
     "旅人": {
       "characterId": "旅人",
       "name": "旅人",
-      "appearance": "男性，青年，结实挺拔身形，浅亚麻及腰直长发，浅灰眼睛，身穿深灰呢料外套，袖口卷起两道，眉间有一颗小痣",
-      "appearanceHash": "941d31e688",
-      "version": 1,
+      "appearance": "Appearance(gender='男性', hair_style='及腰直长发', hair_color='浅亚麻', eye_color='浅灰', build='结实挺拔', outfit='深灰呢料外套', outfit_accent='袖口卷起两道', signature='眉间有一颗小痣', age_band='青年')",
+      "appearanceHash": "55023d04c9",
+      "version": 2,
       "outfits": [],
       "episodes": [
         "E02"
       ],
-      "anchor": ""
+      "anchor": "D:\\AI\\ds.8\\Little_Crew\\outputs\\_series\\最后一班-迷你\\E02\\assets\\characters\\CHAR-12E5\\sheet.png"
     }
   },
   "usage": [
