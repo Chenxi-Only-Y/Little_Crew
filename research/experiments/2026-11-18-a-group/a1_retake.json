@@ -1,0 +1,34 @@
+{
+  "kind": "experiment.a1_retake",
+  "shot": "SH-E02-001-001",
+  "version": "v1->v2",
+  "retake": {
+    "kind": "boundary.retake_shot",
+    "shotId": "SH-E02-001-001",
+    "oldVersion": 1,
+    "newVersion": 2,
+    "hint": "保持与上一章同一空间/同一背景/同一光线；只补拍接戏镜",
+    "out": "outputs\\_series\\最后一班-迷你\\E02\\assets\\cloud_render\\SH-E02-001-001_cloud.png",
+    "reused": false,
+    "costCny": 0.05,
+    "promptHash": "1835efc09e2a"
+  },
+  "vlm": {
+    "kind": "boundary.visual",
+    "ok": false,
+    "level": "red",
+    "diffs": [
+      "空间不一致",
+      "人物造型不一致",
+      "光线/时段不连续"
+    ],
+    "judge": "左图为古风室内场景，人物着华丽传统服饰；右图为现代火车站台，人物穿冬装大衣围巾，场景、服装与光线（暖室内 vs 冷调夜景）均不连续。",
+    "verdict": {
+      "sameSpace": false,
+      "sameCostume": false,
+      "sameLighting": false,
+      "diff": "左图为古风室内场景，人物着华丽传统服饰；右图为现代火车站台，人物穿冬装大衣围巾，场景、服装与光线（暖室内 vs 冷调夜景）均不连续。"
+    },
+    "evidence": "D:\\AI\\ds.8\\Little_Crew\\research\\experiments\\2026-11-18-a-group\\a1_retake_compare.jpg"
+  }
+}
