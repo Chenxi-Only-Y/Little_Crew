@@ -1,0 +1,11 @@
+{
+  "kind": "experiment.a5_reuse9",
+  "date": "2026-11-18",
+  "sceneKey": "地铁站台",
+  "tier": 3,
+  "expectedViews": 9,
+  "reusedViews": 9,
+  "generatedViews": 0,
+  "costCny": 0.0,
+  "note": "B5 台账 assets 合并修复后，同一场景 9 虚拟视图全部命中复用（0 成本）"
+}
